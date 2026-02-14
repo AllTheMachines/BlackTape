@@ -1,0 +1,21 @@
+#!/bin/bash
+# Auto-append commit info to BUILD-LOG.md
+# Part of Mercury's full build protocol
+
+HASH=$(git log -1 --format='%h')
+DATE=$(git log -1 --format='%Y-%m-%d %H:%M')
+AUTHOR=$(git log -1 --format='%an')
+MSG=$(git log -1 --format='%s')
+FILES=$(git diff-tree --no-commit-id --name-only -r HEAD | head -10)
+FILE_COUNT=$(git diff-tree --no-commit-id --name-only -r HEAD | wc -l | tr -d ' ')
+
+# Don't log if the commit itself is a build-log update (avoid infinite loop)
+if echo "$MSG" | grep -q "build-log"; then
+  exit 0
+fi
+
+cat >> BUILD-LOG.md << EOF
+
+> **Commit ${HASH}** (${DATE}) — ${MSG}
+> Files changed: ${FILE_COUNT}
+EOF
