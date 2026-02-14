@@ -3,11 +3,14 @@
 # Part of Mercury's full build protocol
 
 HASH=$(git log -1 --format='%h')
-DATE=$(git log -1 --format='%Y-%m-%d %H:%M')
-AUTHOR=$(git log -1 --format='%an')
+DATE=$(git log -1 --date=format:'%Y-%m-%d %H:%M' --format='%cd')
 MSG=$(git log -1 --format='%s')
-FILES=$(git diff-tree --no-commit-id --name-only -r HEAD | head -10)
-FILE_COUNT=$(git diff-tree --no-commit-id --name-only -r HEAD | wc -l | tr -d ' ')
+FILE_COUNT=$(git diff-tree --no-commit-id --name-only -r HEAD 2>/dev/null | wc -l | tr -d ' ')
+
+# Fallback for root commit
+if [ "$FILE_COUNT" = "0" ]; then
+  FILE_COUNT=$(git show --stat --format='' HEAD | grep -c '|')
+fi
 
 # Don't log if the commit itself is a build-log update (avoid infinite loop)
 if echo "$MSG" | grep -q "build-log"; then

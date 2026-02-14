@@ -195,7 +195,27 @@ BUILD-LOG.md moved from ControlCenter to Mercury repo (where it belongs).
 
 ### What's Next
 
-1. Define initial roadmap
-2. Start the data pipeline (download MusicBrainz dumps, process into SQLite)
-3. Build search
-4. Set up GitHub Sponsors / patronage presence
+1. Start the data pipeline (download MusicBrainz dumps, process into SQLite)
+2. Build search
+3. Set up GitHub Sponsors / patronage presence
+
+> **Commit 4f2f071** (2026-02-14) — init: Mercury project — music search engine with taste
+> Files changed: 20
+
+---
+
+## Entry 006 — 2026-02-14 — Roadmap Defined
+
+7 phases mapped out. See ROADMAP.md for full details.
+
+- **Phase 0:** Patronage + grants (parallel)
+- **Phase 1:** Data pipeline (MusicBrainz → SQLite + FTS5)
+- **Phase 2:** Search + artist pages + embeds (web) — the "holy shit" moment
+- **Phase 3:** Desktop app + torrent distribution (Steve insisted this be early, not late)
+- **Phase 4:** Tag-based discovery (democratic uniqueness mechanic)
+- **Phase 5:** Social layer (opt-in profiles, collections, taste sharing)
+- **Phase 6:** Blog/curator tools (embeddable widgets, attribution)
+
+Key decision: Desktop was originally Phase 5. Steve moved it to Phase 3 — the unkillable local version is too important to delay. This means web and desktop both exist by Phase 3.
+
+Revenue model reiterated: no paid tiers in any phase. Everyone gets the same thing. Always.
