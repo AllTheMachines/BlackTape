@@ -586,3 +586,84 @@ These are Phase 4 improvements (YouTube API for recent videos, Bandcamp album sc
 ### Files Changed
 - `src/lib/db/queries.ts` — Fixed JOIN, added ranking priority, fixed tag display
 - `src/routes/+layout.svelte` — Added loading bar with `navigating` store
+
+> **Commit 5a02a9a** (2026-02-15 20:08) — feat: complete Phase 2 — search ranking fix, loading indicator, Spotify fallback
+> Files changed: 9
+
+---
+
+## Entry 013 — 2026-02-15 — Artist Page Redesign: Discography + Categorized Links
+
+### Context
+
+The artist page had a two-column layout — info on the left, a generic embed player sidebar on the right. Links were dumped in a flat uncategorized list. Steve wanted a Bandcamp-style discography layout with proper link organization. The embed sidebar felt bolted on rather than intentional.
+
+### What Changed
+
+**New single-column layout replaces the two-column grid:**
+
+```
+Artist Name
+Group — Germany · 1997 — present
+[indie rock] [post-punk] [shoegaze]
+
+Bio text (collapsed if long, "Read more" toggle)
+
+── Discography ──────────────────────
+┌──────────┐  ┌──────────┐
+│ Cover Art │  │ Cover Art │
+│ Album A  │  │ Album B  │
+│ 2024     │  │ 2021     │
+│ [BC][SP] │  │ [SC][YT] │
+└──────────┘  └──────────┘
+[ Inline SoundCloud/YouTube player ]
+
+── Links ────────────────────────────
+OFFICIAL  artist-website.com
+SOCIAL    Instagram · Twitter · Mastodon
+INFO      Wikipedia · Discogs · RateYourMusic
+SUPPORT   Patreon
+```
+
+### New Files
+
+**`src/lib/embeds/categorize.ts`** — Shared categorization logic. Maps MusicBrainz relationship `type` strings (e.g., "streaming", "social network", "official homepage", "wikipedia") to semantic categories. Domain-based fallback for streaming platforms. Friendly label generation from URLs (e.g., `open.spotify.com` → "Spotify").
+
+**`src/routes/api/artist/[mbid]/releases/+server.ts`** — New API endpoint that fetches release groups (albums/EPs/singles) from MusicBrainz with URL relationships in one call. Extracts streaming links per release, constructs Cover Art Archive URLs. Same caching pattern (24h TTL, Cloudflare Cache API).
+
+**`src/routes/api/soundcloud-oembed/+server.ts`** — CORS proxy for SoundCloud oEmbed. SoundCloud's oEmbed endpoint doesn't support CORS, so when a user clicks play on a release's SoundCloud link, we proxy through our server.
+
+**`src/lib/components/ReleaseCard.svelte`** — Release card component: 180px cover art with 404 placeholder (shows title initial), title + year + type badge (Album/EP/Single, color-coded), platform link chips (BC/SP/SC/YT). Clicking SoundCloud/YouTube expands an inline player below the discography. Clicking Bandcamp/Spotify opens in new tab.
+
+### Modified Files
+
+**`src/lib/embeds/types.ts`** — Added `ReleaseGroup`, `CategorizedLinks`, `ReleaseLink`, `LinkCategory` types. Added display constants (`LINK_CATEGORY_ORDER`, `LINK_CATEGORY_LABELS`).
+
+**`src/routes/api/artist/[mbid]/links/+server.ts`** — Now returns both legacy `PlatformLinks` and new `CategorizedLinks` format. Uses MusicBrainz relationship `type` field for semantic categorization instead of just domain matching. Deduplicates URLs.
+
+**`src/routes/artist/[slug]/+page.server.ts`** — Parallel fetch: releases + links fire concurrently via `Promise.allSettled`. Bio still depends on links (needs Wikipedia URL). Returns `categorizedLinks` and `releases` to the page.
+
+**`src/routes/artist/[slug]/+page.svelte`** — Full redesign. Single-column layout. Header with combined metadata line (type + country + year range). Collapsible bio. Discography grid with ReleaseCard components. Inline player area. Categorized links section with semantic groups.
+
+<!-- decision: Release data comes from live MusicBrainz API, not local database -->
+Release groups (albums, EPs, singles) are fetched live from the MusicBrainz API on each artist page visit, with 24-hour caching. Cover art comes from the Cover Art Archive via direct URL. This keeps the local database slim (just the search index) and follows the "internet is the database" principle.
+**Rejected:** Storing releases in local SQLite (bloats the index, duplicates what MB already has)
+<!-- /decision -->
+
+<!-- decision: Links categorized by MB relationship type, not domain -->
+MusicBrainz provides a `type` field on every URL relationship (e.g., "streaming", "social network", "official homepage"). Using this for categorization is more accurate than domain guessing — a Bandcamp link typed as "official homepage" by MB is still a streaming link (domain detection overrides for known platforms).
+**Rejected:** Pure domain-based categorization (misses social/official/support distinctions)
+<!-- /decision -->
+
+### Edge Cases Handled
+- **No releases found:** Page renders without discography section
+- **Cover art 404:** Shows placeholder with album title initial letter
+- **100+ releases:** Shows first 50 with "Show all" button
+- **MB API failure:** Artist page still renders from DB data (best-effort)
+
+### Build Status
+`npm run build` — clean. `npm run check` — 0 errors, 0 warnings.
+
+<!-- status -->
+All done — artist page redesign + live streaming infrastructure complete. Ready for visual review.
+<!-- /status -->

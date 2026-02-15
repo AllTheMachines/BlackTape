@@ -104,6 +104,16 @@ function preprocessSpecialBlocks(markdown) {
     }
   );
 
+  // Status blocks: live activity indicator (rendered prominently)
+  markdown = markdown.replace(
+    /<!--\s*status\s*-->([\s\S]*?)<!--\s*\/status\s*-->/g,
+    (_, content) => {
+      const lines = content.trim().split('\n').filter(l => l.trim());
+      const items = lines.map(line => `<div class="status-line">${line.trim()}</div>`).join('\n');
+      return `<div class="block-status"><span class="block-label">LIVE</span>\n${items}\n</div>`;
+    }
+  );
+
   return markdown;
 }
 
@@ -139,6 +149,10 @@ function extractStats(markdown) {
   if (lastCommit) {
     stats.latestCommit = lastCommit;
   }
+
+  // Extract live status text if present
+  const statusMatch = markdown.match(/<!--\s*status\s*-->([\s\S]*?)<!--\s*\/status\s*-->/);
+  stats.liveStatus = statusMatch ? statusMatch[1].trim().split('\n')[0].trim() : null;
 
   // Detect current phase from latest commit messages
   const phasePattern = /\((\d{2})-/g;

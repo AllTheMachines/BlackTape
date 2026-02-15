@@ -1,24 +1,15 @@
 <script lang="ts">
 	import { PROJECT_NAME } from '$lib/config';
 	import TagChip from '$lib/components/TagChip.svelte';
-	import EmbedPlayer from '$lib/components/EmbedPlayer.svelte';
-	import ExternalLink from '$lib/components/ExternalLink.svelte';
+	import ReleaseCard from '$lib/components/ReleaseCard.svelte';
+	import { LINK_CATEGORY_ORDER, LINK_CATEGORY_LABELS } from '$lib/embeds/types';
 
 	let { data } = $props();
 
 	let tags = $derived(
 		data.artist.tags
-			? data.artist.tags
-					.split(', ')
-					.filter(Boolean)
+			? data.artist.tags.split(', ').filter(Boolean)
 			: []
-	);
-
-	let hasEmbeddableLinks = $derived(
-		data.links.bandcamp.length > 0 ||
-		data.links.spotify.length > 0 ||
-		data.links.soundcloud.length > 0 ||
-		data.links.youtube.length > 0
 	);
 
 	let artistMeta = $derived(() => {
@@ -27,6 +18,48 @@
 		if (data.artist.country) parts.push(data.artist.country);
 		return parts.join(' \u2014 ');
 	});
+
+	let yearRange = $derived(() => {
+		if (!data.artist.begin_year) return '';
+		return `${data.artist.begin_year}${data.artist.ended ? '' : ' \u2014 present'}`;
+	});
+
+	let headerMeta = $derived(() => {
+		const meta = artistMeta();
+		const year = yearRange();
+		if (meta && year) return `${meta} \u00b7 ${year}`;
+		return meta || year;
+	});
+
+	/** Bio expand/collapse state. */
+	let bioExpanded = $state(false);
+	let bioNeedsCollapse = $derived(data.bio ? data.bio.length > 500 : false);
+	let displayBio = $derived(
+		data.bio && !bioExpanded && bioNeedsCollapse
+			? data.bio.slice(0, 500) + '...'
+			: data.bio
+	);
+
+	/** Inline player HTML (set when user clicks SC/YT on a release). */
+	let inlinePlayerHtml = $state<string | null>(null);
+
+	function handlePlayInline(html: string) {
+		inlinePlayerHtml = html;
+	}
+
+	/** Show more releases. */
+	let showAllReleases = $state(false);
+	let visibleReleases = $derived(
+		showAllReleases ? data.releases : data.releases.slice(0, 50)
+	);
+
+	/** Streaming links for the "Listen On" bar. */
+	let streamingLinks = $derived(data.categorizedLinks.streaming);
+
+	/** Check if categorized links have any content (excluding streaming, shown separately). */
+	let hasAnyLinks = $derived(
+		LINK_CATEGORY_ORDER.some(cat => data.categorizedLinks[cat].length > 0)
+	);
 </script>
 
 <svelte:head>
@@ -38,53 +71,105 @@
 </svelte:head>
 
 <div class="artist-page">
-	<div class="artist-layout">
-		<!-- Left column: Info -->
-		<div class="info-column">
-			<h1 class="artist-name">{data.artist.name}</h1>
+	<!-- Header -->
+	<header class="artist-header">
+		<h1 class="artist-name">{data.artist.name}</h1>
 
-			{#if artistMeta()}
-				<p class="artist-meta">{artistMeta()}</p>
+		{#if headerMeta()}
+			<p class="artist-meta">{headerMeta()}</p>
+		{/if}
+
+		{#if tags.length > 0}
+			<div class="tags">
+				{#each tags as tag}
+					<TagChip {tag} />
+				{/each}
+			</div>
+		{/if}
+
+		{#if data.bio}
+			<div class="bio">
+				<p>{displayBio}</p>
+				{#if bioNeedsCollapse}
+					<button class="bio-toggle" onclick={() => bioExpanded = !bioExpanded}>
+						{bioExpanded ? 'Show less' : 'Read more'}
+					</button>
+				{/if}
+			</div>
+		{/if}
+	</header>
+
+	<!-- Listen On -->
+	{#if streamingLinks.length > 0}
+		<section class="listen-on">
+			<span class="listen-label">Listen on</span>
+			<div class="listen-links">
+				{#each streamingLinks as link}
+					<a
+						href={link.url}
+						target="_blank"
+						rel="noopener noreferrer"
+						class="listen-link"
+					>
+						{link.label}
+					</a>
+				{/each}
+			</div>
+		</section>
+	{/if}
+
+	<!-- Discography -->
+	{#if data.releases.length > 0}
+		<section class="discography">
+			<h2 class="section-title">Discography</h2>
+
+			<div class="releases-grid">
+				{#each visibleReleases as release (release.mbid)}
+					<ReleaseCard {release} onplayinline={handlePlayInline} />
+				{/each}
+			</div>
+
+			{#if data.releases.length > 50 && !showAllReleases}
+				<button class="show-more" onclick={() => showAllReleases = true}>
+					Show all {data.releases.length} releases
+				</button>
 			{/if}
 
-			{#if data.artist.begin_year}
-				<p class="artist-year">
-					{data.artist.begin_year}{data.artist.ended ? ' (disbanded)' : ' — present'}
-				</p>
-			{/if}
-
-			{#if data.bio}
-				<div class="bio">
-					<p>{data.bio}</p>
+			{#if inlinePlayerHtml}
+				<div class="inline-player">
+					{@html inlinePlayerHtml}
 				</div>
 			{/if}
+		</section>
+	{/if}
 
-			{#if tags.length > 0}
-				<div class="tags-section">
-					<div class="tags">
-						{#each tags as tag}
-							<TagChip {tag} />
-						{/each}
+	<!-- Categorized Links -->
+	{#if hasAnyLinks}
+		<section class="links-section">
+			<h2 class="section-title">Links</h2>
+
+			{#each LINK_CATEGORY_ORDER as category}
+				{@const links = data.categorizedLinks[category]}
+				{#if links.length > 0}
+					<div class="link-group">
+						<h3 class="link-group-title">{LINK_CATEGORY_LABELS[category]}</h3>
+						<div class="link-list">
+							{#each links as link}
+								<a
+									href={link.url}
+									target="_blank"
+									rel="noopener noreferrer"
+									class="cat-link"
+								>
+									{link.label}
+								</a>
+							{/each}
+						</div>
 					</div>
-				</div>
-			{/if}
-
-			{#if data.links.other.length > 0}
-				<div class="other-links">
-					{#each data.links.other as url}
-						<ExternalLink {url} platform="other" label={new URL(url).hostname} />
-					{/each}
-				</div>
-			{/if}
-		</div>
-
-		<!-- Right column: Embeds -->
-		<div class="embeds-column">
-			{#if hasEmbeddableLinks}
-				<EmbedPlayer links={data.links} soundcloudEmbedHtml={data.soundcloudEmbedHtml} />
-			{/if}
-		</div>
-	</div>
+				{/if}
+			{/each}
+		</section>
+	{/if}
 </div>
 
 <style>
@@ -92,13 +177,16 @@
 		max-width: var(--max-width);
 		margin: 0 auto;
 		padding: var(--space-lg);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2xl);
 	}
 
-	.artist-layout {
-		display: grid;
-		grid-template-columns: 5fr 4fr;
-		gap: var(--space-2xl);
-		align-items: start;
+	/* ── Header ────────────────────────────────────────── */
+	.artist-header {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-sm);
 	}
 
 	.artist-name {
@@ -106,24 +194,25 @@
 		font-weight: 300;
 		letter-spacing: 0.02em;
 		color: var(--text-accent);
-		margin: 0 0 var(--space-sm);
+		margin: 0;
 		line-height: 1.2;
 	}
 
 	.artist-meta {
 		font-size: 0.95rem;
 		color: var(--text-secondary);
-		margin: 0 0 var(--space-xs);
+		margin: 0;
 	}
 
-	.artist-year {
-		font-size: 0.85rem;
-		color: var(--text-muted);
-		margin: 0 0 var(--space-lg);
+	.tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-xs);
+		margin-top: var(--space-xs);
 	}
 
 	.bio {
-		margin-bottom: var(--space-lg);
+		margin-top: var(--space-sm);
 	}
 
 	.bio p {
@@ -133,39 +222,175 @@
 		margin: 0;
 	}
 
-	.tags-section {
-		margin-bottom: var(--space-lg);
+	.bio-toggle {
+		background: none;
+		border: none;
+		color: var(--link-color);
+		font-size: 0.85rem;
+		padding: 0;
+		cursor: pointer;
+		margin-top: var(--space-xs);
 	}
 
-	.tags {
+	.bio-toggle:hover {
+		text-decoration: underline;
+	}
+
+	/* ── Listen On ────────────────────────────────────── */
+	.listen-on {
+		display: flex;
+		align-items: center;
+		gap: var(--space-md);
+		padding: var(--space-md) var(--space-lg);
+		background: var(--bg-elevated);
+		border: 1px solid var(--border-subtle);
+		border-radius: var(--card-radius);
+	}
+
+	.listen-label {
+		font-size: 0.8rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--text-muted);
+		white-space: nowrap;
+	}
+
+	.listen-links {
 		display: flex;
 		flex-wrap: wrap;
 		gap: var(--space-xs);
 	}
 
-	.other-links {
+	.listen-link {
+		display: inline-flex;
+		align-items: center;
+		padding: var(--space-xs) var(--space-md);
+		background: var(--bg-hover);
+		border: 1px solid var(--border-default);
+		border-radius: 999px;
+		font-size: 0.85rem;
+		font-weight: 500;
+		color: var(--text-accent);
+		text-decoration: none;
+		transition: background 0.15s, border-color 0.15s;
+		white-space: nowrap;
+	}
+
+	.listen-link:hover {
+		background: color-mix(in srgb, var(--link-color) 10%, var(--bg-hover));
+		border-color: var(--link-color);
+		text-decoration: none;
+	}
+
+	/* ── Section titles ────────────────────────────────── */
+	.section-title {
+		font-size: 1.1rem;
+		font-weight: 500;
+		color: var(--text-accent);
+		margin: 0 0 var(--space-md);
+		letter-spacing: 0.02em;
+	}
+
+	/* ── Discography ───────────────────────────────────── */
+	.discography {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.releases-grid {
 		display: flex;
 		flex-wrap: wrap;
-		gap: var(--space-sm);
+		gap: var(--space-lg);
 	}
 
-	.embeds-column {
-		position: sticky;
-		top: calc(var(--header-height) + var(--space-lg));
+	.show-more {
+		margin-top: var(--space-md);
+		background: var(--bg-elevated);
+		border: 1px solid var(--border-default);
+		border-radius: var(--card-radius);
+		color: var(--text-primary);
+		font-size: 0.9rem;
+		padding: var(--space-sm) var(--space-lg);
+		cursor: pointer;
+		align-self: flex-start;
+		transition: background 0.15s, border-color 0.15s;
 	}
 
+	.show-more:hover {
+		background: var(--bg-hover);
+		border-color: var(--border-hover);
+	}
+
+	.inline-player {
+		margin-top: var(--space-md);
+		border: 1px solid var(--border-subtle);
+		border-radius: var(--card-radius);
+		overflow: hidden;
+	}
+
+	.inline-player :global(iframe) {
+		width: 100% !important;
+		display: block;
+		border: none;
+	}
+
+	/* ── Links ─────────────────────────────────────────── */
+	.links-section {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-md);
+	}
+
+	.link-group {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-xs);
+	}
+
+	.link-group-title {
+		font-size: 0.8rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--text-muted);
+		margin: 0;
+	}
+
+	.link-list {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-xs);
+	}
+
+	.cat-link {
+		display: inline-flex;
+		align-items: center;
+		padding: var(--space-xs) var(--space-md);
+		background: var(--bg-elevated);
+		border: 1px solid var(--border-default);
+		border-radius: 999px;
+		font-size: 0.85rem;
+		color: var(--text-primary);
+		text-decoration: none;
+		transition: background 0.15s, border-color 0.15s;
+		white-space: nowrap;
+	}
+
+	.cat-link:hover {
+		background: var(--bg-hover);
+		border-color: var(--border-hover);
+		text-decoration: none;
+	}
+
+	/* ── Responsive ────────────────────────────────────── */
 	@media (max-width: 768px) {
-		.artist-layout {
-			grid-template-columns: 1fr;
-			gap: var(--space-lg);
-		}
-
 		.artist-name {
 			font-size: 1.8rem;
 		}
 
-		.embeds-column {
-			position: static;
+		.releases-grid {
+			gap: var(--space-md);
 		}
 	}
 </style>

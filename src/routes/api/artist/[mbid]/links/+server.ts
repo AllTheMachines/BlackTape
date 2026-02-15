@@ -1,25 +1,27 @@
 /**
  * MusicBrainz API proxy for artist external links.
  *
- * Fetches URL relationships from MusicBrainz, categorizes them by platform,
- * and returns a PlatformLinks object. Implements rate limiting (1100ms between
- * requests) and Cloudflare Cache API caching (24hr TTL).
+ * Fetches URL relationships from MusicBrainz, categorizes them using
+ * the MB relationship type into semantic groups (streaming, social, official,
+ * info, support, other). Implements rate limiting (1100ms between requests)
+ * and Cloudflare Cache API caching (24hr TTL).
+ *
+ * Returns both the new CategorizedLinks format and legacy PlatformLinks
+ * for backwards compatibility during the transition.
  */
 
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import type { PlatformLinks } from '$lib/embeds/types';
+import type { PlatformLinks, CategorizedLinks } from '$lib/embeds/types';
+import { categorizeByRelationType, detectPlatform, labelFromUrl, emptyCategorizedLinks } from '$lib/embeds/categorize';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const USER_AGENT = 'Mercury/0.1.0 (https://github.com/user/mercury)';
 const CACHE_TTL = 86400; // 24 hours
 
-/** Track last MusicBrainz request timestamp for rate limiting. */
 let lastMbRequest = 0;
 
-/**
- * Categorize a URL by its domain into a platform bucket.
- */
+/** Domain-based categorization for legacy PlatformLinks format. */
 function categorizeDomain(url: string): keyof PlatformLinks {
 	try {
 		const hostname = new URL(url).hostname;
@@ -37,13 +39,11 @@ function categorizeDomain(url: string): keyof PlatformLinks {
 export const GET: RequestHandler = async ({ params, platform }) => {
 	const { mbid } = params;
 
-	// Validate MBID format
 	if (!mbid || !UUID_PATTERN.test(mbid)) {
 		throw error(400, 'Invalid MBID format');
 	}
 
-	// Check Cloudflare Cache API first
-	const cacheKey = `https://mercury.internal/api/artist/${mbid}/links`;
+	const cacheKey = `https://mercury.internal/api/artist/${mbid}/links/v2`;
 
 	if (platform?.caches) {
 		const cache = platform.caches.default;
@@ -59,7 +59,7 @@ export const GET: RequestHandler = async ({ params, platform }) => {
 		}
 	}
 
-	// Rate limit: wait if less than 1100ms since last request
+	// Rate limit
 	const now = Date.now();
 	const elapsed = now - lastMbRequest;
 	if (elapsed < 1100) {
@@ -67,7 +67,6 @@ export const GET: RequestHandler = async ({ params, platform }) => {
 	}
 	lastMbRequest = Date.now();
 
-	// Fetch from MusicBrainz
 	let mbResponse: Response;
 	try {
 		mbResponse = await fetch(
@@ -99,8 +98,8 @@ export const GET: RequestHandler = async ({ params, platform }) => {
 		}>;
 	};
 
-	// Extract and categorize platform links
-	const links: PlatformLinks = {
+	// Build both legacy and new categorized formats
+	const legacy: PlatformLinks = {
 		bandcamp: [],
 		spotify: [],
 		soundcloud: [],
@@ -109,27 +108,52 @@ export const GET: RequestHandler = async ({ params, platform }) => {
 		other: []
 	};
 
+	const categorized: CategorizedLinks = emptyCategorizedLinks();
+
 	if (data.relations) {
+		// Track URLs we've already added to avoid duplicates
+		const seen = new Set<string>();
+
 		for (const rel of data.relations) {
 			if (rel['target-type'] === 'url' && rel.url?.resource) {
 				const url = rel.url.resource;
-				const category = categorizeDomain(url);
-				links[category].push(url);
+				if (seen.has(url)) continue;
+				seen.add(url);
+
+				// Legacy format
+				const domainCategory = categorizeDomain(url);
+				legacy[domainCategory].push(url);
+
+				// New categorized format using MB relationship type
+				const category = rel.type
+					? categorizeByRelationType(rel.type)
+					: 'other';
+
+				// Streaming platforms detected by domain go to streaming even if
+				// MB type says something else (e.g., "official homepage" for bandcamp)
+				const platform = detectPlatform(url);
+				const finalCategory = platform ? 'streaming' : category;
+
+				categorized[finalCategory].push({
+					url,
+					label: labelFromUrl(url)
+				});
 			}
 		}
 	}
 
-	const response = json(links, {
+	const responseData = { legacy, categorized };
+
+	const response = json(responseData, {
 		headers: {
 			'Cache-Control': `public, max-age=${CACHE_TTL}`,
 			'X-Cache': 'MISS'
 		}
 	});
 
-	// Store in Cloudflare cache
 	if (platform?.caches) {
 		const cache = platform.caches.default;
-		const cacheResponse = new Response(JSON.stringify(links), {
+		const cacheResponse = new Response(JSON.stringify(responseData), {
 			headers: {
 				'Content-Type': 'application/json',
 				'Cache-Control': `public, max-age=${CACHE_TTL}`

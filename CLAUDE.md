@@ -31,27 +31,39 @@ Read `PROJECT.md` for the full vision, architecture, and research context.
 
 ## Build Protocol (MANDATORY)
 
-This project is documented like a documentary. Every decision, dead end, and breakthrough is recorded.
+This project is documented like a documentary. Every decision, dead end, and breakthrough is recorded. **Steve streams the build process live on YouTube** — the build log viewer at `localhost:18800` is always running (Windows Startup).
 
 ### Session Start
 1. Read `BUILD-LOG.md` to understand where things stand
 2. Read the last few git commits for recent changes
 3. State what you're about to work on
 
-### During Work
-- **Log every significant decision** in BUILD-LOG.md as a new entry with date and context
+### During Work — Live Updates (IMPORTANT)
+- **Update BUILD-LOG.md after every task**, not just at session end
+- Use the `<!-- status -->` block at the bottom for real-time progress:
+  ```
+  <!-- status -->
+  Working on feature X — 3/7 tasks done. Just finished the API endpoint.
+  <!-- /status -->
+  ```
+- The status block renders as a pulsing live indicator in the build-log-viewer
+- YouTube viewers see activity between commits — keep it interesting
+- **Log every significant decision** as a new entry with date and context
 - Include Steve's exact words when he articulates something important (use blockquotes)
 - Record rejected alternatives and WHY they were rejected
 - Capture the reasoning, not just the outcome
+- Remove the `<!-- status -->` block when writing the final session entry
 
 ### Session End
 - Update BUILD-LOG.md with a summary of what was accomplished
 - Note any open questions or next steps
 - Update HANDOFF.md if the session is ending mid-task
+- Remove any `<!-- status -->` block (session is over, nothing is live)
 
 ### Automated
 - Git post-commit hook auto-appends commit info to BUILD-LOG.md
 - Hook is at `.githooks/post-commit`, configured via `core.hooksPath`
+- Build log viewer auto-starts on Windows login (Startup shortcut → `tools/build-log-viewer/start-hidden.vbs`)
 
 ## Central Configs
 This project references canonical configs from ControlCenter.
