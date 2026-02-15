@@ -219,3 +219,116 @@ BUILD-LOG.md moved from ControlCenter to Mercury repo (where it belongs).
 Key decision: Desktop was originally Phase 5. Steve moved it to Phase 3 — the unkillable local version is too important to delay. This means web and desktop both exist by Phase 3.
 
 Revenue model reiterated: no paid tiers in any phase. Everyone gets the same thing. Always.
+
+> **Commit 678cc33** (2026-02-14 19:50) — docs: roadmap, build protocol, handoff
+> Files changed: 4
+
+---
+
+## Entry 007 — 2026-02-14 — Build Log Viewer (OBS Streaming Dashboard)
+
+### Context
+
+Steve wants to stream the Mercury build process live on YouTube via OBS. Needed a standalone local web app that watches BUILD-LOG.md for changes, renders entries in real-time, and serves as an OBS Browser Source.
+
+### What Was Built
+
+`tools/build-log-viewer/` — 3 files, single-purpose read-only display app:
+
+```
+tools/build-log-viewer/
+  package.json          — Express + chokidar + marked
+  server.js             — Express server, file watcher, SSE endpoint, sensitive content filter
+  public/index.html     — Full app (HTML + inline CSS + inline JS, single file)
+```
+
+**Architecture:** `BUILD-LOG.md → chokidar (file watcher) → Express SSE → Browser → OBS Browser Source`
+
+### Key Details
+
+- **Port:** 18800 (configurable via `--port`)
+- **SSE streaming:** Same pattern as ControlCenter notification stream — `init` event on connect, `update` on file change, 30s heartbeat keep-alive
+- **Styling:** Exact ControlCenter dashboard colors — `#0d1117` background, `#161b22` cards, `#30363d` borders, `#d29922` gold accents for commits/blockquotes, Cascadia Code font stack
+- **Sensitive content filter:** Server-side stripping of lines containing passwords, tokens, API keys, secrets, .env references. Verified working — fake `API_KEY=xxx` line was stripped, normal content passed through.
+- **Auto-scroll:** Always scrolled to bottom, new entries animate in with fade
+- **Connection status:** Green/red dot in header with auto-reconnect on disconnect
+
+### Usage
+
+```bash
+cd tools/build-log-viewer
+npm install
+npm run dev     # Watches ../../BUILD-LOG.md on port 18800
+```
+
+OBS: Add Browser Source → `http://localhost:18800`
+
+### Decision
+
+Kept it deliberately minimal — vanilla HTML/CSS/JS, no framework. It's a read-only display for streaming. The ControlCenter aesthetic carries over cleanly.
+
+---
+
+## Entry 008 — 2026-02-14 — Phase 1: Data Pipeline + Architecture Rethink
+
+### The Pipeline (built, then slimmed)
+
+Built `pipeline/` — Node.js pipeline that downloads MusicBrainz dumps, extracts tables, parses TSV, produces SQLite + FTS5. Three scripts: `download.js`, `import.js`, `verify.js`.
+
+Initially built full-fat: artists, aliases, release groups, URLs, tags (15 tables, ~1-2 GB database). Then Steve challenged the assumptions through a series of questions that reshaped the architecture.
+
+### Architectural Decisions (conversation-driven)
+
+**Decision 1: Mercury is an independent catalog, not a MusicBrainz frontend.**
+
+Steve: "my idea was that all music can be found. with musikbrainz its maybe not possible. also if musikbrainz doesnt exist anymore that would be problematic"
+
+MusicBrainz is the seed data (2.6M artists on day one), but Mercury builds its own catalog over time. Artists not in MusicBrainz can submit directly. If MusicBrainz disappears, Mercury's data survives on user machines.
+
+**Decision 2: The internet is the database. Mercury is just the index.**
+
+Steve (reiterating from day one): "like i said previously. isnt the internet the database already?"
+
+Mercury doesn't store releases, URLs, bios, or discographies. That data lives on the internet (Bandcamp, Spotify, YouTube, etc.) and is fetched live when someone clicks an artist. The database is a slim discovery index — just what you need to search and browse.
+
+**Decision 3: Slim database = artists + tags + country. That's it.**
+
+> "well if we just map all artists out that would be enough. tagged by certain factors that are interesting for music discovery. like style and maybe country"
+
+Pipeline slimmed from 15 tables to 5 (artist, artist_type, area, tag, artist_tag). Database drops from ~1-2 GB to ~100-200 MB. Compressed for distribution: ~30-50 MB. Small enough to load in a browser.
+
+**Decision 4: Mercury builds its own style map.**
+
+Steve: "i think we should build a music style mapping thing ourselves. also because of our core-idea that people should carve out new styles."
+
+Inspired by Every Noise at Once (closed source, died when creator left Spotify). Mercury's version is fundamentally different: styles emerge bottom-up from artist and community tags. New styles are invented by artists. The map is alive — grows as new scenes form.
+
+> "its important that we transform everything. we have to make it our own. so it becomes different from everything. how we create the map should also be unique"
+
+The style map is built from tag co-occurrence data. Artists tagged "shoegaze" + "dream pop" place those styles near each other. The more niche the tag, the more visible the cluster. This IS the "uniqueness = visibility" mechanic made visual.
+
+**Decision 5: Two-speed data freshness.**
+
+Full catalog: weekly sync from dumps. Followed artists: near real-time via RSS feeds, APIs, MusicBrainz edit stream. Community attention drives freshness — more followers = more frequent checks.
+
+### What Was Actually Built
+
+```
+pipeline/
+  package.json         — better-sqlite3, tar, unbzip2-stream
+  download.js          — Downloads MusicBrainz dumps with progress
+  import.js            — Extract → lookup tables → artists → tags → FTS5
+  verify.js            — Test search, stats, tag co-occurrence, style map preview
+  lib/
+    tables.js          — 5 MusicBrainz table definitions (slimmed from 15)
+    parse-tsv.js       — PostgreSQL COPY format parser
+    schema.sql         — 2 tables + FTS5 (artists + artist_tags)
+```
+
+### Bug Fix: Build Log Viewer
+
+Fixed chokidar file watcher on Windows — added `usePolling: true` for Windows.
+
+### Download Status
+
+First run of `npm run download` started. mbdump.tar.bz2 (6.5 GB) downloading, mbdump-derived.tar.bz2 (500 MB) next. Import runs after download completes.

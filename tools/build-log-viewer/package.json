@@ -1,0 +1,16 @@
+{
+  "name": "build-log-viewer",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Live streaming dashboard for BUILD-LOG.md — OBS Browser Source ready",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js --file ../../BUILD-LOG.md"
+  },
+  "dependencies": {
+    "chokidar": "^4.0.3",
+    "express": "^4.21.2",
+    "marked": "^15.0.6"
+  }
+}
