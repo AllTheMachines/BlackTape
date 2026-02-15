@@ -70,6 +70,7 @@ export async function searchArtists(
 	limit: number = DEFAULT_LIMIT
 ): Promise<ArtistResult[]> {
 	const sanitized = sanitizeFtsQuery(query);
+	const lowerQuery = query.toLowerCase().trim();
 
 	if (!sanitized) {
 		// Fallback: plain LIKE search when FTS query would be empty
@@ -81,10 +82,16 @@ export async function searchArtists(
 				 LEFT JOIN artist_tags at2 ON at2.artist_id = a.id
 				 WHERE a.name LIKE ?
 				 GROUP BY a.id
-				 ORDER BY a.name
+				 ORDER BY
+				   CASE
+				     WHEN LOWER(a.name) = ? THEN 0
+				     WHEN LOWER(a.name) LIKE ? THEN 1
+				     ELSE 2
+				   END,
+				   a.name
 				 LIMIT ?`
 			)
-			.bind(`%${query}%`, limit)
+			.bind(`%${query}%`, lowerQuery, lowerQuery + '%', limit)
 			.all<ArtistResult>();
 
 		return results;
@@ -93,14 +100,20 @@ export async function searchArtists(
 	const { results } = await db
 		.prepare(
 			`SELECT a.id, a.mbid, a.name, a.slug, a.country,
-			        f.tags
+			        (SELECT GROUP_CONCAT(tag, ', ') FROM artist_tags WHERE artist_id = a.id) AS tags
 			 FROM artists_fts f
-			 JOIN artists a ON a.name = f.name
+			 JOIN artists a ON a.id = f.rowid
 			 WHERE artists_fts MATCH ?
-			 ORDER BY rank
+			 ORDER BY
+			   CASE
+			     WHEN LOWER(a.name) = ? THEN 0
+			     WHEN LOWER(a.name) LIKE ? THEN 1
+			     ELSE 2
+			   END,
+			   f.rank
 			 LIMIT ?`
 		)
-		.bind(sanitized, limit)
+		.bind(sanitized, lowerQuery, lowerQuery + '%', limit)
 		.all<ArtistResult>();
 
 	return results;

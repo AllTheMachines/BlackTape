@@ -5,29 +5,28 @@
 See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Phase 2 — Search + Artist Pages + Embeds
+**Current focus:** Choosing next phase
 
 ## Current Position
 
-Phase: 2 of 6 (Search + Artist Pages + Embeds)
-Plan: 4 of 5 in current phase (02-01, 02-02, 02-03, 02-04 complete)
-Status: In progress
-Last activity: 2026-02-15 — Completed 02-04-PLAN.md (Artist Pages with Embeds)
+Phase: 2 of 9 complete (Search + Artist Pages + Embeds)
+Plan: 5 of 5 — all complete
+Status: Phase 2 COMPLETE — signed off 2026-02-15
+Last activity: 2026-02-15 — Visual sign-off, search ranking fix, loading indicator, Spotify fallback
 
-Progress: [████████░░] 80%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 4
-- Average duration: 3.3min
-- Total execution time: 13min
+- Total plans completed: 5
+- Phase 2 execution time: ~15min (plans 1-4) + verification session
 
 **By Phase:**
-| Phase | Plans | Total | Avg/Plan |
-|-------|-------|-------|----------|
-| 1. Data Pipeline | pre-GSD | - | - |
-| 2. Search + Embeds | 4/5 | 13min | 3.3min |
+| Phase | Plans | Total | Status |
+|-------|-------|-------|--------|
+| 1. Data Pipeline | pre-GSD | - | Complete |
+| 2. Search + Embeds | 5/5 | ~15min | Complete |
 
 ## Accumulated Context
 
@@ -48,6 +47,9 @@ Progress: [████████░░] 80%
 - MusicBrainz rate limiting via module-level timestamp tracking (1100ms between requests).
 - Cloudflare Cache API with 24hr TTL for MusicBrainz responses.
 - Bio and links are best-effort — page renders from DB data alone if external APIs fail.
+- FTS5 JOIN must use rowid (a.id = f.rowid), not name — name-based joins break with duplicates.
+- Search ranking uses CASE priority: exact name > prefix > tag match, then FTS rank.
+- Spotify embeds unreliable for logged-in users — always show direct link alongside embed.
 
 ### Pending Todos
 None
@@ -58,5 +60,5 @@ None
 ## Session Continuity
 
 Last session: 2026-02-15
-Stopped at: Completed 02-04 (wave 3). Next: 02-05 (End-to-end visual verification).
-Resume file: .planning/phases/02-search-and-embeds/02-05-PLAN.md
+Stopped at: Phase 2 complete. Choosing next phase.
+Next options: Phase 3 (Desktop App) or Phase 0 Stage 1 (Sustainability)

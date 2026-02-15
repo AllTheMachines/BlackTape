@@ -11,13 +11,13 @@
 
 ### Search
 
-- [ ] **SEARCH-01**: User can search artists by name with instant results
-- [ ] **SEARCH-02**: User can search and filter by tags
-- [ ] **SEARCH-03**: Search results show artist name, tags, country
+- [x] **SEARCH-01**: User can search artists by name with instant results
+- [x] **SEARCH-02**: User can search and filter by tags
+- [x] **SEARCH-03**: Search results show artist name, tags, country
 
 ### Embeds
 
-- [ ] **EMBED-01**: Artist pages embed players from Bandcamp, Spotify, SoundCloud, YouTube
+- [x] **EMBED-01**: Artist pages embed players from Bandcamp, Spotify, SoundCloud, YouTube
 - [ ] **EMBED-02**: User can set preferred streaming service — embeds and links default to their choice
 
 ### Discovery
@@ -105,10 +105,10 @@
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | DATA-01 | Phase 1 | Complete |
-| SEARCH-01 | Phase 2 | Pending |
-| SEARCH-02 | Phase 2 | Pending |
-| SEARCH-03 | Phase 2 | Pending |
-| EMBED-01 | Phase 2 | Pending |
+| SEARCH-01 | Phase 2 | Complete |
+| SEARCH-02 | Phase 2 | Complete |
+| SEARCH-03 | Phase 2 | Complete |
+| EMBED-01 | Phase 2 | Complete |
 | EMBED-02 | Phase 5 | Pending |
 | DISC-01 | Phase 4 | Pending |
 | DISC-02 | Phase 4 | Pending |

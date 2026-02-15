@@ -53,6 +53,7 @@
 									Play on Spotify
 								</button>
 							{/if}
+							<ExternalLink {url} platform="spotify" label="Open in Spotify" />
 						{:else}
 							<ExternalLink {url} platform="spotify" />
 						{/if}

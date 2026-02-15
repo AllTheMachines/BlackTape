@@ -524,3 +524,65 @@ Revenue Model renamed to **Sustainability** in PROJECT.md. Completely rethought 
 - `PROJECT.md` — Revenue Model → Sustainability (expanded with channels, physical goods, communication philosophy, staged rollout, production model)
 - `.planning/ROADMAP.md` — Phase 0 expanded from 5 checkboxes to 4 stages with 15+ items tied to main phases
 - `.planning/REQUIREMENTS.md` — Added SUST-01 through SUST-10, updated traceability table (15 → 25 requirements)
+
+> **Commit 609b4d4** (2026-02-15 18:55) — docs: expand vision with full feature set, sustainability strategy, and 9-phase roadmap
+> Files changed: 4
+
+## Entry 012 — 2026-02-15 — Search Ranking Fix + Loading Indicator
+
+### Context
+
+Phase 2 visual review. Steve searched "Radiohead" and the actual Radiohead didn't appear in results — 50 results, all tribute acts and tag matches, no real band. Also no loading feedback after hitting enter.
+
+### The Bug: Wrong JOIN
+
+The FTS5 search query joined on name:
+```sql
+JOIN artists a ON a.name = f.name
+```
+
+This is wrong. The FTS5 virtual table's `rowid` maps to `artists.id` — that's how it was populated in the pipeline. Joining on name breaks when multiple artists share a name and loses the 1:1 relationship between FTS rows and artist records.
+
+**Fix:** `JOIN artists a ON a.id = f.rowid`
+
+### The Bug: No Ranking Priority
+
+FTS5 `ORDER BY rank` (BM25) treats name matches and tag matches equally. An artist tagged "radiohead" ranks the same as one named "Radiohead." With 50 result limit, the real band gets buried.
+
+**Fix:** Added CASE priority ordering:
+```sql
+ORDER BY
+  CASE
+    WHEN LOWER(a.name) = ? THEN 0      -- exact match first
+    WHEN LOWER(a.name) LIKE ? THEN 1    -- prefix match second
+    ELSE 2                               -- tag/partial match last
+  END,
+  f.rank
+```
+
+### The Bug: Broken Tag Display
+
+FTS table stores tags space-separated (`GROUP_CONCAT(tag, ' ')`), but ArtistCard splits on `', '`. Multi-word tags like "dark ambient" displayed as separate words.
+
+**Fix:** Replaced `f.tags` with a correlated subquery from `artist_tags`:
+```sql
+(SELECT GROUP_CONCAT(tag, ', ') FROM artist_tags WHERE artist_id = a.id) AS tags
+```
+
+### Loading Indicator
+
+Added animated loading bar to `+layout.svelte` using SvelteKit's `navigating` store. Appears at top of page during any navigation — immediate visual feedback when you hit enter.
+
+### Embed Limitations (documented, not fixed)
+
+Steve's review surfaced embed limitations — all expected from the MusicBrainz-URL-only approach:
+- **Bandcamp:** Link only. No oEmbed API, embed requires album IDs we don't have.
+- **Spotify:** Click-to-load embed works when URL format matches. Some URLs don't match the parser.
+- **YouTube:** MusicBrainz stores channel URLs, not video URLs. Channels can't be embedded.
+- **Dead links:** MusicBrainz community data can be stale.
+
+These are Phase 4 improvements (YouTube API for recent videos, Bandcamp album scraping, etc.).
+
+### Files Changed
+- `src/lib/db/queries.ts` — Fixed JOIN, added ranking priority, fixed tag display
+- `src/routes/+layout.svelte` — Added loading bar with `navigating` store

@@ -10,7 +10,7 @@ Build a music discovery engine from the ground up. Data pipeline first (foundati
 - Decimal phases (2.1, 2.2): Urgent insertions (marked INSERTED)
 
 - [x] **Phase 1: Data Pipeline** - MusicBrainz dumps into searchable SQLite + FTS5
-- [ ] **Phase 2: Search + Artist Pages + Embeds** - The core web experience
+- [x] **Phase 2: Search + Artist Pages + Embeds** - The core web experience
 - [ ] **Phase 3: Desktop App + Distribution** - Tauri app with local SQLite, torrent distribution
 - [ ] **Phase 4: Discovery Engine** - Tag browsing, crate digging, scene maps, time machine, liner notes
 - [ ] **Phase 5: Social Layer** - Profiles, collections, taste fingerprint, writing, discussion, import/export
@@ -47,7 +47,7 @@ Plans:
 - [x] 02-02-PLAN.md — Dark theme, global layout, landing page with search bar
 - [x] 02-03-PLAN.md — Search results page with card grid
 - [x] 02-04-PLAN.md — Artist pages with embeds, bio, external links
-- [ ] 02-05-PLAN.md — End-to-end visual verification
+- [x] 02-05-PLAN.md — End-to-end visual verification
 
 ### Phase 3: Desktop App + Distribution
 **Goal**: Unkillable local version with distributed database
@@ -143,7 +143,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|---------------|--------|-----------|
 | 1. Data Pipeline | done | Complete | 2026-02-14 |
-| 2. Search + Embeds | 4/5 | In progress | - |
+| 2. Search + Embeds | 5/5 | Complete | 2026-02-15 |
 | 3. Desktop + Distribution | 0/TBD | Not started | - |
 | 4. Discovery Engine | 0/TBD | Not started | - |
 | 5. Social Layer | 0/TBD | Not started | - |
