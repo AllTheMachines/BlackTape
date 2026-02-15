@@ -1,0 +1,13 @@
+{
+	"name": "mercury",
+	"compatibility_date": "2025-01-01",
+	"compatibility_flags": ["nodejs_als"],
+	"pages_build_output_dir": ".svelte-kit/cloudflare",
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "mercury-db",
+			"database_id": "placeholder-will-set-on-deploy"
+		}
+	]
+}
