@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS artists (
   id INTEGER PRIMARY KEY,
   mbid TEXT UNIQUE NOT NULL,
   name TEXT NOT NULL,
+  slug TEXT,
   type TEXT,            -- 'Person', 'Group', 'Orchestra', etc.
   country TEXT,
   begin_year INTEGER,
@@ -32,3 +33,4 @@ CREATE VIRTUAL TABLE IF NOT EXISTS artists_fts USING fts5(
 CREATE INDEX IF NOT EXISTS idx_artist_tags_artist ON artist_tags(artist_id);
 CREATE INDEX IF NOT EXISTS idx_artist_tags_tag ON artist_tags(tag);
 CREATE INDEX IF NOT EXISTS idx_artists_mbid ON artists(mbid);
+CREATE INDEX IF NOT EXISTS idx_artists_slug ON artists(slug);
