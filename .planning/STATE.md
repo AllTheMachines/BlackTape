@@ -10,24 +10,24 @@ See: .planning/PROJECT.md (updated 2026-02-15)
 ## Current Position
 
 Phase: 2 of 6 (Search + Artist Pages + Embeds)
-Plan: 2 of TBD in current phase
+Plan: 2 of 5 in current phase (02-01 and 02-02 complete)
 Status: In progress
-Last activity: 2026-02-15 — Completed 02-02-PLAN.md (Visual Foundation)
+Last activity: 2026-02-15 — Completed 02-01-PLAN.md (Cloudflare D1 + Search Queries + Slugs) and 02-02-PLAN.md (Visual Foundation)
 
-Progress: [███░░░░░░░] 25%
+Progress: [███░░░░░░░] 30%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
-- Average duration: 3min
-- Total execution time: 3min
+- Total plans completed: 2
+- Average duration: 3.5min
+- Total execution time: 7min
 
 **By Phase:**
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1. Data Pipeline | pre-GSD | - | - |
-| 2. Search + Embeds | 1 of TBD | 3min | 3min |
+| 2. Search + Embeds | 2/5 | 7min | 3.5min |
 
 ## Accumulated Context
 
@@ -39,6 +39,9 @@ Progress: [███░░░░░░░] 25%
 - Used $props() object pattern (not destructured) for Svelte 5 state initialization from props.
 - Header is project name only, no nav links — search engine, not a portal.
 - All UI theming via CSS custom properties in theme.css.
+- FTS5 search with LIKE fallback when sanitized query is empty (always return best-effort results).
+- Slug collisions resolved by appending first 8 chars of MBID UUID.
+- @cloudflare/workers-types added to tsconfig types for global D1Database availability.
 
 ### Pending Todos
 None
@@ -49,5 +52,5 @@ None
 ## Session Continuity
 
 Last session: 2026-02-15
-Stopped at: Completed 02-02 (Visual Foundation). Next: 02-03 (Search Results page).
-Resume file: .planning/phases/02-search-and-embeds/02-02-SUMMARY.md
+Stopped at: Completed 02-01 and 02-02 (wave 1). Next: 02-03 (Search Results page).
+Resume file: .planning/phases/02-search-and-embeds/02-03-PLAN.md
