@@ -44,7 +44,10 @@ LIBRARY (vast, wanderable)
 ### Outcome
 Three rounds of name exploration — all rejected. The right name is intuitive, not analytical. It'll show up when we're deep in the work, not staring at a blank page.
 
-**Decision: Use codename "Mercury" and move forward.**
+<!-- decision: Use codename "Mercury" -->
+The right name hasn't arrived yet. Ship with a codename, store it in a single variable, change once when the real name appears.
+**Rejected:** Crate, DeepCrate, Resonance, Harmonic, Overtone, Sift, Trawl
+<!-- /decision -->
 
 Technical setup: name stored as single variable, change once → propagates everywhere. The codename is deliberately temporary.
 
@@ -58,9 +61,14 @@ Starting the actual build. Creating the repo, writing PROJECT.md, defining the t
 
 ### Tech Stack Decision
 
-The big question from Steve: "Does that need a database? Where will this be hosted? Hosting costs money. Isn't the internet itself a database?"
+<!-- chat -->
+**Steve:** Does that need a database? Where will this be hosted? Hosting costs money. Isn't the internet itself a database?
+**Claude:** The data already exists openly. MusicBrainz is CC0, Discogs has monthly dumps. We just need a search index — a pre-processed snapshot of data that's already on the internet.
+**Steve:** So we don't actually host anything?
+**Claude:** Nothing. The audio lives on artist infrastructure. Mercury is just the lens.
+<!-- /chat -->
 
-This reframed everything. The data already exists openly (MusicBrainz CC0, Discogs dumps). The audio lives on artist infrastructure. Mercury doesn't own any content. The only thing that needs hosting is a **search index** — a pre-processed, optimized snapshot of data that already exists on the internet.
+This reframed everything. Mercury doesn't own any content. The only thing that needs hosting is a **search index** — a pre-processed, optimized snapshot of data that already exists on the internet.
 
 **The $0 stack:**
 | Layer | Tech | Cost |
@@ -70,7 +78,10 @@ This reframed everything. The data already exists openly (MusicBrainz CC0, Disco
 | API | SvelteKit server routes (Workers) | Free |
 | Data pipeline | Node.js scripts (runs locally) | Free |
 
-Why SvelteKit over Next.js: compiles away the framework (less JS shipped), independent project (not Meta), first-class Cloudflare adapter, cleaner code for open source contributions.
+<!-- decision: SvelteKit over Next.js -->
+Compiles away the framework — less JS shipped. Independent project, not a Meta dependency. First-class Cloudflare adapter. Cleaner code for open source contributions.
+**Rejected:** Next.js, Astro
+<!-- /decision -->
 
 ### Files Created
 
@@ -174,9 +185,15 @@ Six models explored:
 
 **REVISED (same session):** Steve rejected ALL paid tiers and business models:
 
-> "I don't want anyone to have advantages over the other. It's the music and not about having money that can push you more up or make you look better. I don't want any businesses to build on top of it."
+<!-- chat -->
+**Steve:** I don't want anyone to have advantages over the other. It's the music and not about having money that can push you more up or make you look better. I don't want any businesses to build on top of it.
+**Claude:** So pure public good. Patronage and grants only. No premium features, no pro tiers, no paid advantages. The Wikipedia model.
+**Steve:** Exactly. Everyone gets the same thing. Always.
+<!-- /chat -->
 
-**Final decision: Pure public good.** Patronage, grants, transparency. That's it. No premium features, no pro tiers, no paid advantages, no API-for-profit. Everyone gets the same thing. The Wikipedia/MusicBrainz model. The music is the only differentiator.
+<!-- breakthrough -->
+Pure public good. No premium features, no pro tiers, no paid advantages, no API-for-profit. Everyone gets the same thing. The Wikipedia/MusicBrainz model. The music is the only differentiator.
+<!-- /breakthrough -->
 
 ### Licensing Confirmed
 
@@ -216,7 +233,10 @@ BUILD-LOG.md moved from ControlCenter to Mercury repo (where it belongs).
 - **Phase 5:** Social layer (opt-in profiles, collections, taste sharing)
 - **Phase 6:** Blog/curator tools (embeddable widgets, attribution)
 
-Key decision: Desktop was originally Phase 5. Steve moved it to Phase 3 — the unkillable local version is too important to delay. This means web and desktop both exist by Phase 3.
+<!-- decision: Desktop moved to Phase 3 -->
+Desktop was originally Phase 5. Steve moved it to Phase 3 — the unkillable local version is too important to delay. If the web goes down, users still have everything locally.
+**Rejected:** Desktop at Phase 5 (too late)
+<!-- /decision -->
 
 Revenue model reiterated: no paid tiers in any phase. Everyone gets the same thing. Always.
 
@@ -287,9 +307,14 @@ MusicBrainz is the seed data (2.6M artists on day one), but Mercury builds its o
 
 **Decision 2: The internet is the database. Mercury is just the index.**
 
-Steve (reiterating from day one): "like i said previously. isnt the internet the database already?"
+<!-- chat -->
+**Steve:** like i said previously. isnt the internet the database already?
+**Claude:** Yes. We don't store releases, URLs, bios, or discographies. That data lives on Bandcamp, Spotify, YouTube — we fetch it live when someone clicks an artist. The database is just what you need to search and browse.
+<!-- /chat -->
 
-Mercury doesn't store releases, URLs, bios, or discographies. That data lives on the internet (Bandcamp, Spotify, YouTube, etc.) and is fetched live when someone clicks an artist. The database is a slim discovery index — just what you need to search and browse.
+<!-- breakthrough -->
+We don't host audio. We don't store metadata. We embed from where it already lives. The entire database is a slim discovery index — artists, tags, country. That's it.
+<!-- /breakthrough -->
 
 **Decision 3: Slim database = artists + tags + country. That's it.**
 
@@ -327,8 +352,92 @@ pipeline/
 
 ### Bug Fix: Build Log Viewer
 
-Fixed chokidar file watcher on Windows — added `usePolling: true` for Windows.
+<!-- dead-end -->
+Chokidar file watcher doesn't fire on Windows with default settings. `fs.watch` misses writes. Had to add `usePolling: true` with 500ms interval — slower but reliable.
+<!-- /dead-end -->
 
 ### Download Status
 
 First run of `npm run download` started. mbdump.tar.bz2 (6.5 GB) downloading, mbdump-derived.tar.bz2 (500 MB) next. Import runs after download completes.
+
+> **Commit 0fb8268** (2026-02-15 10:47) — feat: data pipeline + build log viewer
+> Files changed: 15
+
+> **Commit bfbbce5** (2026-02-15 11:06) — docs(02): capture phase context
+> Files changed: 1
+
+> **Commit 6b91573** (2026-02-15 11:16) — docs(02): research phase domain
+> Files changed: 1
+
+> **Commit 3d47ebc** (2026-02-15 11:24) — docs(02-search-and-embeds): create phase plan
+> Files changed: 6
+
+> **Commit 413268c** (2026-02-15 11:30) — feat(02-01): swap to Cloudflare adapter and configure D1 bindings
+> Files changed: 5
+
+> **Commit 8f3977f** (2026-02-15 11:31) — feat(02-02): create dark theme and global layout
+> Files changed: 3
+
+> **Commit 43f8071** (2026-02-15 11:33) — feat(02-01): create database query module and slug system
+> Files changed: 5
+
+> **Commit 31b34b7** (2026-02-15 11:33) — feat(02-02): build landing page with search bar and reusable components
+> Files changed: 3
+
+> **Commit 06608b5** (2026-02-15 11:34) — docs(02-02): complete visual foundation plan
+> Files changed: 2
+
+> **Commit 7e6ef13** (2026-02-15 11:34) — docs(02-01): complete Cloudflare D1 + search queries + slugs plan
+> Files changed: 2
+
+> **Commit a54f18e** (2026-02-15 11:54) — feat(02-03): create search API endpoint and server load function
+> Files changed: 2
+
+> **Commit 8567c9b** (2026-02-15 11:54) — feat(02-03): build search results page with ArtistCard grid
+> Files changed: 2
+
+> **Commit f064972** (2026-02-15 11:55) — docs(02-03): complete search results page plan
+> Files changed: 3
+
+> **Commit 8b9967f** (2026-02-15 11:58) — feat(02-04): add MusicBrainz API proxy, embed utilities, and bio fetcher
+> Files changed: 7
+
+> **Commit 21fffe8** (2026-02-15 11:59) — feat(02-04): build artist page with embeds, bio, and balanced layout
+> Files changed: 4
+
+> **Commit 2c91595** (2026-02-15 12:01) — docs(02-04): complete artist pages with embeds plan
+> Files changed: 3
+
+> **Commit 07cd86e** (2026-02-15 12:15) — wip: phase 2 paused at plan 5/5 (visual verification)
+> Files changed: 1
+
+---
+
+## Entry 009 — 2026-02-15 — Build Log Viewer: Documentary Dashboard
+
+### Context
+
+The build log viewer was a scrolling wall of markdown — functional but boring to watch on stream. Transformed it into a live activity dashboard with visual variety for the OBS browser source.
+
+### What Changed
+
+**server.js — Two new functions:**
+- `preprocessSpecialBlocks(markdown)`: Runs before `marked.parse()`, converts HTML comment markers (`<!-- chat -->`, `<!-- decision -->`, `<!-- dead-end -->`, `<!-- breakthrough -->`) into styled HTML divs. Chat blocks parse `**Steve:**`/`**Claude:**` lines into separate bubble divs.
+- `extractStats(markdown)`: Counts commits, sums files changed, counts entries, detects current phase, extracts latest commit info. Returns stats alongside HTML in every SSE event.
+
+**index.html — Dashboard layout:**
+- Stats header: 4 stat boxes (commits, files changed, entries, current phase) with green flash animation on value change
+- Commit ticker: Thin bar showing latest commit hash + message
+- 4 styled block types: chat bubbles (Steve blue, Claude purple), decision cards (gold accent + red rejected), dead-end blocks (red + dimmed), breakthrough blocks (green accent)
+
+**BUILD-LOG.md — Seeded with real content:**
+- The "$0 stack" conversation as a chat block
+- "SvelteKit over Next.js" and "Use codename Mercury" as decision cards
+- The revenue model conversation ending in the "pure public good" breakthrough
+- The "internet is the database" conversation + breakthrough
+- Chokidar Windows dead-end
+- Desktop moved to Phase 3 decision
+
+### Key Detail
+
+All special blocks use HTML comment markers (`<!-- chat -->...<!-- /chat -->`). These are invisible on GitHub — BUILD-LOG.md still renders as normal markdown. Only the build log viewer transforms them into styled blocks.
