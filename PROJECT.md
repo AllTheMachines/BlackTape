@@ -26,24 +26,36 @@ Index everything. Embed from everywhere. Reward uniqueness. Let people explore a
 
 1. **The Index** — Ingest MusicBrainz + Discogs data dumps. Millions of artists and releases on day one. Searchable, browsable, filterable by granular tags. No empty-platform problem.
 
-2. **The Embed Engine** — Detect Bandcamp, Spotify, Apple Music, SoundCloud, YouTube links and render the appropriate embedded player inline. Audio NEVER hosted by us — it lives on the artist's own infrastructure.
+2. **The Embed Engine** — Detect Bandcamp, Spotify, Apple Music, SoundCloud, YouTube links and render the appropriate embedded player inline. Audio NEVER hosted by us — it lives on the artist's own infrastructure. Users can set their **preferred streaming service** — embeds and links default to what they actually use.
 
-3. **The Tagging System** — Atomic, artist-defined tags. Not "electronic" but "dark ambient / granular synthesis / Berlin school / cinematic." The more specific your tags, the more discoverable you become. Generic = invisible. Unique = findable.
+3. **The Tagging System** — Two layers. **Artist tags** are atomic and artist-defined — not "electronic" but "dark ambient / granular synthesis / Berlin school / cinematic." The more specific your tags, the more discoverable you become. Generic = invisible. Unique = findable. **User tags** are personal — listeners tag, sort, and organize their own collections however they want. Your shelf, your system.
 
 4. **Democratic Discovery** — Uniqueness IS the discovery mechanism. If you're tagged "electronic" you're one of 500,000. If you're tagged "dark ambient / granular synthesis / field recordings from abandoned factories" you're one of 12. The system naturally rewards artists who carve their own niche and naturally demotes generic, AI-generated slop without needing to explicitly ban it.
 
-5. **Taste as Identity** — Users can build opt-in profiles that showcase their music taste. Like showing off your record collection. Shareable. Everyone can become a tastemaker or curator. Send someone your profile and they instantly understand your taste.
+5. **Taste as Identity** — Users can build opt-in profiles that showcase their music taste. Like showing off your record collection. Shareable. Everyone can become a tastemaker or curator. Send someone your profile and they instantly understand your taste. Each user gets a **Taste Fingerprint** — a generated visual pattern unique to their collection. Not a number. Not a score. A shape. You can't game it. It just *is* what you listen to. Two people with similar fingerprints probably share taste.
 
-6. **Blog Revival** — Embeddable widgets for blog writers. Attribution and reach for curators. First access to emerging artists. Give bloggers a reason to write about music again by giving them tools and an audience.
+6. **Blog Revival** — Embeddable widgets for blog writers. Attribution and reach for curators. First access to emerging artists. Give bloggers a reason to write about music again by giving them tools and an audience. But also: **writing lives inside the platform**. Users can write about artists, releases, scenes — like liner notes, like blog posts. Not just curating lists. Actually writing about music.
 
 7. **The Tiers** — Everyone is discoverable by default. More control requires more effort:
 
 | Tier | What | Artist Effort |
 |------|------|---------------|
-| Everyone | Indexed from open DBs, auto-detected embeds | Zero |
-| Claimed | Controls tags, description, featured tracks | Minimal |
-| Self-hosted | Runs website template, feeds rich data | Some setup |
+| Everyone | Indexed from open DBs, auto-detected embeds, auto-pulled news from social media | Zero |
+| Claimed | Controls tags, description, featured tracks, news dashboard | Minimal |
+| Self-hosted | Static site generator for artists, publishes to free hosting, feeds rich data back to the index | Some setup |
 | Opted out | Removed from index | One action |
+
+8. **Crate Digging Mode** — A discovery interface that feels like flipping through records at a shop. Not search. Not recommendations. Random, serendipitous browsing through a filtered stack — pick a genre, a decade, a country, and just flip. Maybe you find gold, maybe you don't. That's the point.
+
+9. **Scene Maps** — Geographic and temporal visualization. See the Berlin techno scene in 1995. See what's happening in Buenos Aires right now. Music comes from places and eras — MusicBrainz has the location data. Use it.
+
+10. **Time Machine** — Browse by year. What came out in 1997? In 2003? Scrub a timeline. Filter by tags. Watch how genres evolved, split, merged. The data is all there — release dates, artist relationships, scene connections.
+
+11. **Liner Notes Revival** — Physical records had liner notes — credits, stories, thank-yous, production details. Digital killed that. Bring it back. Every release page has rich, expandable liner notes. MusicBrainz already has recording credits, relationships, and production data. Surface it beautifully.
+
+12. **Import Your Library** — Import from Spotify, Last.fm, Apple Music, or a CSV. Bootstrap your collection instantly. No cold-start problem. You walk in with your existing taste and the shelves are already populated.
+
+13. **Listening Rooms** — Shared real-time listening. No video. No screen sharing. Just you and some people, a queue, and a chat. Like sitting in a room with friends playing records. Synchronized embeds, communal discovery.
 
 ### What It's NOT
 
@@ -108,23 +120,87 @@ MusicBrainz dumps (CC0) + Discogs dumps (free)
 - **Prod web:** SvelteKit on Cloudflare Pages + D1.
 - **Prod desktop:** Tauri app + local SQLite file.
 
+## UX Philosophy: The Record Shop
+
+The interface should feel like going to a record shop. Discovering music. Picking something up. Bringing it home. Putting it on the shelf in the right corner. That excitement. That tactile, spatial, personal experience.
+
+Current platforms are boring. Spotify is a list. A huge, flat, unsorted list. After a while you have hundreds of albums in one scrollable column. No way to group them, tag them, organize them in a meaningful way. The layout is lifeless. No fun to browse. No fun to discover.
+
+This project should make you *want* to explore. Visual, spatial, personal. Your collection should feel like *yours* — arranged the way you think, not the way an algorithm decided. The shelf metaphor drives every design decision.
+
 ## Social Layer
 
-Opt-in profiles. Browse anonymously by default. Create a profile when you want to share your taste.
+Opt-in profiles. Browse anonymously by default. Create a profile when you want to share your taste. **No vanity metrics anywhere.** No follower counts. No like counts. No play counts. Nothing gets pushed because of popularity numbers. The music is the signal, not the numbers.
 
-- **Collections** — Save artists/releases to your profile. Organize them. Show them off.
-- **Curators** — Anyone can become a tastemaker. Build a following based on taste, not content creation.
-- **Embeddable widgets** — Blog writers can embed Mercury search results, artist cards, curated lists directly in their posts.
+- **Collections** — Save artists/releases to your profile. Tag them. Sort them. Group them. Create visually exciting record collections that feel like a real shelf — not a spreadsheet. Embed your collection on your website: "This is what I'm listening to."
+- **Curators** — Anyone can become a tastemaker. Not through follower counts, but through the quality and specificity of their taste. No content creation required — just good ears.
+- **Writing** — Users can write about music inside the platform. Reviews, recommendations, scene reports, liner notes, personal essays. Like music blogs, but integrated. Not just curating lists — actually writing about what you hear and why it matters.
+- **Discussion** — Conversation spaces around music. Talk about releases, artists, scenes. Not comments under a player — real discussion threads where people who care about the same music can find each other.
+- **Embeddable widgets** — Blog writers can embed search results, artist cards, curated lists, entire collections directly in their posts.
 - **Attribution** — When a curator's recommendation leads to discovery, they get credit. Drives traffic back to their blog/profile.
 - **First access** — Curators/bloggers get early visibility into emerging artists, unclaimed profiles, new additions to the index.
+- **QR codes** — Generate a QR code for your collection or a curated list. Print it. Stick it on your actual record shelf, your studio wall, hand it out at a gig. Someone scans it, they see your taste. Physical-digital bridge.
 
-## Revenue Model
+## Sustainability
 
-This is a public good. Not a business. Nobody gets advantages over anyone else. The music is what matters, not money.
+This is a public good. Not a business. Nobody gets advantages over anyone else. The music is what matters, not money. But the project needs to survive, and the way it sustains itself should feel like it belongs — not bolted on. Never a popup. Never a nag. Never a gate. Just honest, visible, beautiful.
 
-- **Patronage** — GitHub Sponsors, Ko-fi, Patreon. People support it because they believe in it.
-- **Grants** — NLnet Foundation, Mozilla Foundation, EU NGI, Sovereign Tech Fund. Open infrastructure funding.
-- **Radical transparency** — Public finances page. What it costs, what comes in, hide nothing.
+### How It Communicates
+
+The ask is never "upgrade to pro." The ask is "keep this alive."
+
+- **First visit:** Nothing. Let people discover. Zero friction.
+- **Regular use:** A small, permanent, honest presence in the footer. Not a banner. Not a modal. A heartbeat.
+- **Database download:** A gentle one-time message: "This was free. Help keep it free." Not blocking. Just present.
+- **Profile creation:** Mention it naturally in the onboarding flow.
+- **The finances page IS a feature.** Public. Real-time. What it costs, what comes in, where it goes. Radical transparency isn't a buzzword here — it's the interface. People should be able to see exactly what their support enables.
+
+### Funding Channels
+
+**Direct support:**
+- **GitHub Sponsors** — For developers and open-source believers. Recurring or one-time.
+- **Open Collective** — Transparent group funding. Every transaction public. Ideal for this project's ethos.
+- **Ko-fi** — One-time "buy the project a coffee" donations. Zero friction. No account required.
+- **Patreon** — Recurring support. Backers get behind-the-scenes content: voice memos, design previews, build log deep dives. Not features. Never features. Just the story of building this.
+
+**Grants:**
+- NLnet Foundation, Mozilla Foundation, EU NGI, Sovereign Tech Fund. Open infrastructure funding for open projects. This qualifies.
+
+**Affiliate links:**
+- Artists who want self-hosted sites get linked to hosting providers (Netlify, Vercel, cheap VPS). Small commission if they sign up. Non-intrusive. Optional.
+
+### Physical Goods — The Record Shop Merch Table
+
+The project's identity is physical as much as digital. The record shop metaphor extends to how people support it. Not generic merch — artifacts that only make sense because this project exists.
+
+**Taste Fingerprint prints** — Your personal Taste Fingerprint, generated from your collection, printed as a high-quality poster or card. Unique to you. Nobody else has the same one. Frame it. Put it on your wall. It's your music identity made physical. Only possible because this project exists.
+
+**Discovery tokens** — Small collectible coins or enamel pins. Each one has a QR code on the back linking to something in the platform — a curated discovery, a hidden collection, a random crate dig. Collectible, tactile, connected. Like challenge coins for music nerds.
+
+**Tote bags** — Record store bags. When you buy vinyl, you get a bag. Supporters get a tote with the project branding. Simple. Useful. Says "I care about music discovery." Take it to the actual record shop.
+
+**Stickers and patches** — For laptops, cases, jackets. Small. Cheap to produce. High visibility. The kind of thing people put on their gear because they believe in it.
+
+**Milestone drops** — When a major version ships, limited edition merch celebrating it. A coin, a print, a shirt. Commemorates the moment. Creates community around progress.
+
+**Artist collaboration merch** — Artists discovered through the platform create artwork for merch runs. The artist gets paid. The supporter gets unique art. The project gets funded. Circular.
+
+**"Liner Notes" backer credits** — Every supporter's name (or alias) in the project's own liner notes — a public page that treats backers the way liner notes treat musicians. Credits. Thank-yous. The same reverence the project gives to music credits, given back to the people who keep it alive.
+
+### Staged Rollout
+
+Support channels don't all launch at once. They roll out as the project grows and as features make them possible:
+
+| Stage | When | What |
+|-------|------|------|
+| **Stage 1** | Now (Phase 2) | GitHub Sponsors, Ko-fi, Open Collective. Finances page. Footer link. |
+| **Stage 2** | Phase 3 (Desktop) | Patreon with build log content. Donation prompt on database download. Liner Notes backer credits page. |
+| **Stage 3** | Phase 4-5 (Discovery + Social) | Taste Fingerprint prints (needs the fingerprint feature). Stickers and patches. Discovery tokens with QR codes. Supporter Wall. |
+| **Stage 4** | Phase 5-6 (Social + Blog) | Tote bags. Artist collaboration merch. Milestone drops. Full print-on-demand store. |
+
+### Production
+
+All physical goods are **print-on-demand or small-batch**. Zero inventory risk. No warehouse. No upfront costs. Services like Printful, Gelato, or SPOD handle production and shipping. The project never touches a box.
 
 ### Rules
 
@@ -133,7 +209,17 @@ This is a public good. Not a business. Nobody gets advantages over anyone else. 
 - No one gets more visibility because they have money.
 - No ads, no tracking, no algorithmic manipulation.
 - No selling user data. No crypto/tokens.
+- No vanity metrics. No follower counts. No like counts. No play counts. Nothing that gamifies attention.
 - Everyone gets the same thing. The music is the differentiator, nothing else.
+- **Supporters get acknowledgment and physical goods. Never platform advantages. Never.**
+
+## Interoperability
+
+This project plugs into the open web. It doesn't try to replace it.
+
+- **RSS for everything** — Every artist page, every user collection, every tag, every curator generates an RSS feed. Subscribe to what you care about. No algorithm decides what you see. RSS is unkillable, like the rest of this project.
+- **ActivityPub / Fediverse** — The social layer speaks ActivityPub. Your profile is followable from Mastodon. Artist updates federate across the open web. No need to build a social network from scratch — plug into the one that already exists and shares our values.
+- **Import/Export** — Import from Spotify, Last.fm, Apple Music. Export everything you have. Your data is yours. Always.
 
 ## Naming
 

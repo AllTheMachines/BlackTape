@@ -441,3 +441,86 @@ The build log viewer was a scrolling wall of markdown — functional but boring 
 ### Key Detail
 
 All special blocks use HTML comment markers (`<!-- chat -->...<!-- /chat -->`). These are invisible on GitHub — BUILD-LOG.md still renders as normal markdown. Only the build log viewer transforms them into styled blocks.
+
+> **Commit a0db608** (2026-02-15 14:56) — feat(tools): build log viewer dashboard with stats, chat bubbles, and block types
+> Files changed: 3
+
+## Entry 010 — 2026-02-15 — Vision Expansion: The Full Picture
+
+### Context
+
+Steve recorded a voice memo laying out the full vision — the frustrations, the history, everything he's been thinking about for 10+ years. Compared it against PROJECT.md and found significant gaps. The existing doc had the bones but was missing the soul.
+
+### What Was Added to PROJECT.md
+
+**New core concepts (8-13):**
+- **Crate Digging Mode** — serendipitous browsing through filtered stacks, like flipping through records at a shop
+- **Scene Maps** — geographic + temporal visualization of music scenes (Berlin techno '95, Buenos Aires now)
+- **Time Machine** — browse by year, scrub a timeline, watch genres evolve
+- **Liner Notes Revival** — bring back credits, stories, production details that digital killed
+- **Import Your Library** — bootstrap from Spotify/Last.fm/Apple Music, no cold-start problem
+- **Listening Rooms** — shared real-time listening with synchronized embeds and chat
+
+**New UX Philosophy section:**
+- The Record Shop metaphor as the guiding design principle — spatial, tactile, personal
+- Explicit rejection of the flat-list paradigm (Spotify's boring scrollable columns)
+
+**Expanded existing concepts:**
+- Tagging system now has two layers: artist tags (discovery) + user tags (personal organization)
+- Embed engine now includes user-selectable streaming service preference
+- Taste as Identity now includes Taste Fingerprint — a generated visual pattern unique to your collection
+- Blog Revival now includes writing inside the platform, not just external embedding
+- Tiers expanded: auto-pulled news from social media, artist news dashboard, static site generator for self-hosting
+
+**New Social Layer features:**
+- No vanity metrics (no follower counts, no like counts, no play counts) — elevated to core design rule
+- Discussion spaces — real conversation threads around music
+- QR codes for collections — physical-digital bridge
+- Embeddable collections on personal websites
+
+**New Interoperability section:**
+- RSS for everything (every artist, collection, tag, curator)
+- ActivityPub/Fediverse integration — profiles followable from Mastodon
+- Full import/export — your data is yours
+
+**Revenue model:**
+- Added affiliate links for artist self-hosting providers
+
+**Rules:**
+- Added explicit "no vanity metrics" rule
+
+### Why This Matters
+
+The original PROJECT.md was a technical spec. Now it's a vision document. The Record Shop philosophy, the anti-metrics stance, the writing features, the interoperability layer — these are what make this different from every other music platform that tried and failed. They all focused on payments or blockchain. This focuses on the experience of discovering and caring about music.
+
+## Entry 011 — 2026-02-15 — Sustainability Strategy: The Merch Table
+
+### Context
+
+The project needs money to survive but its rules forbid paid tiers, premium features, or any advantage from paying. The funding mechanism itself needs to feel like it belongs to the project — not bolted on, not a startup pitch, not a crypto scheme. It should feel like the merch table at a record shop.
+
+### The Strategy
+
+Revenue Model renamed to **Sustainability** in PROJECT.md. Completely rethought from "here are some donation links" to a staged, principled approach.
+
+**Core communication principle:** Never a popup. Never a nag. Never a gate. The ask is "keep this alive," not "upgrade to pro." Different moments get different levels of presence:
+- First visit: nothing
+- Regular use: subtle footer heartbeat
+- Database download: gentle one-time prompt
+- Finances page as a feature in itself — radical transparency as interface
+
+**Four stages, tied to phases:**
+
+1. **Foundation (Phase 2)** — GitHub Sponsors, Ko-fi, Open Collective, public finances page, footer link
+2. **Story (Phase 3)** — Patreon with behind-the-scenes content, donation prompt on download, Liner Notes backer credits page, stickers/patches
+3. **Identity (Phase 4-5)** — Taste Fingerprint prints (personalized merch from your collection), discovery tokens with QR codes, tote bags, Supporter Wall
+4. **Community (Phase 5-6)** — Artist collaboration merch, milestone drops, full print-on-demand store
+
+**Physical goods philosophy:** Not generic merch. Artifacts that only exist because this project exists. Your Taste Fingerprint printed as a poster — unique to your collection, nobody else has the same one. Discovery tokens with QR codes linking to hidden crate digs. Tote bags like record store bags. Everything print-on-demand, zero inventory risk.
+
+**The rule that binds it all:** Supporters get acknowledgment and physical goods. Never platform advantages. Never.
+
+### Files Updated
+- `PROJECT.md` — Revenue Model → Sustainability (expanded with channels, physical goods, communication philosophy, staged rollout, production model)
+- `.planning/ROADMAP.md` — Phase 0 expanded from 5 checkboxes to 4 stages with 15+ items tied to main phases
+- `.planning/REQUIREMENTS.md` — Added SUST-01 through SUST-10, updated traceability table (15 → 25 requirements)
