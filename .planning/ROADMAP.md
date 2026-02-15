@@ -40,9 +40,9 @@ Build a music discovery engine from the ground up. Data pipeline first (foundati
   5. Someone can visit, search, discover an unknown artist, and press play
 **Plans**: 5 plans
 Plans:
-- [ ] 02-01-PLAN.md — Cloudflare D1 infrastructure, database queries, slug system
-- [ ] 02-02-PLAN.md — Dark theme, global layout, landing page with search bar
-- [ ] 02-03-PLAN.md — Search results page with card grid
+- [x] 02-01-PLAN.md — Cloudflare D1 infrastructure, database queries, slug system
+- [x] 02-02-PLAN.md — Dark theme, global layout, landing page with search bar
+- [x] 02-03-PLAN.md — Search results page with card grid
 - [ ] 02-04-PLAN.md — Artist pages with embeds, bio, external links
 - [ ] 02-05-PLAN.md — End-to-end visual verification
 
@@ -95,7 +95,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|---------------|--------|-----------|
 | 1. Data Pipeline | done | Complete | 2026-02-14 |
-| 2. Search + Embeds | 0/5 | Planning complete | - |
+| 2. Search + Embeds | 3/5 | In progress | - |
 | 3. Desktop + Distribution | 0/TBD | Not started | - |
 | 4. Tag Discovery | 0/TBD | Not started | - |
 | 5. Social Layer | 0/TBD | Not started | - |
