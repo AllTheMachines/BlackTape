@@ -1,0 +1,108 @@
+/* Mercury Dark Theme
+ * CSS custom properties for the dark, information-dense aesthetic.
+ * All UI components reference these variables — change here, change everywhere.
+ */
+
+:root {
+	/* Background layers */
+	--bg-base: #0a0a0a;
+	--bg-surface: #111111;
+	--bg-elevated: #1a1a1a;
+	--bg-hover: #222222;
+
+	/* Text hierarchy */
+	--text-primary: #e0e0e0;
+	--text-secondary: #888888;
+	--text-muted: #555555;
+	--text-accent: #ffffff;
+
+	/* Borders */
+	--border-subtle: #1e1e1e;
+	--border-default: #2a2a2a;
+	--border-hover: #3a3a3a;
+
+	/* Interactive */
+	--link-color: #7eb8da;
+	--tag-bg: #1a2332;
+	--tag-text: #7eb8da;
+	--tag-border: #2a3a4a;
+
+	/* Platform colors */
+	--bandcamp-color: #1da0c3;
+	--spotify-color: #1db954;
+	--soundcloud-color: #ff5500;
+	--youtube-color: #ff0000;
+
+	/* Typography */
+	--font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+	--font-mono: 'Cascadia Code', 'JetBrains Mono', 'Fira Code', monospace;
+
+	/* Spacing scale */
+	--space-xs: 0.25rem;
+	--space-sm: 0.5rem;
+	--space-md: 1rem;
+	--space-lg: 1.5rem;
+	--space-xl: 2rem;
+	--space-2xl: 3rem;
+
+	/* Layout */
+	--max-width: 1200px;
+	--card-radius: 6px;
+	--input-radius: 6px;
+
+	/* Header */
+	--header-height: 48px;
+}
+
+/* Base resets */
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+body {
+	margin: 0;
+	font-family: var(--font-sans);
+	background: var(--bg-base);
+	color: var(--text-primary);
+	min-height: 100vh;
+	line-height: 1.5;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+/* Base anchor styles */
+a {
+	color: var(--link-color);
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+/* Scrollbar styling — webkit */
+::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
+}
+
+::-webkit-scrollbar-track {
+	background: var(--bg-base);
+}
+
+::-webkit-scrollbar-thumb {
+	background: var(--border-default);
+	border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: var(--border-hover);
+}
+
+/* Scrollbar styling — Firefox */
+* {
+	scrollbar-width: thin;
+	scrollbar-color: var(--border-default) var(--bg-base);
+}
