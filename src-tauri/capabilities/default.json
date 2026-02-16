@@ -10,6 +10,8 @@
     "sql:allow-select",
     "sql:allow-execute",
     "updater:default",
-    "process:default"
+    "process:default",
+    "dialog:default",
+    "dialog:allow-open"
   ]
 }
