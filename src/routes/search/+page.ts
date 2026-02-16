@@ -22,10 +22,6 @@ export const load: PageLoad = async ({ url, data }) => {
 		return { ...data, localTracks: [] as LocalTrack[] };
 	}
 
-	// Tauri desktop: query local database
-	const { getProvider } = await import('$lib/db/provider');
-	const { searchArtists, searchByTag } = await import('$lib/db/queries');
-
 	const q = url.searchParams.get('q')?.trim() ?? '';
 	const mode = url.searchParams.get('mode') === 'tag' ? 'tag' : 'artist';
 
@@ -40,7 +36,12 @@ export const load: PageLoad = async ({ url, data }) => {
 		};
 	}
 
+	// Everything inside try/catch — an unhandled error here would crash the
+	// page (no +error.svelte), unmounting the layout and killing audio playback.
 	try {
+		const { getProvider } = await import('$lib/db/provider');
+		const { searchArtists, searchByTag } = await import('$lib/db/queries');
+
 		const provider = await getProvider();
 		const results =
 			mode === 'tag' ? await searchByTag(provider, q) : await searchArtists(provider, q);

@@ -201,19 +201,20 @@
 			/>
 
 			<button
-				class="control-btn small"
+				class="discover-btn"
 				class:active={showExpanded}
 				onclick={toggleExpanded}
-				title={showExpanded ? 'Collapse discovery' : 'Expand discovery'}
+				title={showExpanded ? 'Collapse discovery' : 'Discover this artist'}
 				aria-label={showExpanded ? 'Collapse discovery panel' : 'Expand discovery panel'}
 			>
-				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+				<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 					{#if showExpanded}
 						<polyline points="6 15 12 9 18 15" />
 					{:else}
 						<polyline points="6 9 12 15 18 9" />
 					{/if}
 				</svg>
+				<span class="discover-label">Discover</span>
 			</button>
 
 			<button
@@ -354,6 +355,38 @@
 	.control-btn.active {
 		color: var(--progress-color);
 		opacity: 1;
+	}
+
+	.discover-btn {
+		display: flex;
+		align-items: center;
+		gap: 3px;
+		background: none;
+		border: 1px solid var(--border-default);
+		color: var(--text-muted);
+		cursor: pointer;
+		padding: 3px 8px;
+		border-radius: 12px;
+		font-size: 0.65rem;
+		font-family: var(--font-sans);
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		transition: color 0.15s, border-color 0.15s, background 0.15s;
+	}
+
+	.discover-btn:hover {
+		color: var(--text-secondary);
+		border-color: var(--border-hover);
+	}
+
+	.discover-btn.active {
+		color: var(--progress-color);
+		border-color: var(--progress-color);
+		background: color-mix(in srgb, var(--progress-color) 8%, transparent);
+	}
+
+	.discover-label {
+		line-height: 1;
 	}
 
 	.play-btn {

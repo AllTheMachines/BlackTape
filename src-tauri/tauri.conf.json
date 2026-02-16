@@ -4,8 +4,8 @@
   "identifier": "com.mercury.app",
   "version": "0.1.0",
   "build": {
-    "beforeDevCommand": "cross-env VITE_TAURI=1 npm run dev",
-    "beforeBuildCommand": "cross-env TAURI_ENV=1 VITE_TAURI=1 npm run build",
+    "beforeDevCommand": "npx cross-env VITE_TAURI=1 npm run dev",
+    "beforeBuildCommand": "npx cross-env TAURI_ENV=1 VITE_TAURI=1 npm run build",
     "devUrl": "http://localhost:5173",
     "frontendDist": "../build"
   },
