@@ -827,6 +827,119 @@ Entry 014 redefined Mercury as a desktop-first app, added local music player, AI
 - **Deferred section** added for cross-platform playlist sync and remote streaming
 - **Sustainability stages** renumbered to align with new phase numbers
 
+---
+
+## Entry 016 — 2026-02-16 — Phase 3: Desktop App Foundation (Execution)
+
+### Context
+Phase 3 turns Mercury into a real desktop app. Tauri 2.0 wraps the SvelteKit UI, local SQLite replaces D1 for offline search, and the database gets a distribution pipeline (compressed download + torrent). 5 plans across 4 waves.
+
+### Wave 1: DB Abstraction + Tauri Scaffolding
+Starting with two parallel tracks:
+- **03-01**: Database abstraction layer — `DbProvider` interface with D1 and Tauri implementations. Refactors all queries to go through the interface.
+- **03-02**: Tauri project initialization — Rust toolchain, dual-adapter build system, desktop window. Has a checkpoint for Rust installation.
+
+Wave 1 complete. Both plans ran in parallel:
+- **03-01** (4min): Created `DbProvider` interface, `D1Provider`, `TauriProvider`. Refactored all queries and route handlers. One deviation: API search route also needed updating.
+- **03-02** (14min): Installed Rust 1.93.1 via winget. Scaffolded full Tauri project. Dual adapter build confirmed (Cloudflare web + static SPA). Desktop binary compiles. UI verified via Playwright screenshot.
+
+Next: Wave 2 (03-03) — universal load functions so search and artist pages work in both web and desktop.
+
+> **Commit 1afdce4** (2026-02-16 20:02) — docs: rewrite roadmap for desktop-first — 9 phases → 12, 47 → 56 requirements
+> Files changed: 4
+
+> **Commit 4251d84** (2026-02-16 20:13) — docs(phase-3): research desktop app foundation domain
+> Files changed: 1
+
+> **Commit 0d986be** (2026-02-16 20:22) — docs(03): create phase plan — 5 plans across 4 waves for desktop app foundation
+> Files changed: 6
+
+> **Commit ea25cc7** (2026-02-16 20:31) — fix(03): revise plans based on checker feedback
+> Files changed: 5
+
+> **Commit 045e3a1** (2026-02-16 20:41) — feat(03-01): create DbProvider interface with D1 and Tauri implementations
+> Files changed: 3
+
+> **Commit 5c51849** (2026-02-16 20:43) — refactor(03-01): refactor all queries and routes to use DbProvider abstraction
+> Files changed: 4
+
+> **Commit 939eda8** (2026-02-16 20:45) — docs(03-01): complete database abstraction layer plan
+> Files changed: 2
+
+> **Commit fe75354** (2026-02-16 20:58) — feat(03-02): initialize Tauri 2.0 project with dual-adapter build system
+> Files changed: 67
+
+> **Commit 65cfa8c** (2026-02-16 21:17) — docs(03-02): complete Tauri scaffolding and dual-adapter build plan
+> Files changed: 3
+
+> **Commit d26c5a0** (2026-02-16 21:40) — feat(03-03): add platform detection and universal search load function
+> Files changed: 2
+
+> **Commit 3f80257** (2026-02-16 21:42) — feat(03-03): add universal artist page load function with link fetching
+> Files changed: 1
+
+> **Commit 4de1170** (2026-02-16 21:43) — feat(03-03): add releases and bio fetching to artist universal load
+> Files changed: 1
+
+> **Commit ea3bea2** (2026-02-16 21:44) — docs(03-03): complete universal load functions plan
+> Files changed: 2
+
+> **Commit 2e2bce1** (2026-02-16 21:49) — feat(03-04): add database detection and first-run setup UI
+> Files changed: 4
+
+> **Commit f365c57** (2026-02-16 21:51) — feat(03-04): add database compression and torrent creation pipeline
+> Files changed: 3
+
+> **Commit 238414c** (2026-02-16 21:51) — docs(03-04): update STATE.md with task 1-2 progress
+> Files changed: 1
+
+---
+
+## Entry 017 — 2026-02-16 — Phase 3 Execution: Waves 2-3 + FTS5 Wall
+
+### What Happened
+
+Executed plans 03-03 and 03-04 (tasks 1-2) in Phase 3. Three plans now complete (03-01 through 03-03), fourth partially done.
+
+**03-03 (5 min):** Universal load functions. Platform detection via `window.__TAURI_INTERNALS__`, universal `+page.ts` files that coexist with `+page.server.ts`. Web build passes through server data unchanged. Tauri build queries local SQLite + fetches MusicBrainz client-side. Each external fetch (links, releases, bio) independently try/caught — artist page renders from DB data alone if any API fails.
+
+**03-04 tasks 1-2:** First-run setup UI works beautifully — "Mercury needs a database" screen with file path and "Check Again" button. Database compression pipeline produces 365MB .gz from 778MB source, plus SHA256 checksum and .torrent file.
+
+### The FTS5 Wall
+
+<!-- dead-end -->
+Hit a blocking bug during 03-04 checkpoint verification. Search returns: `no such table: artists_fts`.
+
+**Root cause:** `tauri-plugin-sql` uses sqlx with bundled SQLite. The bundled build does NOT include FTS5 by default. The `artists_fts` virtual table (FTS5) exists in mercury.db, but the SQLite binary compiled into the Tauri app can't read it.
+
+**Debugging journey:**
+1. First thought it was SSR still enabled in dev mode — fixed `beforeDevCommand` to set `VITE_TAURI=1`
+2. Then suspected missing `sql:allow-load` permission — added it
+3. Then suspected Windows backslash path issue — normalized to forward slashes
+4. Added temporary debug error display to surface the actual error message
+5. Error revealed: FTS5 not compiled into SQLite
+
+**The fix** (for next session): Create `src-tauri/.cargo/config.toml` with `LIBSQLITE3_FLAGS = "-DSQLITE_ENABLE_FTS5"` and do a full Cargo rebuild.
+<!-- /dead-end -->
+
+### Also Discovered
+
+- Tauri dev mode requires `VITE_TAURI=1` in `beforeDevCommand`, otherwise SSR stays enabled and server load functions try to access D1 (which doesn't exist locally)
+- Rust PATH isn't in default terminals after winget install — needs manual `set PATH` each session
+- The first-run UI looks clean and matches the dark theme perfectly
+
+### Session Status
+
+Plans 03-01 ✓, 03-02 ✓, 03-03 ✓, 03-04 partial (2/3 tasks), 03-05 pending. Several uncommitted hotfixes from debugging. FTS5 fix needed before continuing.
+
+### The Actual Bug (Not FTS5!)
+
+The previous session diagnosed this as "FTS5 not compiled into bundled SQLite." Wrong. FTS5 is unconditionally enabled in `libsqlite3-sys` bundled builds — always has been.
+
+The real bug: **missing path separator** in `tauri-provider.ts`. `appDataDir()` returns `C:\Users\User\AppData\Roaming\com.mercury.app` (no trailing slash). Concatenating `dir + 'mercury.db'` produced `com.mercury.appmercury.db` — a nonexistent file. SQLite silently created an empty database at that path, which obviously had no `artists_fts` table.
+
+**Fix:** Normalize and ensure trailing slash before appending filename.
+
 <!-- status -->
-Roadmap rewrite complete. 12 phases, 56 requirements, all decisions from Entry 014 reflected. Ready for next action.
+FTS5 "bug" was actually a path separator bug — fixed and verified. Search works in desktop app. Cleaning up and committing hotfixes.
 <!-- /status -->

@@ -44,7 +44,9 @@ export class TauriProvider implements DbProvider {
 			// but being explicit avoids ambiguity.
 			const { appDataDir } = await import('@tauri-apps/api/path');
 			const dir = await appDataDir();
-			const dbPath = `sqlite:${dir}mercury.db`;
+			// Normalize Windows backslashes to forward slashes for SQLite URI
+			const normalized = dir.replaceAll('\\', '/').replace(/\/?$/, '/');
+			const dbPath = `sqlite:${normalized}mercury.db`;
 			this.db = await Database.load(dbPath) as unknown as TauriDatabase;
 		}
 		return this.db;
