@@ -5,31 +5,32 @@
 See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Phase 3 — Desktop App Foundation (Wave 1 complete, Wave 2 next)
+**Current focus:** Phase 3 — Desktop App Foundation (Wave 2 complete, Wave 3 next)
 
 ## Current Position
 
 Phase: 3 of 12 (Desktop App Foundation)
-Plan: 2 of 5 complete
-Status: In progress — Wave 1 complete (03-01 + 03-02), Wave 2 next (03-03)
-Last activity: 2026-02-16 — Completed 03-01 (DB abstraction) and 03-02 (Tauri scaffolding)
+Plan: 3 of 5 complete
+Status: In progress — Wave 1 (03-01 + 03-02) and Wave 2 (03-03) complete
+Last activity: 2026-02-16 — Completed 03-03 (universal load functions)
 
-Progress: [████░░░░░░] 2/5
+Progress: [██████░░░░] 3/5
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 7
+- Total plans completed: 8
 - Phase 2 execution time: ~15min (plans 1-4) + verification session
 - Phase 3 Plan 01: 4min
 - Phase 3 Plan 02: 14min
+- Phase 3 Plan 03: 5min
 
 **By Phase:**
 | Phase | Plans | Total | Status |
 |-------|-------|-------|--------|
 | 1. Data Pipeline | pre-GSD | - | Complete |
 | 2. Search + Embeds | 5/5 | ~15min | Complete |
-| 3. Desktop App | 2/5 | 18min | In progress |
+| 3. Desktop App | 3/5 | 23min | In progress |
 
 ## Accumulated Context
 
@@ -61,6 +62,11 @@ Progress: [████░░░░░░] 2/5
 - CSP null in Tauri to allow MusicBrainz/Wikipedia external API calls.
 - NSIS installer over MSI for WebView2 bootstrapping on Windows 10.
 - adapter-static with fallback: 'index.html' for SPA mode in Tauri.
+- isTauri() uses window.__TAURI_INTERNALS__ check — zero-import platform detection for universal load functions.
+- Universal +page.ts coexists with +page.server.ts — web SSR returns data unchanged, Tauri queries local DB.
+- Dynamic imports isolate Tauri dependencies from web bundle in universal load functions.
+- Each external fetch (links, releases, bio) independently try/caught for granular graceful degradation.
+- Tauri artist page fetches MusicBrainz directly (no internal API proxy) since Cloudflare Cache API unavailable.
 
 ### Pending Todos
 None
@@ -71,5 +77,5 @@ None
 ## Session Continuity
 
 Last session: 2026-02-16
-Stopped at: Wave 1 complete (03-01 + 03-02). Ready for Wave 2 (03-03).
-Resume: `/gsd:execute-phase 3` — will auto-skip completed plans and resume from 03-03.
+Stopped at: Wave 2 complete (03-03). Ready for Wave 3 (03-04).
+Resume: `/gsd:execute-phase 3` — will auto-skip completed plans and resume from 03-04.
