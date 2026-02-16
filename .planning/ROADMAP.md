@@ -68,7 +68,13 @@ Plans:
   4. Offline search works without internet
   5. Auto-update mechanism for both app and database
   6. If the website disappears, the desktop app still works
-**Plans**: TBD
+**Plans**: 5 plans
+Plans:
+- [ ] 03-01-PLAN.md — Database abstraction layer (DbProvider interface, D1 + Tauri implementations)
+- [ ] 03-02-PLAN.md — Tauri scaffolding, dual-adapter build system, desktop window
+- [ ] 03-03-PLAN.md — Universal load functions for search and artist pages
+- [ ] 03-04-PLAN.md — Database detection, first-run setup UI, compression pipeline
+- [ ] 03-05-PLAN.md — Auto-updater signing keys, NSIS installer, final verification
 
 ### Phase 4: Local Music Player
 **Goal**: Mercury plays what you own. Scan folders, read metadata, build a library. Local files and online discovery are one unified experience — not two modes.
@@ -202,7 +208,7 @@ Plans:
 |-------|---------------|--------|-----------|
 | 1. Data Pipeline | done | Complete | 2026-02-14 |
 | 2. Web Gateway | 5/5 | Complete | 2026-02-15 |
-| 3. Desktop App Foundation | 0/TBD | Not started | - |
+| 3. Desktop App Foundation | 0/5 | Planned | - |
 | 4. Local Music Player | 0/TBD | Not started | - |
 | 5. AI Foundation | 0/TBD | Not started | - |
 | 6. Discovery Engine | 0/TBD | Not started | - |
