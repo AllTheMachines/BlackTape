@@ -35,7 +35,6 @@ export interface DbProvider {
 export async function getProvider(): Promise<DbProvider> {
 	try {
 		// Dynamic import so this never breaks the web build
-		// @ts-expect-error — @tauri-apps/api is installed in Phase 3 Plan 02
 		const { isTauri } = await import('@tauri-apps/api/core');
 		if (isTauri()) {
 			const { TauriProvider } = await import('./tauri-provider');

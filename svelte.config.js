@@ -1,14 +1,19 @@
-import adapter from '@sveltejs/adapter-cloudflare';
+import adapterCloudflare from '@sveltejs/adapter-cloudflare';
+import adapterStatic from '@sveltejs/adapter-static';
+
+const isDesktop = process.env.TAURI_ENV === '1';
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
 	kit: {
-		adapter: adapter({
-			routes: {
-				include: ['/*'],
-				exclude: ['<all>']
-			}
-		})
+		adapter: isDesktop
+			? adapterStatic({ fallback: 'index.html' })
+			: adapterCloudflare({
+					routes: {
+						include: ['/*'],
+						exclude: ['<all>']
+					}
+				})
 	}
 };
 

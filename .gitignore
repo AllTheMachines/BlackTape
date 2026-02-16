@@ -22,6 +22,13 @@ Thumbs.db
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
+# Tauri (Rust build output)
+src-tauri/target/
+src-tauri/gen/
+
 # Pipeline data (large dumps + generated database)
 data/
 pipeline/data/
+
+# Temporary icon source
+app-icon.png

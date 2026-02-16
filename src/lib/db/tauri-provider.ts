@@ -38,7 +38,6 @@ export class TauriProvider implements DbProvider {
 	/** Ensure the database connection is open. */
 	private async ensureDb(): Promise<TauriDatabase> {
 		if (!this.db) {
-			// @ts-expect-error — @tauri-apps/plugin-sql is installed in Phase 3 Plan 02
 			const { default: Database } = await import('@tauri-apps/plugin-sql');
 			this.db = await Database.load('sqlite:mercury.db') as unknown as TauriDatabase;
 		}
