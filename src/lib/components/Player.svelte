@@ -9,8 +9,14 @@
 		queueState
 	} from '$lib/player/queue.svelte';
 	import Queue from './Queue.svelte';
+	import NowPlayingDiscovery from './NowPlayingDiscovery.svelte';
 
 	let showQueue = $state(false);
+	let showExpanded = $state(false);
+
+	function toggleExpanded() {
+		showExpanded = !showExpanded;
+	}
 
 	function formatTime(secs: number): string {
 		if (!isFinite(secs) || secs < 0) return '0:00';
@@ -46,6 +52,12 @@
 </script>
 
 {#if playerState.currentTrack}
+	{#if showExpanded}
+		<div class="expanded-panel">
+			<NowPlayingDiscovery artistName={playerState.currentTrack.artist} />
+		</div>
+	{/if}
+
 	<div class="player-bar">
 		<!-- Track info -->
 		<div class="track-info">
@@ -190,6 +202,22 @@
 
 			<button
 				class="control-btn small"
+				class:active={showExpanded}
+				onclick={toggleExpanded}
+				title={showExpanded ? 'Collapse discovery' : 'Expand discovery'}
+				aria-label={showExpanded ? 'Collapse discovery panel' : 'Expand discovery panel'}
+			>
+				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					{#if showExpanded}
+						<polyline points="6 15 12 9 18 15" />
+					{:else}
+						<polyline points="6 9 12 15 18 9" />
+					{/if}
+				</svg>
+			</button>
+
+			<button
+				class="control-btn small"
 				class:active={showQueue}
 				onclick={toggleQueuePanel}
 				title="Queue"
@@ -213,6 +241,30 @@
 {/if}
 
 <style>
+	.expanded-panel {
+		position: fixed;
+		bottom: var(--player-height);
+		left: 0;
+		right: 0;
+		background: var(--player-bg);
+		border-top: 1px solid var(--player-border);
+		z-index: 199;
+		animation: slide-up 0.2s ease-out;
+		max-height: 280px;
+		overflow-y: auto;
+	}
+
+	@keyframes slide-up {
+		from {
+			transform: translateY(100%);
+			opacity: 0;
+		}
+		to {
+			transform: translateY(0);
+			opacity: 1;
+		}
+	}
+
 	.player-bar {
 		position: fixed;
 		bottom: 0;
@@ -389,7 +441,7 @@
 		align-items: center;
 		justify-content: flex-end;
 		gap: var(--space-sm);
-		max-width: 200px;
+		max-width: 240px;
 	}
 
 	.volume-bar {
