@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Phase 4 — Local Music Player (Plan 02 complete, Plan 03 next)
+**Current focus:** Phase 4 — Local Music Player (Wave 1 complete [01+02], Plan 03 next)
 
 ## Current Position
 
 Phase: 4 of 12 (Local Music Player)
-Plan: 2 of 5 complete
+Plan: 2 of 5 complete (wave 1: 04-01 scanner backend + 04-02 player frontend)
 Status: In progress
-Last activity: 2026-02-16 — Completed 04-02 (Player frontend: audio engine, queue, player bar UI)
+Last activity: 2026-02-16 — Completed 04-01 (Scanner backend: lofty metadata, rusqlite library.db, Tauri commands)
 
 Progress: [████░░░░░░] 2/5
 
@@ -24,6 +24,7 @@ Progress: [████░░░░░░] 2/5
 - Phase 3 Plan 01: 4min
 - Phase 3 Plan 02: 14min
 - Phase 3 Plan 03: 5min
+- Phase 4 Plan 01: 7min
 - Phase 4 Plan 02: 4min
 
 **By Phase:**
@@ -32,7 +33,7 @@ Progress: [████░░░░░░] 2/5
 | 1. Data Pipeline | pre-GSD | - | Complete |
 | 2. Search + Embeds | 5/5 | ~15min | Complete |
 | 3. Desktop App | 5/5 | 23min+ | Complete |
-| 4. Local Music Player | 2/5 | 4min | In progress |
+| 4. Local Music Player | 2/5 | 11min | In progress |
 
 ## Accumulated Context
 
@@ -77,6 +78,11 @@ Progress: [████░░░░░░] 2/5
 - Audio ended event uses dynamic import for queue module to break circular dependency.
 - Player only renders in Tauri context via isTauri() check in root layout.
 - Queue items use div[role=button] instead of nested buttons for valid HTML.
+- rusqlite 0.31 (not 0.33) to avoid libsqlite3-sys link conflict with tauri-plugin-sql's sqlx dependency.
+- library.db is separate from mercury.db — rusqlite for library, tauri-plugin-sql for mercury catalog.
+- Scan progress batched every 50 files to avoid IPC flood.
+- Year extracted from ItemKey::Year with RecordingDate fallback (lofty 0.23 has no Accessor::year()).
+- LibraryState uses Mutex<Connection> as Tauri managed state, initialized in setup() callback.
 
 ### Pending Todos
 None
@@ -87,5 +93,5 @@ None
 ## Session Continuity
 
 Last session: 2026-02-16
-Stopped at: 04-02 complete. Next: 04-03 (Library browser UI).
+Stopped at: 04-01 and 04-02 complete. Next: 04-03 (Library browser UI).
 Resume: Execute 04-03-PLAN.md (folder management, scan progress, album grid, click-to-play).
