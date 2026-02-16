@@ -1034,6 +1034,17 @@ Steve tested the full flow: scan folder → browse library → play tracks → n
 
 All 5 plans executed. Local music player works end-to-end: Rust scanner → HTML5 Audio playback → library browser → discovery bridge → unified search. 4 waves, 10 tasks, 12 commits.
 
+---
+
+## Entry 011 — 2026-02-17 — Technical Documentation
+
+Steve asked for comprehensive documentation — both a technical architecture doc and a user manual. The project is at the complexity threshold (4 phases, dual runtime, 6 modules, 40+ source files) where new context sessions need a map to understand how things connect.
+
+Created two documents:
+
+- **ARCHITECTURE.md** — Full technical architecture covering dual runtime, database layer, search system, embed system, local player, discovery bridge, build system, and module dependency map. Includes ASCII diagrams showing data flow and system topology.
+- **docs/user-manual.md** — User-facing manual covering search, artist pages, local library, music player, discovery features, web vs desktop comparison, and troubleshooting. Written for end users, not developers.
+
 > **Commit e8053be** (2026-02-16 23:51) — feat(04-02): player state, audio engine, and queue management
 > Files changed: 4
 
@@ -1071,4 +1082,7 @@ All 5 plans executed. Local music player works end-to-end: Rust scanner → HTML
 > Files changed: 2
 
 > **Commit 54e5d92** (2026-02-17 00:49) — fix(04-05): resolve three bugs found during phase 4 verification
+> Files changed: 5
+
+> **Commit db1091b** (2026-02-17 00:49) — docs: mark Phase 4 complete in roadmap — 4/12 phases done
 > Files changed: 5
