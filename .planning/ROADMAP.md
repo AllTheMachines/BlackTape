@@ -64,16 +64,16 @@ Plans:
 **Success Criteria**:
   1. Tauri 2.0 app launches and runs the existing SvelteKit UI
   2. App reads local SQLite file instead of D1 — instant search, zero network dependency
-  3. Database downloadable (~30-50MB compressed) and distributable via torrent
+  3. Database downloadable (compressed) and distributable via HTTP and torrent
   4. Offline search works without internet
-  5. Auto-update mechanism for both app and database
+  5. App auto-update infrastructure in place (signing keys, updater config); database updates via full replacement download (diff-based updates deferred as future optimization)
   6. If the website disappears, the desktop app still works
 **Plans**: 5 plans
 Plans:
 - [ ] 03-01-PLAN.md — Database abstraction layer (DbProvider interface, D1 + Tauri implementations)
 - [ ] 03-02-PLAN.md — Tauri scaffolding, dual-adapter build system, desktop window
 - [ ] 03-03-PLAN.md — Universal load functions for search and artist pages
-- [ ] 03-04-PLAN.md — Database detection, first-run setup UI, compression pipeline
+- [ ] 03-04-PLAN.md — Database detection, first-run setup UI, compression + torrent pipeline
 - [ ] 03-05-PLAN.md — Auto-updater signing keys, NSIS installer, final verification
 
 ### Phase 4: Local Music Player
@@ -200,7 +200,8 @@ Plans:
 | Feature | Why Deferred | Revisit When |
 |---------|-------------|-------------|
 | Cross-platform playlist sync | Platform ToS risks, fragile APIs | Core product is solid, legal clarity exists |
-| Remote streaming (phone ← home) | NAT traversal, relay servers, infrastructure complexity | Desktop + player mature, users ask for it |
+| Remote streaming (phone <- home) | NAT traversal, relay servers, infrastructure complexity | Desktop + player mature, users ask for it |
+| Database diff-based updates | Full replacement is simpler; diff sizes unknown until MusicBrainz weekly dump testing | Full replacement feels too large for users |
 
 ## Progress
 
