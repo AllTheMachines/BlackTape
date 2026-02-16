@@ -778,3 +778,55 @@ Phases 4+ (Discovery, Social, Blog, etc.) now target the desktop app primarily. 
 ### Files Updated
 - `BUILD-LOG.md` — This entry (14 decisions recorded)
 - `PROJECT.md` — Reframed as desktop-first, added local player, AI core, knowledge base, composite ranking, updated architecture and social layer sections
+
+> **Commit 68d44d0** (2026-02-16 19:48) — docs: vision refinement — desktop-first, AI core, local player, knowledge base
+> Files changed: 2
+
+---
+
+## Entry 015 — 2026-02-16 — Roadmap Rewrite: Desktop-First, 12 Phases
+
+### Context
+
+Entry 014 redefined Mercury as a desktop-first app, added local music player, AI core, and knowledge base as core features. The old 9-phase roadmap was written for a web-first architecture. Everything needed to change.
+
+### What Changed
+
+**Old roadmap:** 9 phases (data → web → desktop → discovery → social → blog → interop → listening rooms → artist tools)
+
+**New roadmap:** 12 phases reflecting the desktop-first pivot:
+
+| Phase | Name | What's New |
+|-------|------|-----------|
+| 1 | Data Pipeline | *unchanged, complete* |
+| 2 | Web Gateway | Renamed from "Search + Embeds" — it's now explicitly a gateway, not the product |
+| 3 | Desktop App Foundation | Same scope, but now framed as "this IS the product" |
+| **4** | **Local Music Player** | **NEW** — folder scanning, metadata, playback, library-meets-discovery |
+| **5** | **AI Foundation** | **NEW** — client-side models, recommendations, natural-language exploration, taste profiling |
+| 6 | Discovery Engine | Slimmed down — Scene Maps, Time Machine, Liner Notes moved to Knowledge Base |
+| **7** | **Knowledge Base** | **NEW** — genre/scene map, multi-layer content, scene maps, time machine, liner notes |
+| 8 | Social Layer | Updated for local-first (no server accounts, shareable exports) |
+| 9 | Curator / Blog Tools | Same scope |
+| 10 | Interoperability | Same scope |
+| 11 | Listening Rooms | Same scope |
+| 12 | Artist Tools | Same scope |
+
+### New Requirements Added
+
+9 new requirements (47 → 56 total):
+
+- **PLAYER-01/02/03**: Local music player (scan, play, unified with discovery)
+- **AI-01/02/03/04**: AI features (recommendations, natural language, summaries, taste profiling)
+- **KB-01/02**: Knowledge base (genre map, multi-layer content)
+
+### Key Structural Changes
+
+- **DISC-05 (Scene Maps), DISC-06 (Time Machine), DISC-07 (Liner Notes)** moved from Discovery (Phase 6) to Knowledge Base (Phase 7) — they're exploration features, not ranking features
+- **DISC-02** updated to explicitly describe composite ranking (inverse popularity + tag rarity + scene freshness)
+- **SOCIAL-02** updated from "shareable profile URLs" to "shareable exports" (no server-hosted profiles)
+- **Deferred section** added for cross-platform playlist sync and remote streaming
+- **Sustainability stages** renumbered to align with new phase numbers
+
+<!-- status -->
+Roadmap rewrite complete. 12 phases, 56 requirements, all decisions from Entry 014 reflected. Ready for next action.
+<!-- /status -->

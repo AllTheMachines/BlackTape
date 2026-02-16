@@ -1,6 +1,7 @@
 # Requirements: Mercury
 
 **Defined:** 2026-02-15
+**Updated:** 2026-02-16 — desktop-first pivot, added local player, AI, and knowledge base requirements
 **Core Value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
 
 ## v1 Requirements
@@ -20,32 +21,47 @@
 - [x] **EMBED-01**: Artist pages embed players from Bandcamp, Spotify, SoundCloud, YouTube
 - [ ] **EMBED-02**: User can set preferred streaming service — embeds and links default to their choice
 
-### Discovery
-
-- [ ] **DISC-01**: User can browse and intersect tags
-- [ ] **DISC-02**: Artists with unique tag combinations are more discoverable
-- [ ] **DISC-03**: Style map visualization shows tag relationships
-- [ ] **DISC-04**: Crate Digging Mode — serendipitous browsing through filtered stacks (genre, decade, country)
-- [ ] **DISC-05**: Scene Maps — geographic + temporal visualization of music scenes using MusicBrainz location data
-- [ ] **DISC-06**: Time Machine — browse releases by year, scrub timeline, filter by tags
-- [ ] **DISC-07**: Liner Notes — rich expandable credits, relationships, and production details on release pages
-
 ### Desktop
 
 - [ ] **DESKTOP-01**: Tauri desktop app reads local SQLite, works offline
-- [ ] **DESKTOP-02**: Same UI as web version
+- [ ] **DESKTOP-02**: Same SvelteKit UI runs in Tauri shell and on web
+- [ ] **DIST-01**: Database file downloadable and torrentable, auto-updates distributed as diffs
 
-### Distribution
+### Local Music Player
 
-- [ ] **DIST-01**: Database file downloadable and torrentable
+- [ ] **PLAYER-01**: Desktop app scans local folders and reads music file metadata (ID3, FLAC, Vorbis, MP4 tags)
+- [ ] **PLAYER-02**: Audio playback of local files with standard player controls (play, pause, skip, seek, volume, queue)
+- [ ] **PLAYER-03**: Local library unified with online discovery — playing local files shows related artists and tags from the index
+
+### AI
+
+- [ ] **AI-01**: Client-side AI recommendations from taste profile and listening history (open models, no cloud dependency)
+- [ ] **AI-02**: Natural-language discovery queries ("find me something like X but darker")
+- [ ] **AI-03**: AI-generated summaries for genres, artists, and scenes from public sources
+- [ ] **AI-04**: Taste profiling — builds automatically from listening history, collection, and browsing
+
+### Discovery
+
+- [ ] **DISC-01**: User can browse and intersect tags
+- [ ] **DISC-02**: Composite discovery ranking — inverse popularity + tag rarity scoring + scene freshness
+- [ ] **DISC-03**: Style map visualization shows tag relationships and clusters
+- [ ] **DISC-04**: Crate Digging Mode — serendipitous browsing through filtered stacks (genre, decade, country)
+
+### Knowledge Base
+
+- [ ] **KB-01**: Genre/scene map with navigable relationships (genres, scenes, movements, cities, eras)
+- [ ] **KB-02**: Multi-layer content system (open data → links/embeds → AI summaries → community written)
+- [ ] **DISC-05**: Scene Maps — geographic + temporal visualization of music scenes using MusicBrainz location data
+- [ ] **DISC-06**: Time Machine — browse releases by year, scrub timeline, filter by tags, watch genre evolution
+- [ ] **DISC-07**: Liner Notes — rich expandable credits, relationships, and production details on release pages
 
 ### Social
 
 - [ ] **SOCIAL-01**: Opt-in user profiles with collections (anonymous browsing by default)
-- [ ] **SOCIAL-02**: Shareable profile URLs
+- [ ] **SOCIAL-02**: Shareable exports — generated artifacts (images, files) from the desktop app
 - [ ] **SOCIAL-03**: User-side tagging — listeners tag, sort, and group their own collections with personal taxonomy
 - [ ] **SOCIAL-04**: Taste Fingerprint — generated visual pattern unique to each user's collection
-- [ ] **SOCIAL-05**: Writing — users write reviews, recommendations, scene reports, personal essays inside the platform
+- [ ] **SOCIAL-05**: Writing — users write reviews, recommendations, scene reports, personal essays inside the app
 - [ ] **SOCIAL-06**: Discussion threads around releases, artists, and scenes
 - [ ] **SOCIAL-07**: Embeddable collections — users can embed their collection on external websites
 - [ ] **SOCIAL-08**: QR codes — generate QR for any collection or curated list (physical-digital bridge)
@@ -100,6 +116,13 @@
 | API-for-profit | No businesses building on top |
 | Vanity metrics | No follower counts, like counts, or play counts — ever |
 
+## Deferred
+
+| Feature | Reason | Requirement |
+|---------|--------|-------------|
+| Cross-platform playlist sync | Platform ToS risks, fragile APIs | — |
+| Remote streaming (phone ← home) | NAT traversal, relay servers, infrastructure complexity | — |
+
 ## Traceability
 
 | Requirement | Phase | Status |
@@ -109,38 +132,47 @@
 | SEARCH-02 | Phase 2 | Complete |
 | SEARCH-03 | Phase 2 | Complete |
 | EMBED-01 | Phase 2 | Complete |
-| EMBED-02 | Phase 5 | Pending |
-| DISC-01 | Phase 4 | Pending |
-| DISC-02 | Phase 4 | Pending |
-| DISC-03 | Phase 4 | Pending |
-| DISC-04 | Phase 4 | Pending |
-| DISC-05 | Phase 4 | Pending |
-| DISC-06 | Phase 4 | Pending |
-| DISC-07 | Phase 4 | Pending |
+| EMBED-02 | Phase 8 | Pending |
 | DESKTOP-01 | Phase 3 | Pending |
 | DESKTOP-02 | Phase 3 | Pending |
 | DIST-01 | Phase 3 | Pending |
-| SOCIAL-01 | Phase 5 | Pending |
-| SOCIAL-02 | Phase 5 | Pending |
-| SOCIAL-03 | Phase 5 | Pending |
-| SOCIAL-04 | Phase 5 | Pending |
-| SOCIAL-05 | Phase 5 | Pending |
-| SOCIAL-06 | Phase 5 | Pending |
-| SOCIAL-07 | Phase 5 | Pending |
-| SOCIAL-08 | Phase 5 | Pending |
-| SOCIAL-09 | Phase 5 | Pending |
-| SOCIAL-10 | Phase 5 | Pending |
-| BLOG-01 | Phase 6 | Pending |
-| BLOG-02 | Phase 6 | Pending |
-| BLOG-03 | Phase 6 | Pending |
-| INTEROP-01 | Phase 7 | Pending |
-| INTEROP-02 | Phase 7 | Pending |
-| LISTEN-01 | Phase 8 | Pending |
-| LISTEN-02 | Phase 8 | Pending |
-| ARTIST-01 | Phase 9 | Pending |
-| ARTIST-02 | Phase 9 | Pending |
-| ARTIST-03 | Phase 9 | Pending |
-| ARTIST-04 | Phase 9 | Pending |
+| PLAYER-01 | Phase 4 | Pending |
+| PLAYER-02 | Phase 4 | Pending |
+| PLAYER-03 | Phase 4 | Pending |
+| AI-01 | Phase 5 | Pending |
+| AI-02 | Phase 5 | Pending |
+| AI-03 | Phase 5 | Pending |
+| AI-04 | Phase 5 | Pending |
+| DISC-01 | Phase 6 | Pending |
+| DISC-02 | Phase 6 | Pending |
+| DISC-03 | Phase 6 | Pending |
+| DISC-04 | Phase 6 | Pending |
+| KB-01 | Phase 7 | Pending |
+| KB-02 | Phase 7 | Pending |
+| DISC-05 | Phase 7 | Pending |
+| DISC-06 | Phase 7 | Pending |
+| DISC-07 | Phase 7 | Pending |
+| SOCIAL-01 | Phase 8 | Pending |
+| SOCIAL-02 | Phase 8 | Pending |
+| SOCIAL-03 | Phase 8 | Pending |
+| SOCIAL-04 | Phase 8 | Pending |
+| SOCIAL-05 | Phase 8 | Pending |
+| SOCIAL-06 | Phase 8 | Pending |
+| SOCIAL-07 | Phase 8 | Pending |
+| SOCIAL-08 | Phase 8 | Pending |
+| SOCIAL-09 | Phase 8 | Pending |
+| SOCIAL-10 | Phase 8 | Pending |
+| BLOG-01 | Phase 9 | Pending |
+| BLOG-02 | Phase 9 | Pending |
+| BLOG-03 | Phase 9 | Pending |
+| INTEROP-01 | Phase 10 | Pending |
+| INTEROP-02 | Phase 10 | Pending |
+| LISTEN-01 | Phase 11 | Pending |
+| LISTEN-02 | Phase 11 | Pending |
+| ARTIST-01 | Phase 12 | Pending |
+| ARTIST-02 | Phase 12 | Pending |
+| ARTIST-03 | Phase 12 | Pending |
+| ARTIST-04 | Phase 12 | Pending |
 | SUST-01 | Phase 0 / Stage 1 | Pending |
 | SUST-02 | Phase 0 / Stage 1 | Pending |
 | SUST-03 | Phase 0 / Stage 1 | Pending |
@@ -153,10 +185,10 @@
 | SUST-10 | Phase 0 / Stage 4 | Pending |
 
 **Coverage:**
-- v1 requirements: 47 total
-- Mapped to phases: 47
+- v1 requirements: 56 total (was 47, added 9 for player, AI, knowledge base)
+- Mapped to phases: 56
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-15*
-*Last updated: 2026-02-15 — expanded with all PROJECT.md features*
+*Last updated: 2026-02-16 — desktop-first pivot, new requirement categories*

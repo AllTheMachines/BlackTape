@@ -1,7 +1,12 @@
 # Roadmap: Mercury
 
 ## Overview
-Build a music discovery engine from the ground up. Data pipeline first (foundation), then search + embeds (the "holy shit" moment), then desktop distribution (unkillable), then discovery mechanics, social layer, curator tools, interoperability, listening rooms, and artist tools. Phase 0 (sustainability) runs in parallel with everything.
+
+Mercury is a desktop app. The internet is where it gets information. Your machine is where everything lives.
+
+Build order: data pipeline (foundation) → web gateway (first impression) → desktop app (the real product) → local player (plays what you own) → AI (the brain) → discovery mechanics (the soul) → knowledge base (the differentiator) → social layer → curator tools → interoperability → listening rooms → artist tools. Phase 0 (sustainability) runs in parallel with everything.
+
+Phases 1-2 built the web gateway — a working search engine with artist pages and embeds on Cloudflare. Everything from Phase 3 onward targets the Tauri desktop app as the primary product. The web version stays as a lightweight gateway that points people to the real thing.
 
 ## Phases
 
@@ -9,15 +14,18 @@ Build a music discovery engine from the ground up. Data pipeline first (foundati
 - Integer phases (1, 2, 3): Planned milestone work
 - Decimal phases (2.1, 2.2): Urgent insertions (marked INSERTED)
 
-- [x] **Phase 1: Data Pipeline** - MusicBrainz dumps into searchable SQLite + FTS5
-- [x] **Phase 2: Search + Artist Pages + Embeds** - The core web experience
-- [ ] **Phase 3: Desktop App + Distribution** - Tauri app with local SQLite, torrent distribution
-- [ ] **Phase 4: Discovery Engine** - Tag browsing, crate digging, scene maps, time machine, liner notes
-- [ ] **Phase 5: Social Layer** - Profiles, collections, taste fingerprint, writing, discussion, import/export
-- [ ] **Phase 6: Blog / Curator Tools** - Embeddable widgets, attribution, RSS, blog revival
-- [ ] **Phase 7: Interoperability** - ActivityPub, Fediverse federation
-- [ ] **Phase 8: Listening Rooms** - Shared real-time listening with synchronized embeds
-- [ ] **Phase 9: Artist Tools** - Claiming, dashboard, auto-news, self-hosted site generator
+- [x] **Phase 1: Data Pipeline** — MusicBrainz dumps into searchable SQLite + FTS5
+- [x] **Phase 2: Web Gateway** — Search + artist pages + embeds on Cloudflare
+- [ ] **Phase 3: Desktop App Foundation** — Tauri shell, local SQLite, database distribution, offline search
+- [ ] **Phase 4: Local Music Player** — Folder scanning, metadata, playback, library-meets-discovery
+- [ ] **Phase 5: AI Foundation** — Client-side models, recommendations, natural-language exploration, taste profiling
+- [ ] **Phase 6: Discovery Engine** — Composite ranking, tag browsing, crate digging, uniqueness scoring, style map
+- [ ] **Phase 7: Knowledge Base** — Genre/scene map, multi-layer content, scene maps, time machine, liner notes
+- [ ] **Phase 8: Social Layer** — Collections, taste fingerprint, writing, discussion, import/export
+- [ ] **Phase 9: Curator / Blog Tools** — Embeddable widgets, attribution, RSS, blog revival
+- [ ] **Phase 10: Interoperability** — ActivityPub, Fediverse federation, RSS for everything
+- [ ] **Phase 11: Listening Rooms** — Shared real-time listening with synchronized embeds
+- [ ] **Phase 12: Artist Tools** — Claiming, dashboard, auto-news, self-hosted site generator
 
 ## Phase Details
 
@@ -31,17 +39,17 @@ Build a music discovery engine from the ground up. Data pipeline first (foundati
   3. Instant search across all artists
 **Plans**: Completed
 
-### Phase 2: Search + Artist Pages + Embeds
-**Goal**: The core web experience — search, find, listen
+### Phase 2: Web Gateway [COMPLETE]
+**Goal**: The web experience — search, find, listen. Doubles as Cloudflare-hosted gateway.
 **Depends on**: Phase 1
 **Requirements**: SEARCH-01, SEARCH-02, SEARCH-03, EMBED-01
 **Success Criteria**:
   1. User can type an artist name or tag and get instant results
-  2. Artist pages show tags, country, and embedded players
+  2. Artist pages show tags, country, discography grid, and embedded players
   3. Bandcamp/Spotify/SoundCloud/YouTube embeds render inline
   4. Deployed to Cloudflare Pages, mobile responsive
   5. Someone can visit, search, discover an unknown artist, and press play
-**Plans**: 5 plans
+**Plans**: 5 plans (all complete)
 Plans:
 - [x] 02-01-PLAN.md — Cloudflare D1 infrastructure, database queries, slug system
 - [x] 02-02-PLAN.md — Dark theme, global layout, landing page with search bar
@@ -49,43 +57,85 @@ Plans:
 - [x] 02-04-PLAN.md — Artist pages with embeds, bio, external links
 - [x] 02-05-PLAN.md — End-to-end visual verification
 
-### Phase 3: Desktop App + Distribution
-**Goal**: Unkillable local version with distributed database
+### Phase 3: Desktop App Foundation
+**Goal**: Mercury becomes a real desktop app. Tauri wraps the SvelteKit UI, reads local SQLite, works offline. The web version is now a gateway — the desktop app is the product.
 **Depends on**: Phase 2
 **Requirements**: DESKTOP-01, DESKTOP-02, DIST-01
 **Success Criteria**:
-  1. Tauri app runs same UI, reads local SQLite
-  2. Database downloadable (~30-50MB compressed)
-  3. Offline search works without internet
-  4. If the website disappears, the desktop app still works
+  1. Tauri 2.0 app launches and runs the existing SvelteKit UI
+  2. App reads local SQLite file instead of D1 — instant search, zero network dependency
+  3. Database downloadable (~30-50MB compressed) and distributable via torrent
+  4. Offline search works without internet
+  5. Auto-update mechanism for both app and database
+  6. If the website disappears, the desktop app still works
 **Plans**: TBD
 
-### Phase 4: Discovery Engine
-**Goal**: Where search engine becomes discovery engine — uniqueness mechanic, serendipity, geography, time, and credits
-**Depends on**: Phase 2
-**Requirements**: DISC-01, DISC-02, DISC-03, DISC-04, DISC-05, DISC-06, DISC-07
+### Phase 4: Local Music Player
+**Goal**: Mercury plays what you own. Scan folders, read metadata, build a library. Local files and online discovery are one unified experience — not two modes.
+**Depends on**: Phase 3
+**Requirements**: PLAYER-01, PLAYER-02, PLAYER-03
 **Success Criteria**:
-  1. Users can browse and intersect tags
-  2. Artists with unique tag combinations are more discoverable
-  3. Style map visualization shows tag relationships
-  4. "Uniqueness score" visible on artist profiles
-  5. Crate Digging Mode — serendipitous browsing through filtered stacks (genre, decade, country)
-  6. Scene Maps — geographic + temporal visualization of music scenes
-  7. Time Machine — browse by year, scrub timeline, watch genres evolve
-  8. Liner Notes — rich expandable credits and production details on release pages
+  1. User points Mercury at their music folders — app scans and indexes files
+  2. Metadata read from ID3, FLAC, Vorbis, MP4 tags
+  3. Full playback with standard controls (play, pause, skip, seek, volume, queue)
+  4. Library browser shows local collection with cover art, tags, sorting
+  5. Playing a local file shows related artists and tags from the discovery database
+  6. Local library and online discovery feel like one thing — unified search, unified browse
 **Plans**: TBD
 
-### Phase 5: Social Layer
-**Goal**: Taste as identity — the record shop shelf experience. Profiles, collections, personal organization, writing, discussion, and import/export
-**Depends on**: Phase 2
+### Phase 5: AI Foundation
+**Goal**: AI as a core feature — recommendations, summaries, natural-language exploration, taste profiling. Not a bolt-on. Central to how the app works. Open models on client side where possible.
+**Depends on**: Phase 3 (Phase 4 enriches it but isn't a hard dependency)
+**Requirements**: AI-01, AI-02, AI-03, AI-04
+**Success Criteria**:
+  1. Client-side AI model loaded and running (open model, no cloud dependency)
+  2. Recommendations generated from taste profile — "based on what you listen to"
+  3. Natural-language queries work: "find me something like Boards of Canada but darker"
+  4. AI-generated summaries for artists and genres from public data sources
+  5. Taste profile builds automatically from listening history and collection
+  6. All AI processing local — user data never leaves their machine
+**Plans**: TBD
+
+### Phase 6: Discovery Engine
+**Goal**: Where search engine becomes discovery engine. Uniqueness IS the mechanism — the more niche you are, the more discoverable you become. Powered by a composite ranking score.
+**Depends on**: Phase 1 (data), Phase 3 (desktop)
+**Requirements**: DISC-01, DISC-02, DISC-03, DISC-04
+**Success Criteria**:
+  1. Users can browse and intersect tags — drill down into specificity
+  2. Composite discovery ranking: inverse popularity + tag rarity + scene freshness
+  3. "Uniqueness score" visible on artist profiles
+  4. Style map visualization shows tag relationships and clusters
+  5. Crate Digging Mode — serendipitous browsing through filtered stacks (genre, decade, country)
+  6. Generic artists sink, niche artists rise — naturally demotes AI-generated slop
+**Plans**: TBD
+
+### Phase 7: Knowledge Base
+**Goal**: The genre/scene map — Mercury's biggest differentiator. A living encyclopedia of music: genres, scenes, movements, cities, eras. A place you can get lost in for hours. Content builds in layers over time.
+**Depends on**: Phase 6 (discovery mechanics), Phase 5 (AI summaries)
+**Requirements**: KB-01, KB-02, DISC-05, DISC-06, DISC-07
+**Success Criteria**:
+  1. Genre/scene map with navigable relationships — click a genre, see its origins, offshoots, key artists, related scenes
+  2. Multi-layer content system working:
+     - Layer 1: Open data (MusicBrainz tags + Wikidata genre relationships) — available day one
+     - Layer 2: Links & embeds (YouTube documentaries, Wikipedia bios, external articles)
+     - Layer 3: AI-assisted summaries (original descriptions from multiple public sources)
+     - Layer 4: Community-written (wiki-style scene histories, genre descriptions, artist bios)
+  3. Scene Maps — geographic + temporal visualization (Berlin techno '95, Buenos Aires now)
+  4. Time Machine — browse by year, scrub timeline, watch genres evolve
+  5. Liner Notes — rich expandable credits, relationships, and production details on release pages
+**Plans**: TBD
+
+### Phase 8: Social Layer
+**Goal**: Taste as identity — the record shop shelf experience. Your collection should feel like yours. All local-first, no central server accounts. Sharing via generated exports.
+**Depends on**: Phase 3 (desktop)
 **Requirements**: SOCIAL-01, SOCIAL-02, SOCIAL-03, SOCIAL-04, SOCIAL-05, SOCIAL-06, SOCIAL-07, SOCIAL-08, SOCIAL-09, SOCIAL-10, EMBED-02
 **Success Criteria**:
   1. Opt-in user profiles (anonymous browsing by default)
   2. Collections: save artists/releases, tag them, sort them, group them — feels like a real shelf
   3. User-side tagging: personal taxonomy for organizing collections
   4. Taste Fingerprint: generated visual pattern unique to each user's collection
-  5. Shareable profile URLs ("your taste at a glance")
-  6. Writing: users write reviews, scene reports, personal essays inside the platform
+  5. Shareable exports — generated artifacts (images, files) from the desktop app
+  6. Writing: users write reviews, scene reports, personal essays inside the app
   7. Discussion threads around releases, artists, and scenes
   8. Embeddable collections on external websites
   9. QR codes for any collection or curated list
@@ -95,30 +145,31 @@ Plans:
   13. No vanity metrics anywhere — no follower counts, no like counts, no play counts
 **Plans**: TBD
 
-### Phase 6: Blog / Curator Tools
-**Goal**: Bring music blogs back to life
-**Depends on**: Phase 4, Phase 5
+### Phase 9: Curator / Blog Tools
+**Goal**: Bring music blogs back to life. Give bloggers tools and an audience.
+**Depends on**: Phase 6 (discovery), Phase 8 (social)
 **Requirements**: BLOG-01, BLOG-02, BLOG-03
 **Success Criteria**:
   1. Embeddable widgets (artist cards, search results, curated lists, entire collections)
-  2. Attribution: "discovered via [curator]" links
+  2. Attribution: "discovered via [curator]" links — curators get credit
   3. RSS feeds for every artist page, user collection, tag, and curator
-  4. A music blogger has reason to write again
+  4. First access for curators — early visibility into emerging artists and new additions
+  5. A music blogger has reason to write again
 **Plans**: TBD
 
-### Phase 7: Interoperability
+### Phase 10: Interoperability
 **Goal**: Plug into the open web — federate, don't isolate
-**Depends on**: Phase 5
+**Depends on**: Phase 8 (social layer)
 **Requirements**: INTEROP-01, INTEROP-02
 **Success Criteria**:
   1. Profiles followable from Mastodon and the Fediverse via ActivityPub
   2. Artist updates federate across the open web
-  3. No need to create an account on Mercury to follow someone — follow from your existing Fediverse account
+  3. No need to create an account on Mercury to follow someone
 **Plans**: TBD
 
-### Phase 8: Listening Rooms
+### Phase 11: Listening Rooms
 **Goal**: Communal discovery — shared real-time listening like sitting with friends playing records
-**Depends on**: Phase 5
+**Depends on**: Phase 8 (social layer)
 **Requirements**: LISTEN-01, LISTEN-02
 **Success Criteria**:
   1. Create a room, invite people, play music together through synchronized embeds
@@ -127,9 +178,9 @@ Plans:
   4. No video. No screen sharing. Just music and people.
 **Plans**: TBD
 
-### Phase 9: Artist Tools
+### Phase 12: Artist Tools
 **Goal**: Give artists control without requiring them to do anything — zero-effort by default, full control if claimed
-**Depends on**: Phase 5
+**Depends on**: Phase 8 (social layer)
 **Requirements**: ARTIST-01, ARTIST-02, ARTIST-03, ARTIST-04
 **Success Criteria**:
   1. Artist claiming with verification ("this profile is me")
@@ -138,19 +189,29 @@ Plans:
   4. Static site generator for self-hosted artist pages — publishes to free hosting, feeds data back to the index
 **Plans**: TBD
 
+## Deferred (Good Ideas, Wrong Time)
+
+| Feature | Why Deferred | Revisit When |
+|---------|-------------|-------------|
+| Cross-platform playlist sync | Platform ToS risks, fragile APIs | Core product is solid, legal clarity exists |
+| Remote streaming (phone ← home) | NAT traversal, relay servers, infrastructure complexity | Desktop + player mature, users ask for it |
+
 ## Progress
 
 | Phase | Plans Complete | Status | Completed |
 |-------|---------------|--------|-----------|
 | 1. Data Pipeline | done | Complete | 2026-02-14 |
-| 2. Search + Embeds | 5/5 | Complete | 2026-02-15 |
-| 3. Desktop + Distribution | 0/TBD | Not started | - |
-| 4. Discovery Engine | 0/TBD | Not started | - |
-| 5. Social Layer | 0/TBD | Not started | - |
-| 6. Blog / Curator Tools | 0/TBD | Not started | - |
-| 7. Interoperability | 0/TBD | Not started | - |
-| 8. Listening Rooms | 0/TBD | Not started | - |
-| 9. Artist Tools | 0/TBD | Not started | - |
+| 2. Web Gateway | 5/5 | Complete | 2026-02-15 |
+| 3. Desktop App Foundation | 0/TBD | Not started | - |
+| 4. Local Music Player | 0/TBD | Not started | - |
+| 5. AI Foundation | 0/TBD | Not started | - |
+| 6. Discovery Engine | 0/TBD | Not started | - |
+| 7. Knowledge Base | 0/TBD | Not started | - |
+| 8. Social Layer | 0/TBD | Not started | - |
+| 9. Curator / Blog Tools | 0/TBD | Not started | - |
+| 10. Interoperability | 0/TBD | Not started | - |
+| 11. Listening Rooms | 0/TBD | Not started | - |
+| 12. Artist Tools | 0/TBD | Not started | - |
 
 ## Parallel Track: Phase 0 (Sustainability)
 
@@ -171,13 +232,13 @@ Runs alongside everything else. Not blocking any phase. Rolls out in stages as f
 - [ ] Liner Notes backer credits page — supporter names/aliases with the same reverence as music credits
 - [ ] Sticker and patch designs (print-on-demand via Printful/Gelato)
 
-### Stage 3 — Identity (alongside Phase 4-5: Discovery + Social)
+### Stage 3 — Identity (alongside Phase 6-8: Discovery + Social)
 - [ ] Taste Fingerprint prints — personalized posters generated from user collections (needs fingerprint feature)
 - [ ] Discovery tokens — collectible coins/enamel pins with QR codes linking to curated discoveries
 - [ ] Supporter Wall integrated into the platform
 - [ ] Tote bags (record store bags for supporters)
 
-### Stage 4 — Community (alongside Phase 5-6: Social + Blog)
+### Stage 4 — Community (alongside Phase 8-9: Social + Blog)
 - [ ] Artist collaboration merch — discovered artists create artwork for merch runs (artist gets paid)
 - [ ] Milestone drops — limited edition merch when major versions ship
 - [ ] Full print-on-demand merch store
