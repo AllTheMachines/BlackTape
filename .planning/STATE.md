@@ -5,27 +5,28 @@
 See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Phase 4 — Local Music Player (Wave 1 complete [01+02], Plan 03 next)
+**Current focus:** Phase 4 — Local Music Player (Wave 2 complete [03], Plan 04 next)
 
 ## Current Position
 
 Phase: 4 of 12 (Local Music Player)
-Plan: 2 of 5 complete (wave 1: 04-01 scanner backend + 04-02 player frontend)
+Plan: 3 of 5 complete (wave 1: 04-01 + 04-02, wave 2: 04-03 library browser)
 Status: In progress
-Last activity: 2026-02-16 — Completed 04-01 (Scanner backend: lofty metadata, rusqlite library.db, Tauri commands)
+Last activity: 2026-02-16 — Completed 04-03 (Library browser: album grid, folder management, scan progress, click-to-play)
 
-Progress: [████░░░░░░] 2/5
+Progress: [██████░░░░] 3/5
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 10
+- Total plans completed: 13
 - Phase 2 execution time: ~15min (plans 1-4) + verification session
 - Phase 3 Plan 01: 4min
 - Phase 3 Plan 02: 14min
 - Phase 3 Plan 03: 5min
 - Phase 4 Plan 01: 7min
 - Phase 4 Plan 02: 4min
+- Phase 4 Plan 03: 4min
 
 **By Phase:**
 | Phase | Plans | Total | Status |
@@ -33,7 +34,7 @@ Progress: [████░░░░░░] 2/5
 | 1. Data Pipeline | pre-GSD | - | Complete |
 | 2. Search + Embeds | 5/5 | ~15min | Complete |
 | 3. Desktop App | 5/5 | 23min+ | Complete |
-| 4. Local Music Player | 2/5 | 11min | In progress |
+| 4. Local Music Player | 3/5 | 15min | In progress |
 
 ## Accumulated Context
 
@@ -83,6 +84,10 @@ Progress: [████░░░░░░] 2/5
 - Scan progress batched every 50 files to avoid IPC flood.
 - Year extracted from ItemKey::Year with RecordingDate fallback (lofty 0.23 has no Accessor::year()).
 - LibraryState uses Mutex<Connection> as Tauri managed state, initialized in setup() callback.
+- Scanner wrappers use dynamic imports to isolate Tauri from web build (getInvoke pattern).
+- Album grouping uses album_artist || artist fallback as grouping key with locale-aware sort.
+- FolderManager is inline panel (not modal) toggled via gear icon.
+- Library nav link added to header in Tauri context only (via onMount tauriMode check).
 
 ### Pending Todos
 None
@@ -93,5 +98,5 @@ None
 ## Session Continuity
 
 Last session: 2026-02-16
-Stopped at: 04-01 and 04-02 complete. Next: 04-03 (Library browser UI).
-Resume: Execute 04-03-PLAN.md (folder management, scan progress, album grid, click-to-play).
+Stopped at: 04-03 complete. Next: 04-04 (Unified discovery: local files meet Mercury index).
+Resume: Execute 04-04-PLAN.md (bridge local library with online discovery database).

@@ -972,3 +972,70 @@ The desktop app is real: local SQLite search, artist pages with MusicBrainz enri
 
 > **Commit 0ee72ce** (2026-02-16 23:07) — feat(03-05): add updater signing keys and NSIS installer configuration
 > Files changed: 4
+
+> **Commit de52ad7** (2026-02-16 23:10) — docs: mark Phase 3 complete in roadmap — 3/12 phases done
+> Files changed: 2
+
+> **Commit 7bb89b3** (2026-02-16 23:34) — docs(04): research phase 4 local music player domain
+> Files changed: 1
+
+> **Commit a44c58f** (2026-02-16 23:41) — docs(04-local-music-player): create phase plan
+> Files changed: 6
+
+---
+
+## Entry 010 — 2026-02-16 — Phase 4: Mercury Learns to Play Music
+
+### Context
+
+Phase 3 gave us a desktop app. Phase 4 makes it a music player. This is where Mercury stops being just a search engine and becomes something you actually use while listening to music. The plan: Rust backend scans folders and reads metadata, HTML5 Audio plays files via Tauri's asset protocol, and the local library connects to the 2.8M-artist discovery database.
+
+5 plans across 4 waves:
+- **Wave 1** (parallel): Rust scanner backend + Player frontend
+- **Wave 2**: Library browser with folder management
+- **Wave 3**: Unified discovery — local files meet the Mercury index
+- **Wave 4**: End-to-end verification checkpoint
+
+### Execution: Wave 1 — Foundation Layer
+
+Spawning two agents in parallel:
+- **04-01**: Rust scanner — lofty for metadata, walkdir for traversal, rusqlite for library.db, Tauri commands for IPC
+- **04-02**: Player frontend — HTML5 Audio engine, Svelte 5 runes state, queue management, persistent player bar UI
+
+### Wave 1 Complete
+
+Both agents finished successfully in parallel:
+- **04-01** (Rust scanner): lofty metadata reader, rusqlite library.db, walkdir traversal, 5 Tauri IPC commands, dialog plugin
+- **04-02** (Player frontend): HTML5 Audio + convertFileSrc, Svelte 5 runes state (.svelte.ts), persistent player bar, queue panel
+
+Key decision: Player state files use `.svelte.ts` extension (not `.ts`) — required for Svelte 5 runes ($state) to work outside .svelte components.
+
+### Execution: Wave 2 — Library Browser
+
+**04-03** (4 min): Library browser UI connecting Rust scanner to frontend player. Created `src/lib/library/` module with types mirroring Rust structs, scanner invoke wrappers with dynamic imports, reactive store with album grouping and sorting. Built `/library` page with scan progress bar, sort controls, empty state. `LibraryBrowser` component renders album grid with expandable track lists — clicking a track calls `setQueue()` to play. `FolderManager` panel for add/remove/rescan. Library nav link in header (Tauri-only). Installed `@tauri-apps/plugin-dialog` for native folder picker.
+
+Next: Wave 3 (04-04) — unified discovery, bridging local library with the 2.8M-artist Mercury index.
+
+> **Commit e8053be** (2026-02-16 23:51) — feat(04-02): player state, audio engine, and queue management
+> Files changed: 4
+
+> **Commit 5f2c71c** (2026-02-16 23:52) — feat(04-01): add Rust dependencies, library database, and metadata reader
+> Files changed: 7
+
+> **Commit 29facfc** (2026-02-16 23:54) — feat(04-02): player bar UI, queue panel, and layout integration
+> Files changed: 4
+
+> **Commit 04c3a20** (2026-02-16 23:55) — feat(04-01): add scanner commands, folder picker, and Tauri integration
+> Files changed: 7
+
+> **Commit 8c0ce61** (2026-02-16 23:56) — docs(04-02): complete player frontend plan
+> Files changed: 3
+
+> **Commit 01b1595** (2026-02-16 23:57) — docs(04-01): complete scanner backend plan
+> Files changed: 2
+
+> **Commit 698402f** (2026-02-17 00:02) — feat(04-03): library types, state store, and scanner invoke wrappers
+> Files changed: 4
+
+> **Commit 2934d0f** (2026-02-17 00:05) — feat(04-03): library page, album browser, folder manager, and nav link
+> Files changed: 6
