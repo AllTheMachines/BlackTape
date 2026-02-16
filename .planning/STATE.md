@@ -5,28 +5,30 @@
 See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Choosing next phase
+**Current focus:** Phase 3 — Desktop App Foundation
 
 ## Current Position
 
-Phase: 2 of 9 complete (Search + Artist Pages + Embeds)
-Plan: 5 of 5 — all complete
-Status: Phase 2 COMPLETE — signed off 2026-02-15
-Last activity: 2026-02-15 — Visual sign-off, search ranking fix, loading indicator, Spotify fallback
+Phase: 3 of 9 (Desktop App Foundation)
+Plan: 1 of 5 complete
+Status: In progress
+Last activity: 2026-02-16 — Completed 03-01-PLAN.md (Database Abstraction Layer)
 
-Progress: [██████████] 100%
+Progress: [██░░░░░░░░] 1/5
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
+- Total plans completed: 6
 - Phase 2 execution time: ~15min (plans 1-4) + verification session
+- Phase 3 Plan 01: 4min
 
 **By Phase:**
 | Phase | Plans | Total | Status |
 |-------|-------|-------|--------|
 | 1. Data Pipeline | pre-GSD | - | Complete |
 | 2. Search + Embeds | 5/5 | ~15min | Complete |
+| 3. Desktop App | 1/5 | 4min | In progress |
 
 ## Accumulated Context
 
@@ -50,6 +52,10 @@ Progress: [██████████] 100%
 - FTS5 JOIN must use rowid (a.id = f.rowid), not name — name-based joins break with duplicates.
 - Search ranking uses CASE priority: exact name > prefix > tag match, then FTS rank.
 - Spotify embeds unreliable for logged-in users — always show direct link alongside embed.
+- DbProvider interface uses all<T>() and get<T>() — minimal surface covers all query patterns.
+- D1Provider created explicitly in server routes, not via factory. Factory is Tauri-only.
+- TauriProvider uses dynamic import + lazy singleton to avoid web build failures.
+- Provider pattern: all DB access goes through DbProvider, never D1Database directly.
 
 ### Pending Todos
 None
@@ -59,6 +65,6 @@ None
 
 ## Session Continuity
 
-Last session: 2026-02-15
-Stopped at: Phase 2 complete. Choosing next phase.
-Next options: Phase 3 (Desktop App) or Phase 0 Stage 1 (Sustainability)
+Last session: 2026-02-16
+Stopped at: Completed 03-01 (Database Abstraction Layer). Next: 03-02 (Tauri project initialization).
+Resume file: .planning/phases/03-desktop-and-distribution/03-02-PLAN.md
