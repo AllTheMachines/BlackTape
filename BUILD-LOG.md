@@ -1014,7 +1014,25 @@ Key decision: Player state files use `.svelte.ts` extension (not `.ts`) — requ
 
 **04-03** (4 min): Library browser UI connecting Rust scanner to frontend player. Created `src/lib/library/` module with types mirroring Rust structs, scanner invoke wrappers with dynamic imports, reactive store with album grouping and sorting. Built `/library` page with scan progress bar, sort controls, empty state. `LibraryBrowser` component renders album grid with expandable track lists — clicking a track calls `setQueue()` to play. `FolderManager` panel for add/remove/rescan. Library nav link in header (Tauri-only). Installed `@tauri-apps/plugin-dialog` for native folder picker.
 
-Next: Wave 3 (04-04) — unified discovery, bridging local library with the 2.8M-artist Mercury index.
+### Execution: Wave 3 — Unified Discovery
+
+**04-04** (4 min): Artist name normalization (`normalizeArtistName` strips "The", splits feat./ft./&, removes trailing qualifiers) + FTS5 matching against 2.8M-artist index. `NowPlayingDiscovery` panel shows matched artist with tags, country, related artists via tag co-occurrence — reactive `$effect` triggers on artist change. Player expanded view with slide-up animation above the bar. Unified search shows "Your Library" section above discovery results in Tauri context — client-side filter on local tracks.
+
+### Wave 3 Complete — All Code Waves Done
+
+4 plans, 4 self-checks passed, 0 errors, 0 warnings. `npm run check` clean. Now just the human verification checkpoint (04-05).
+
+### Wave 4 Complete — Human Verification Passed
+
+Steve tested the full flow: scan folder → browse library → play tracks → navigate without interruption → discover artist via expanded player → unified search with local results. Three bugs found and fixed during verification:
+
+1. **cross-env not found** — `beforeDevCommand` needed `npx cross-env` not bare `cross-env`
+2. **Discovery button invisible** — tiny chevron icon replaced with labeled "Discover" pill button
+3. **Search killed audio** — dynamic imports outside try/catch in search load function; unhandled error unmounted layout (no `+error.svelte`), destroying the Player
+
+### Phase 4 Complete
+
+All 5 plans executed. Local music player works end-to-end: Rust scanner → HTML5 Audio playback → library browser → discovery bridge → unified search. 4 waves, 10 tasks, 12 commits.
 
 > **Commit e8053be** (2026-02-16 23:51) — feat(04-02): player state, audio engine, and queue management
 > Files changed: 4
@@ -1039,3 +1057,18 @@ Next: Wave 3 (04-04) — unified discovery, bridging local library with the 2.8M
 
 > **Commit 2934d0f** (2026-02-17 00:05) — feat(04-03): library page, album browser, folder manager, and nav link
 > Files changed: 6
+
+> **Commit 97edc19** (2026-02-17 00:07) — docs(04-03): complete library browser plan
+> Files changed: 3
+
+> **Commit 8f3d0ea** (2026-02-17 00:12) — feat(04-04): artist matching and now-playing discovery panel
+> Files changed: 3
+
+> **Commit b54abdf** (2026-02-17 00:14) — feat(04-04): unified search with local library tracks in results
+> Files changed: 2
+
+> **Commit b95af80** (2026-02-17 00:15) — docs(04-04): complete unified discovery plan
+> Files changed: 2
+
+> **Commit 54e5d92** (2026-02-17 00:49) — fix(04-05): resolve three bugs found during phase 4 verification
+> Files changed: 5

@@ -17,7 +17,7 @@ Phases 1-2 built the web gateway — a working search engine with artist pages a
 - [x] **Phase 1: Data Pipeline** — MusicBrainz dumps into searchable SQLite + FTS5
 - [x] **Phase 2: Web Gateway** — Search + artist pages + embeds on Cloudflare
 - [x] **Phase 3: Desktop App Foundation** — Tauri shell, local SQLite, database distribution, offline search
-- [ ] **Phase 4: Local Music Player** — Folder scanning, metadata, playback, library-meets-discovery
+- [x] **Phase 4: Local Music Player** — Folder scanning, metadata, playback, library-meets-discovery
 - [ ] **Phase 5: AI Foundation** — Client-side models, recommendations, natural-language exploration, taste profiling
 - [ ] **Phase 6: Discovery Engine** — Composite ranking, tag browsing, crate digging, uniqueness scoring, style map
 - [ ] **Phase 7: Knowledge Base** — Genre/scene map, multi-layer content, scene maps, time machine, liner notes
@@ -89,11 +89,11 @@ Plans:
   6. Local library and online discovery feel like one thing — unified search, unified browse
 **Plans**: 5 plans
 Plans:
-- [ ] 04-01-PLAN.md — Rust scanner backend (lofty metadata, walkdir traversal, library.db, Tauri commands)
+- [x] 04-01-PLAN.md — Rust scanner backend (lofty metadata, walkdir traversal, library.db, Tauri commands)
 - [x] 04-02-PLAN.md — Player frontend (HTML5 Audio engine, player state, queue, persistent player bar UI)
-- [ ] 04-03-PLAN.md — Library browser (folder management, scan progress, album grid, click-to-play)
-- [ ] 04-04-PLAN.md — Unified discovery (artist matching via FTS5, now-playing context, local tracks in search)
-- [ ] 04-05-PLAN.md — End-to-end verification checkpoint
+- [x] 04-03-PLAN.md — Library browser (folder management, scan progress, album grid, click-to-play)
+- [x] 04-04-PLAN.md — Unified discovery (artist matching via FTS5, now-playing context, local tracks in search)
+- [x] 04-05-PLAN.md — End-to-end verification checkpoint
 
 ### Phase 5: AI Foundation
 **Goal**: AI as a core feature — recommendations, summaries, natural-language exploration, taste profiling. Not a bolt-on. Central to how the app works. Open models on client side where possible.
