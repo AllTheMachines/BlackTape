@@ -5,21 +5,21 @@
 See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Phase 4 — Local Music Player (Wave 2 complete [03], Plan 04 next)
+**Current focus:** Phase 4 — Local Music Player (Wave 3 complete [04], Plan 05 next)
 
 ## Current Position
 
 Phase: 4 of 12 (Local Music Player)
-Plan: 3 of 5 complete (wave 1: 04-01 + 04-02, wave 2: 04-03 library browser)
+Plan: 4 of 5 complete (wave 1: 04-01 + 04-02, wave 2: 04-03, wave 3: 04-04 discovery bridge)
 Status: In progress
-Last activity: 2026-02-16 — Completed 04-03 (Library browser: album grid, folder management, scan progress, click-to-play)
+Last activity: 2026-02-17 — Completed 04-04 (Unified discovery: artist matching, now-playing panel, local tracks in search)
 
-Progress: [██████░░░░] 3/5
+Progress: [████████░░] 4/5
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 13
+- Total plans completed: 14
 - Phase 2 execution time: ~15min (plans 1-4) + verification session
 - Phase 3 Plan 01: 4min
 - Phase 3 Plan 02: 14min
@@ -27,6 +27,7 @@ Progress: [██████░░░░] 3/5
 - Phase 4 Plan 01: 7min
 - Phase 4 Plan 02: 4min
 - Phase 4 Plan 03: 4min
+- Phase 4 Plan 04: 4min
 
 **By Phase:**
 | Phase | Plans | Total | Status |
@@ -34,7 +35,7 @@ Progress: [██████░░░░] 3/5
 | 1. Data Pipeline | pre-GSD | - | Complete |
 | 2. Search + Embeds | 5/5 | ~15min | Complete |
 | 3. Desktop App | 5/5 | 23min+ | Complete |
-| 4. Local Music Player | 3/5 | 15min | In progress |
+| 4. Local Music Player | 4/5 | 19min | In progress |
 
 ## Accumulated Context
 
@@ -88,6 +89,12 @@ Progress: [██████░░░░] 3/5
 - Album grouping uses album_artist || artist fallback as grouping key with locale-aware sort.
 - FolderManager is inline panel (not modal) toggled via gear icon.
 - Library nav link added to header in Tauri context only (via onMount tauriMode check).
+- Artist name normalization strips "The", splits feat./ft./featuring/&, removes trailing qualifiers like (Remastered).
+- matchArtistToIndex uses exact case-insensitive match priority, then trusts FTS5 ranking. Best-effort only.
+- Related artists found via first (most prominent) tag lookup from matched artist.
+- Discovery panel positioned above player bar (z-index 199) with slide-up animation.
+- Local library search is client-side filter on all tracks (adequate for personal library sizes).
+- Web build gets empty localTracks array — no library on web, no breakage.
 
 ### Pending Todos
 None
@@ -97,6 +104,6 @@ None
 
 ## Session Continuity
 
-Last session: 2026-02-16
-Stopped at: 04-03 complete. Next: 04-04 (Unified discovery: local files meet Mercury index).
-Resume: Execute 04-04-PLAN.md (bridge local library with online discovery database).
+Last session: 2026-02-17
+Stopped at: 04-04 complete. Next: 04-05 (Phase 4 polish and verification).
+Resume: Execute 04-05-PLAN.md (final phase 4 plan).
