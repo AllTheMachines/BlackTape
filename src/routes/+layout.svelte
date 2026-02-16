@@ -6,10 +6,16 @@
 	import { isTauri } from '$lib/platform';
 	import Player from '$lib/components/Player.svelte';
 	import { playerState } from '$lib/player/state.svelte';
+	import { onMount } from 'svelte';
 
 	let { children } = $props();
 
 	let showPlayer = $state(false);
+	let tauriMode = $state(false);
+
+	onMount(() => {
+		tauriMode = isTauri();
+	});
 
 	$effect(() => {
 		showPlayer = isTauri() && playerState.currentTrack !== null;
@@ -26,6 +32,9 @@
 
 <header>
 	<a href="/" class="site-name">{PROJECT_NAME}</a>
+	{#if tauriMode}
+		<a href="/library" class="nav-link">Library</a>
+	{/if}
 </header>
 
 <main class:has-player={showPlayer}>
@@ -60,6 +69,19 @@
 
 	.site-name:hover {
 		color: var(--text-primary);
+		text-decoration: none;
+	}
+
+	.nav-link {
+		font-size: 0.75rem;
+		color: var(--text-muted);
+		text-decoration: none;
+		margin-left: var(--space-lg);
+		transition: color 0.15s;
+	}
+
+	.nav-link:hover {
+		color: var(--text-secondary);
 		text-decoration: none;
 	}
 
