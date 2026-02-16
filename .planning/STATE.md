@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-15)
 ## Current Position
 
 Phase: 3 of 12 (Desktop App Foundation)
-Plan: 3 of 5 complete
-Status: In progress — Wave 1 (03-01 + 03-02) and Wave 2 (03-03) complete
-Last activity: 2026-02-16 — Completed 03-03 (universal load functions)
+Plan: 3 of 5 complete (03-04 tasks 1-2 done, awaiting human-verify checkpoint)
+Status: In progress — Wave 3 (03-04) executing, tasks 1-2 complete
+Last activity: 2026-02-16 — Completed 03-04 tasks 1-2 (first-run UI + compression pipeline)
 
-Progress: [██████░░░░] 3/5
+Progress: [██████░░░░] 3/5 (03-04 in progress)
 
 ## Performance Metrics
 
@@ -67,6 +67,10 @@ Progress: [██████░░░░] 3/5
 - Dynamic imports isolate Tauri dependencies from web bundle in universal load functions.
 - Each external fetch (links, releases, bio) independently try/caught for granular graceful degradation.
 - Tauri artist page fetches MusicBrainz directly (no internal API proxy) since Cloudflare Cache API unavailable.
+- Database not bundled with installer — first-run UI guides user to download mercury.db separately.
+- Gzip (level 9) for database compression — built into Node.js, no native dependencies. 53% reduction on 778MB db.
+- Torrent distribution uses public trackers + web seed placeholder URL.
+- TauriProvider uses explicit appDataDir path for database loading (not implicit relative path).
 
 ### Pending Todos
 None
@@ -77,5 +81,5 @@ None
 ## Session Continuity
 
 Last session: 2026-02-16
-Stopped at: Wave 2 complete (03-03). Ready for Wave 3 (03-04).
-Resume: `/gsd:execute-phase 3` — will auto-skip completed plans and resume from 03-04.
+Stopped at: 03-04 tasks 1-2 complete. Checkpoint: human-verify (Task 3) pending.
+Resume: Continue 03-04 from Task 3 checkpoint (verify first-run UI in Tauri app).
