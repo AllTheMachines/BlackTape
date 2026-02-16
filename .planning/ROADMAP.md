@@ -16,7 +16,7 @@ Phases 1-2 built the web gateway — a working search engine with artist pages a
 
 - [x] **Phase 1: Data Pipeline** — MusicBrainz dumps into searchable SQLite + FTS5
 - [x] **Phase 2: Web Gateway** — Search + artist pages + embeds on Cloudflare
-- [ ] **Phase 3: Desktop App Foundation** — Tauri shell, local SQLite, database distribution, offline search
+- [x] **Phase 3: Desktop App Foundation** — Tauri shell, local SQLite, database distribution, offline search
 - [ ] **Phase 4: Local Music Player** — Folder scanning, metadata, playback, library-meets-discovery
 - [ ] **Phase 5: AI Foundation** — Client-side models, recommendations, natural-language exploration, taste profiling
 - [ ] **Phase 6: Discovery Engine** — Composite ranking, tag browsing, crate digging, uniqueness scoring, style map
@@ -72,9 +72,9 @@ Plans:
 Plans:
 - [x] 03-01-PLAN.md — Database abstraction layer (DbProvider interface, D1 + Tauri implementations)
 - [x] 03-02-PLAN.md — Tauri scaffolding, dual-adapter build system, desktop window
-- [ ] 03-03-PLAN.md — Universal load functions for search and artist pages
-- [ ] 03-04-PLAN.md — Database detection, first-run setup UI, compression + torrent pipeline
-- [ ] 03-05-PLAN.md — Auto-updater signing keys, NSIS installer, final verification
+- [x] 03-03-PLAN.md — Universal load functions for search and artist pages
+- [x] 03-04-PLAN.md — Database detection, first-run setup UI, compression + torrent pipeline
+- [x] 03-05-PLAN.md — Auto-updater signing keys, NSIS installer (3.9MB)
 
 ### Phase 4: Local Music Player
 **Goal**: Mercury plays what you own. Scan folders, read metadata, build a library. Local files and online discovery are one unified experience — not two modes.
@@ -209,7 +209,7 @@ Plans:
 |-------|---------------|--------|-----------|
 | 1. Data Pipeline | done | Complete | 2026-02-14 |
 | 2. Web Gateway | 5/5 | Complete | 2026-02-15 |
-| 3. Desktop App Foundation | 2/5 | In progress | - |
+| 3. Desktop App Foundation | 5/5 | Complete | 2026-02-16 |
 | 4. Local Music Player | 0/TBD | Not started | - |
 | 5. AI Foundation | 0/TBD | Not started | - |
 | 6. Discovery Engine | 0/TBD | Not started | - |

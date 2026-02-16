@@ -956,9 +956,19 @@ Built the NSIS installer:
 - Install mode: `currentUser` (no admin required)
 - Bundle target: NSIS only (handles WebView2 bootstrapping on Windows 10)
 
-<!-- status -->
-Phase 3 complete — all 5 plans executed. Committing final plan.
-<!-- /status -->
+### Phase 3 Complete
+
+All 5 plans executed:
+- **03-01** ✓ Database abstraction layer (DbProvider interface)
+- **03-02** ✓ Tauri scaffolding + dual-adapter build
+- **03-03** ✓ Universal load functions (web passthrough / Tauri local DB)
+- **03-04** ✓ First-run setup UI + database compression pipeline
+- **03-05** ✓ Updater signing keys + NSIS installer (3.9MB)
+
+The desktop app is real: local SQLite search, artist pages with MusicBrainz enrichment, first-run detection, auto-updater infrastructure, and a 3.9MB Windows installer. Web build completely unaffected.
 
 > **Commit 6c3288f** (2026-02-16 22:55) — fix(03-04): fix database path separator bug — desktop search now works
 > Files changed: 5
+
+> **Commit 0ee72ce** (2026-02-16 23:07) — feat(03-05): add updater signing keys and NSIS installer configuration
+> Files changed: 4
