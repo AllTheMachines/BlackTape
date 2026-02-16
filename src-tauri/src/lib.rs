@@ -15,8 +15,7 @@ pub fn run() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![check_database])
         .plugin(tauri_plugin_sql::Builder::new().build())
-        // updater plugin deferred to Plan 03-05 (needs signing keys)
-        // .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

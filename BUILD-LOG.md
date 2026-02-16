@@ -940,6 +940,25 @@ The real bug: **missing path separator** in `tauri-provider.ts`. `appDataDir()` 
 
 **Fix:** Normalize and ensure trailing slash before appending filename.
 
+### 03-05: Signing Keys + NSIS Installer
+
+Generated the Tauri updater signing key pair:
+- Private key: `~/.tauri/mercury.key` (NOT in git, NOT password-protected)
+- Public key: embedded in `tauri.conf.json` under `plugins.updater.pubkey`
+- **Back this key up.** Losing it means existing users can never auto-update.
+
+Configured the auto-updater plugin:
+- Updater endpoint: placeholder URL (real one when update server exists)
+- Updater plugin enabled in `lib.rs`
+
+Built the NSIS installer:
+- `Mercury_0.1.0_x64-setup.exe` — **3.9MB** installer, 15MB binary
+- Install mode: `currentUser` (no admin required)
+- Bundle target: NSIS only (handles WebView2 bootstrapping on Windows 10)
+
 <!-- status -->
-FTS5 "bug" was actually a path separator bug — fixed and verified. Search works in desktop app. Cleaning up and committing hotfixes.
+Phase 3 complete — all 5 plans executed. Committing final plan.
 <!-- /status -->
+
+> **Commit 6c3288f** (2026-02-16 22:55) — fix(03-04): fix database path separator bug — desktop search now works
+> Files changed: 5

@@ -25,13 +25,26 @@
   },
   "bundle": {
     "active": true,
-    "targets": "all",
+    "targets": ["nsis"],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser"
+      }
+    }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDQwQjAxMjlFRDQ2MEVGNkEKUldScTcyRFVuaEt3UUNxMHllbmJyZU9PbThjUWR1Qk1KaGJGd3hJbGlISGczdTFkTE5kR1N1VXAK",
+      "endpoints": [
+        "https://mercury-updates.example.com/{{target}}/{{arch}}/{{current_version}}"
+      ]
+    }
   }
 }
