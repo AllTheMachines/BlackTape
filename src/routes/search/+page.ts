@@ -6,6 +6,7 @@
  *   return value as `data`. This function returns it unchanged.
  * - Desktop (Tauri SPA, ssr=false): +page.server.ts is not executed.
  *   This function detects Tauri and queries the local SQLite database.
+ *   Also searches the local music library for matching tracks.
  *
  * Dynamic imports keep Tauri dependencies out of the web bundle.
  */
@@ -13,11 +14,12 @@
 import { isTauri } from '$lib/platform';
 import type { PageLoad } from './$types';
 import type { ArtistResult } from '$lib/db/queries';
+import type { LocalTrack } from '$lib/library/types';
 
 export const load: PageLoad = async ({ url, data }) => {
-	// Web SSR: data comes from +page.server.ts
+	// Web SSR: data comes from +page.server.ts — no local library
 	if (!isTauri()) {
-		return data;
+		return { ...data, localTracks: [] as LocalTrack[] };
 	}
 
 	// Tauri desktop: query local database
@@ -33,7 +35,8 @@ export const load: PageLoad = async ({ url, data }) => {
 			query: '',
 			mode,
 			matchedTag: null as string | null,
-			error: false
+			error: false,
+			localTracks: [] as LocalTrack[]
 		};
 	}
 
@@ -41,12 +44,30 @@ export const load: PageLoad = async ({ url, data }) => {
 		const provider = await getProvider();
 		const results =
 			mode === 'tag' ? await searchByTag(provider, q) : await searchArtists(provider, q);
+
+		// Also search local library tracks
+		let localTracks: LocalTrack[] = [];
+		try {
+			const { getLibraryTracks } = await import('$lib/library/scanner');
+			const allTracks = await getLibraryTracks();
+			const lowerQ = q.toLowerCase();
+			localTracks = allTracks.filter(
+				(t) =>
+					(t.artist && t.artist.toLowerCase().includes(lowerQ)) ||
+					(t.title && t.title.toLowerCase().includes(lowerQ)) ||
+					(t.album && t.album.toLowerCase().includes(lowerQ))
+			);
+		} catch {
+			// Library search is best-effort — silently fail
+		}
+
 		return {
 			results,
 			query: q,
 			mode,
 			matchedTag: mode === 'tag' ? q : null,
-			error: false
+			error: false,
+			localTracks
 		};
 	} catch (err) {
 		console.error('Search error:', err);
@@ -55,7 +76,8 @@ export const load: PageLoad = async ({ url, data }) => {
 			query: q,
 			mode,
 			matchedTag: null as string | null,
-			error: true
+			error: true,
+			localTracks: [] as LocalTrack[]
 		};
 	}
 };
