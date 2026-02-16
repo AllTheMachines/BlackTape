@@ -1,0 +1,439 @@
+<script lang="ts">
+	import { playerState } from '$lib/player/state.svelte';
+	import { togglePlayPause, seek, setVolume, toggleMute } from '$lib/player/audio.svelte';
+	import {
+		playNext,
+		playPrevious,
+		toggleShuffle,
+		toggleRepeat,
+		queueState
+	} from '$lib/player/queue.svelte';
+	import Queue from './Queue.svelte';
+
+	let showQueue = $state(false);
+
+	function formatTime(secs: number): string {
+		if (!isFinite(secs) || secs < 0) return '0:00';
+		const totalSeconds = Math.floor(secs);
+		const hours = Math.floor(totalSeconds / 3600);
+		const minutes = Math.floor((totalSeconds % 3600) / 60);
+		const seconds = totalSeconds % 60;
+
+		if (hours > 0) {
+			return `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+		}
+		return `${minutes}:${String(seconds).padStart(2, '0')}`;
+	}
+
+	function handleSeek(e: Event) {
+		const target = e.target as HTMLInputElement;
+		seek(Number(target.value));
+	}
+
+	function handleVolume(e: Event) {
+		const target = e.target as HTMLInputElement;
+		setVolume(Number(target.value));
+	}
+
+	function toggleQueuePanel() {
+		showQueue = !showQueue;
+	}
+
+	function repeatIcon(mode: string): string {
+		if (mode === 'one') return '1';
+		return '';
+	}
+</script>
+
+{#if playerState.currentTrack}
+	<div class="player-bar">
+		<!-- Track info -->
+		<div class="track-info">
+			<div class="track-title">{playerState.currentTrack.title}</div>
+			<div class="track-meta">
+				<span class="track-artist">{playerState.currentTrack.artist}</span>
+				{#if playerState.currentTrack.album}
+					<span class="meta-sep">&mdash;</span>
+					<span class="track-album">{playerState.currentTrack.album}</span>
+				{/if}
+			</div>
+		</div>
+
+		<!-- Center: controls + seek -->
+		<div class="controls-center">
+			<div class="transport">
+				<button
+					class="control-btn small"
+					class:active={queueState.shuffled}
+					onclick={toggleShuffle}
+					title="Shuffle"
+					aria-label="Toggle shuffle"
+				>
+					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<polyline points="16 3 21 3 21 8" />
+						<line x1="4" y1="20" x2="21" y2="3" />
+						<polyline points="21 16 21 21 16 21" />
+						<line x1="15" y1="15" x2="21" y2="21" />
+						<line x1="4" y1="4" x2="9" y2="9" />
+					</svg>
+				</button>
+
+				<button
+					class="control-btn"
+					onclick={playPrevious}
+					title="Previous"
+					aria-label="Previous track"
+				>
+					<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+						<path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
+					</svg>
+				</button>
+
+				<button
+					class="control-btn play-btn"
+					onclick={togglePlayPause}
+					title={playerState.isPlaying ? 'Pause' : 'Play'}
+					aria-label={playerState.isPlaying ? 'Pause' : 'Play'}
+				>
+					{#if playerState.isLoading}
+						<div class="spinner"></div>
+					{:else if playerState.isPlaying}
+						<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+							<path d="M6 4h4v16H6zm8 0h4v16h-4z" />
+						</svg>
+					{:else}
+						<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+							<path d="M8 5v14l11-7z" />
+						</svg>
+					{/if}
+				</button>
+
+				<button
+					class="control-btn"
+					onclick={playNext}
+					title="Next"
+					aria-label="Next track"
+				>
+					<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+						<path d="M6 18l8.5-6L6 6v12zm10-12v12h2V6z" />
+					</svg>
+				</button>
+
+				<button
+					class="control-btn small"
+					class:active={queueState.repeatMode !== 'none'}
+					onclick={toggleRepeat}
+					title="Repeat: {queueState.repeatMode}"
+					aria-label="Toggle repeat"
+				>
+					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<polyline points="17 1 21 5 17 9" />
+						<path d="M3 11V9a4 4 0 0 1 4-4h14" />
+						<polyline points="7 23 3 19 7 15" />
+						<path d="M21 13v2a4 4 0 0 1-4 4H3" />
+					</svg>
+					{#if queueState.repeatMode === 'one'}
+						<span class="repeat-one-badge">{repeatIcon('one')}</span>
+					{/if}
+				</button>
+			</div>
+
+			<div class="seek-row">
+				<span class="time-display">{formatTime(playerState.currentTime)}</span>
+				<input
+					type="range"
+					class="seek-bar"
+					min="0"
+					max={playerState.duration || 0}
+					step="0.1"
+					value={playerState.currentTime}
+					oninput={handleSeek}
+					aria-label="Seek"
+				/>
+				<span class="time-display">{formatTime(playerState.duration)}</span>
+			</div>
+		</div>
+
+		<!-- Right: volume + queue toggle -->
+		<div class="controls-right">
+			<button
+				class="control-btn small"
+				onclick={toggleMute}
+				title={playerState.isMuted ? 'Unmute' : 'Mute'}
+				aria-label={playerState.isMuted ? 'Unmute' : 'Mute'}
+			>
+				{#if playerState.isMuted || playerState.volume === 0}
+					<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+						<path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51A8.796 8.796 0 0 0 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06a8.99 8.99 0 0 0 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" />
+					</svg>
+				{:else if playerState.volume < 0.5}
+					<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+						<path d="M18.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM5 9v6h4l5 5V4L9 9H5z" />
+					</svg>
+				{:else}
+					<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+						<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+					</svg>
+				{/if}
+			</button>
+
+			<input
+				type="range"
+				class="volume-bar"
+				min="0"
+				max="1"
+				step="0.01"
+				value={playerState.volume}
+				oninput={handleVolume}
+				aria-label="Volume"
+			/>
+
+			<button
+				class="control-btn small"
+				class:active={showQueue}
+				onclick={toggleQueuePanel}
+				title="Queue"
+				aria-label="Toggle queue"
+			>
+				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<line x1="8" y1="6" x2="21" y2="6" />
+					<line x1="8" y1="12" x2="21" y2="12" />
+					<line x1="8" y1="18" x2="21" y2="18" />
+					<line x1="3" y1="6" x2="3.01" y2="6" />
+					<line x1="3" y1="12" x2="3.01" y2="12" />
+					<line x1="3" y1="18" x2="3.01" y2="18" />
+				</svg>
+			</button>
+		</div>
+	</div>
+
+	{#if showQueue}
+		<Queue onclose={() => (showQueue = false)} />
+	{/if}
+{/if}
+
+<style>
+	.player-bar {
+		position: fixed;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		height: var(--player-height);
+		background: var(--player-bg);
+		border-top: 1px solid var(--player-border);
+		display: flex;
+		align-items: center;
+		padding: 0 var(--space-lg);
+		gap: var(--space-lg);
+		z-index: 200;
+	}
+
+	/* Track info — left section */
+	.track-info {
+		flex: 1;
+		min-width: 0;
+		max-width: 240px;
+	}
+
+	.track-title {
+		font-size: 0.85rem;
+		font-weight: 500;
+		color: var(--text-primary);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.track-meta {
+		font-size: 0.75rem;
+		color: var(--text-secondary);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.meta-sep {
+		margin: 0 0.3em;
+		color: var(--text-muted);
+	}
+
+	/* Center — transport controls + seek */
+	.controls-center {
+		flex: 2;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 2px;
+		max-width: 600px;
+	}
+
+	.transport {
+		display: flex;
+		align-items: center;
+		gap: var(--space-sm);
+	}
+
+	.control-btn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: none;
+		border: none;
+		color: var(--text-secondary);
+		cursor: pointer;
+		padding: 4px;
+		border-radius: 4px;
+		transition: color 0.15s, background 0.15s;
+		position: relative;
+	}
+
+	.control-btn:hover {
+		color: var(--text-primary);
+	}
+
+	.control-btn.small {
+		opacity: 0.7;
+	}
+
+	.control-btn.small:hover {
+		opacity: 1;
+	}
+
+	.control-btn.active {
+		color: var(--progress-color);
+		opacity: 1;
+	}
+
+	.play-btn {
+		width: 36px;
+		height: 36px;
+		border-radius: 50%;
+		background: var(--text-primary);
+		color: var(--player-bg);
+	}
+
+	.play-btn:hover {
+		background: var(--text-accent);
+		color: var(--player-bg);
+	}
+
+	.repeat-one-badge {
+		position: absolute;
+		top: -2px;
+		right: -2px;
+		font-size: 0.55rem;
+		font-weight: 700;
+		color: var(--progress-color);
+	}
+
+	/* Seek bar */
+	.seek-row {
+		display: flex;
+		align-items: center;
+		gap: var(--space-sm);
+		width: 100%;
+	}
+
+	.time-display {
+		font-size: 0.7rem;
+		color: var(--text-muted);
+		font-variant-numeric: tabular-nums;
+		min-width: 36px;
+		text-align: center;
+	}
+
+	.seek-bar {
+		flex: 1;
+		height: 4px;
+		-webkit-appearance: none;
+		appearance: none;
+		background: var(--progress-bg);
+		border-radius: 2px;
+		outline: none;
+		cursor: pointer;
+	}
+
+	.seek-bar::-webkit-slider-thumb {
+		-webkit-appearance: none;
+		width: 12px;
+		height: 12px;
+		border-radius: 50%;
+		background: var(--progress-color);
+		cursor: pointer;
+		opacity: 0;
+		transition: opacity 0.15s;
+	}
+
+	.seek-bar:hover::-webkit-slider-thumb {
+		opacity: 1;
+	}
+
+	.seek-bar::-moz-range-thumb {
+		width: 12px;
+		height: 12px;
+		border-radius: 50%;
+		background: var(--progress-color);
+		cursor: pointer;
+		border: none;
+	}
+
+	.seek-bar::-webkit-slider-runnable-track {
+		height: 4px;
+		border-radius: 2px;
+	}
+
+	/* Right section — volume + queue */
+	.controls-right {
+		flex: 1;
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+		gap: var(--space-sm);
+		max-width: 200px;
+	}
+
+	.volume-bar {
+		width: 80px;
+		height: 4px;
+		-webkit-appearance: none;
+		appearance: none;
+		background: var(--progress-bg);
+		border-radius: 2px;
+		outline: none;
+		cursor: pointer;
+	}
+
+	.volume-bar::-webkit-slider-thumb {
+		-webkit-appearance: none;
+		width: 10px;
+		height: 10px;
+		border-radius: 50%;
+		background: var(--text-secondary);
+		cursor: pointer;
+	}
+
+	.volume-bar::-moz-range-thumb {
+		width: 10px;
+		height: 10px;
+		border-radius: 50%;
+		background: var(--text-secondary);
+		cursor: pointer;
+		border: none;
+	}
+
+	/* Loading spinner */
+	.spinner {
+		width: 18px;
+		height: 18px;
+		border: 2px solid transparent;
+		border-top-color: currentColor;
+		border-radius: 50%;
+		animation: spin 0.6s linear infinite;
+	}
+
+	@keyframes spin {
+		to {
+			transform: rotate(360deg);
+		}
+	}
+</style>

@@ -3,8 +3,17 @@
 	import { PROJECT_NAME } from '$lib/config';
 	import favicon from '$lib/assets/favicon.svg';
 	import { navigating } from '$app/stores';
+	import { isTauri } from '$lib/platform';
+	import Player from '$lib/components/Player.svelte';
+	import { playerState } from '$lib/player/state.svelte';
 
 	let { children } = $props();
+
+	let showPlayer = $state(false);
+
+	$effect(() => {
+		showPlayer = isTauri() && playerState.currentTrack !== null;
+	});
 </script>
 
 <svelte:head>
@@ -19,9 +28,13 @@
 	<a href="/" class="site-name">{PROJECT_NAME}</a>
 </header>
 
-<main>
+<main class:has-player={showPlayer}>
 	{@render children()}
 </main>
+
+{#if isTauri()}
+	<Player />
+{/if}
 
 <style>
 	header {
@@ -52,6 +65,10 @@
 
 	main {
 		width: 100%;
+	}
+
+	main.has-player {
+		padding-bottom: var(--player-height);
 	}
 
 	.loading-bar {

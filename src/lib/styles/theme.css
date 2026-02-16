@@ -52,6 +52,13 @@
 
 	/* Header */
 	--header-height: 48px;
+
+	/* Player */
+	--player-height: 72px;
+	--player-bg: #0d0d0d;
+	--player-border: #1a1a1a;
+	--progress-color: #7eb8da;
+	--progress-bg: #1e1e1e;
 }
 
 /* Base resets */
