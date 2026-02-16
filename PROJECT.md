@@ -1,12 +1,12 @@
 # Mercury (working title)
 
-> A music search engine with taste.
+> A desktop app that knows everything about music, plays what you own, and helps you discover what you don't — using the open internet as its brain.
 
 ## What This Is
 
-A discovery engine that indexes all music from open databases, lets you explore through atomic tags, and embeds players from wherever the music already lives. A place where uniqueness is rewarded, taste is shareable, and no company can pull the plug.
+A desktop app that plays your local music, discovers new music through open databases, and builds a living knowledge base of genres, scenes, and movements. AI-powered exploration, embeds from wherever music already lives, and a genre map you can get lost in for hours. Uniqueness is rewarded, taste is shareable, and no company can pull the plug.
 
-Not a platform. Not a streaming service. Not a blockchain. A search engine that becomes an ecosystem.
+Not a platform. Not a streaming service. Not a blockchain. A discovery engine that becomes an ecosystem.
 
 ## The Problem
 
@@ -24,19 +24,34 @@ Index everything. Embed from everywhere. Reward uniqueness. Let people explore a
 
 ### Core Concept
 
-1. **The Index** — Ingest MusicBrainz + Discogs data dumps. Millions of artists and releases on day one. Searchable, browsable, filterable by granular tags. No empty-platform problem.
+1. **The Local Player** — Mercury plays music you own. Scan your folders, read metadata, build your library. Fully integrated with online discovery — when you play local files, Mercury shows related artists, tags, and suggestions from the global database. Your collection and the world's music are one unified experience. Not two modes. One.
 
-2. **The Embed Engine** — Detect Bandcamp, Spotify, Apple Music, SoundCloud, YouTube links and render the appropriate embedded player inline. Audio NEVER hosted by us — it lives on the artist's own infrastructure. Users can set their **preferred streaming service** — embeds and links default to what they actually use.
+2. **The Index** — Ingest MusicBrainz + Discogs data dumps. Millions of artists and releases on day one. Searchable, browsable, filterable by granular tags. No empty-platform problem.
 
-3. **The Tagging System** — Two layers. **Artist tags** are atomic and artist-defined — not "electronic" but "dark ambient / granular synthesis / Berlin school / cinematic." The more specific your tags, the more discoverable you become. Generic = invisible. Unique = findable. **User tags** are personal — listeners tag, sort, and organize their own collections however they want. Your shelf, your system.
+3. **The Embed Engine** — Detect Bandcamp, Spotify, Apple Music, SoundCloud, YouTube links and render the appropriate embedded player inline. Audio NEVER hosted by us — it lives on the artist's own infrastructure. Users can set their **preferred streaming service** — embeds and links default to what they actually use.
 
-4. **Democratic Discovery** — Uniqueness IS the discovery mechanism. If you're tagged "electronic" you're one of 500,000. If you're tagged "dark ambient / granular synthesis / field recordings from abandoned factories" you're one of 12. The system naturally rewards artists who carve their own niche and naturally demotes generic, AI-generated slop without needing to explicitly ban it.
+4. **The Tagging System** — Two layers. **Artist tags** are atomic and artist-defined — not "electronic" but "dark ambient / granular synthesis / Berlin school / cinematic." The more specific your tags, the more discoverable you become. Generic = invisible. Unique = findable. **User tags** are personal — listeners tag, sort, and organize their own collections however they want. Your shelf, your system.
 
-5. **Taste as Identity** — Users can build opt-in profiles that showcase their music taste. Like showing off your record collection. Shareable. Everyone can become a tastemaker or curator. Send someone your profile and they instantly understand your taste. Each user gets a **Taste Fingerprint** — a generated visual pattern unique to their collection. Not a number. Not a score. A shape. You can't game it. It just *is* what you listen to. Two people with similar fingerprints probably share taste.
+5. **Democratic Discovery** — Uniqueness IS the discovery mechanism, powered by a composite ranking score:
+   - **Inverse popularity** — fewer listeners = higher discovery boost
+   - **Tag rarity scoring** — rare/specific genres rank higher than generic ones
+   - **Scene freshness** — new scenes, emerging genres, recently active artists get boosted
 
-6. **Blog Revival** — Embeddable widgets for blog writers. Attribution and reach for curators. First access to emerging artists. Give bloggers a reason to write about music again by giving them tools and an audience. But also: **writing lives inside the platform**. Users can write about artists, releases, scenes — like liner notes, like blog posts. Not just curating lists. Actually writing about music.
+   If you're tagged "electronic" you're one of 500,000. If you're tagged "dark ambient / granular synthesis / field recordings from abandoned factories" you're one of 12. The system naturally rewards artists who carve their own niche and naturally demotes generic, AI-generated slop without needing to explicitly ban it.
 
-7. **The Tiers** — Everyone is discoverable by default. More control requires more effort:
+6. **The Knowledge Base** — A living encyclopedia of music: genres, scenes, movements, cities, eras. The genre/scene map is Mercury's biggest differentiator — a place where you can dig for hours. Content comes in layers:
+   - **Open data** — MusicBrainz tags + Wikidata genre relationships (CC0/CC-BY). The foundation, available day one.
+   - **Links & embeds** — YouTube documentaries, Wikipedia bios, external articles. Legal, always.
+   - **AI-assisted summaries** — Original descriptions generated from multiple public sources. Richer than raw data.
+   - **Community-written** — Users write scene histories, genre descriptions, artist bios. Wiki-style, moderated.
+
+7. **AI-Powered Exploration** — AI is a core feature, not a bolt-on. Natural-language discovery ("find me something like X but darker"), auto-generated genre descriptions, smart recommendations from your taste profile, and content filtering/ranking. Open models on client side where possible — your data stays on your machine.
+
+8. **Taste as Identity** — Users can build opt-in profiles that showcase their music taste. Like showing off your record collection. Shareable via generated exports from the desktop app — images, files, whatever makes sense. Everyone can become a tastemaker or curator. Each user gets a **Taste Fingerprint** — a generated visual pattern unique to their collection. Not a number. Not a score. A shape. You can't game it. It just *is* what you listen to. Two people with similar fingerprints probably share taste.
+
+9. **Blog Revival** — Embeddable widgets for blog writers. Attribution and reach for curators. First access to emerging artists. Give bloggers a reason to write about music again by giving them tools and an audience. But also: **writing lives inside the platform**. Users can write about artists, releases, scenes — like liner notes, like blog posts. Not just curating lists. Actually writing about music.
+
+10. **The Tiers** — Everyone is discoverable by default. More control requires more effort:
 
 | Tier | What | Artist Effort |
 |------|------|---------------|
@@ -45,17 +60,21 @@ Index everything. Embed from everywhere. Reward uniqueness. Let people explore a
 | Self-hosted | Static site generator for artists, publishes to free hosting, feeds rich data back to the index | Some setup |
 | Opted out | Removed from index | One action |
 
-8. **Crate Digging Mode** — A discovery interface that feels like flipping through records at a shop. Not search. Not recommendations. Random, serendipitous browsing through a filtered stack — pick a genre, a decade, a country, and just flip. Maybe you find gold, maybe you don't. That's the point.
+11. **Crate Digging Mode** — A discovery interface that feels like flipping through records at a shop. Not search. Not recommendations. Random, serendipitous browsing through a filtered stack — pick a genre, a decade, a country, and just flip. Maybe you find gold, maybe you don't. That's the point.
 
-9. **Scene Maps** — Geographic and temporal visualization. See the Berlin techno scene in 1995. See what's happening in Buenos Aires right now. Music comes from places and eras — MusicBrainz has the location data. Use it.
+12. **Scene Maps** — Geographic and temporal visualization. See the Berlin techno scene in 1995. See what's happening in Buenos Aires right now. Music comes from places and eras — MusicBrainz has the location data. Use it.
 
-10. **Time Machine** — Browse by year. What came out in 1997? In 2003? Scrub a timeline. Filter by tags. Watch how genres evolved, split, merged. The data is all there — release dates, artist relationships, scene connections.
+13. **Time Machine** — Browse by year. What came out in 1997? In 2003? Scrub a timeline. Filter by tags. Watch how genres evolved, split, merged. The data is all there — release dates, artist relationships, scene connections.
 
-11. **Liner Notes Revival** — Physical records had liner notes — credits, stories, thank-yous, production details. Digital killed that. Bring it back. Every release page has rich, expandable liner notes. MusicBrainz already has recording credits, relationships, and production data. Surface it beautifully.
+14. **Liner Notes Revival** — Physical records had liner notes — credits, stories, thank-yous, production details. Digital killed that. Bring it back. Every release page has rich, expandable liner notes. MusicBrainz already has recording credits, relationships, and production data. Surface it beautifully.
 
-12. **Import Your Library** — Import from Spotify, Last.fm, Apple Music, or a CSV. Bootstrap your collection instantly. No cold-start problem. You walk in with your existing taste and the shelves are already populated.
+15. **Import Your Library** — Import from Spotify, Last.fm, Apple Music, or a CSV. Bootstrap your collection instantly. No cold-start problem. You walk in with your existing taste and the shelves are already populated.
 
-13. **Listening Rooms** — Shared real-time listening. No video. No screen sharing. Just you and some people, a queue, and a chat. Like sitting in a room with friends playing records. Synchronized embeds, communal discovery.
+16. **Listening Rooms** — Shared real-time listening. No video. No screen sharing. Just you and some people, a queue, and a chat. Like sitting in a room with friends playing records. Synchronized embeds, communal discovery.
+
+17. **Cross-Platform Playlist Sync** (future) — Generate Spotify/YouTube playlists from your Mercury taste profile and keep them in sync. Deferred due to platform ToS risks and API fragility.
+
+18. **Remote Streaming** (future) — Connect to your home machine and stream your own collection to your phone. Deferred due to infrastructure complexity (NAT traversal, relay servers).
 
 ### What It's NOT
 
@@ -66,19 +85,25 @@ Index everything. Embed from everywhere. Reward uniqueness. Let people explore a
 
 ## Architecture
 
-### Two Layers: Web Gateway + Local Database
+### Desktop-First: Your Machine Is the Platform
 
-The web app is the gateway — zero friction, instant access. But the real thing is a downloadable database that lives on your machine. Both read the same data.
+Mercury is a desktop app. The internet is where it gets information. Your machine is where everything lives.
 
 ```
-WEB (gateway)              LOCAL (the real thing)
-  Cloudflare free tier       Tauri desktop app
-  SQLite on D1               SQLite on your disk
-  Zero friction              Full power, offline
-  First experience           Power user, unkillable
+DESKTOP (the product)            WEB (the gateway)
+  Tauri app                        Cloudflare Pages (landing/marketing)
+  SQLite on your disk              D1 for lightweight search demo
+  Local music playback             Zero friction first experience
+  AI on client side                Points you to the desktop app
+  Full power, offline capable
+  Unkillable
 ```
 
-**The database is distributed.** The entire index (processed MusicBrainz + Discogs data) is a single SQLite file, maybe 2-5GB. Downloadable. Torrentable. Every user can have the whole thing on their machine. Updates distributed as diffs. The more users, the faster it propagates.
+**User data lives locally.** Favorites, collections, taste profiles, local music library — all in SQLite on the user's machine. No central server, no accounts to create, no data to surrender.
+
+**Discovery data comes from the open internet.** MusicBrainz (CC0), Wikidata, Cover Art Archive, SoundCloud, YouTube — fetched live, cached locally. Mercury is an aggregation layer, not a host.
+
+**The database is distributed.** The entire search index (processed MusicBrainz + Discogs data) is a single SQLite file, maybe 100-200MB compressed. Downloadable. Torrentable. Every user has the whole thing on their machine. Updates distributed as diffs. The more users, the faster it propagates.
 
 **This is unkillable by design.** Domain seized? Cloudflare bans you? Doesn't matter — the data lives on thousands of user machines. The web version is a convenience layer. The distributed database is the insurance policy.
 
@@ -90,8 +115,9 @@ The data pipeline is the foundation — it feeds everything else:
 MusicBrainz dumps (CC0) + Discogs dumps (free)
   → Node.js pipeline processes on your machine
     → Produces a clean SQLite database
-      → Upload to Cloudflare D1 → powers web app
-      → Distribute as download/torrent → powers desktop app
+      → Ships inside the Tauri desktop app
+      → Upload to Cloudflare D1 → powers web gateway
+      → Distribute as download/torrent → updates for existing users
       → Use locally during development
 ```
 
@@ -101,10 +127,11 @@ MusicBrainz dumps (CC0) + Discogs dumps (free)
 |-------|-----------|-----|
 | Data pipeline | Node.js scripts | Process MusicBrainz/Discogs dumps locally |
 | Database | SQLite + FTS5 | Single-file, full-text search, portable, distributable |
-| Web frontend | SvelteKit | Compiles away, minimal JS, great DX, Cloudflare adapter |
-| Web hosting | Cloudflare Pages + D1 | Free tier, edge deployment, managed SQLite |
-| Desktop app | Tauri 2.0 | Rust backend, web frontend, reads local SQLite |
-| Distribution | Torrent / direct download | For the database file |
+| Desktop app | Tauri 2.0 | Rust backend, web frontend, local SQLite, local audio playback |
+| UI frontend | SvelteKit | Compiles away, minimal JS, great DX — runs in Tauri and on web |
+| AI | Open models (client-side) | Recommendations, summaries, exploration — data stays local |
+| Web gateway | Cloudflare Pages + D1 | Free tier landing page, lightweight search demo |
+| Distribution | Torrent / direct download | For the database file and app updates |
 
 **Total infrastructure cost: $0**
 
@@ -112,13 +139,14 @@ MusicBrainz dumps (CC0) + Discogs dumps (free)
 
 - **MusicBrainz** — 2.6M artists, 4.7M releases, 35M recordings. CC0 (public domain). PostgreSQL and JSON dumps available.
 - **Discogs** — 18M+ releases, monthly XML data dumps. Credit data, label data, genre data.
+- **Wikidata** — Genre relationships, artist metadata, scene/movement data. CC0.
 - **ListenBrainz** — Open source scrobbling + collaborative filtering recommendations. Future integration.
 
 ### Development
 
 - **Dev:** SvelteKit + local SQLite file. Clone, install, run.
-- **Prod web:** SvelteKit on Cloudflare Pages + D1.
-- **Prod desktop:** Tauri app + local SQLite file.
+- **Prod web:** SvelteKit on Cloudflare Pages + D1 (gateway only).
+- **Prod desktop:** Tauri app + local SQLite file + local audio playback (the real product).
 
 ## UX Philosophy: The Record Shop
 
@@ -130,11 +158,12 @@ This project should make you *want* to explore. Visual, spatial, personal. Your 
 
 ## Social Layer
 
-Opt-in profiles. Browse anonymously by default. Create a profile when you want to share your taste. **No vanity metrics anywhere.** No follower counts. No like counts. No play counts. Nothing gets pushed because of popularity numbers. The music is the signal, not the numbers.
+Local-first. **No central server accounts.** Your collections, favorites, and taste profile live on your machine. Sharing is opt-in via generated exports — images, files, or whatever format makes sense. **No vanity metrics anywhere.** No follower counts. No like counts. No play counts. Nothing gets pushed because of popularity numbers. The music is the signal, not the numbers.
 
-- **Collections** — Save artists/releases to your profile. Tag them. Sort them. Group them. Create visually exciting record collections that feel like a real shelf — not a spreadsheet. Embed your collection on your website: "This is what I'm listening to."
+- **Collections** — Save artists/releases locally. Tag them. Sort them. Group them. Create visually exciting record collections that feel like a real shelf — not a spreadsheet. Export and share your collection as a generated artifact (image, file, link).
+- **Public sharing** — The desktop app can generate shareable snapshots of your collection — a curated export others can browse. No server-hosted profiles needed.
 - **Curators** — Anyone can become a tastemaker. Not through follower counts, but through the quality and specificity of their taste. No content creation required — just good ears.
-- **Writing** — Users can write about music inside the platform. Reviews, recommendations, scene reports, liner notes, personal essays. Like music blogs, but integrated. Not just curating lists — actually writing about what you hear and why it matters.
+- **Writing** — Users can write about music inside the app. Reviews, recommendations, scene reports, liner notes, personal essays. Like music blogs, but integrated. Not just curating lists — actually writing about what you hear and why it matters.
 - **Discussion** — Conversation spaces around music. Talk about releases, artists, scenes. Not comments under a player — real discussion threads where people who care about the same music can find each other.
 - **Embeddable widgets** — Blog writers can embed search results, artist cards, curated lists, entire collections directly in their posts.
 - **Attribution** — When a curator's recommendation leads to discovery, they get credit. Drives traffic back to their blog/profile.

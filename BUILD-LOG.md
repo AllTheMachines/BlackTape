@@ -667,3 +667,114 @@ MusicBrainz provides a `type` field on every URL relationship (e.g., "streaming"
 <!-- status -->
 All done — artist page redesign + live streaming infrastructure complete. Ready for visual review.
 <!-- /status -->
+
+> **Commit 833b796** (2026-02-15 21:12) — feat: redesign artist page with discography grid, categorized links, and Listen On bar
+> Files changed: 16
+
+> **Commit 03f8876** (2026-02-15 21:27) — wip: paused between phases — choosing next phase
+> Files changed: 1
+
+---
+
+## Entry 014 — 2026-02-16 — Vision Refinement: What Mercury Actually Is
+
+### Context
+
+Steve wrote a long-form vision document articulating everything he'd been thinking about Mercury — the audio hosting problem, aggregation vs hosting, the music map, local playback, remote streaming, funding, social features, and the philosophy underneath it all. Went through it section by section with a critical lens: what's legal, what's naive, what's realistic. Then a structured questionnaire to lock in decisions.
+
+### The Reframe
+
+Mercury is not a web app with a desktop companion. Mercury is a **desktop app that connects to the open internet.** There is no "web vs desktop" split. It's one product — a Tauri desktop app that:
+- Plays music you own (local files)
+- Discovers music through open data (MusicBrainz, Wikidata, Cover Art Archive)
+- Embeds players from where music already lives (Bandcamp, SoundCloud, YouTube, Spotify)
+- Uses AI as a core feature for recommendations, summaries, and exploration
+- Stores everything on the user's machine — no central server needed
+
+Cloudflare stays as a lightweight web presence (landing page, maybe a small API), but it's not the product.
+
+### All Decisions (Questionnaire Results)
+
+<!-- decision: Mercury is desktop-first -->
+Mercury is a Tauri desktop app. User data lives on their machine in SQLite. Discovery data comes from public APIs. No central server for user accounts. The web version is a gateway/landing page, not the core product.
+**Rejected:** Web-first with desktop companion, both-equally approach
+<!-- /decision -->
+
+<!-- decision: Local music player is in scope -->
+The desktop app includes a full local music player — scan folders, read metadata, play files. Local library is fully merged with online discovery: when you play your own files, Mercury shows related artists, tags, and discovery from the online database. It's one unified experience, not two separate modes.
+**Rejected:** Wrapper-first (web shell), library-only (no discovery integration)
+<!-- /decision -->
+
+<!-- decision: AI is a core feature -->
+AI powers recommendations, content summaries, taste profiling, and natural-language exploration ("find me something like X but darker"). Not a bolt-on or a buzzword — central to how the app works. Open models preferred for client-side processing where possible.
+**Rejected:** Minimal/invisible AI, no AI
+<!-- /decision -->
+
+<!-- decision: Genre map is the big differentiator — full knowledge base -->
+The genre/scene map is the most ambitious feature and the thing that makes Mercury unlike anything else. Content comes in layers:
+1. **Open data** — MusicBrainz tags + Wikidata genre relationships (CC0/CC-BY, day one)
+2. **Links & embeds** — YouTube documentaries, Wikipedia bios, external articles (legal, always)
+3. **AI-assisted summaries** — Original descriptions generated from multiple public sources (gray area, richer experience)
+4. **Community-written** — Users write scene histories, genre descriptions, artist bios (wiki-style, needs moderation)
+
+Each layer adds richness. Start with layer 1, build up over time.
+**Rejected:** Tags-only, seed-from-open-data-only
+<!-- /decision -->
+
+<!-- decision: Composite discovery ranking -->
+"Niche = more discoverable" implemented as a composite score:
+- **Inverse popularity** — fewer listeners = higher discovery boost
+- **Tag rarity scoring** — rare/specific genres rank higher
+- **Scene freshness** — new scenes, emerging genres, recently active artists get boosted
+Three signals combined. Most nuanced, hardest to tune, but the most honest representation of the philosophy.
+**Rejected:** Single-signal approaches
+<!-- /decision -->
+
+<!-- decision: Public collections via local export, not server-hosted profiles -->
+Users can show off their collections by generating shareable artifacts from the desktop app — screenshots, export files, images. No server-hosted profiles needed. Mercury doesn't need to host user data.
+**Rejected:** Central server accounts, federated/P2P, git-based contributions
+<!-- /decision -->
+
+<!-- decision: Artist profiles auto-generated, no claiming yet -->
+Artist profiles come from MusicBrainz data automatically. No claiming system, no verification infrastructure. Ship discovery first, artist control later.
+**Rejected:** OAuth verification, manual review, community flagging (all deferred, not killed)
+<!-- /decision -->
+
+<!-- decision: Cross-platform playlist sync deferred -->
+Generating Spotify/YouTube playlists from Mercury taste profile is a good idea but carries legal risk (ToS violations, fragile APIs). Parked for a later phase when the core product is solid.
+**Rejected for now:** Full sync, export-only
+<!-- /decision -->
+
+<!-- decision: Remote streaming deferred -->
+Streaming your own collection from home to phone is cool but involves hard infrastructure problems (NAT traversal, dynamic DNS, relay servers). Parked for later. Users who want this today can use Jellyfin/Navidrome.
+**Rejected for now:** Full remote, basic LAN-only
+<!-- /decision -->
+
+<!-- decision: Funding model confirmed — donations + grants only -->
+Architecture keeps costs near-zero (Cloudflare free tier, no audio hosting, no central server). Donations (GitHub Sponsors, Ko-fi, Open Collective) + grants (NLnet, Mozilla, EU NGI) are viable precisely because the infrastructure is so cheap. No paid tiers. No premium features. No exceptions.
+**Rejected:** Freemium, subscription, any model that gives paying users platform advantages
+<!-- /decision -->
+
+### The Pitch
+
+> A desktop app that knows everything about music, plays what you own, and helps you discover what you don't — using the open internet as its brain.
+
+### What This Means for the Roadmap
+
+The existing Phase 3 (Desktop App + Distribution) becomes more central — it's no longer "the desktop version of the web app" but the **primary product**. The local music player and AI features need to be woven into the phase plan. The web experience built in Phases 1-2 becomes either:
+- A landing page / marketing presence
+- A lightweight gateway for people who haven't installed the app yet
+- Or gets wrapped into the Tauri shell as-is (the SvelteKit frontend works in both contexts)
+
+Phases 4+ (Discovery, Social, Blog, etc.) now target the desktop app primarily. Community features (genre map wiki, shared collections) need creative solutions that don't require a central server.
+
+### What Was Analyzed But Not Decided Yet
+
+- **How the style/genre map UI actually works** — agreed on the data sources and ambition level, but the interaction model is TBD
+- **Which AI models** — open models on client side is the preference, but specific model choices and capabilities depend on what's available when we get there
+- **Social sharing mechanics** — "generated artifacts" is the direction, but the specific format (images, files, links) needs design work
+- **Roadmap reordering** — the phase list needs updating to reflect desktop-first priority and new features (AI, local player, knowledge base)
+
+### Files Updated
+- `BUILD-LOG.md` — This entry (14 decisions recorded)
+- `PROJECT.md` — Reframed as desktop-first, added local player, AI core, knowledge base, composite ranking, updated architecture and social layer sections
