@@ -5,30 +5,31 @@
 See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Phase 3 — Desktop App Foundation
+**Current focus:** Phase 3 — Desktop App Foundation (Wave 1 complete, Wave 2 next)
 
 ## Current Position
 
-Phase: 3 of 9 (Desktop App Foundation)
-Plan: 1 of 5 complete
-Status: In progress
-Last activity: 2026-02-16 — Completed 03-01-PLAN.md (Database Abstraction Layer)
+Phase: 3 of 12 (Desktop App Foundation)
+Plan: 2 of 5 complete
+Status: In progress — Wave 1 complete (03-01 + 03-02), Wave 2 next (03-03)
+Last activity: 2026-02-16 — Completed 03-01 (DB abstraction) and 03-02 (Tauri scaffolding)
 
-Progress: [██░░░░░░░░] 1/5
+Progress: [████░░░░░░] 2/5
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6
+- Total plans completed: 7
 - Phase 2 execution time: ~15min (plans 1-4) + verification session
 - Phase 3 Plan 01: 4min
+- Phase 3 Plan 02: 14min
 
 **By Phase:**
 | Phase | Plans | Total | Status |
 |-------|-------|-------|--------|
 | 1. Data Pipeline | pre-GSD | - | Complete |
 | 2. Search + Embeds | 5/5 | ~15min | Complete |
-| 3. Desktop App | 1/5 | 4min | In progress |
+| 3. Desktop App | 2/5 | 18min | In progress |
 
 ## Accumulated Context
 
@@ -56,6 +57,10 @@ Progress: [██░░░░░░░░] 1/5
 - D1Provider created explicitly in server routes, not via factory. Factory is Tauri-only.
 - TauriProvider uses dynamic import + lazy singleton to avoid web build failures.
 - Provider pattern: all DB access goes through DbProvider, never D1Database directly.
+- VITE_TAURI build-time variable for conditional SSR (not runtime check).
+- CSP null in Tauri to allow MusicBrainz/Wikipedia external API calls.
+- NSIS installer over MSI for WebView2 bootstrapping on Windows 10.
+- adapter-static with fallback: 'index.html' for SPA mode in Tauri.
 
 ### Pending Todos
 None
@@ -66,5 +71,5 @@ None
 ## Session Continuity
 
 Last session: 2026-02-16
-Stopped at: Completed 03-01 (Database Abstraction Layer). Next: 03-02 (Tauri project initialization).
-Resume file: .planning/phases/03-desktop-and-distribution/03-02-PLAN.md
+Stopped at: Wave 1 complete (03-01 + 03-02). Ready for Wave 2 (03-03).
+Resume: `/gsd:execute-phase 3` — will auto-skip completed plans and resume from 03-03.
