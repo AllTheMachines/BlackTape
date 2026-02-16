@@ -87,7 +87,13 @@ Plans:
   4. Library browser shows local collection with cover art, tags, sorting
   5. Playing a local file shows related artists and tags from the discovery database
   6. Local library and online discovery feel like one thing — unified search, unified browse
-**Plans**: TBD
+**Plans**: 5 plans
+Plans:
+- [ ] 04-01-PLAN.md — Rust scanner backend (lofty metadata, walkdir traversal, library.db, Tauri commands)
+- [ ] 04-02-PLAN.md — Player frontend (HTML5 Audio engine, player state, queue, persistent player bar UI)
+- [ ] 04-03-PLAN.md — Library browser (folder management, scan progress, album grid, click-to-play)
+- [ ] 04-04-PLAN.md — Unified discovery (artist matching via FTS5, now-playing context, local tracks in search)
+- [ ] 04-05-PLAN.md — End-to-end verification checkpoint
 
 ### Phase 5: AI Foundation
 **Goal**: AI as a core feature — recommendations, summaries, natural-language exploration, taste profiling. Not a bolt-on. Central to how the app works. Open models on client side where possible.
