@@ -1,6 +1,32 @@
 <script lang="ts">
 	import { PROJECT_NAME, PROJECT_TAGLINE } from '$lib/config';
+	import { isTauri } from '$lib/platform';
 	import SearchBar from '$lib/components/SearchBar.svelte';
+	import DatabaseSetup from '$lib/components/DatabaseSetup.svelte';
+
+	let dbStatus = $state<'checking' | 'ready' | 'missing'>('checking');
+	let dbPath = $state('');
+
+	async function checkDatabase() {
+		if (!isTauri()) {
+			dbStatus = 'ready';
+			return;
+		}
+		try {
+			const { invoke } = await import('@tauri-apps/api/core');
+			const result: { exists: boolean; path: string; dir: string } =
+				await invoke('check_database');
+			dbStatus = result.exists ? 'ready' : 'missing';
+			dbPath = result.path;
+		} catch {
+			// If check fails, assume ready to avoid blocking the web build
+			dbStatus = 'ready';
+		}
+	}
+
+	$effect(() => {
+		checkDatabase();
+	});
 </script>
 
 <svelte:head>
@@ -8,16 +34,32 @@
 	<meta name="description" content={PROJECT_TAGLINE} />
 </svelte:head>
 
-<div class="hero">
-	<h1>{PROJECT_NAME}</h1>
-	<p class="tagline">{PROJECT_TAGLINE}</p>
-
-	<div class="search-container">
-		<SearchBar size="large" />
+{#if dbStatus === 'checking'}
+	<div class="loading">
+		<p>Loading...</p>
 	</div>
-</div>
+{:else if dbStatus === 'missing'}
+	<DatabaseSetup {dbPath} onRetry={checkDatabase} />
+{:else}
+	<div class="hero">
+		<h1>{PROJECT_NAME}</h1>
+		<p class="tagline">{PROJECT_TAGLINE}</p>
+
+		<div class="search-container">
+			<SearchBar size="large" />
+		</div>
+	</div>
+{/if}
 
 <style>
+	.loading {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		min-height: calc(100vh - var(--header-height));
+		color: var(--text-muted);
+	}
+
 	.hero {
 		display: flex;
 		flex-direction: column;
