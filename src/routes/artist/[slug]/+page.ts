@@ -120,6 +120,90 @@ export const load: PageLoad = async ({ params, data, fetch }) => {
 		console.error('Links fetch error:', err);
 	}
 
-	// Releases and bio will be added in Task 3
+	// --- Releases from MusicBrainz ---
+	try {
+		const mbReleasesResponse = await fetch(
+			`https://musicbrainz.org/ws/2/release-group?artist=${artist.mbid}&inc=url-rels&type=album|single|ep&fmt=json&limit=50`,
+			{
+				headers: {
+					'User-Agent': USER_AGENT,
+					Accept: 'application/json'
+				}
+			}
+		);
+
+		if (mbReleasesResponse.ok) {
+			const { detectPlatform } = await import('$lib/embeds/categorize');
+
+			const mbRelData = (await mbReleasesResponse.json()) as {
+				'release-groups'?: Array<{
+					id: string;
+					title: string;
+					'first-release-date'?: string;
+					'primary-type'?: string;
+					relations?: Array<{
+						'target-type'?: string;
+						url?: { resource?: string };
+					}>;
+				}>;
+			};
+
+			if (mbRelData['release-groups']) {
+				releases = mbRelData['release-groups'].map((rg) => {
+					const dateStr = rg['first-release-date'];
+					const year = dateStr ? parseInt(dateStr.substring(0, 4), 10) || null : null;
+
+					// Extract streaming links from URL relationships
+					const releaseLinks: import('$lib/embeds/types').ReleaseLink[] = [];
+					if (rg.relations) {
+						for (const rel of rg.relations) {
+							if (rel['target-type'] === 'url' && rel.url?.resource) {
+								const platform = detectPlatform(rel.url.resource);
+								if (platform) {
+									releaseLinks.push({ url: rel.url.resource, platform });
+								}
+							}
+						}
+					}
+
+					// Normalize type
+					let type: ReleaseGroup['type'] = 'Other';
+					if (rg['primary-type'] === 'Album') type = 'Album';
+					else if (rg['primary-type'] === 'EP') type = 'EP';
+					else if (rg['primary-type'] === 'Single') type = 'Single';
+
+					return {
+						mbid: rg.id,
+						title: rg.title,
+						year,
+						type,
+						coverArtUrl: `https://coverartarchive.org/release-group/${rg.id}/front-250`,
+						links: releaseLinks
+					};
+				});
+
+				// Sort by year descending (newest first), nulls last
+				releases.sort((a, b) => {
+					if (a.year === null && b.year === null) return 0;
+					if (a.year === null) return 1;
+					if (b.year === null) return -1;
+					return b.year - a.year;
+				});
+			}
+		}
+	} catch (err) {
+		console.error('Releases fetch error:', err);
+	}
+
+	// --- Wikipedia bio ---
+	try {
+		if (links.wikipedia.length > 0) {
+			const { fetchWikipediaBio } = await import('$lib/bio');
+			bio = await fetchWikipediaBio(links.wikipedia[0]);
+		}
+	} catch (err) {
+		console.error('Bio fetch error:', err);
+	}
+
 	return { artist, links, categorizedLinks, releases, bio };
 };
