@@ -5,32 +5,34 @@
 See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Phase 3 — Desktop App Foundation (Wave 2 complete, Wave 3 next)
+**Current focus:** Phase 4 — Local Music Player (Plan 02 complete, Plan 03 next)
 
 ## Current Position
 
-Phase: 3 of 12 (Desktop App Foundation)
-Plan: 3 of 5 complete (03-04 tasks 1-2 done, awaiting human-verify checkpoint)
-Status: In progress — Wave 3 (03-04) executing, tasks 1-2 complete
-Last activity: 2026-02-16 — Completed 03-04 tasks 1-2 (first-run UI + compression pipeline)
+Phase: 4 of 12 (Local Music Player)
+Plan: 2 of 5 complete
+Status: In progress
+Last activity: 2026-02-16 — Completed 04-02 (Player frontend: audio engine, queue, player bar UI)
 
-Progress: [██████░░░░] 3/5 (03-04 in progress)
+Progress: [████░░░░░░] 2/5
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 8
+- Total plans completed: 10
 - Phase 2 execution time: ~15min (plans 1-4) + verification session
 - Phase 3 Plan 01: 4min
 - Phase 3 Plan 02: 14min
 - Phase 3 Plan 03: 5min
+- Phase 4 Plan 02: 4min
 
 **By Phase:**
 | Phase | Plans | Total | Status |
 |-------|-------|-------|--------|
 | 1. Data Pipeline | pre-GSD | - | Complete |
 | 2. Search + Embeds | 5/5 | ~15min | Complete |
-| 3. Desktop App | 3/5 | 23min | In progress |
+| 3. Desktop App | 5/5 | 23min+ | Complete |
+| 4. Local Music Player | 2/5 | 4min | In progress |
 
 ## Accumulated Context
 
@@ -71,6 +73,10 @@ Progress: [██████░░░░] 3/5 (03-04 in progress)
 - Gzip (level 9) for database compression — built into Node.js, no native dependencies. 53% reduction on 778MB db.
 - Torrent distribution uses public trackers + web seed placeholder URL.
 - TauriProvider uses explicit appDataDir path for database loading (not implicit relative path).
+- Files using Svelte 5 $state runes use .svelte.ts extension (not .ts) — compiler requirement.
+- Audio ended event uses dynamic import for queue module to break circular dependency.
+- Player only renders in Tauri context via isTauri() check in root layout.
+- Queue items use div[role=button] instead of nested buttons for valid HTML.
 
 ### Pending Todos
 None
@@ -81,5 +87,5 @@ None
 ## Session Continuity
 
 Last session: 2026-02-16
-Stopped at: 03-04 tasks 1-2 complete. Checkpoint: human-verify (Task 3) pending.
-Resume: Continue 03-04 from Task 3 checkpoint (verify first-run UI in Tauri app).
+Stopped at: 04-02 complete. Next: 04-03 (Library browser UI).
+Resume: Execute 04-03-PLAN.md (folder management, scan progress, album grid, click-to-play).

@@ -90,7 +90,7 @@ Plans:
 **Plans**: 5 plans
 Plans:
 - [ ] 04-01-PLAN.md — Rust scanner backend (lofty metadata, walkdir traversal, library.db, Tauri commands)
-- [ ] 04-02-PLAN.md — Player frontend (HTML5 Audio engine, player state, queue, persistent player bar UI)
+- [x] 04-02-PLAN.md — Player frontend (HTML5 Audio engine, player state, queue, persistent player bar UI)
 - [ ] 04-03-PLAN.md — Library browser (folder management, scan progress, album grid, click-to-play)
 - [ ] 04-04-PLAN.md — Unified discovery (artist matching via FTS5, now-playing context, local tracks in search)
 - [ ] 04-05-PLAN.md — End-to-end verification checkpoint
@@ -216,7 +216,7 @@ Plans:
 | 1. Data Pipeline | done | Complete | 2026-02-14 |
 | 2. Web Gateway | 5/5 | Complete | 2026-02-15 |
 | 3. Desktop App Foundation | 5/5 | Complete | 2026-02-16 |
-| 4. Local Music Player | 0/TBD | Not started | - |
+| 4. Local Music Player | 2/5 | In progress | - |
 | 5. AI Foundation | 0/TBD | Not started | - |
 | 6. Discovery Engine | 0/TBD | Not started | - |
 | 7. Knowledge Base | 0/TBD | Not started | - |
