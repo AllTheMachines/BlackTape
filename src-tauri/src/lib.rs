@@ -1,3 +1,6 @@
+mod library;
+mod scanner;
+
 use tauri::Manager;
 
 #[tauri::command]
