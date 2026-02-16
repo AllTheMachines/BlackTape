@@ -1,5 +1,6 @@
 import type { PageServerLoad } from './$types';
 import { searchArtists, searchByTag } from '$lib/db/queries';
+import { D1Provider } from '$lib/db/d1-provider';
 
 export const load: PageServerLoad = async ({ url, platform }) => {
 	const q = url.searchParams.get('q')?.trim() ?? '';
@@ -14,9 +15,13 @@ export const load: PageServerLoad = async ({ url, platform }) => {
 		return { results: [], query: q, mode, matchedTag: null, error: true };
 	}
 
+	const provider = new D1Provider(db);
+
 	try {
 		const results =
-			mode === 'tag' ? await searchByTag(db, q) : await searchArtists(db, q);
+			mode === 'tag'
+				? await searchByTag(provider, q)
+				: await searchArtists(provider, q);
 
 		return {
 			results,

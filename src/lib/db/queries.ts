@@ -1,10 +1,13 @@
 /**
  * Database query functions for Mercury search and artist lookup.
  *
- * All queries target Cloudflare D1 (SQLite under the hood).
+ * All queries go through the DbProvider interface — the same functions
+ * work with Cloudflare D1 (web) and Tauri SQL plugin (desktop).
  * FTS5 is used for artist name search with a LIKE fallback
  * when the sanitized query would be empty.
  */
+
+import type { DbProvider } from './provider';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -65,7 +68,7 @@ const DEFAULT_LIMIT = 50;
  * caller always gets a best-effort result.
  */
 export async function searchArtists(
-	db: D1Database,
+	db: DbProvider,
 	query: string,
 	limit: number = DEFAULT_LIMIT
 ): Promise<ArtistResult[]> {
@@ -74,47 +77,49 @@ export async function searchArtists(
 
 	if (!sanitized) {
 		// Fallback: plain LIKE search when FTS query would be empty
-		const { results } = await db
-			.prepare(
-				`SELECT a.id, a.mbid, a.name, a.slug, a.country,
-				        GROUP_CONCAT(at2.tag, ', ') AS tags
-				 FROM artists a
-				 LEFT JOIN artist_tags at2 ON at2.artist_id = a.id
-				 WHERE a.name LIKE ?
-				 GROUP BY a.id
-				 ORDER BY
-				   CASE
-				     WHEN LOWER(a.name) = ? THEN 0
-				     WHEN LOWER(a.name) LIKE ? THEN 1
-				     ELSE 2
-				   END,
-				   a.name
-				 LIMIT ?`
-			)
-			.bind(`%${query}%`, lowerQuery, lowerQuery + '%', limit)
-			.all<ArtistResult>();
-
-		return results;
-	}
-
-	const { results } = await db
-		.prepare(
+		const results = await db.all<ArtistResult>(
 			`SELECT a.id, a.mbid, a.name, a.slug, a.country,
-			        (SELECT GROUP_CONCAT(tag, ', ') FROM artist_tags WHERE artist_id = a.id) AS tags
-			 FROM artists_fts f
-			 JOIN artists a ON a.id = f.rowid
-			 WHERE artists_fts MATCH ?
+			        GROUP_CONCAT(at2.tag, ', ') AS tags
+			 FROM artists a
+			 LEFT JOIN artist_tags at2 ON at2.artist_id = a.id
+			 WHERE a.name LIKE ?
+			 GROUP BY a.id
 			 ORDER BY
 			   CASE
 			     WHEN LOWER(a.name) = ? THEN 0
 			     WHEN LOWER(a.name) LIKE ? THEN 1
 			     ELSE 2
 			   END,
-			   f.rank
-			 LIMIT ?`
-		)
-		.bind(sanitized, lowerQuery, lowerQuery + '%', limit)
-		.all<ArtistResult>();
+			   a.name
+			 LIMIT ?`,
+			`%${query}%`,
+			lowerQuery,
+			lowerQuery + '%',
+			limit
+		);
+
+		return results;
+	}
+
+	const results = await db.all<ArtistResult>(
+		`SELECT a.id, a.mbid, a.name, a.slug, a.country,
+		        (SELECT GROUP_CONCAT(tag, ', ') FROM artist_tags WHERE artist_id = a.id) AS tags
+		 FROM artists_fts f
+		 JOIN artists a ON a.id = f.rowid
+		 WHERE artists_fts MATCH ?
+		 ORDER BY
+		   CASE
+		     WHEN LOWER(a.name) = ? THEN 0
+		     WHEN LOWER(a.name) LIKE ? THEN 1
+		     ELSE 2
+		   END,
+		   f.rank
+		 LIMIT ?`,
+		sanitized,
+		lowerQuery,
+		lowerQuery + '%',
+		limit
+	);
 
 	return results;
 }
@@ -126,26 +131,25 @@ export async function searchArtists(
  * strongly-tagged artists surface first.
  */
 export async function searchByTag(
-	db: D1Database,
+	db: DbProvider,
 	tag: string,
 	limit: number = DEFAULT_LIMIT
 ): Promise<ArtistResult[]> {
 	const normalizedTag = tag.toLowerCase().trim();
 
-	const { results } = await db
-		.prepare(
-			`SELECT a.id, a.mbid, a.name, a.slug, a.country,
-			        GROUP_CONCAT(at_all.tag, ', ') AS tags
-			 FROM artist_tags at1
-			 JOIN artists a ON a.id = at1.artist_id
-			 LEFT JOIN artist_tags at_all ON at_all.artist_id = a.id
-			 WHERE at1.tag = ?
-			 GROUP BY a.id
-			 ORDER BY at1.count DESC
-			 LIMIT ?`
-		)
-		.bind(normalizedTag, limit)
-		.all<ArtistResult>();
+	const results = await db.all<ArtistResult>(
+		`SELECT a.id, a.mbid, a.name, a.slug, a.country,
+		        GROUP_CONCAT(at_all.tag, ', ') AS tags
+		 FROM artist_tags at1
+		 JOIN artists a ON a.id = at1.artist_id
+		 LEFT JOIN artist_tags at_all ON at_all.artist_id = a.id
+		 WHERE at1.tag = ?
+		 GROUP BY a.id
+		 ORDER BY at1.count DESC
+		 LIMIT ?`,
+		normalizedTag,
+		limit
+	);
 
 	return results;
 }
@@ -157,21 +161,17 @@ export async function searchByTag(
  * slug does not match any artist.
  */
 export async function getArtistBySlug(
-	db: D1Database,
+	db: DbProvider,
 	slug: string
 ): Promise<Artist | null> {
-	const { results } = await db
-		.prepare(
-			`SELECT a.id, a.mbid, a.name, a.slug, a.type, a.country,
-			        a.begin_year, a.ended,
-			        GROUP_CONCAT(at2.tag, ', ') AS tags
-			 FROM artists a
-			 LEFT JOIN artist_tags at2 ON at2.artist_id = a.id
-			 WHERE a.slug = ?
-			 GROUP BY a.id`
-		)
-		.bind(slug)
-		.all<Artist>();
-
-	return results[0] ?? null;
+	return db.get<Artist>(
+		`SELECT a.id, a.mbid, a.name, a.slug, a.type, a.country,
+		        a.begin_year, a.ended,
+		        GROUP_CONCAT(at2.tag, ', ') AS tags
+		 FROM artists a
+		 LEFT JOIN artist_tags at2 ON at2.artist_id = a.id
+		 WHERE a.slug = ?
+		 GROUP BY a.id`,
+		slug
+	);
 }

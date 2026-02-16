@@ -1,6 +1,7 @@
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { getArtistBySlug } from '$lib/db/queries';
+import { D1Provider } from '$lib/db/d1-provider';
 import { fetchWikipediaBio } from '$lib/bio';
 import type { PlatformLinks, CategorizedLinks, ReleaseGroup } from '$lib/embeds/types';
 import { emptyCategorizedLinks } from '$lib/embeds/categorize';
@@ -22,7 +23,9 @@ export const load: PageServerLoad = async ({ params, platform, fetch }) => {
 		throw error(503, 'Database not available');
 	}
 
-	const artist = await getArtistBySlug(db, slug);
+	const provider = new D1Provider(db);
+
+	const artist = await getArtistBySlug(provider, slug);
 	if (!artist) {
 		throw error(404, 'Artist not found');
 	}

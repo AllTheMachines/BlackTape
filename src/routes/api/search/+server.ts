@@ -1,6 +1,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { searchArtists, searchByTag } from '$lib/db/queries';
+import { D1Provider } from '$lib/db/d1-provider';
 
 export const GET: RequestHandler = async ({ url, platform }) => {
 	const q = url.searchParams.get('q')?.trim() ?? '';
@@ -17,9 +18,13 @@ export const GET: RequestHandler = async ({ url, platform }) => {
 		return json({ error: 'Search unavailable — database not connected' }, { status: 503 });
 	}
 
+	const provider = new D1Provider(db);
+
 	try {
 		const results =
-			mode === 'tag' ? await searchByTag(db, q, limit) : await searchArtists(db, q, limit);
+			mode === 'tag'
+				? await searchByTag(provider, q, limit)
+				: await searchArtists(provider, q, limit);
 
 		return json(
 			{ results, query: q, mode },
