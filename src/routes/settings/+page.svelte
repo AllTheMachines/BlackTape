@@ -1,5 +1,7 @@
 <script lang="ts">
 	import AiSettings from '$lib/components/AiSettings.svelte';
+	import TasteEditor from '$lib/components/TasteEditor.svelte';
+	import { aiState } from '$lib/ai/state.svelte';
 	import { isTauri } from '$lib/platform';
 	import { onMount } from 'svelte';
 
@@ -30,6 +32,17 @@
 	<div class="settings-page">
 		<h1>Settings</h1>
 		<AiSettings />
+
+		{#if aiState.enabled}
+			<div class="section-separator"></div>
+			<div class="settings-section">
+				<h2>Taste Profile</h2>
+				<p class="section-desc">
+					Control what the AI thinks you like. Adjust tag weights, add your own, and pin artist anchors.
+				</p>
+				<TasteEditor />
+			</div>
+		{/if}
 	</div>
 {/if}
 
@@ -74,5 +87,34 @@
 		font-weight: 600;
 		color: var(--text-primary);
 		margin: 0 0 var(--space-lg);
+	}
+
+	.section-separator {
+		height: 1px;
+		background: var(--border-subtle);
+		margin: var(--space-sm) 0;
+	}
+
+	.settings-section {
+		padding: var(--space-lg);
+		background: var(--bg-surface);
+		border: 1px solid var(--border-subtle);
+		border-radius: var(--card-radius);
+		margin-bottom: var(--space-lg);
+	}
+
+	.settings-section h2 {
+		font-size: 1rem;
+		font-weight: 600;
+		color: var(--text-primary);
+		margin: 0 0 var(--space-xs);
+	}
+
+	.section-desc {
+		font-size: 0.8rem;
+		color: var(--text-secondary);
+		margin: 0 0 var(--space-md);
+		line-height: 1.5;
+		max-width: 560px;
 	}
 </style>
