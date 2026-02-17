@@ -10,19 +10,20 @@ See: .planning/PROJECT.md (updated 2026-02-15)
 ## Current Position
 
 Phase: 5 of 12 (AI Foundation)
-Plan: 3 of 7 complete
+Plan: 4 of 7 complete
 Status: In progress
-Last activity: 2026-02-17 — Completed 05-02-PLAN.md (AI Opt-in Flow + Settings Page)
+Last activity: 2026-02-17 — Completed 05-04-PLAN.md (Artist Page AI Features)
 
-Progress: [███░░░░░░░] 3/7
+Progress: [████░░░░░░] 4/7
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 18
+- Total plans completed: 19
 - Phase 5 Plan 01: 5min
 - Phase 5 Plan 02: 7min
 - Phase 5 Plan 03: 5min
+- Phase 5 Plan 04: 3min
 - Phase 2 execution time: ~15min (plans 1-4) + verification session
 - Phase 3 Plan 01: 4min
 - Phase 3 Plan 02: 14min
@@ -40,7 +41,7 @@ Progress: [███░░░░░░░] 3/7
 | 2. Search + Embeds | 5/5 | ~15min | Complete |
 | 3. Desktop App | 5/5 | 23min+ | Complete |
 | 4. Local Music Player | 5/5 | 19min+ | Complete |
-| 5. AI Foundation | 3/7 | 10min+ | In Progress |
+| 5. AI Foundation | 4/7 | 20min+ | In Progress |
 
 ## Accumulated Context
 
@@ -120,6 +121,11 @@ Progress: [███░░░░░░░] 3/7
 - Explore and Settings nav links in header (Tauri-only, alongside Library link).
 - Model sizes: Qwen2.5 3B (~2GB generation) + Nomic Embed v1.5 (~137MB embedding).
 - Settings page uses Tauri-only gating with desktop-only fallback message (same pattern as Library).
+- AiRecommendations gated on getAiProvider() + tasteProfile.hasEnoughData — both required.
+- AI bio uses effectiveBio pattern: data.bio || aiBio derived state — Wikipedia always takes priority.
+- Recommendation prompt asks for "real artists that exist in music databases" to reduce hallucination.
+- artistSummary temperature 0.5 (factual), recommendation temperature 0.7 (creative variety).
+- Session-level Map cache for AI recommendation responses keyed by artist MBID.
 
 ### Pending Todos
 None
@@ -130,5 +136,5 @@ None
 ## Session Continuity
 
 Last session: 2026-02-17
-Stopped at: Phase 5, Plans 01+02+03 complete. Wave 2 done. AI opt-in flow and embedding infrastructure built.
-Resume: `/gsd:execute-phase` with 05-04-PLAN.md (Wave 3).
+Stopped at: Phase 5, Plans 01-04 complete. Wave 3 in progress (04 done, 05+06 parallel).
+Resume: `/gsd:execute-phase` with remaining Wave 3 plans (05-05, 05-06) then Wave 4 (05-07).
