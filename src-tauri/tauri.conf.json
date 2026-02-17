@@ -44,7 +44,10 @@
       "nsis": {
         "installMode": "currentUser"
       }
-    }
+    },
+    "externalBin": [
+      "binaries/llama-server"
+    ]
   },
   "plugins": {
     "updater": {

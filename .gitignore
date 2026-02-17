@@ -26,6 +26,9 @@ vite.config.ts.timestamp-*
 src-tauri/target/
 src-tauri/gen/
 
+# Sidecar binaries (downloaded separately, not committed)
+src-tauri/binaries/*.exe
+
 # Pipeline data (large dumps + generated database)
 data/
 pipeline/data/
