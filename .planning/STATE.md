@@ -10,20 +10,21 @@ See: .planning/PROJECT.md (updated 2026-02-15)
 ## Current Position
 
 Phase: 5 of 12 (AI Foundation)
-Plan: 5 of 7 complete
+Plan: 6 of 7 complete
 Status: In progress
-Last activity: 2026-02-17 — Completed 05-06-PLAN.md (Taste Profile Editor)
+Last activity: 2026-02-17 — Completed 05-05-PLAN.md (NL Explore Page)
 
-Progress: [█████░░░░░] 5/7
+Progress: [██████░░░░] 6/7
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 20
+- Total plans completed: 21
 - Phase 5 Plan 01: 5min
 - Phase 5 Plan 02: 7min
 - Phase 5 Plan 03: 5min
 - Phase 5 Plan 04: 3min
+- Phase 5 Plan 05: 5min
 - Phase 5 Plan 06: 3min
 - Phase 2 execution time: ~15min (plans 1-4) + verification session
 - Phase 3 Plan 01: 4min
@@ -42,7 +43,7 @@ Progress: [█████░░░░░] 5/7
 | 2. Search + Embeds | 5/5 | ~15min | Complete |
 | 3. Desktop App | 5/5 | 23min+ | Complete |
 | 4. Local Music Player | 5/5 | 19min+ | Complete |
-| 5. AI Foundation | 5/7 | 23min+ | In Progress |
+| 5. AI Foundation | 6/7 | 28min+ | In Progress |
 
 ## Accumulated Context
 
@@ -130,6 +131,11 @@ Progress: [█████░░░░░] 5/7
 - Recommendation prompt asks for "real artists that exist in music databases" to reduce hallucination.
 - artistSummary temperature 0.5 (factual), recommendation temperature 0.7 (creative variety).
 - Session-level Map cache for AI recommendation responses keyed by artist MBID.
+- NL explore response parsing uses line-by-line regex rather than structured JSON — models more reliable at numbered lists.
+- Explore page DB matching runs in parallel (Promise.all) for performance, not sequential.
+- NL explore temperature 0.8 (more creative/varied than other AI features).
+- Refinement capped at 5 exchanges to prevent unbounded conversation drift.
+- Taste tags shown as italic subtitle hint on explore page, not as prominent feature.
 
 ### Pending Todos
 None
@@ -140,5 +146,5 @@ None
 ## Session Continuity
 
 Last session: 2026-02-17
-Stopped at: Phase 5, Plans 01-04+06 complete. Wave 3 nearly done (05 in progress parallel).
-Resume: `/gsd:execute-phase` with 05-05 (if not yet done) then Wave 4 (05-07).
+Stopped at: Phase 5, Plans 01-06 complete. Wave 3 done. Only 05-07 remaining (Wave 4).
+Resume: `/gsd:execute-phase` with 05-07-PLAN.md (Wave 4).
