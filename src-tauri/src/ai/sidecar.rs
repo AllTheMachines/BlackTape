@@ -77,7 +77,7 @@ pub fn start_generation_server(
     let port_str = sidecar.generation_port.to_string();
     let shell = app.shell();
     let command = shell
-        .sidecar("binaries/llama-server")
+        .sidecar("llama-server")
         .map_err(|e| format!("Failed to create sidecar command: {}", e))?
         .args([
             "--model", &model_path,
@@ -134,7 +134,7 @@ pub fn start_embedding_server(
     let port_str = sidecar.embedding_port.to_string();
     let shell = app.shell();
     let command = shell
-        .sidecar("binaries/llama-server")
+        .sidecar("llama-server")
         .map_err(|e| format!("Failed to create sidecar command: {}", e))?
         .args([
             "--model", &model_path,
