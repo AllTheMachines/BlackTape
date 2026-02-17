@@ -31,6 +31,23 @@ pub fn run() {
             ai::taste_db::get_ai_setting,
             ai::taste_db::set_ai_setting,
             ai::taste_db::get_all_ai_settings,
+            ai::download::download_model,
+            ai::download::check_model_exists,
+            ai::download::get_models_dir,
+            ai::embeddings::store_embedding,
+            ai::embeddings::find_similar_artists,
+            ai::embeddings::get_embedding,
+            ai::embeddings::has_embedding,
+            ai::taste_db::add_favorite_artist,
+            ai::taste_db::remove_favorite_artist,
+            ai::taste_db::get_favorite_artists,
+            ai::taste_db::is_favorite_artist,
+            ai::taste_db::get_taste_tags,
+            ai::taste_db::set_taste_tag,
+            ai::taste_db::remove_taste_tag,
+            ai::taste_db::get_taste_anchors,
+            ai::taste_db::add_taste_anchor,
+            ai::taste_db::remove_taste_anchor,
         ])
         .plugin(tauri_plugin_sql::Builder::new().build())
         .plugin(tauri_plugin_updater::Builder::new().build())
