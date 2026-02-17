@@ -5,21 +5,22 @@
 See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Phase 4 complete. Phase 5 (AI Foundation) is next.
+**Current focus:** Phase 5 in progress. AI Foundation infrastructure being built.
 
 ## Current Position
 
-Phase: 4 of 12 (Local Music Player) — COMPLETE
-Plan: 5 of 5 complete
-Status: Complete
-Last activity: 2026-02-17 — Phase 4 verified, documentation added, pushed to remote
+Phase: 5 of 12 (AI Foundation)
+Plan: 1 of 7 complete
+Status: In progress
+Last activity: 2026-02-17 — Completed 05-01-PLAN.md (AI Infrastructure Foundation)
 
-Progress: [██████████] 5/5
+Progress: [█░░░░░░░░░] 1/7
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 15
+- Total plans completed: 16
+- Phase 5 Plan 01: 5min
 - Phase 2 execution time: ~15min (plans 1-4) + verification session
 - Phase 3 Plan 01: 4min
 - Phase 3 Plan 02: 14min
@@ -37,6 +38,7 @@ Progress: [██████████] 5/5
 | 2. Search + Embeds | 5/5 | ~15min | Complete |
 | 3. Desktop App | 5/5 | 23min+ | Complete |
 | 4. Local Music Player | 5/5 | 19min+ | Complete |
+| 5. AI Foundation | 1/7 | 5min+ | In Progress |
 
 ## Accumulated Context
 
@@ -99,6 +101,11 @@ Progress: [██████████] 5/5
 - cross-env must use `npx cross-env` in tauri.conf.json on Windows.
 - Search load dynamic imports must be inside try/catch — no +error.svelte means unhandled errors kill the layout.
 - ARCHITECTURE.md and docs/user-manual.md must be updated when features/architecture/behavior changes.
+- taste.db is separate from library.db and mercury.db — dedicated to AI settings and taste profile data.
+- PID files written to app data dir for llama-server orphan detection on startup.
+- Health checks done from frontend via fetch, not from Rust — avoids adding reqwest dependency.
+- OpenAI-compatible API format used for both local llama-server and remote API providers.
+- sqlite-vec deferred until the plan that actually uses vector similarity (avoid unused deps).
 
 ### Pending Todos
 None
@@ -109,5 +116,5 @@ None
 ## Session Continuity
 
 Last session: 2026-02-17
-Stopped at: Phase 4 complete. Documentation added. All pushed to remote.
-Resume: `/gsd:plan-phase 5` to begin AI Foundation phase.
+Stopped at: Phase 5, Plan 01 complete. AI infrastructure foundation built.
+Resume: `/gsd:execute-phase` with 05-02-PLAN.md to continue AI Foundation phase.
