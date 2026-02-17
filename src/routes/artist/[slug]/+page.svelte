@@ -1,8 +1,14 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { PROJECT_NAME } from '$lib/config';
 	import TagChip from '$lib/components/TagChip.svelte';
 	import ReleaseCard from '$lib/components/ReleaseCard.svelte';
+	import FavoriteButton from '$lib/components/FavoriteButton.svelte';
+	import AiRecommendations from '$lib/components/AiRecommendations.svelte';
 	import { LINK_CATEGORY_ORDER, LINK_CATEGORY_LABELS } from '$lib/embeds/types';
+	import { isTauri } from '$lib/platform';
+	import { getAiProvider } from '$lib/ai/engine';
+	import { PROMPTS } from '$lib/ai/prompts';
 
 	let { data } = $props();
 
@@ -40,6 +46,43 @@
 			: data.bio
 	);
 
+	/** AI-generated summary fallback when Wikipedia bio is unavailable. */
+	let aiBio = $state<string | null>(null);
+
+	/** The bio to display: Wikipedia bio takes priority, then AI-generated. */
+	let effectiveBio = $derived(data.bio || aiBio);
+	let effectiveBioNeedsCollapse = $derived(effectiveBio ? effectiveBio.length > 500 : false);
+	let effectiveDisplayBio = $derived(
+		effectiveBio && !bioExpanded && effectiveBioNeedsCollapse
+			? effectiveBio.slice(0, 500) + '...'
+			: effectiveBio
+	);
+
+	onMount(() => {
+		// Only generate AI bio when Wikipedia bio is missing and AI is ready
+		if (data.bio) return;
+		if (!isTauri()) return;
+
+		const provider = getAiProvider();
+		if (!provider) return;
+
+		(async () => {
+			try {
+				const tagsStr = data.artist.tags || '';
+				const country = data.artist.country || '';
+				const result = await provider.complete(
+					PROMPTS.artistSummary(data.artist.name, tagsStr, country),
+					{ temperature: 0.5, maxTokens: 200 }
+				);
+				if (result && result.trim()) {
+					aiBio = result.trim();
+				}
+			} catch {
+				// AI summary is best-effort — show nothing on failure
+			}
+		})();
+	});
+
 	/** Inline player HTML (set when user clicks SC/YT on a release). */
 	let inlinePlayerHtml = $state<string | null>(null);
 
@@ -73,7 +116,10 @@
 <div class="artist-page">
 	<!-- Header -->
 	<header class="artist-header">
-		<h1 class="artist-name">{data.artist.name}</h1>
+		<div class="artist-name-row">
+			<h1 class="artist-name">{data.artist.name}</h1>
+			<FavoriteButton mbid={data.artist.mbid} name={data.artist.name} slug={data.artist.slug} />
+		</div>
 
 		{#if headerMeta()}
 			<p class="artist-meta">{headerMeta()}</p>
@@ -87,10 +133,10 @@
 			</div>
 		{/if}
 
-		{#if data.bio}
+		{#if effectiveBio}
 			<div class="bio">
-				<p>{displayBio}</p>
-				{#if bioNeedsCollapse}
+				<p>{effectiveDisplayBio}</p>
+				{#if effectiveBioNeedsCollapse}
 					<button class="bio-toggle" onclick={() => bioExpanded = !bioExpanded}>
 						{bioExpanded ? 'Show less' : 'Read more'}
 					</button>
@@ -170,6 +216,13 @@
 			{/each}
 		</section>
 	{/if}
+
+	<!-- AI Recommendations -->
+	<AiRecommendations
+		artistName={data.artist.name}
+		artistTags={data.artist.tags || ''}
+		artistMbid={data.artist.mbid}
+	/>
 </div>
 
 <style>
@@ -186,6 +239,12 @@
 	.artist-header {
 		display: flex;
 		flex-direction: column;
+		gap: var(--space-sm);
+	}
+
+	.artist-name-row {
+		display: flex;
+		align-items: center;
 		gap: var(--space-sm);
 	}
 
