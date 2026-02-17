@@ -12,6 +12,17 @@
     "updater:default",
     "process:default",
     "dialog:default",
-    "dialog:allow-open"
+    "dialog:allow-open",
+    "shell:default",
+    {
+      "identifier": "shell:allow-spawn",
+      "allow": [
+        {
+          "name": "binaries/llama-server",
+          "sidecar": true,
+          "args": true
+        }
+      ]
+    }
   ]
 }

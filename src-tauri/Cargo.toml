@@ -21,3 +21,4 @@ serde_json = "1"
 lofty = "0.23"
 walkdir = "2"
 rusqlite = { version = "0.31", features = ["bundled"] }
+tauri-plugin-shell = "2"

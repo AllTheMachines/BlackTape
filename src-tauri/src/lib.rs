@@ -1,3 +1,4 @@
+mod ai;
 mod library;
 mod scanner;
 
@@ -23,17 +24,39 @@ pub fn run() {
             scanner::get_music_folders,
             scanner::add_music_folder,
             scanner::remove_music_folder,
+            ai::sidecar::start_generation_server,
+            ai::sidecar::start_embedding_server,
+            ai::sidecar::stop_ai_servers,
+            ai::sidecar::get_ai_status,
+            ai::taste_db::get_ai_setting,
+            ai::taste_db::set_ai_setting,
+            ai::taste_db::get_all_ai_settings,
         ])
         .plugin(tauri_plugin_sql::Builder::new().build())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_shell::init())
         .setup(|app| {
             let app_data = app.path().app_data_dir().expect("failed to get app data dir");
             std::fs::create_dir_all(&app_data).ok();
             let conn = library::db::init_library_db(&app_data)
                 .expect("failed to init library db");
             app.manage(scanner::LibraryState(std::sync::Mutex::new(conn)));
+
+            // Initialize taste.db for AI settings and taste profile
+            let taste_conn = ai::taste_db::init_taste_db(&app_data)
+                .expect("failed to init taste db");
+            app.manage(ai::taste_db::TasteDbState(std::sync::Mutex::new(taste_conn)));
+
+            // Initialize AI sidecar state
+            app.manage(ai::sidecar::SidecarState(std::sync::Mutex::new(
+                ai::sidecar::AiSidecarState::default(),
+            )));
+
+            // Clean up any orphaned llama-server processes from a previous crash
+            ai::sidecar::cleanup_orphaned_servers(&app_data);
+
             Ok(())
         })
         .run(tauri::generate_context!())
