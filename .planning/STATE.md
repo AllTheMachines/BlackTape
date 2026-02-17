@@ -10,17 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-15)
 ## Current Position
 
 Phase: 5 of 12 (AI Foundation)
-Plan: 1 of 7 complete
+Plan: 3 of 7 complete (plans 02 executing in parallel)
 Status: In progress
-Last activity: 2026-02-17 — Completed 05-01-PLAN.md (AI Infrastructure Foundation)
+Last activity: 2026-02-17 — Completed 05-03-PLAN.md (Embedding Infrastructure + Taste Profile)
 
-Progress: [█░░░░░░░░░] 1/7
+Progress: [███░░░░░░░] 3/7
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 16
+- Total plans completed: 18
 - Phase 5 Plan 01: 5min
+- Phase 5 Plan 03: 5min
 - Phase 2 execution time: ~15min (plans 1-4) + verification session
 - Phase 3 Plan 01: 4min
 - Phase 3 Plan 02: 14min
@@ -38,7 +39,7 @@ Progress: [█░░░░░░░░░] 1/7
 | 2. Search + Embeds | 5/5 | ~15min | Complete |
 | 3. Desktop App | 5/5 | 23min+ | Complete |
 | 4. Local Music Player | 5/5 | 19min+ | Complete |
-| 5. AI Foundation | 1/7 | 5min+ | In Progress |
+| 5. AI Foundation | 3/7 | 10min+ | In Progress |
 
 ## Accumulated Context
 
@@ -106,6 +107,12 @@ Progress: [█░░░░░░░░░] 1/7
 - Health checks done from frontend via fetch, not from Rust — avoids adding reqwest dependency.
 - OpenAI-compatible API format used for both local llama-server and remote API providers.
 - sqlite-vec deferred until the plan that actually uses vector similarity (avoid unused deps).
+- vec0 virtual table uses rowid PK with separate artist_embedding_map table for MBID-to-rowid mapping.
+- zerocopy IntoBytes for zero-copy f32 vector to blob conversion in sqlite-vec queries.
+- Favorites weighted 2x vs library artists in taste signal computation.
+- Taste tags tracked by source (library/favorite/manual) — recomputation clears computed, preserves manual.
+- MINIMUM_TASTE_THRESHOLD = 5 favorites OR 20+ library tracks for enabling recommendations.
+- unchecked_transaction() used for embedding store to avoid double mutable borrow on Mutex<Connection>.
 
 ### Pending Todos
 None
@@ -116,5 +123,5 @@ None
 ## Session Continuity
 
 Last session: 2026-02-17
-Stopped at: Phase 5, Plan 01 complete. AI infrastructure foundation built.
-Resume: `/gsd:execute-phase` with 05-02-PLAN.md to continue AI Foundation phase.
+Stopped at: Phase 5, Plans 01+03 complete. Embedding infrastructure and taste profile built.
+Resume: `/gsd:execute-phase` with 05-04-PLAN.md (Wave 3) after 05-02 completes.
