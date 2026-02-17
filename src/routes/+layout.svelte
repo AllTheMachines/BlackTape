@@ -6,6 +6,7 @@
 	import { isTauri } from '$lib/platform';
 	import Player from '$lib/components/Player.svelte';
 	import { playerState } from '$lib/player/state.svelte';
+	import { aiState, loadAiSettings, initializeAi } from '$lib/ai/state.svelte';
 	import { onMount } from 'svelte';
 
 	let { children } = $props();
@@ -13,8 +14,15 @@
 	let showPlayer = $state(false);
 	let tauriMode = $state(false);
 
-	onMount(() => {
+	onMount(async () => {
 		tauriMode = isTauri();
+
+		if (isTauri()) {
+			await loadAiSettings();
+			if (aiState.enabled) {
+				initializeAi();
+			}
+		}
 	});
 
 	$effect(() => {
@@ -33,7 +41,27 @@
 <header>
 	<a href="/" class="site-name">{PROJECT_NAME}</a>
 	{#if tauriMode}
-		<a href="/library" class="nav-link">Library</a>
+		<nav class="nav-links">
+			<a href="/library" class="nav-link">Library</a>
+			<a href="/explore" class="nav-link">Explore</a>
+			<a href="/settings" class="nav-link">Settings</a>
+		</nav>
+		{#if aiState.status === 'loading' || aiState.status === 'downloading'}
+			<span class="ai-indicator" title="AI is loading">
+				<span class="ai-dot pulsing"></span>
+				<span class="ai-label">AI</span>
+			</span>
+		{:else if aiState.status === 'ready'}
+			<span class="ai-indicator" title="AI is ready">
+				<span class="ai-dot ready"></span>
+				<span class="ai-label">AI</span>
+			</span>
+		{:else if aiState.status === 'error'}
+			<span class="ai-indicator" title="AI error: {aiState.error}">
+				<span class="ai-dot error"></span>
+				<span class="ai-label">AI</span>
+			</span>
+		{/if}
 	{/if}
 </header>
 
@@ -72,6 +100,11 @@
 		text-decoration: none;
 	}
 
+	.nav-links {
+		display: flex;
+		align-items: center;
+	}
+
 	.nav-link {
 		font-size: 0.75rem;
 		color: var(--text-muted);
@@ -83,6 +116,48 @@
 	.nav-link:hover {
 		color: var(--text-secondary);
 		text-decoration: none;
+	}
+
+	.ai-indicator {
+		display: flex;
+		align-items: center;
+		gap: 5px;
+		margin-left: auto;
+		padding: 4px 8px;
+		font-size: 0.7rem;
+		color: var(--text-muted);
+		cursor: default;
+	}
+
+	.ai-dot {
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+		flex-shrink: 0;
+	}
+
+	.ai-dot.ready {
+		background: var(--text-accent);
+	}
+
+	.ai-dot.error {
+		background: #ef4444;
+	}
+
+	.ai-dot.pulsing {
+		background: var(--text-muted);
+		animation: ai-pulse 1.5s ease-in-out infinite;
+	}
+
+	@keyframes ai-pulse {
+		0%, 100% { opacity: 0.3; }
+		50% { opacity: 1; }
+	}
+
+	.ai-label {
+		font-weight: 500;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
 	}
 
 	main {
