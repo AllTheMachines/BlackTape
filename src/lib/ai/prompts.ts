@@ -7,7 +7,7 @@
 
 export const PROMPTS = {
 	artistSummary: (artistName: string, tags: string, country: string) =>
-		`Write a concise, engaging 2-3 sentence description of the musical artist "${artistName}". ${tags ? `Their music is tagged as: ${tags}.` : ''} ${country ? `They are from ${country}.` : ''} Focus on their sound and significance. Do not speculate about things you don't know.`,
+		`Write a concise 2-3 sentence description of the musical artist "${artistName}". ${tags ? `Their music is tagged as: ${tags}.` : ''} ${country ? `They are from ${country}.` : ''} Focus on their sound, genre, and significance. Be factual — do not speculate or fabricate details you are unsure about.`,
 
 	nlExplore: (query: string) =>
 		`You are a knowledgeable music guide. The user is looking for music recommendations. Respond with a numbered list of 5-8 artist recommendations. For each, include the artist name and a brief 1-sentence description of their sound. User query: "${query}"`,
@@ -16,5 +16,5 @@ export const PROMPTS = {
 		`You are a knowledgeable music guide. The user originally asked: "${originalQuery}". You previously suggested:\n${previousResults}\n\nThe user wants to refine: "${refinement}". Provide an updated numbered list of 5-8 recommendations.`,
 
 	recommendation: (artistName: string, userTasteTags: string) =>
-		`Based on someone who likes ${userTasteTags}, suggest 5 artists similar to "${artistName}". Return only artist names, one per line, no numbering or descriptions.`
+		`Suggest 5 artists similar to "${artistName}" for someone whose taste includes: ${userTasteTags}. Return ONLY artist names, one per line. No numbering, no descriptions, no extra text. Focus on real artists that exist in music databases.`
 };
