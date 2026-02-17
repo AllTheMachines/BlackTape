@@ -12,8 +12,9 @@ Mercury is a music discovery engine that indexes all music from open databases a
 4. [Local Music Library](#local-music-library)
 5. [Music Player](#music-player)
 6. [Discovery Features](#discovery-features)
-7. [Web vs Desktop](#web-vs-desktop)
-8. [Troubleshooting](#troubleshooting)
+7. [AI Features](#ai-features)
+8. [Web vs Desktop](#web-vs-desktop)
+9. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -232,6 +233,99 @@ Matching is best-effort and never blocks playback. If a match can't be found, th
 
 ---
 
+## AI Features
+
+*Desktop app only. All AI processing runs locally on your machine.*
+
+Mercury includes an optional AI system that adds natural language exploration, personalized recommendations, and taste profiling. It is disabled by default — you choose whether to enable it.
+
+### Enabling AI
+
+1. Navigate to **Settings** (via the header navigation)
+2. Find the **AI Features** toggle — it is OFF by default
+3. Toggle it ON — you'll be prompted to download the AI models (~2.1GB total)
+4. Click **Download Models** — a progress bar shows download status for each model
+5. After download completes, the AI engine starts automatically
+6. The AI status indicator in the header shows when the system is ready
+
+Models are stored locally. You only need to download them once.
+
+### Explore
+
+The Explore page (`/explore` in the header navigation) lets you search for music using natural language instead of exact artist names or tags.
+
+Type a query describing what you're looking for:
+- "find me something like Boards of Canada but darker"
+- "upbeat jazz fusion from the 70s"
+- "ambient music for late night coding"
+- "female-fronted shoegaze bands"
+
+Mercury generates a curated list of artist recommendations with brief descriptions of why each fits your query. Click any matched artist name to navigate to their artist page.
+
+**Refinement:** After getting results, you can refine your query with follow-up messages (up to 5 exchanges). For example, after getting results for "ambient music," type "more electronic" or "less minimal" to narrow the results.
+
+If you have a taste profile (see below), your preferences appear as a subtle hint — the AI is aware of your tastes but you can explore freely beyond them.
+
+### Recommendations
+
+On artist pages, a **"You might also like"** section appears with personalized recommendations based on the artist you're viewing and your taste profile.
+
+Recommendations only appear after you've saved enough favorites to build a meaningful taste profile:
+- At least **5 favorite artists**, OR
+- At least **20 tracks** in your local library
+
+This prevents unhelpful cold-start guessing. The more favorites you save, the better recommendations become.
+
+### Favorites
+
+On every artist page, a **heart button** appears in the header area:
+- Click to **save** the artist as a favorite (heart fills)
+- Click again to **remove** from favorites (heart empties)
+
+Favorites feed directly into your taste profile. They are weighted more heavily than library tracks — favoriting an artist is a strong signal of your preferences.
+
+### AI Artist Summaries
+
+When an artist's Wikipedia bio is unavailable, Mercury generates a brief AI summary instead. Wikipedia bios always take priority when available — the AI summary is a fallback for lesser-known artists who don't have Wikipedia entries.
+
+### Taste Profile
+
+Your taste profile is built automatically from your favorites and local library. View and edit it in **Settings > Taste Profile** (visible when AI is enabled).
+
+**Tag Weights:** Each tag shows a weight slider from -1.0 (strong dislike) to 1.0 (strong affinity). Tags are computed from your favorites and library, with source badges showing where each tag came from:
+- **library** — Derived from your local music files
+- **favorite** — Derived from artists you've favorited
+- **manual** — Tags you've added or adjusted yourself
+
+Adjusting a tag weight changes its source to "manual" — your overrides are preserved even when the profile is recomputed from new favorites or library changes.
+
+**Artist Anchors:** Pin specific artists as taste anchors to strengthen their influence on your profile. Search and add artists from the discovery index.
+
+**Adding/Removing Tags:** Add new tags manually or remove tags you don't want in your profile.
+
+### Remote API
+
+If you prefer not to run models locally (or want to use a more powerful model), you can configure a remote API endpoint:
+
+1. Go to **Settings > AI Features**
+2. Switch the provider to **Remote**
+3. Enter your API endpoint URL (must be OpenAI-compatible)
+4. Optionally enter an API key
+
+This sends your queries to the remote endpoint instead of the local llama-server. Note that when using a remote API, your queries are sent over the internet to the configured endpoint.
+
+### Privacy
+
+When using the default local AI:
+- All models run on your machine
+- No data is sent to any external server
+- Your taste profile, favorites, and queries stay entirely local
+- The only network traffic is the initial model download from HuggingFace
+
+When using a remote API provider, your queries are sent to whichever endpoint you configure. Mercury does not add any tracking or telemetry regardless of provider choice.
+
+---
+
 ## Web vs Desktop
 
 | Feature | Web | Desktop |
@@ -245,6 +339,7 @@ Matching is best-effort and never blocks playback. If a match can't be found, th
 | Player bar + queue | No | Yes |
 | Now-playing discovery | No | Yes |
 | Unified search (local + discovery) | No | Yes |
+| AI features (explore, recommendations, taste) | No | Yes |
 | Offline search | No | Yes |
 | Requires internet for artist pages | Yes | Yes* |
 
@@ -298,6 +393,37 @@ Embeds require internet access. If an embed doesn't load:
 ### App is slow after scanning many files
 
 The library browser loads all tracks into memory. For very large libraries (50,000+ tracks), sorting and grouping may take a moment. Future updates will add pagination and lazy loading.
+
+### AI features not appearing
+
+- Go to **Settings** and verify the AI Features toggle is ON
+- Check that both models have been downloaded (progress should show 100% for each)
+- Wait for the AI status indicator to show "ready" — model loading takes a few seconds after download
+
+### No recommendations on artist pages
+
+Recommendations require a minimum taste profile:
+- Save at least **5 artists** as favorites using the heart button, OR
+- Have at least **20 tracks** in your local music library
+
+Until this threshold is met, the "You might also like" section will not appear.
+
+### Explore page returns nothing
+
+- Verify AI is enabled and ready in Settings
+- Try a different or simpler query
+- If the AI just started, it may need a moment to warm up — try again after a few seconds
+
+### Model download failed
+
+- Check your internet connection
+- Go to **Settings** and retry the download
+- The download uses temporary files — a failed download will not leave corrupted model files
+- Models are downloaded from HuggingFace; ensure the domain is not blocked by your network
+
+### AI responses are slow
+
+Local model processing time depends on your hardware. The generation model (Qwen2.5 3B) runs best on machines with at least 8GB of RAM. If performance is unacceptable, consider configuring a remote API provider in Settings instead of using local models.
 
 ---
 

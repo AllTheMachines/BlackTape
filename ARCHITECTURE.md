@@ -18,7 +18,8 @@ A comprehensive guide to how Mercury works, how its parts connect, and how data 
 10. [Discovery Bridge](#discovery-bridge)
 11. [Build System](#build-system)
 12. [Configuration Reference](#configuration-reference)
-13. [Module Dependency Map](#module-dependency-map)
+13. [AI Subsystem](#ai-subsystem)
+14. [Module Dependency Map](#module-dependency-map)
 
 ---
 
@@ -32,19 +33,26 @@ Mercury is a music discovery engine that runs on two platforms from a single cod
 The core principle is **"the internet is the database"**: Mercury stores only a search index locally (artist names, tags, countries). Everything else — releases, cover art, streaming links, bios — is fetched live from public APIs (MusicBrainz, Wikipedia, Cover Art Archive). Audio is never hosted; it's always embedded from where it already lives (Bandcamp, Spotify, SoundCloud, YouTube).
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    Mercury Desktop                       │
-│  ┌──────────────┐  ┌──────────────┐  ┌───────────────┐ │
-│  │ SvelteKit UI │  │ Tauri (Rust) │  │ HTML5 Audio   │ │
-│  │  Search       │  │  Scanner     │  │  Local files  │ │
-│  │  Artist pages │  │  library.db  │  │  via asset:// │ │
-│  │  Library      │  │  IPC bridge  │  │               │ │
-│  │  Player bar   │  │              │  │               │ │
-│  └──────┬───────┘  └──────┬───────┘  └───────────────┘ │
-│         │                  │                             │
-│    mercury.db          library.db                        │
-│    (2.8M artists)      (user's files)                    │
-└─────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────┐
+│                       Mercury Desktop                             │
+│  ┌──────────────┐  ┌──────────────┐  ┌───────────────┐          │
+│  │ SvelteKit UI │  │ Tauri (Rust) │  │ HTML5 Audio   │          │
+│  │  Search       │  │  Scanner     │  │  Local files  │          │
+│  │  Artist pages │  │  library.db  │  │  via asset:// │          │
+│  │  Library      │  │  taste.db    │  │               │          │
+│  │  Explore (NL) │  │  AI sidecar  │  │               │          │
+│  │  Player bar   │  │  IPC bridge  │  │               │          │
+│  └──────┬───────┘  └──────┬───────┘  └───────────────┘          │
+│         │                  │                                      │
+│    mercury.db          library.db          taste.db               │
+│    (2.8M artists)      (user's files)      (AI + taste profile)  │
+│                                                                   │
+│         ┌──────────────────────────────┐                         │
+│         │  llama-server (sidecar)      │                         │
+│         │  :8847 generation (Qwen2.5)  │                         │
+│         │  :8848 embedding (Nomic)     │                         │
+│         └──────────────────────────────┘                         │
+└──────────────────────────────────────────────────────────────────┘
           │
           ▼
 ┌─────────────────────┐    ┌──────────────────────┐
@@ -169,6 +177,20 @@ Mercury/
 │   │   │   ├── store.svelte.ts   # Reactive library state + album grouping
 │   │   │   ├── matching.ts       # Artist name normalization + FTS5 matching
 │   │   │   └── index.ts          # Barrel export
+│   │   ├── ai/                   # AI provider + prompts (all platforms)
+│   │   │   ├── engine.ts         # AiProvider interface + singleton
+│   │   │   ├── local-provider.ts # llama-server HTTP client
+│   │   │   ├── remote-provider.ts# OpenAI-compatible API client
+│   │   │   ├── prompts.ts        # Centralized prompt templates
+│   │   │   ├── model-manager.ts  # Model download orchestration
+│   │   │   ├── state.svelte.ts   # Reactive AI state ($state runes)
+│   │   │   └── index.ts          # Barrel export
+│   │   ├── taste/                # Taste profile (Tauri only)
+│   │   │   ├── profile.svelte.ts # Reactive taste state
+│   │   │   ├── favorites.ts      # Favorite artist CRUD
+│   │   │   ├── signals.ts        # Taste tag computation
+│   │   │   ├── embeddings.ts     # Embedding generation wrappers
+│   │   │   └── index.ts          # Barrel export
 │   │   └── components/           # Svelte components
 │   │       ├── SearchBar.svelte
 │   │       ├── ArtistCard.svelte
@@ -181,7 +203,12 @@ Mercury/
 │   │       ├── Queue.svelte
 │   │       ├── LibraryBrowser.svelte
 │   │       ├── FolderManager.svelte
-│   │       └── NowPlayingDiscovery.svelte
+│   │       ├── NowPlayingDiscovery.svelte
+│   │       ├── AiRecommendations.svelte
+│   │       ├── AiSettings.svelte
+│   │       ├── FavoriteButton.svelte
+│   │       ├── ExploreResult.svelte
+│   │       └── TasteEditor.svelte
 │   └── routes/
 │       ├── +layout.svelte        # Root layout (header, nav, player)
 │       ├── +layout.ts            # SSR toggle
@@ -189,6 +216,8 @@ Mercury/
 │       ├── search/               # Search results
 │       ├── artist/[slug]/        # Artist detail page
 │       ├── library/              # Local music library (Tauri only)
+│       ├── explore/              # NL explore page (Tauri only)
+│       ├── settings/             # Settings page (Tauri only)
 │       └── api/                  # Server-side API routes (web only)
 │           ├── search/
 │           ├── soundcloud-oembed/
@@ -205,9 +234,15 @@ Mercury/
 │       ├── scanner/
 │       │   ├── mod.rs            # Tauri commands (scan, query, folder mgmt)
 │       │   └── metadata.rs       # lofty-based audio metadata reader
-│       └── library/
-│           ├── mod.rs            # Module entry
-│           └── db.rs             # rusqlite schema + CRUD operations
+│       ├── library/
+│       │   ├── mod.rs            # Module entry
+│       │   └── db.rs             # rusqlite schema + CRUD operations
+│       └── ai/
+│           ├── mod.rs            # Module declarations
+│           ├── sidecar.rs        # llama-server lifecycle management
+│           ├── taste_db.rs       # taste.db schema + CRUD
+│           ├── embeddings.rs     # sqlite-vec + vector operations
+│           └── download.rs       # Model download with streaming progress
 ├── tools/
 │   └── build-log-viewer/         # OBS browser source for YouTube stream
 ├── BUILD-LOG.md                  # Documentary record of all decisions
@@ -610,6 +645,158 @@ The entire visual system is driven by CSS custom properties. Key groups:
 
 ---
 
+## AI Subsystem
+
+The AI subsystem adds local intelligence to Mercury Desktop. It is entirely opt-in — disabled by default, with no impact on users who don't enable it. The web build has no AI components.
+
+### Architecture Overview
+
+```
+┌────────────────────────────────────┐
+│         SvelteKit Frontend         │
+│                                    │
+│  ai/engine.ts ← AiProvider        │
+│       │             interface      │
+│       ▼                            │
+│  ┌────────────┐  ┌──────────────┐  │
+│  │   Local     │  │   Remote     │  │
+│  │  Provider   │  │  Provider    │  │
+│  │ (localhost) │  │ (configurable│  │
+│  └─────┬──────┘  │  API URL)    │  │
+│        │         └──────────────┘  │
+└────────┼───────────────────────────┘
+         │ HTTP (OpenAI-compatible)
+         ▼
+┌─────────────────────────┐
+│  llama-server (sidecar) │
+│  Managed by Rust/Tauri   │
+│                          │
+│  :8847 — Generation      │
+│    Qwen2.5 3B (~2GB)    │
+│                          │
+│  :8848 — Embedding       │
+│    Nomic Embed v1.5      │
+│    (~137MB)              │
+└─────────────────────────┘
+```
+
+Two llama-server instances run as Tauri sidecars (via `tauri-plugin-shell`), managed by Rust code in `src-tauri/src/ai/sidecar.rs`. The frontend communicates with them via OpenAI-compatible HTTP API on localhost. This same API format allows swapping in a remote provider (any OpenAI-compatible endpoint).
+
+### taste.db Schema
+
+A third database alongside mercury.db and library.db. Managed by rusqlite (same as library.db). Stores AI settings, taste profile data, and vector embeddings.
+
+**ai_settings** — Key-value store for AI configuration.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| key | TEXT PK | Setting name (e.g., `ai_enabled`, `provider_type`) |
+| value | TEXT | Setting value |
+
+**taste_tags** — Tags with weights derived from listening behavior and manual curation.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| tag | TEXT PK | Tag name (e.g., `shoegaze`) |
+| weight | REAL | -1.0 to 1.0 (negative = dislike) |
+| source | TEXT | `library`, `favorite`, or `manual` |
+
+**taste_anchors** — Pinned artists that anchor the taste profile.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| mbid | TEXT PK | MusicBrainz artist ID |
+| name | TEXT | Artist name (display) |
+
+**favorite_artists** — Artists the user has explicitly favorited.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| mbid | TEXT PK | MusicBrainz artist ID |
+| name | TEXT | Artist name |
+| slug | TEXT | URL slug for linking |
+| created_at | TEXT | When favorited |
+
+**artist_embeddings** — 768-dimensional vectors via sqlite-vec `vec0` virtual table.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| rowid | INTEGER PK | Vector table row ID |
+| embedding | FLOAT[768] | Nomic Embed v1.5 vector |
+
+**artist_embedding_map** — Maps MBIDs to vector table row IDs.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| mbid | TEXT PK | MusicBrainz artist ID |
+| rowid | INTEGER | References artist_embeddings.rowid |
+
+### Why Three Databases?
+
+- **mercury.db** — Discovery index (2.8M artists). Managed by `tauri-plugin-sql` (sqlx). Shared schema with Cloudflare D1.
+- **library.db** — Local audio file metadata. Managed by `rusqlite`.
+- **taste.db** — AI settings, taste profile, embeddings. Managed by `rusqlite`.
+
+taste.db is separate because it's exclusively AI-related data that has no reason to mix with the scanner's track metadata in library.db or the shared discovery index in mercury.db.
+
+### Provider Pattern
+
+```typescript
+// src/lib/ai/engine.ts
+export interface AiProvider {
+    complete(messages: Array<{role: string, content: string}>): Promise<string>;
+    embed(text: string): Promise<number[]>;
+    isReady(): Promise<boolean>;
+}
+```
+
+Two implementations:
+
+- **LocalAiProvider** (`local-provider.ts`) — HTTP client for llama-server on localhost. Generation on port 8847, embedding on port 8848. Uses OpenAI-compatible `/v1/chat/completions` and `/v1/embeddings` endpoints.
+- **RemoteAiProvider** (`remote-provider.ts`) — Configurable OpenAI-compatible API endpoint. User provides URL and optional API key in Settings.
+
+Module-level singleton via `getAiProvider()` / `setAiProvider()`. Components check `getAiProvider()` to determine if AI is available before rendering AI features.
+
+### Model Management
+
+Models are downloaded from HuggingFace in GGUF format:
+
+1. User enables AI in Settings → triggers download prompt
+2. `model-manager.ts` orchestrates download via Tauri command
+3. Rust `download.rs` uses `reqwest` with streaming — progress reported every ~1MB via Tauri `Channel`
+4. Files download to temp path (`.downloading` extension), renamed on completion for crash safety
+5. After download, sidecar starts and health polling begins (500ms intervals, 60s timeout)
+6. PID files written to app data dir for orphan detection on restart
+
+### AI Features
+
+**Artist Page — FavoriteButton:** Heart toggle in the artist header. Persists to taste.db `favorite_artists` table. Favorites weighted 2x in taste signal computation.
+
+**Artist Page — AiRecommendations:** "You might also like" section. Gated on `getAiProvider()` + `tasteProfile.hasEnoughData` (5+ favorites OR 20+ library tracks). Uses generation model with temperature 0.7 for creative variety. Session-level Map cache keyed by artist MBID.
+
+**Artist Page — AI Bio Fallback:** When Wikipedia bio is unavailable, AI generates a brief summary. Uses `effectiveBio` pattern: `data.bio || aiBio` — Wikipedia always takes priority. Temperature 0.5 for factual tone.
+
+**Explore Page:** Natural language query interface at `/explore`. User types a query (e.g., "find me something like Boards of Canada but darker"), generation model produces a curated numbered list. Response parsed line-by-line with regex (more reliable than structured JSON). DB matching runs in parallel via `Promise.all`. Refinement supported up to 5 exchanges. Temperature 0.8 for creative variety. Taste tags shown as italic subtitle hint.
+
+**Settings Page:** AI toggle, model download with progress, provider configuration (local/remote). Taste Profile editor shown when AI is enabled.
+
+**Taste Editor:** Tag weight sliders (-1.0 to 1.0), source badges (library/favorite/manual), add/remove tags, artist anchors. Adjusting a weight changes source to `manual` — user-touched tags survive recomputation. Gated on `aiState.enabled`.
+
+### Taste Profile System
+
+Taste signals are computed from two sources:
+
+1. **Library artists** — Matched against discovery index via `matching.ts`, weighted 1x
+2. **Favorite artists** — Explicitly saved by user, weighted 2x
+
+Tags tracked by source: `library`, `favorite`, `manual`. Recomputation clears computed tags (library/favorite) but preserves manual tags — user overrides are never lost.
+
+**Threshold:** `MINIMUM_TASTE_THRESHOLD` = 5 favorites OR 20+ library tracks. Below this, recommendations and taste-aware features are disabled (no cold-start guessing).
+
+**Embeddings:** 768-dimensional vectors from Nomic Embed v1.5, stored via sqlite-vec `vec0` virtual table. `artist_embedding_map` table provides MBID-to-rowid mapping. Zero-copy `f32` vector to blob conversion via `zerocopy::IntoBytes`. `unchecked_transaction()` used for batch embedding storage to avoid double mutable borrow on `Mutex<Connection>`.
+
+---
+
 ## Module Dependency Map
 
 ```
@@ -617,46 +804,59 @@ The entire visual system is driven by CSS custom properties. Key groups:
                     │  +layout    │
                     │  .svelte    │
                     └──────┬──────┘
-                           │ renders
-              ┌────────────┼────────────┐
-              ▼            ▼            ▼
-        ┌──────────┐ ┌──────────┐ ┌──────────┐
-        │  Pages   │ │  Header  │ │  Player  │
-        │ (routes) │ │  (nav)   │ │ .svelte  │
-        └────┬─────┘ └──────────┘ └────┬─────┘
-             │                         │
-     ┌───────┼───────┐         ┌───────┼────────┐
-     ▼       ▼       ▼         ▼       ▼        ▼
-  search  artist  library   audio   queue   NowPlaying
-  page    page    page      engine  state   Discovery
-     │       │       │         │       │        │
-     ▼       ▼       ▼         ▼       ▼        ▼
-  ┌──────────────────────┐  ┌─────────────────────┐
-  │    db/ module         │  │  library/ module     │
-  │  provider → queries   │  │  scanner → store     │
-  │  D1 or TauriProvider  │  │  types → matching    │
-  └──────────┬───────────┘  └──────────┬──────────┘
-             │                         │
-             ▼                         ▼
-        mercury.db               library.db
-     (tauri-plugin-sql)         (rusqlite/Rust)
-             │                         │
-             ▼                         ▼
-      ┌─────────────┐          ┌──────────────┐
-      │ 2.8M artists│          │ User's local │
-      │ + tags      │          │ audio files  │
-      └─────────────┘          └──────────────┘
+                           │ renders + AI init
+              ┌────────────┼────────────┬──────────────┐
+              ▼            ▼            ▼              ▼
+        ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌───────────┐
+        │  Pages   │ │  Header  │ │  Player  │ │ AI State  │
+        │ (routes) │ │  (nav)   │ │ .svelte  │ │ .svelte.ts│
+        └────┬─────┘ └──────────┘ └────┬─────┘ └─────┬─────┘
+             │                         │              │
+     ┌───────┼───────┬────────┐  ┌─────┼──────┐      │
+     ▼       ▼       ▼        ▼  ▼     ▼      ▼      ▼
+  search  artist  library  explore/ audio queue NowPlay  ai/
+  page    page    page     settings engine state ing    engine
+     │     │ │       │         │     │     │      │      │
+     │     │ │       │         │     │     │      │   ┌──┴──┐
+     │     │ │       │         ▼     │     │      │   ▼     ▼
+     │     │ │       │      taste/   │     │      │ Local Remote
+     │     │ │       │      profile  │     │      │ Prov. Prov.
+     │     │ │       │      signals  │     │      │   │
+     │     │ │       │      favs     │     │      │   ▼
+     │     │ │       │         │     │     │      │ llama-server
+     ▼     ▼ ▼       ▼         ▼     ▼     ▼      ▼  (sidecar)
+  ┌──────────────────────┐  ┌─────────────────────┐  ┌──────────┐
+  │    db/ module         │  │  library/ module     │  │ ai/ Rust │
+  │  provider → queries   │  │  scanner → store     │  │ sidecar  │
+  │  D1 or TauriProvider  │  │  types → matching    │  │ taste_db │
+  └──────────┬───────────┘  └──────────┬──────────┘  │ embed    │
+             │                         │              │ download │
+             ▼                         ▼              └────┬─────┘
+        mercury.db               library.db                │
+     (tauri-plugin-sql)         (rusqlite/Rust)            ▼
+             │                         │              taste.db
+             ▼                         ▼           (rusqlite/Rust)
+      ┌─────────────┐          ┌──────────────┐         │
+      │ 2.8M artists│          │ User's local │         ▼
+      │ + tags      │          │ audio files  │   ┌───────────┐
+      └─────────────┘          └──────────────┘   │ AI prefs  │
+                                                   │ Favorites │
+                                                   │ Taste tags│
+                                                   │ Embeddings│
+                                                   └───────────┘
 ```
 
 ### Import Rules
 
-1. **Components** import from barrel exports (`$lib/player`, `$lib/library`)
+1. **Components** import from barrel exports (`$lib/player`, `$lib/library`, `$lib/ai`, `$lib/taste`)
 2. **Pages** import components and call load functions
 3. **`db/`** is imported by pages and by `library/matching.ts`
 4. **`player/`** is self-contained; `audio.svelte.ts` dynamically imports `queue.svelte.ts` to break circular deps
 5. **`library/`** imports from `player/` (to set queue on track click) and from `db/` (for artist matching)
-6. **Tauri dependencies** are always dynamically imported — never at the top level
+6. **`ai/`** is imported by explore page, artist page components, and settings page. Module-level singleton via `getAiProvider()`
+7. **`taste/`** imports from `ai/` (for embeddings), `db/` (for artist lookup), and `library/` (for signal computation). Imported by artist page and settings page
+8. **Tauri dependencies** are always dynamically imported — never at the top level
 
 ---
 
-*Last updated: 2026-02-17 — After Phase 4 (Local Music Player) completion.*
+*Last updated: 2026-02-17 — After Phase 5 (AI Foundation) completion.*
