@@ -1086,3 +1086,6 @@ Created two documents:
 
 > **Commit db1091b** (2026-02-17 00:49) — docs: mark Phase 4 complete in roadmap — 4/12 phases done
 > Files changed: 5
+
+> **Commit b29dc3b** (2026-02-17 00:59) — docs: add technical architecture guide and user manual
+> Files changed: 3

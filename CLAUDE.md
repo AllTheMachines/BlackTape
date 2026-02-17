@@ -24,6 +24,8 @@ Read `PROJECT.md` for the full vision, architecture, and research context.
 | `src/lib/config.ts` | Project name + tagline. THE single variable for renaming. |
 | `PROJECT.md` | Vision, architecture, research references |
 | `BUILD-LOG.md` | Documentary record of every decision and milestone |
+| `ARCHITECTURE.md` | Technical architecture — how all subsystems connect |
+| `docs/user-manual.md` | End-user manual and help reference |
 
 ## Naming
 
@@ -97,3 +99,4 @@ npm run check   # TypeScript + Svelte checks
 - **Open source always.** No decisions that would lock this into a proprietary ecosystem.
 - **The name will change.** Don't hardcode "Mercury" anywhere — always import from config.ts.
 - **Update the build log.** If you made a decision, it goes in BUILD-LOG.md. No exceptions.
+- **Update the docs.** When adding features, changing architecture, or modifying user-facing behavior, update `ARCHITECTURE.md` and `docs/user-manual.md` to match. These docs must stay current — they're the map that connects all parts of the system.
