@@ -2,11 +2,13 @@
 
 ## Overview
 
-Mercury is a desktop app. The internet is where it gets information. Your machine is where everything lives.
+Mercury is a desktop app that becomes a place. The internet is where it gets information. Your machine is where everything lives. The community lives everywhere.
 
-Build order: data pipeline (foundation) → web gateway (first impression) → desktop app (the real product) → local player (plays what you own) → AI (the brain) → discovery mechanics (the soul) → knowledge base (the differentiator) → social layer → curator tools → interoperability → listening rooms → artist tools. Phase 0 (sustainability) runs in parallel with everything.
+Build order: data pipeline (foundation) → web gateway (first impression) → desktop app (the real product) → local player (plays what you own) → AI (the brain) → discovery mechanics (the soul) → knowledge base (the differentiator) → underground aesthetic (the vibe) → community foundation (the people) → communication (the connections) → scene building (the culture) → curator tools → interoperability → listening rooms → artist tools. Phase 0 (sustainability) runs in parallel with everything.
 
 Phases 1-2 built the web gateway — a working search engine with artist pages and embeds on Cloudflare. Everything from Phase 3 onward targets the Tauri desktop app as the primary product. The web version stays as a lightweight gateway that points people to the real thing.
+
+Phase 8 is the turning point — where Mercury stops being a tool and starts being a place. The aesthetic overhaul ships before any community features because the vibe has to be right first.
 
 ## Phases
 
@@ -21,11 +23,14 @@ Phases 1-2 built the web gateway — a working search engine with artist pages a
 - [ ] **Phase 5: AI Foundation** — Client-side models, recommendations, natural-language exploration, taste profiling
 - [ ] **Phase 6: Discovery Engine** — Composite ranking, tag browsing, crate digging, uniqueness scoring, style map
 - [ ] **Phase 7: Knowledge Base** — Genre/scene map, multi-layer content, scene maps, time machine, liner notes
-- [ ] **Phase 8: Social Layer** — Collections, taste fingerprint, writing, discussion, import/export
-- [ ] **Phase 9: Curator / Blog Tools** — Embeddable widgets, attribution, RSS, blog revival
-- [ ] **Phase 10: Interoperability** — ActivityPub, Fediverse federation, RSS for everything
-- [ ] **Phase 11: Listening Rooms** — Shared real-time listening with synchronized embeds
-- [ ] **Phase 12: Artist Tools** — Claiming, dashboard, auto-news, self-hosted site generator
+- [ ] **Phase 8: Underground Aesthetic** — Dense playful UI, taste-based theming, panels/controls, templates, game-like feel
+- [ ] **Phase 9: Community Foundation** — Identity system, taste matching, collections, taste fingerprint, import/export
+- [ ] **Phase 10: Communication Layer** — Encrypted DMs + scene rooms + ephemeral sessions, hybrid moderation
+- [ ] **Phase 11: Scene Building** — AI scene detection, label collectives, community-driven creation tools
+- [ ] **Phase 12: Curator / Blog Tools** — Embeddable widgets, attribution, RSS, blog revival
+- [ ] **Phase 13: Interoperability** — ActivityPub, Fediverse federation, RSS for everything
+- [ ] **Phase 14: Listening Rooms** — Shared real-time listening with synchronized embeds
+- [ ] **Phase 15: Artist Tools** — Claiming, dashboard, auto-news, self-hosted site generator
 
 ## Phase Details
 
@@ -145,41 +150,79 @@ Plans:
   5. Liner Notes — rich expandable credits, relationships, and production details on release pages
 **Plans**: TBD
 
-### Phase 8: Social Layer
-**Goal**: Taste as identity — the record shop shelf experience. Your collection should feel like yours. All local-first, no central server accounts. Sharing via generated exports.
-**Depends on**: Phase 3 (desktop)
-**Requirements**: SOCIAL-01, SOCIAL-02, SOCIAL-03, SOCIAL-04, SOCIAL-05, SOCIAL-06, SOCIAL-07, SOCIAL-08, SOCIAL-09, SOCIAL-10, EMBED-02
+### Phase 8: Underground Aesthetic
+**Goal**: The turning point. Mercury stops looking like a search engine and starts feeling like a place. The UI becomes dense, playful, and game-like — panels, controls, dropdowns everywhere. A cockpit, not a feed. Your taste shapes your colors through taste-based theming. Layout templates let you customize your workspace. This ships before community features because the vibe has to be right first.
+**Depends on**: Phase 5 (taste profiles for theming), Phase 6 (discovery for panel content)
+**Requirements**: UX-01, UX-02, UX-03, UX-04
 **Success Criteria**:
-  1. Opt-in user profiles (anonymous browsing by default)
-  2. Collections: save artists/releases, tag them, sort them, group them — feels like a real shelf
-  3. User-side tagging: personal taxonomy for organizing collections
-  4. Taste Fingerprint: generated visual pattern unique to each user's collection
-  5. Shareable exports — generated artifacts (images, files) from the desktop app
-  6. Writing: users write reviews, scene reports, personal essays inside the app
-  7. Discussion threads around releases, artists, and scenes
-  8. Embeddable collections on external websites
-  9. QR codes for any collection or curated list
-  10. Import from Spotify, Last.fm, Apple Music, CSV
-  11. Export all user data — your data is yours
-  12. Streaming service preference — embeds default to user's choice
-  13. No vanity metrics anywhere — no follower counts, no like counts, no play counts
+  1. Dense, panel-based UI — multiple information sources visible simultaneously, not hidden behind navigation
+  2. Taste-based theming engine — color palette generated from user's taste profile. Two different people see two different Mercurys.
+  3. Layout templates — users can choose and customize their workspace arrangement
+  4. Interactive controls everywhere — dropdowns, sliders, toggles. Using Mercury feels like playing, not scrolling.
+  5. Streaming service preference — embeds default to user's chosen platform
+  6. The app feels like something you PLAY with, not something you consume from
 **Plans**: TBD
 
-### Phase 9: Curator / Blog Tools
+### Phase 9: Community Foundation
+**Goal**: Taste as identity. Find people who share your exact obscure corner of music. The first step toward "underground is alive." All local-first, no central server accounts. Identity is pseudonymous — a handle, a lo-fi avatar, and your pure taste profile. No bios, no photos. The music speaks.
+**Depends on**: Phase 8 (aesthetic must feel right first), Phase 5 (taste profiles)
+**Requirements**: COMM-01, COMM-02, COMM-03, SOCIAL-01, SOCIAL-02, SOCIAL-03, SOCIAL-04
+**Success Criteria**:
+  1. Pseudonymous identity system — handles + lo-fi avatar builder (customizable pixel art, not photorealistic)
+  2. Pure taste profiles — your tags, artists, and collection ARE your identity. No bios, no "about me."
+  3. Collections: save artists/releases, organize them — feels like a real shelf
+  4. Taste Fingerprint: generated visual pattern unique to each user's collection
+  5. Taste matching — three layers: overlap browsing, scene rooms, serendipitous encounters
+  6. Toggleable radius: local → regional → global
+  7. Import from Spotify, Last.fm, Apple Music, CSV
+  8. Export all user data — your data is yours
+  9. No vanity metrics anywhere — no follower counts, no like counts, no play counts
+**Plans**: TBD
+
+### Phase 10: Communication Layer
+**Goal**: People found each other in Phase 9. Now they can talk. Encrypted, layered communication: private DMs, persistent scene rooms, and ephemeral sessions. Zero server cost is a hard constraint. Infrastructure architecture (Matrix, P2P, relay, Nostr) requires research — the right answer depends on the ecosystem at build time.
+**Depends on**: Phase 9 (identity system)
+**Requirements**: COMM-04, COMM-05, COMM-06
+**Architecture Decision Required**: Communication infrastructure protocol — deferred until phase planning. Options: Matrix (federated, existing infra), P2P/libp2p (purist, no server), hybrid relay (Cloudflare Workers free tier), Nostr (decentralized, growing ecosystem).
+**Success Criteria**:
+  1. Encrypted private DMs between users
+  2. Persistent scene rooms — organized by genre/vibe, discoverable, anyone can join
+  3. Ephemeral sessions — temporary shared moments that don't persist
+  4. Groups small by default (UI encourages intimacy), no size ceiling
+  5. Hybrid moderation: room creators have authority + community flagging for harmful content. No central moderation team.
+  6. AI taste translation — explains WHY two people's tastes overlap
+  7. AI matchmaking context — describes overlap and divergence between users
+  8. Zero server cost for Mercury maintainer
+**Plans**: TBD
+
+### Phase 11: Scene Building
+**Goal**: The community has identity (Phase 9) and communication (Phase 10). Now scenes emerge. AI detects emerging patterns in collective listening. Label collectives form organically. Mercury provides the space — people decide what happens in it. Creation tools are added only if the community asks for them.
+**Depends on**: Phase 10 (communication), Phase 5 (AI for scene detection)
+**Requirements**: COMM-07, COMM-08
+**Success Criteria**:
+  1. AI scene awareness — detects emerging scenes from collective listening patterns ("a cluster is forming around these artists")
+  2. Label collectives — group identity within Mercury (shared name, shared roster, collective taste profile)
+  3. Community-requested creation tools — collaborative playlists, shared collections, label pages. Shipped only when people ask.
+  4. The underground is alive — scenes exist in Mercury that exist nowhere else
+**Plans**: TBD
+
+### Phase 12: Curator / Blog Tools
 **Goal**: Bring music blogs back to life. Give bloggers tools and an audience.
-**Depends on**: Phase 6 (discovery), Phase 8 (social)
+**Depends on**: Phase 6 (discovery), Phase 9 (community foundation)
 **Requirements**: BLOG-01, BLOG-02, BLOG-03
 **Success Criteria**:
   1. Embeddable widgets (artist cards, search results, curated lists, entire collections)
   2. Attribution: "discovered via [curator]" links — curators get credit
   3. RSS feeds for every artist page, user collection, tag, and curator
   4. First access for curators — early visibility into emerging artists and new additions
-  5. A music blogger has reason to write again
+  5. Embeddable collections on external websites
+  6. QR codes for any collection or curated list
+  7. A music blogger has reason to write again
 **Plans**: TBD
 
-### Phase 10: Interoperability
+### Phase 13: Interoperability
 **Goal**: Plug into the open web — federate, don't isolate
-**Depends on**: Phase 8 (social layer)
+**Depends on**: Phase 9 (community foundation)
 **Requirements**: INTEROP-01, INTEROP-02
 **Success Criteria**:
   1. Profiles followable from Mastodon and the Fediverse via ActivityPub
@@ -187,9 +230,9 @@ Plans:
   3. No need to create an account on Mercury to follow someone
 **Plans**: TBD
 
-### Phase 11: Listening Rooms
+### Phase 14: Listening Rooms
 **Goal**: Communal discovery — shared real-time listening like sitting with friends playing records
-**Depends on**: Phase 8 (social layer)
+**Depends on**: Phase 10 (communication layer)
 **Requirements**: LISTEN-01, LISTEN-02
 **Success Criteria**:
   1. Create a room, invite people, play music together through synchronized embeds
@@ -198,9 +241,9 @@ Plans:
   4. No video. No screen sharing. Just music and people.
 **Plans**: TBD
 
-### Phase 12: Artist Tools
+### Phase 15: Artist Tools
 **Goal**: Give artists control without requiring them to do anything — zero-effort by default, full control if claimed
-**Depends on**: Phase 8 (social layer)
+**Depends on**: Phase 9 (community foundation)
 **Requirements**: ARTIST-01, ARTIST-02, ARTIST-03, ARTIST-04
 **Success Criteria**:
   1. Artist claiming with verification ("this profile is me")
@@ -216,6 +259,9 @@ Plans:
 | Cross-platform playlist sync | Platform ToS risks, fragile APIs | Core product is solid, legal clarity exists |
 | Remote streaming (phone <- home) | NAT traversal, relay servers, infrastructure complexity | Desktop + player mature, users ask for it |
 | Database diff-based updates | Full replacement is simpler; diff sizes unknown until MusicBrainz weekly dump testing | Full replacement feels too large for users |
+| Communication infrastructure choice | Matrix vs P2P vs relay vs Nostr — ecosystem evolving fast | Phase 10 planning (proper research then) |
+| Licensing model | Open source vs source-available vs custom — depends on sustainability trajectory | When sustainability model is clearer |
+| Writing/discussion features | Community should ask for creation tools, not have them imposed | Phase 11+ if community requests |
 
 ## Progress
 
@@ -228,11 +274,14 @@ Plans:
 | 5. AI Foundation | 0/TBD | Not started | - |
 | 6. Discovery Engine | 0/TBD | Not started | - |
 | 7. Knowledge Base | 0/TBD | Not started | - |
-| 8. Social Layer | 0/TBD | Not started | - |
-| 9. Curator / Blog Tools | 0/TBD | Not started | - |
-| 10. Interoperability | 0/TBD | Not started | - |
-| 11. Listening Rooms | 0/TBD | Not started | - |
-| 12. Artist Tools | 0/TBD | Not started | - |
+| 8. Underground Aesthetic | 0/TBD | Not started | - |
+| 9. Community Foundation | 0/TBD | Not started | - |
+| 10. Communication Layer | 0/TBD | Not started | - |
+| 11. Scene Building | 0/TBD | Not started | - |
+| 12. Curator / Blog Tools | 0/TBD | Not started | - |
+| 13. Interoperability | 0/TBD | Not started | - |
+| 14. Listening Rooms | 0/TBD | Not started | - |
+| 15. Artist Tools | 0/TBD | Not started | - |
 
 ## Parallel Track: Phase 0 (Sustainability)
 
@@ -253,13 +302,13 @@ Runs alongside everything else. Not blocking any phase. Rolls out in stages as f
 - [ ] Liner Notes backer credits page — supporter names/aliases with the same reverence as music credits
 - [ ] Sticker and patch designs (print-on-demand via Printful/Gelato)
 
-### Stage 3 — Identity (alongside Phase 6-8: Discovery + Social)
+### Stage 3 — Identity (alongside Phase 8-9: Aesthetic + Community)
 - [ ] Taste Fingerprint prints — personalized posters generated from user collections (needs fingerprint feature)
 - [ ] Discovery tokens — collectible coins/enamel pins with QR codes linking to curated discoveries
 - [ ] Supporter Wall integrated into the platform
 - [ ] Tote bags (record store bags for supporters)
 
-### Stage 4 — Community (alongside Phase 8-9: Social + Blog)
+### Stage 4 — Community (alongside Phase 11-12: Scene Building + Blog)
 - [ ] Artist collaboration merch — discovered artists create artwork for merch runs (artist gets paid)
 - [ ] Milestone drops — limited edition merch when major versions ship
 - [ ] Full print-on-demand merch store

@@ -664,9 +664,6 @@ MusicBrainz provides a `type` field on every URL relationship (e.g., "streaming"
 ### Build Status
 `npm run build` — clean. `npm run check` — 0 errors, 0 warnings.
 
-<!-- status -->
-All done — artist page redesign + live streaming infrastructure complete. Ready for visual review.
-<!-- /status -->
 
 > **Commit 833b796** (2026-02-15 21:12) — feat: redesign artist page with discography grid, categorized links, and Listen On bar
 > Files changed: 16
@@ -1089,3 +1086,204 @@ Created two documents:
 
 > **Commit b29dc3b** (2026-02-17 00:59) — docs: add technical architecture guide and user manual
 > Files changed: 3
+
+> **Commit e22a0b2** (2026-02-17 01:03) — docs: add mandatory doc update rule to CLAUDE.md
+> Files changed: 2
+
+> **Commit 328338c** (2026-02-17 01:07) — wip: phase 4 paused — complete, ready for phase 5
+> Files changed: 2
+
+> **Commit 8719d36** (2026-02-17 09:01) — docs(05): capture phase context for AI Foundation
+> Files changed: 2
+
+> **Commit 470da5a** (2026-02-17 09:10) — docs(05): research phase domain — AI Foundation
+> Files changed: 1
+
+> **Commit a7ff291** (2026-02-17 09:21) — docs(05-ai-foundation): create phase plan — 7 plans in 4 waves
+> Files changed: 8
+
+> **Commit d0f9bc0** (2026-02-17 09:31) — feat(05-01): add Rust AI sidecar module and taste.db schema
+> Files changed: 9
+
+> **Commit e18740c** (2026-02-17 09:32) — feat(05-01): add TypeScript AI provider interface with local and remote implementations
+> Files changed: 5
+
+> **Commit fc8a172** (2026-02-17 09:34) — docs(05-01): complete AI infrastructure foundation plan
+> Files changed: 2
+
+> **Commit 426be58** (2026-02-17 09:41) — feat(05-03): sqlite-vec integration + embedding and taste CRUD commands
+> Files changed: 6
+
+> **Commit 833e052** (2026-02-17 09:42) — feat(05-02): model download pipeline and reactive AI state management
+> Files changed: 4
+
+> **Commit 978d02b** (2026-02-17 09:44) — feat(05-03): frontend taste profile, signals, favorites, and embedding wrappers
+> Files changed: 5
+
+> **Commit b8c8c53** (2026-02-17 09:45) — feat(05-02): settings page with AI opt-in flow and header status indicator
+> Files changed: 4
+
+> **Commit bb16d29** (2026-02-17 09:46) — docs(05-03): complete embedding infrastructure + taste profile plan
+> Files changed: 2
+
+> **Commit eddc2d6** (2026-02-17 09:47) — docs(05-02): complete AI opt-in flow plan
+> Files changed: 2
+
+> **Commit 14b367d** (2026-02-17 09:53) — feat(05-04): FavoriteButton and AiRecommendations components
+> Files changed: 3
+
+> **Commit d678f4b** (2026-02-17 09:55) — feat(05-05): ExploreResult component and NL explore prompts
+> Files changed: 2
+
+> **Commit 2cfbfe6** (2026-02-17 09:55) — feat(05-04): integrate AI features into artist page
+> Files changed: 1
+
+> **Commit 8080174** (2026-02-17 09:56) — feat(05-06): TasteEditor component with tag management and artist anchors
+> Files changed: 1
+
+> **Commit 418fef4** (2026-02-17 09:56) — docs(05-04): complete artist page AI features plan
+> Files changed: 2
+
+> **Commit 3e349ab** (2026-02-17 09:56) — feat(05-06): integrate TasteEditor into settings page
+> Files changed: 3
+
+> **Commit e93c659** (2026-02-17 09:59) — docs(05-06): complete taste profile editor plan
+> Files changed: 2
+
+> **Commit f9b0637** (2026-02-17 09:59) — docs(05-05): complete NL explore page plan
+> Files changed: 2
+
+> **Commit f845d2d** (2026-02-17 10:06) — docs(05-07): update architecture and user manual with AI features
+> Files changed: 2
+
+> **Commit 96e9d91** (2026-02-17 10:25) — fix(05-07): add externalBin config and sidecar binary setup
+> Files changed: 2
+
+> **Commit f6b923e** (2026-02-17 10:41) — fix(05-07): correct sidecar name resolution path
+> Files changed: 2
+
+## Entry 019 — 2026-02-17 — Sidecar DLL Hunt
+
+### The Problem
+AI servers failing to start with "failed to start within 60 seconds." The llama-server binary existed and was the correct build, but produced zero output when run — no errors, no help text, nothing.
+
+### Root Cause
+**Tauri's `externalBin` only copies the `.exe` to `target/debug/` — it does NOT copy companion DLLs.** The llama.cpp server binary depends on ~20 DLLs (ggml-base.dll, ggml-cpu-*.dll, llama.dll, libomp140.dll, etc.) that weren't present in the working directory. On Windows, missing DLLs cause silent failure — the process spawns and immediately dies with no stderr output.
+
+### The Fix
+Three changes:
+1. **`src-tauri/build.rs`** — Added DLL auto-copy logic. On every build, scans `src-tauri/binaries/` for `.dll` files and copies them to the target directory alongside the sidecar exe.
+2. **`src/lib/ai/state.svelte.ts`** — Increased health check timeout from 60s to 180s (loading a 2GB model on CPU takes time). Added early crash detection via `get_ai_status` call during polling. Better error messages showing which server failed.
+3. **`src-tauri/src/ai/sidecar.rs`** — Added sidecar output logging. The `rx` channel from `spawn()` was being discarded (`_rx`). Now spawns an async task that reads stdout/stderr and logs with `[llama-gen]`/`[llama-embed]` prefix. No more silent failures.
+
+<!-- decision -->
+**Artist page 503 in Tauri dev mode** — The `+page.server.ts` was throwing `error(503, 'Database not available')` when there was no D1 database. This is always the case in Tauri dev mode (no Cloudflare). The throw prevented the universal `+page.ts` load (which has the Tauri code path) from ever running. Fix: return empty fallback data instead of throwing, matching how the search page already handles this. This was the root cause of missing favorites, bio, and all artist page features in Tauri.
+<!-- /decision -->
+
+Steve re-tested after all fixes — **Phase 5 approved.** Next session: commit these changes, complete Plan 07 summary, mark Phase 5 done.
+
+---
+
+## Entry 020 — 2026-02-17 — Vision Shift: Underground Is Alive
+
+### Context
+
+Steve wrote a raw vision piece that reframes what Mercury is becoming. Not just a search engine with AI. Not just discovery. A place where underground culture can actually live — where people find each other through shared taste, organize without platforms, and build something real.
+
+### Steve's Words
+
+> I don't want it to look shiny. Not Spotify-ish. I want it to feel underground.
+>
+> Not only finding artists. Finding people with similar tastes. Someone into shoegaze can find someone on the other side of the planet.
+>
+> Not a dashboard of "look at my food." More like: I'm into this music. I want to create an underground label. Not about money. Not about fame. About celebrating something. Creating something.
+>
+> It shouldn't say it directly. But that feeling should shine through.
+>
+> Underground can be alive.
+
+### What This Means
+
+The existing roadmap has a Social Layer (Phase 8) — but it was designed as profiles, collections, shareable exports. Desktop-first, local-first. What Steve is describing goes further:
+
+- **Taste as the only identity** — no photos, game-like avatars, your music IS your profile
+- **Encrypted group communication** — not a public feed, more like finding your people
+- **Community formation** — label parties, scene building, collaboration across borders
+- **Anti-algorithm philosophy** — explicit counter to the controlled, surveilled experience of mainstream platforms
+- **Aesthetic rebellion** — the UI itself should feel underground, not corporate
+
+This isn't just a feature addition. It's a philosophical expansion that touches the social layer, the aesthetic direction, and potentially the entire architecture (encrypted comms needs infrastructure the current local-first model doesn't have).
+
+### The Tension
+
+Entry 014 decided: "Mercury is a desktop app. No central server. User data lives on their machine." Encrypted group chat and taste matching across the planet need *some* shared infrastructure. These two truths need to coexist — and the questionnaire below is designed to find out how.
+
+### Next Step
+
+Structured questionnaire to map this vision into concrete roadmap decisions. See below.
+
+### Decisions Made (Interactive Questionnaire)
+
+Went through 16 questions step by step. Here's what was decided:
+
+<!-- decision: Identity = pseudonymous handle + avatar builder + pure taste -->
+**Mercury identity model:** Pseudonymous handles (not real names, not anonymous). Lo-fi avatar builder (customizable, not photorealistic, not procedural). Profiles are PURE TASTE — no bios, no "about me," no words. Your tags, your artists, your collection. The music speaks for itself.
+**Rejected:** Photo profiles, real names, anonymous/no-identity, procedurally generated avatars, bios/manifestos
+<!-- /decision -->
+
+<!-- decision: People finding = all three layers + toggleable radius -->
+**Finding people with similar taste** uses three layered modes: (1) taste map overlap for intentional browsing, (2) scene rooms for genre/vibe spaces, (3) serendipitous matching for random encounters. Radius is toggleable: local → regional → global. Buenos Aires to Berlin, or just your city.
+**Rejected:** Single-mode approaches, global-only, local-only
+<!-- /decision -->
+
+<!-- decision: Communication = layered, zero server cost, architecture TBD -->
+**Communication model:** Layered — private DMs + persistent scene rooms + ephemeral sessions. All encrypted. HARD CONSTRAINT: zero server cost for Steve. The infrastructure architecture (Matrix, P2P, relay, Nostr) is deferred until closer to building — needs proper research.
+**Rejected:** Premature architecture commitment
+<!-- /decision -->
+
+<!-- decision: Groups = self-organizing, small by default, hybrid moderation -->
+**Group model:** Small by default (UI encourages intimacy), no size ceiling. Groups are self-organizing — Mercury provides the space, people decide what to do. Labels, collectives, events — all organized BY the people, promoted outside Mercury. Hybrid moderation: room creators have authority + community flagging for truly harmful content. No central moderation team.
+**Rejected:** Fixed size limits, no moderation, centralized content police
+<!-- /decision -->
+
+<!-- decision: Creation tools = start with none, add if community asks -->
+Mercury launches community features with discovery + connection only. Creation tools (collaborative playlists, label pages, scene essays) added later ONLY if the community asks for them. Don't assume what they need.
+**Rejected:** Launching with creation tools, full creation suite
+<!-- /decision -->
+
+<!-- decision: Aesthetic = dense, playful, game-like, taste-themed -->
+**Design philosophy overhaul:** NOT minimal. Dense and playful — panels, textboxes, dropdowns, controls everywhere. Like a cockpit or a game UI. Something you PLAY with. Templates for customization. Taste-based theming: your music shapes your color scheme. Every Mercury installation looks different. This is an ongoing evolution, not a one-time redesign.
+**Rejected:** Minimal/sparse, brutalist, static dark theme
+<!-- /decision -->
+
+<!-- decision: Anti-algorithm = user control -->
+Mercury counters algorithmic devastation by giving users control. YOU build your own discovery path. Mercury provides tools (tags, maps, taste profiles, scene rooms) but never decides for you. You are the algorithm.
+**Rejected:** No algorithm at all, transparent algorithm, human-only curation
+<!-- /decision -->
+
+<!-- decision: AI in community = taste translation + scene awareness + matchmaking -->
+Local LLM (same Phase 5 infrastructure) extended to: (1) taste translation — explain WHY tastes overlap, (2) scene awareness — detect emerging scenes from collective listening, (3) matchmaking context — describe overlap and divergence between people. AI makes patterns visible, doesn't replace human judgment.
+<!-- /decision -->
+
+<!-- decision: Roadmap = split Phase 8 into three community phases, after Phase 7 -->
+Current Phase 8 (Social Layer) splits into three phases: Community Foundation → Communication Layer → Scene Building. Starts after Phase 7 (Knowledge Base). **Aesthetic overhaul ships first** — the vibe before the features. Mercury needs to FEEL underground before it starts connecting people.
+**Rejected:** Single phase, weaving into Phase 6, starting immediately after Phase 5
+<!-- /decision -->
+
+<!-- decision: Licensing = free always, source distribution TBD -->
+Mercury is free to use. Always. Non-negotiable. Open source decision is DEFERRED — Steve is concerned about commercial exploitation and misuse. Needs proper licensing research (AGPL, BSL, etc.) when the time comes. Sustainability (donations/grants) determines the long-term model. If donations can't support a safe life, might go fully open source and step back.
+**Rejected:** Premature open source commitment, premature closed source commitment
+<!-- /decision -->
+
+<!-- decision: Openness = community sets its own norms -->
+Mercury provides tools for both open and closed spaces. The community decides the culture. No enforced openness or enforced privacy. Let the underground be the underground.
+**Rejected:** Forced discoverability, forced privacy, platform-imposed norms
+<!-- /decision -->
+
+### What Still Needs Research (Deferred)
+- Communication infrastructure: Matrix vs P2P vs relay vs Nostr (decided when building community phases)
+- Licensing model: AGPL vs BSL vs custom (decided based on sustainability trajectory)
+- Taste matching computation: local vs server vs cryptographic (decided with architecture)
+
+### Roadmap Updated
+ROADMAP.md rewritten: 12 phases → 15 phases. Old Phase 8 (Social Layer) split into Phase 8 (Underground Aesthetic), Phase 9 (Community Foundation), Phase 10 (Communication Layer), Phase 11 (Scene Building). Old phases 9-12 renumbered to 12-15. Sustainability stages renumbered to match. Three new deferred items added.

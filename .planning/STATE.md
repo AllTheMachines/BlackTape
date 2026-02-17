@@ -9,7 +9,7 @@ See: .planning/PROJECT.md (updated 2026-02-15)
 
 ## Current Position
 
-Phase: 5 of 12 (AI Foundation)
+Phase: 5 of 15 (AI Foundation)
 Plan: 6 of 7 complete
 Status: In progress
 Last activity: 2026-02-17 — Completed 05-05-PLAN.md (NL Explore Page)
@@ -146,5 +146,5 @@ None
 ## Session Continuity
 
 Last session: 2026-02-17
-Stopped at: Phase 5, Plans 01-06 complete. Wave 3 done. Only 05-07 remaining (Wave 4).
-Resume: `/gsd:execute-phase` with 05-07-PLAN.md (Wave 4).
+Stopped at: Phase 5, Plan 07, Task 2 (human-verify checkpoint). Task 1 (docs) committed. Sidecar bug fixed (2 commits). User needs to re-test AI features after fix.
+Resume: `/gsd:resume-work` — checkpoint at plan 07 Task 2. User says "approved" or describes issues, then finish plan completion steps (SUMMARY, STATE, ROADMAP updates).
