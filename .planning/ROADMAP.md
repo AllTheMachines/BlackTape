@@ -106,7 +106,15 @@ Plans:
   4. AI-generated summaries for artists and genres from public data sources
   5. Taste profile builds automatically from listening history and collection
   6. All AI processing local — user data never leaves their machine
-**Plans**: TBD
+**Plans**: 7 plans
+Plans:
+- [ ] 05-01-PLAN.md — Rust AI sidecar infrastructure + TypeScript AI provider interface + taste.db schema
+- [ ] 05-02-PLAN.md — AI opt-in settings UI + model download with progress + sidecar startup
+- [ ] 05-03-PLAN.md — Embedding infrastructure (sqlite-vec) + taste signal computation + favorites
+- [ ] 05-04-PLAN.md — Artist page recommendations + AI summaries + favorite button
+- [ ] 05-05-PLAN.md — Natural language explore page with refinement
+- [ ] 05-06-PLAN.md — Taste profile editing (tag weights + artist anchors)
+- [ ] 05-07-PLAN.md — Documentation updates + end-to-end verification
 
 ### Phase 6: Discovery Engine
 **Goal**: Where search engine becomes discovery engine. Uniqueness IS the mechanism — the more niche you are, the more discoverable you become. Powered by a composite ranking score.
