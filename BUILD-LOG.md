@@ -1526,3 +1526,46 @@ The rowid-based random sampling from Plan 02 (`getCrateDigArtists`) does the hea
 
 - `npm run check` — 0 errors, 3 warnings (361 files)
 - Warnings are Svelte 5 lint hints about `data` prop captured into `$state` at init — intentional pattern, not bugs
+
+> **Commit 0db4138** (2026-02-21 00:00) — docs(06-05): complete Crate Digging Mode plan — DISC-04 satisfied, Phase 6 complete
+> Files changed: 4
+
+> **Commit 42c2e81** (2026-02-21 00:02) — feat(06-06): install d3-force and create StyleMap component
+> Files changed: 3
+
+> **Commit 7c2149f** (2026-02-21 00:03) — feat(06-06): create /style-map route — server load, universal load, page
+> Files changed: 3
+
+## Entry 027 — 2026-02-21 — Phase 6 Plan 6: Style Map Visualization
+
+### What Was Built
+
+The Style Map — the visual entry point to the discovery engine. `/style-map` renders a force-directed SVG graph where music genres are nodes and their co-occurrence strength is edges. Node size encodes artist count (log scale). Clicking any node navigates to `/discover?tags=<tag>`.
+
+**StyleMap.svelte** — D3 force-directed graph component using d3-force@3.0.0. The key implementation choice: `simulation.tick(500)` runs the physics headlessly to completion — no `on('tick')` callback, no reactive updates during layout. The simulation runs synchronously, then position state is assigned once. Zero layout thrashing, zero Svelte reactivity during computation.
+
+**Route files:**
+- `+page.server.ts` — D1Provider load, `getStyleMapData(db, 50)` — same pattern as Discover page
+- `+page.ts` — Universal load: web passthrough + Tauri dynamic import path (same pattern as search/explore/discover)
+- `+page.svelte` — Minimal wrapper with page header and empty state guard
+
+<!-- decision: Headless D3 simulation via tick(500) — no on('tick') -->
+The standard D3 tutorial wires `simulation.on('tick', () => { update state })` which causes a reactive update on every tick iteration. In Svelte 5, this would trigger hundreds of reactive re-renders per layout. Instead: run all 500 ticks synchronously in a loop, stop the simulation, compute edge positions from the settled node map, then assign `layoutNodes` and `layoutEdges` once.
+**Rejected:** `simulation.on('tick', ...)` — would cause 500+ reactive renders during layout
+<!-- /decision -->
+
+<!-- decision: Node radius uses log10 scale, clamped 6–30px -->
+Linear scale: a tag used by 50k artists vs 100 artists would produce wildly different sizes — the common genres would dominate the entire canvas. Log10 scale compresses the range: `Math.max(6, Math.min(30, Math.log10(artistCount) * 8))`. Common tags get somewhat bigger nodes but don't crowd out the rare ones.
+**Rejected:** Linear scale — makes niche tags invisible
+<!-- /decision -->
+
+### Technical Notes
+
+**@types/d3-force** — d3-force 3.x ships JavaScript with JSDoc but no `.d.ts` files. TypeScript couldn't resolve types, producing an "implicitly has any type" error. Fix: `npm install --save-dev @types/d3-force`. Clean after that.
+
+The style map works on both web (D1) and Tauri (local SQLite) using the same universal load pattern established in Plan 03 (Discover page).
+
+### Verification
+
+- `npm run check` — 0 errors, 3 warnings (369 files)
+- Warnings unchanged from previous plans (pre-existing in crate/+page.svelte)

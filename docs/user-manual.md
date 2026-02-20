@@ -10,12 +10,14 @@ Mercury is a music discovery engine that indexes all music from open databases a
 2. [Searching for Music](#searching-for-music)
 3. [Artist Pages](#artist-pages)
 4. [Discover Page](#discover-page)
-5. [Local Music Library](#local-music-library)
-6. [Music Player](#music-player)
-7. [Discovery Features](#discovery-features)
-8. [AI Features](#ai-features)
-9. [Web vs Desktop](#web-vs-desktop)
-10. [Troubleshooting](#troubleshooting)
+5. [Style Map](#style-map)
+6. [Local Music Library](#local-music-library)
+7. [Music Player](#music-player)
+8. [Discovery Features](#discovery-features)
+9. [Crate Digging Mode](#crate-digging-mode)
+10. [AI Features](#ai-features)
+11. [Web vs Desktop](#web-vs-desktop)
+12. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -144,6 +146,27 @@ You can select up to 5 tags at a time. At 5 tags, all remaining inactive tags ar
 ### Works on Web and Desktop
 
 The Discover page works identically on both the web version (data from Cloudflare D1) and the desktop app (data from your local mercury.db).
+
+---
+
+## Style Map
+
+The Style Map (`/style-map`) is a visual overview of how music genres relate to each other. It is available on both the web and desktop versions.
+
+### What You See
+
+- **Nodes** — Each circle represents a music tag (genre or style). The bigger the circle, the more artists use that tag.
+- **Edges** — Lines between nodes show tags that frequently appear together on the same artists. Thicker lines mean stronger co-occurrence.
+- **Layout** — Tags that cluster together in real musical practice end up close together in the graph. Shoegaze and dream pop will be near each other; heavy metal and jazz will be farther apart.
+
+### How to Use It
+
+- **Hover** a node to highlight it and see the tag name clearly.
+- **Click** any node to navigate to `/discover?tags=<tag>` — you'll see all artists with that tag, ordered niche-first.
+
+### Technical Note
+
+The graph layout is computed once on page load using D3's force simulation (500 iterations, run synchronously). The result is a static snapshot — no animation loop, no continuous layout updates.
 
 ---
 
@@ -287,6 +310,33 @@ Matching is best-effort and never blocks playback. If a match can't be found, th
 
 ---
 
+## Crate Digging Mode
+
+*Desktop app only.*
+
+Crate Digging (`/crate`) is Mercury's serendipity mechanism. Hit a button and get 20 random artists from the database. Each click is a fresh random draw — no repeat order, no algorithm, no curation. Just wandering.
+
+### Filters
+
+You can narrow the random draw before digging:
+
+- **Tag** — Enter a genre (e.g., `psychedelic`) to only dig within that style
+- **Decade** — Select a decade range to filter by when the artist was formed
+- **Country** — Enter an ISO country code (e.g., `JP`, `DE`) to dig regionally
+
+Leave all filters empty to dig across the entire 2.8-million-artist catalog.
+
+### How to Use It
+
+1. Set any filters you want (or leave them blank)
+2. Click **Dig** — 20 random matching artists appear
+3. Click any artist name to go to their artist page
+4. Click **Dig** again for a fresh random batch
+
+Crate digging state is ephemeral — the URL doesn't change when you dig. This is intentional: wandering isn't meant to be bookmarked. Use the Discover page for shareable filtered results.
+
+---
+
 ## AI Features
 
 *Desktop app only. All AI processing runs locally on your machine.*
@@ -389,11 +439,13 @@ When using a remote API provider, your queries are sent to whichever endpoint yo
 | Artist pages | Yes | Yes |
 | Embedded players (Bandcamp, etc.) | Yes | Yes |
 | Discover page (tag intersection browsing) | Yes | Yes |
+| Style Map (genre graph visualization) | Yes | Yes |
 | Local music library | No | Yes |
 | Audio playback of local files | No | Yes |
 | Player bar + queue | No | Yes |
 | Now-playing discovery | No | Yes |
 | Unified search (local + discovery) | No | Yes |
+| Crate Digging Mode | No | Yes |
 | AI features (explore, recommendations, taste) | No | Yes |
 | Offline search | No | Yes |
 | Requires internet for artist pages | Yes | Yes* |

@@ -5,21 +5,22 @@
 See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Phase 6 complete (Discovery Engine) — all 5 plans done. Next: Phase 06.1 Affiliate Buy Links.
+**Current focus:** Phase 6 complete (Discovery Engine) — all 6 plans done. Next: Phase 06.1 Affiliate Buy Links.
 
 ## Current Position
 
 Phase: 6 of 15 complete (Discovery Engine)
-Current Plan: 5 of 5 complete
-Status: Complete — 06-05 done (Crate Digging Mode /crate route, DISC-04 satisfied)
-Last activity: 2026-02-20 — Phase 6 Plan 5 complete (Crate Digging Mode UI, Tauri-only /crate route)
+Current Plan: 6 of 6 complete
+Status: Complete — 06-06 done (Style Map /style-map route, DISC-03 satisfied, Phase 6 fully complete)
+Last activity: 2026-02-21 — Phase 6 Plan 6 complete (Style Map D3 force-directed visualization)
 
 Progress: [███████░░░] 7/7
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 24
+- Total plans completed: 25
+- Phase 6 Plan 06: 5min
 - Phase 6 Plan 05: 3min
 - Phase 6 Plan 04: 4min
 - Phase 6 Plan 03: 5min
@@ -49,8 +50,9 @@ Progress: [███████░░░] 7/7
 | 3. Desktop App | 5/5 | 23min+ | Complete |
 | 4. Local Music Player | 5/5 | 19min+ | Complete |
 | 5. AI Foundation | 7/7 | 28min+ | Complete |
-| 6. Discovery Engine | 5/5 | 20min+ | Complete |
+| 6. Discovery Engine | 6/6 | 25min+ | Complete |
 | Phase 06 P05 | 3 | 1 tasks | 3 files |
+| Phase 06 P06 | 5 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -156,6 +158,8 @@ Progress: [███████░░░] 7/7
 - Score tier thresholds: 0.0003/0.001/0.005 based on AVG(1/artist_count)*1000 distribution — Very Niche/Niche/Eclectic/Mainstream.
 - getArtistUniquenessScore fetched via Promise.all wrapping alongside existing Promise.allSettled network calls — no added serial latency.
 - [Phase 06]: Client-side re-fetch without URL update for crate dig — wandering is ephemeral, not bookmarkable (contrast with Discover page where state lives in URL)
+- [Phase 06]: Headless D3 force simulation via simulation.tick(500) — no on('tick') wiring to Svelte state, single assignment after simulation stops (zero layout thrashing)
+- [Phase 06]: Log10 node radius scaling (clamped 6–30px) — prevents popular genre tags from dominating the style map canvas
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
@@ -168,6 +172,6 @@ None
 
 ## Session Continuity
 
-Last session: 2026-02-20
-Phase 6 Plan 5 complete — Crate Digging Mode: /crate route (Tauri-only), filter controls (tag, decade, country), rowid-based random artist sampling, client-side dig() re-fetch without page navigation. DISC-04 satisfied. Phase 6 complete.
-Stopped at: Completed 06-05-PLAN.md
+Last session: 2026-02-21
+Phase 6 Plan 6 complete — Style Map Visualization: /style-map route (web + Tauri), StyleMap.svelte with D3 headless force simulation (tick(500)), log10 node sizing, click-to-discover navigation. d3-force@3.0.0 + @types/d3-force installed. DISC-03 satisfied. Phase 6 fully complete.
+Stopped at: Completed 06-06-PLAN.md

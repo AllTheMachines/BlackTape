@@ -210,7 +210,8 @@ Mercury/
 │   │       ├── FavoriteButton.svelte
 │   │       ├── ExploreResult.svelte
 │   │       ├── TasteEditor.svelte
-│   │       └── UniquenessScore.svelte
+│   │       ├── UniquenessScore.svelte
+│   │       └── StyleMap.svelte
 │   └── routes/
 │       ├── +layout.svelte        # Root layout (header, nav, player)
 │       ├── +layout.ts            # SSR toggle
@@ -220,6 +221,8 @@ Mercury/
 │       ├── library/              # Local music library (Tauri only)
 │       ├── explore/              # NL explore page (Tauri only)
 │       ├── settings/             # Settings page (Tauri only)
+│       ├── crate/                # Crate digging mode (Tauri only)
+│       ├── style-map/            # Style Map visualization (web + Tauri)
 │       └── api/                  # Server-side API routes (web only)
 │           ├── search/
 │           ├── soundcloud-oembed/
@@ -622,6 +625,51 @@ URL ?tags param
 
 The tag intersection uses dynamic JOIN construction — one `JOIN artist_tags` per tag, with the tag value as a bound parameter. This avoids SQL injection while staying within D1's bound parameter limits.
 
+### Style Map (`/style-map`)
+
+A force-directed graph visualization of how music genres relate to each other. Available on both web and desktop.
+
+**How it works:**
+
+1. `getStyleMapData(db, 50)` returns the top 50 tags as nodes and their co-occurrence pairs as edges.
+2. `StyleMap.svelte` receives these nodes and edges as props, runs D3's force simulation headlessly (no animation loop), and renders a static SVG.
+3. Clicking a tag node navigates to `/discover?tags=<tag>`, making the style map a visual entry point to tag-filtered discovery.
+
+**D3 headless simulation pattern:**
+
+```typescript
+const simulation = forceSimulation(simNodes)
+    .force('link', forceLink(simLinks).id(d => d.id).strength(d => d.strength * 0.4))
+    .force('charge', forceManyBody().strength(-120))
+    .force('center', forceCenter(width / 2, height / 2))
+    .force('collide', forceCollide().radius(d => nodeRadius(d.artistCount) + 8));
+
+// Run to static completion — no continuous rerenders
+simulation.tick(500);
+const settled = simulation.nodes() as LayoutNode[];
+simulation.stop();
+
+// Assign computed positions once — no reactive updates during simulation
+layoutNodes = settled;
+```
+
+`simulation.tick(500)` runs 500 iterations synchronously, no `on('tick')` callback needed. The result is a single Svelte state assignment after all physics has settled. Zero layout thrashing.
+
+**Node sizing:** Log scale (`Math.log10(artistCount) * 8`, clamped 6–30px) prevents dominant popular tags from consuming the entire canvas.
+
+**Data flow:**
+
+```
+/style-map
+    ├── Web: +page.server.ts → D1Provider → getStyleMapData(50)
+    │         +page.ts → passes server data through
+    └── Desktop: +page.ts → isTauri() → TauriProvider → getStyleMapData(50)
+```
+
+### Crate Digging Mode (`/crate`)
+
+Tauri-only route for serendipitous discovery. Displays 20 random artists from the database, with optional filters for tag, decade range, and country. Uses rowid-based random sampling (O(limit), not O(total_rows)) with a wrap-around fallback. Re-fetch without URL update — wandering is ephemeral, not bookmarkable.
+
 ---
 
 ## Build System
@@ -917,4 +965,4 @@ Tags tracked by source: `library`, `favorite`, `manual`. Recomputation clears co
 
 ---
 
-*Last updated: 2026-02-20 — After Phase 6 Plan 4 (Uniqueness Score Badge) completion.*
+*Last updated: 2026-02-21 — After Phase 6 Plan 6 (Style Map Visualization) completion.*
