@@ -5,21 +5,22 @@
 See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Phase 6 in progress (Discovery Engine) — Plan 2 complete.
+**Current focus:** Phase 6 in progress (Discovery Engine) — Plan 3 complete.
 
 ## Current Position
 
 Phase: 6 of 15 in progress (Discovery Engine)
-Current Plan: 2 of N complete
-Status: In progress — 06-02 complete (discovery query functions in queries.ts)
-Last activity: 2026-02-20 — Phase 6 Plan 2 complete (six discovery query functions)
+Current Plan: 3 of N complete
+Status: In progress — 06-03 complete (Discover page — tag browser + niche-first artist grid)
+Last activity: 2026-02-20 — Phase 6 Plan 3 complete (Discover page route, TagFilter component)
 
 Progress: [██████░░░░] 6/7
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 22
+- Total plans completed: 23
+- Phase 6 Plan 03: 5min
 - Phase 6 Plan 02: 4min
 - Phase 6 Plan 01: 5min
 - Phase 5 Plan 01: 5min
@@ -145,6 +146,9 @@ Progress: [██████░░░░] 6/7
 - Rowid-based random sampling for crate digging (a.id > randomStart) — O(limit) not O(total_rows), with wrap-around fallback for table end edge case.
 - Subquery IN for style map edge filtering — avoids D1 bound parameter limits vs passing tag array as params.
 - Tag intersection capped at 5 tags — D1 safety limit on bound parameters per query.
+- Tag state in URL (?tags=...) via goto() + page store — shareable/bookmarkable discover pages without client-side session state.
+- TagFilter disables chips at 5-tag max (not silently ignores) — clear UX feedback at the D1 parameter limit.
+- Universal +page.ts pattern: passthrough on web (server data unchanged), dynamic imports + getProvider() on Tauri — same pattern as search/explore pages.
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
@@ -158,5 +162,5 @@ None
 ## Session Continuity
 
 Last session: 2026-02-20
-Phase 6 Plan 2 complete — six discovery query functions added to queries.ts (getPopularTags, getArtistsByTagIntersection, getDiscoveryRankedArtists, getCrateDigArtists, getArtistUniquenessScore, getStyleMapData).
-Stopped at: Completed 06-02-PLAN.md
+Phase 6 Plan 3 complete — Discover page built: TagFilter.svelte (URL-driven tag chip cloud), /discover route (3 files), ARCHITECTURE.md + user-manual.md updated.
+Stopped at: Completed 06-03-PLAN.md

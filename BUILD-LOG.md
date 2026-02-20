@@ -1430,3 +1430,36 @@ Passing top-N tag names as bound params would hit D1's parameter limits with tag
 - getArtistsByTagIntersection caps at 5 tags — D1 safety confirmed
 - Same DbProvider interface — identical function signatures work on D1 (web) and TauriProvider (desktop)
 
+
+> **Commit 5b0aeb0** (2026-02-20 23:43) — docs(06-02): complete discovery query functions plan
+> Files changed: 4
+
+## Entry 024 — 2026-02-20 — Phase 6 Plan 3: Discover Page
+
+### What Was Built
+
+The `/discover` route — Mercury's primary browsing interface for tag-intersection discovery.
+
+**TagFilter.svelte** — Clickable tag chip cloud with active/inactive state. URL-driven via `goto()`. Active tags shown in a "Filtering by:" header row with × to remove. Inactive chips disabled at 5-tag max. The 5-tag limit isn't arbitrary — it's D1's bound parameter safety limit for the dynamic JOIN query.
+
+**+page.server.ts** — Web (D1) server load. Reads `?tags` param, runs `getPopularTags(100)` + either `getArtistsByTagIntersection` or `getDiscoveryRankedArtists` depending on whether tags are selected.
+
+**+page.ts** — Universal load. Web passes server data through unchanged. Tauri branches to local SQLite via `getProvider()` with dynamic imports. Same pattern as search and explore pages.
+
+**+page.svelte** — Tag cloud above, artist card grid below. Heading adapts: tag intersection shows "Showing N artists tagged with X + Y", no-tag state shows the discovery philosophy tagline.
+
+### Key Behavior
+
+Tag state lives entirely in the URL (`?tags=shoegaze,post-rock`). This means discover pages are shareable and bookmarkable without any client-side session state. The `page` store + `goto()` pattern handles all mutations.
+
+Niche-first ordering is implicit in the query (`ORDER BY artist_tag_count ASC`) — no additional UI needed. The rarest artists naturally surface first when you narrow by tags.
+
+### Verification
+
+- `npm run check` — 0 errors, 0 warnings (356 files, +7 from new route)
+
+> **Commit 47faab2** (2026-02-20 23:45) — feat(06-03): add TagFilter component and Discover page server load
+> Files changed: 2
+
+> **Commit 766688f** (2026-02-20 23:46) — feat(06-03): add Discover page universal load and page component
+> Files changed: 2

@@ -9,12 +9,13 @@ Mercury is a music discovery engine that indexes all music from open databases a
 1. [Getting Started](#getting-started)
 2. [Searching for Music](#searching-for-music)
 3. [Artist Pages](#artist-pages)
-4. [Local Music Library](#local-music-library)
-5. [Music Player](#music-player)
-6. [Discovery Features](#discovery-features)
-7. [AI Features](#ai-features)
-8. [Web vs Desktop](#web-vs-desktop)
-9. [Troubleshooting](#troubleshooting)
+4. [Discover Page](#discover-page)
+5. [Local Music Library](#local-music-library)
+6. [Music Player](#music-player)
+7. [Discovery Features](#discovery-features)
+8. [AI Features](#ai-features)
+9. [Web vs Desktop](#web-vs-desktop)
+10. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -90,6 +91,46 @@ Click any artist from search results to see their full page.
 ### Important
 
 All music plays from where it already lives — Bandcamp, Spotify, SoundCloud, YouTube. Mercury never hosts audio. The artist keeps control of their music.
+
+---
+
+## Discover Page
+
+The Discover page (`/discover`) is Mercury's primary browsing interface. Instead of searching for a known artist by name, you browse by intersecting tags to find artists you didn't know existed.
+
+### Browsing by Tag
+
+1. Visit `/discover` or click **Discover** in the navigation
+2. A cloud of popular tags appears — genres, styles, scenes, moods
+3. Click any tag to filter artists by that tag
+4. Click a second tag to narrow down to artists with BOTH tags (AND logic)
+5. Keep adding tags (up to 5) to find increasingly specific combinations
+
+The URL updates with each click (`?tags=shoegaze,post-rock`) — this makes your discovery shareable and bookmarkable.
+
+### Niche-First Ordering
+
+When you've selected tags, results are ordered niche-first: artists with fewer total tags appear first. The fewer tags an artist has, the more specific and unusual they are. This is the core of Mercury's discovery philosophy — uniqueness is rewarded.
+
+### No Tags Selected
+
+When the Discover page loads with no tags selected, it shows Mercury's top 50 discovery-ranked artists. The discovery score rewards:
+- Rare tags (tags that appear on fewer artists)
+- Artists with fewer tags overall (more niche)
+- Active artists (not disbanded)
+- Artists who started after 2010 (discovering newer music)
+
+### Removing Tags
+
+Active tags appear in a "Filtering by:" row above the cloud. Click any active tag (or the × next to it) to remove it from the filter.
+
+### Tag Limit
+
+You can select up to 5 tags at a time. At 5 tags, all remaining inactive tags are grayed out. Remove an active tag to free a slot.
+
+### Works on Web and Desktop
+
+The Discover page works identically on both the web version (data from Cloudflare D1) and the desktop app (data from your local mercury.db).
 
 ---
 
@@ -334,6 +375,7 @@ When using a remote API provider, your queries are sent to whichever endpoint yo
 | Tag search | Yes | Yes |
 | Artist pages | Yes | Yes |
 | Embedded players (Bandcamp, etc.) | Yes | Yes |
+| Discover page (tag intersection browsing) | Yes | Yes |
 | Local music library | No | Yes |
 | Audio playback of local files | No | Yes |
 | Player bar + queue | No | Yes |

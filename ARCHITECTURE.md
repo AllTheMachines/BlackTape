@@ -16,10 +16,11 @@ A comprehensive guide to how Mercury works, how its parts connect, and how data 
 8. [Embed System](#embed-system)
 9. [Local Music Player](#local-music-player)
 10. [Discovery Bridge](#discovery-bridge)
-11. [Build System](#build-system)
-12. [Configuration Reference](#configuration-reference)
-13. [AI Subsystem](#ai-subsystem)
-14. [Module Dependency Map](#module-dependency-map)
+11. [Discovery Engine](#discovery-engine)
+12. [Build System](#build-system)
+13. [Configuration Reference](#configuration-reference)
+14. [AI Subsystem](#ai-subsystem)
+15. [Module Dependency Map](#module-dependency-map)
 
 ---
 
@@ -563,6 +564,58 @@ Search results page:
 ```
 
 Local library search is a client-side filter on all tracks (case-insensitive substring match on artist, title, album). This is fine for personal library sizes.
+
+---
+
+## Discovery Engine
+
+The Discover page (`/discover`) is Mercury's primary browsing interface. Instead of searching for a known artist, users browse by intersecting tags — starting broad and narrowing down to find niche artists they wouldn't have thought to search for.
+
+### How It Works
+
+1. **Tag cloud** — The page loads the top 100 tags by artist count from `tag_stats` (pre-computed in the data pipeline).
+2. **Tag intersection** — Clicking a tag adds it to the URL as `?tags=tagname`. Clicking a second tag adds it: `?tags=shoegaze,post-rock`. The filter is AND logic — only artists with ALL selected tags appear.
+3. **Niche-first ordering** — Tag intersection results are ordered by `artist_tag_count ASC` (fewest total tags first). Artists with fewer tags are more niche, which Mercury surfaces first.
+4. **Discovery ranking** — When no tags are selected, the page shows a discovery-ranked list of 50 artists. The composite score rewards: rare tags (low `artist_count`), low total tag count, recent origin (post-2010), and active status (not ended).
+
+### URL State
+
+Tag state lives entirely in the URL. This makes discover pages shareable and bookmarkable. `TagFilter.svelte` reads the current URL via the `page` store and uses `goto()` to mutate it on each click — no page reload, just URL update and SvelteKit's reactive re-load.
+
+```
+/discover                       → discovery-ranked top 50
+/discover?tags=shoegaze         → artists tagged 'shoegaze', niche-first
+/discover?tags=shoegaze,post-rock → intersection, niche-first
+```
+
+### Components
+
+- **`TagFilter.svelte`** — Renders the tag chip cloud. Active tags shown in a separate "Filtering by:" row above the cloud. Chips for tags not yet active are disabled at 5-tag max (D1 bound parameter limit). `toggleTag()` handles add/remove via `goto()`.
+- **`ArtistCard.svelte`** — Reused from search page. Displays artist name (link), country, and top 5 tags as `TagChip` components.
+
+### Data Flow
+
+```
+URL ?tags param
+    │
+    ├── Web (SSR via D1)
+    │   ├── +page.server.ts → D1Provider → getPopularTags(100) + getArtistsByTagIntersection | getDiscoveryRankedArtists
+    │   └── +page.ts → passes server data through unchanged
+    │
+    └── Desktop (Tauri SPA)
+        ├── +page.server.ts → not executed (ssr=false)
+        └── +page.ts → isTauri() → getProvider() → TauriProvider → same query functions
+```
+
+### Query Functions (queries.ts)
+
+| Function | Purpose |
+|----------|---------|
+| `getPopularTags(db, limit)` | Top tags from `tag_stats` by `artist_count DESC` |
+| `getArtistsByTagIntersection(db, tags, limit)` | AND-logic multi-tag filter, niche-first. Dynamic JOIN per tag. Capped at 5 tags. |
+| `getDiscoveryRankedArtists(db, limit)` | Composite score: rarity + recency + active status |
+
+The tag intersection uses dynamic JOIN construction — one `JOIN artist_tags` per tag, with the tag value as a bound parameter. This avoids SQL injection while staying within D1's bound parameter limits.
 
 ---
 
