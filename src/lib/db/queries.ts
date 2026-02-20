@@ -36,6 +36,33 @@ export interface Artist {
 	tags: string | null;
 }
 
+/** Filter options for crate digging mode */
+export interface CrateFilters {
+	tag?: string;
+	decadeMin?: number;
+	decadeMax?: number;
+	country?: string;
+}
+
+/** Style map node (a tag with its popularity) */
+export interface StyleMapNode {
+	tag: string;
+	artist_count: number;
+}
+
+/** Style map edge (co-occurrence between two tags) */
+export interface StyleMapEdge {
+	tag_a: string;
+	tag_b: string;
+	shared_artists: number;
+}
+
+/** Artist uniqueness data */
+export interface UniquenessResult {
+	uniqueness_score: number;
+	tag_count: number;
+}
+
 // ---------------------------------------------------------------------------
 // FTS5 helpers
 // ---------------------------------------------------------------------------
@@ -173,5 +200,90 @@ export async function getArtistBySlug(
 		 WHERE a.slug = ?
 		 GROUP BY a.id`,
 		slug
+	);
+}
+
+// ---------------------------------------------------------------------------
+// Discovery queries
+// ---------------------------------------------------------------------------
+
+/**
+ * Return the most popular tags by artist count.
+ * Used to populate the initial state of the tag browser.
+ */
+export async function getPopularTags(
+	db: DbProvider,
+	limit = 100
+): Promise<Array<{ tag: string; artist_count: number }>> {
+	return db.all(
+		`SELECT tag, artist_count FROM tag_stats ORDER BY artist_count DESC LIMIT ?`,
+		limit
+	);
+}
+
+/**
+ * Return artists that have ALL of the specified tags (AND logic).
+ * Results are ordered niche-first (fewest total tags ascending).
+ * Caps at 5 tags to stay within D1 bound parameter limits.
+ */
+export async function getArtistsByTagIntersection(
+	db: DbProvider,
+	tags: string[],
+	limit = 50
+): Promise<ArtistResult[]> {
+	if (tags.length === 0) return [];
+	// Cap at 5 tags to stay within D1 bound parameter limits
+	const safeTags = tags.slice(0, 5);
+
+	const joins = safeTags
+		.map((_, i) => `JOIN artist_tags at${i} ON at${i}.artist_id = a.id AND at${i}.tag = ?`)
+		.join('\n        ');
+
+	return db.all<ArtistResult>(
+		`SELECT a.id, a.mbid, a.name, a.slug, a.country,
+		        (SELECT GROUP_CONCAT(tag, ', ') FROM artist_tags WHERE artist_id = a.id) AS tags,
+		        (SELECT COUNT(*) FROM artist_tags WHERE artist_id = a.id) AS artist_tag_count
+		 FROM artists a
+		 ${joins}
+		 GROUP BY a.id
+		 ORDER BY artist_tag_count ASC
+		 LIMIT ?`,
+		...safeTags,
+		limit
+	);
+}
+
+/**
+ * Return artists ranked by a composite discovery score.
+ * Score rewards: rare tags, low total tag count, recent origin, and active status.
+ */
+export async function getDiscoveryRankedArtists(
+	db: DbProvider,
+	limit = 50
+): Promise<ArtistResult[]> {
+	return db.all<ArtistResult>(
+		`SELECT
+		   a.id, a.mbid, a.name, a.slug, a.country,
+		   (SELECT GROUP_CONCAT(at2.tag, ', ') FROM artist_tags at2 WHERE at2.artist_id = a.id) AS tags,
+		   COALESCE(
+		     (
+		       1.0 / NULLIF((SELECT COUNT(*) FROM artist_tags WHERE artist_id = a.id), 0)
+		       *
+		       (SELECT AVG(1.0 / NULLIF(ts.artist_count, 0))
+		        FROM artist_tags at3
+		        JOIN tag_stats ts ON ts.tag = at3.tag
+		        WHERE at3.artist_id = a.id)
+		       *
+		       CASE WHEN a.begin_year >= 2010 THEN 1.2 ELSE 1.0 END
+		       *
+		       CASE WHEN a.ended = 0 THEN 1.1 ELSE 1.0 END
+		     ),
+		     0
+		   ) AS discovery_score
+		 FROM artists a
+		 WHERE a.id IN (SELECT DISTINCT artist_id FROM artist_tags)
+		 ORDER BY discovery_score DESC
+		 LIMIT ?`,
+		limit
 	);
 }
