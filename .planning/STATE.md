@@ -5,21 +5,22 @@
 See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Phase 5 in progress. AI Foundation infrastructure being built.
+**Current focus:** Phase 6 in progress (Discovery Engine) — Plan 1 complete.
 
 ## Current Position
 
-Phase: 5 of 15 (AI Foundation)
-Plan: 6 of 7 complete
-Status: In progress
-Last activity: 2026-02-17 — Completed 05-05-PLAN.md (NL Explore Page)
+Phase: 6 of 15 in progress (Discovery Engine)
+Current Plan: 1 of N complete
+Status: In progress — 06-01 complete (tag_stats + tag_cooccurrence tables)
+Last activity: 2026-02-20 — Phase 6 Plan 1 complete (tag statistics pre-computation)
 
 Progress: [██████░░░░] 6/7
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 21
+- Total plans completed: 22
+- Phase 6 Plan 01: 5min
 - Phase 5 Plan 01: 5min
 - Phase 5 Plan 02: 7min
 - Phase 5 Plan 03: 5min
@@ -43,7 +44,8 @@ Progress: [██████░░░░] 6/7
 | 2. Search + Embeds | 5/5 | ~15min | Complete |
 | 3. Desktop App | 5/5 | 23min+ | Complete |
 | 4. Local Music Player | 5/5 | 19min+ | Complete |
-| 5. AI Foundation | 6/7 | 28min+ | In Progress |
+| 5. AI Foundation | 7/7 | 28min+ | Complete |
+| 6. Discovery Engine | 1/? | 5min+ | In progress |
 
 ## Accumulated Context
 
@@ -136,6 +138,12 @@ Progress: [██████░░░░] 6/7
 - NL explore temperature 0.8 (more creative/varied than other AI features).
 - Refinement capped at 5 exchanges to prevent unbounded conversation drift.
 - Taste tags shown as italic subtitle hint on explore page, not as prominent feature.
+- Pre-compute tag statistics at pipeline build time (Phase F) — on-demand GROUP BY against 672K artist_tags rows is too slow for page load.
+- tag_cooccurrence filters: count >= 2 on both tags, HAVING shared_artists >= 5, LIMIT 10000 — prevent combinatorial explosion without losing meaningful signal.
+- CHECK (tag_a < tag_b) in tag_cooccurrence ensures canonical pair ordering, zero duplicate edges.
+
+### Roadmap Evolution
+- Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
 
 ### Pending Todos
 None
@@ -145,6 +153,6 @@ None
 
 ## Session Continuity
 
-Last session: 2026-02-17
-Stopped at: Phase 5, Plan 07, Task 2 (human-verify checkpoint). Task 1 (docs) committed. Sidecar bug fixed (2 commits). User needs to re-test AI features after fix.
-Resume: `/gsd:resume-work` — checkpoint at plan 07 Task 2. User says "approved" or describes issues, then finish plan completion steps (SUMMARY, STATE, ROADMAP updates).
+Last session: 2026-02-20
+Phase 6 Plan 1 complete — tag_stats (57,905 tags) and tag_cooccurrence (2,359 edges) added to pipeline.
+Stopped at: Completed 06-01-PLAN.md

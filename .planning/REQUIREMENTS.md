@@ -43,8 +43,8 @@
 ### Discovery
 
 - [ ] **DISC-01**: User can browse and intersect tags
-- [ ] **DISC-02**: Composite discovery ranking — inverse popularity + tag rarity scoring + scene freshness
-- [ ] **DISC-03**: Style map visualization shows tag relationships and clusters
+- [x] **DISC-02**: Composite discovery ranking — inverse popularity + tag rarity scoring + scene freshness
+- [x] **DISC-03**: Style map visualization shows tag relationships and clusters
 - [ ] **DISC-04**: Crate Digging Mode — serendipitous browsing through filtered stacks (genre, decade, country)
 
 ### Knowledge Base
@@ -144,8 +144,8 @@
 | AI-03 | Phase 5 | Pending |
 | AI-04 | Phase 5 | Pending |
 | DISC-01 | Phase 6 | Pending |
-| DISC-02 | Phase 6 | Pending |
-| DISC-03 | Phase 6 | Pending |
+| DISC-02 | Phase 6 | Complete |
+| DISC-03 | Phase 6 | Complete |
 | DISC-04 | Phase 6 | Pending |
 | KB-01 | Phase 7 | Pending |
 | KB-02 | Phase 7 | Pending |
