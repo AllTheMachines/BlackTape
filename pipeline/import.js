@@ -258,6 +258,63 @@ async function importTags(db, lookups) {
   return count;
 }
 
+// --- Phase F: Discovery Engine pre-computations ---
+
+function buildTagStats(db) {
+  console.log('Building tag_stats (tag popularity statistics)...');
+  const timer = new Timer();
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS tag_stats (
+      tag TEXT PRIMARY KEY,
+      artist_count INTEGER NOT NULL,
+      total_votes INTEGER NOT NULL
+    );
+    DELETE FROM tag_stats;
+    INSERT INTO tag_stats (tag, artist_count, total_votes)
+    SELECT tag, COUNT(*) as artist_count, SUM(count) as total_votes
+    FROM artist_tags
+    GROUP BY tag;
+    CREATE INDEX IF NOT EXISTS idx_tag_stats_artist_count ON tag_stats(artist_count DESC);
+  `);
+
+  const tagStatsCount = db.prepare('SELECT COUNT(*) as n FROM tag_stats').get();
+  console.log(`  tag_stats: ${formatNum(tagStatsCount.n)} tags indexed in ${formatDuration(timer.elapsed())}\n`);
+  return tagStatsCount.n;
+}
+
+function buildTagCooccurrence(db) {
+  console.log('Building tag_cooccurrence (for style map visualization)...');
+  console.log('  This may take 30-60s on the full dataset...');
+  const timer = new Timer();
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS tag_cooccurrence (
+      tag_a TEXT NOT NULL,
+      tag_b TEXT NOT NULL,
+      shared_artists INTEGER NOT NULL,
+      PRIMARY KEY (tag_a, tag_b),
+      CHECK (tag_a < tag_b)
+    );
+    DELETE FROM tag_cooccurrence;
+    INSERT OR REPLACE INTO tag_cooccurrence (tag_a, tag_b, shared_artists)
+    SELECT t1.tag, t2.tag, COUNT(*) as shared_artists
+    FROM artist_tags t1
+    JOIN artist_tags t2 ON t1.artist_id = t2.artist_id AND t1.tag < t2.tag
+    WHERE t1.count >= 2 AND t2.count >= 2
+    GROUP BY t1.tag, t2.tag
+    HAVING shared_artists >= 5
+    ORDER BY shared_artists DESC
+    LIMIT 10000;
+    CREATE INDEX IF NOT EXISTS idx_cooccurrence_tag_a ON tag_cooccurrence(tag_a);
+    CREATE INDEX IF NOT EXISTS idx_cooccurrence_tag_b ON tag_cooccurrence(tag_b);
+  `);
+
+  const coocCount = db.prepare('SELECT COUNT(*) as n FROM tag_cooccurrence').get();
+  console.log(`  tag_cooccurrence: ${formatNum(coocCount.n)} edges computed in ${formatDuration(timer.elapsed())}\n`);
+  return coocCount.n;
+}
+
 // --- Phase E: Build FTS5 index ---
 
 function buildFTS(db) {
@@ -322,6 +379,11 @@ async function main() {
 
   // Phase E
   buildFTS(db);
+
+  // Phase F: Discovery Engine pre-computations
+  console.log('=== Phase F: Discovery Engine pre-computations ===\n');
+  buildTagStats(db);
+  buildTagCooccurrence(db);
 
   // Final stats
   const fileSize = statSync(DB_PATH).size;

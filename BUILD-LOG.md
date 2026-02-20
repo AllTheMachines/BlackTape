@@ -1323,3 +1323,51 @@ All pass. Opt-in flow → download → model load → explore NL queries → ref
 ### What's Next
 
 Phase 6. Roadmap now runs to 15 phases (expanded during vision questionnaire). Phase 6 is the Knowledge Base — deeper artist data, genre relationships, scene mapping. But before planning, worth taking stock: Mercury can now search, play local music, and think. Three foundations in place.
+
+> **Commit 6786e94** (2026-02-20 22:53) — feat(05): Phase 5 AI Foundation complete — all verification passed
+> Files changed: 2
+
+> **Commit 5b572d4** (2026-02-20 23:09) — docs(06): research phase discovery engine domain
+> Files changed: 1
+
+> **Commit 0680639** (2026-02-20 23:22) — docs(06-discovery-engine): create phase plan
+> Files changed: 8
+
+> **Commit 71108fa** (2026-02-20 23:27) — fix(06): import PROJECT_NAME from config instead of hardcoding in titles
+> Files changed: 3
+
+---
+
+## Entry 022 — 2026-02-20 — Phase 6 Plan 1: Tag Statistics Pre-computation
+
+Phase 6 Discovery Engine, Plan 1. The foundation for all discovery features: pre-computed tag statistics baked into mercury.db at pipeline build time.
+
+### What Got Built
+
+Two new tables added to the pipeline (`pipeline/import.js`), now Phase F after FTS5:
+
+**`tag_stats`** — Per-tag popularity statistics:
+- `tag`, `artist_count`, `total_votes` (PRIMARY KEY on tag)
+- 57,905 unique tags indexed in ~2s
+- Example: `rock` → 16,570 artists
+- Index on `artist_count DESC` for ranking queries
+
+**`tag_cooccurrence`** — Tag pair co-occurrence strength:
+- `tag_a`, `tag_b`, `shared_artists` — canonical ordering via CHECK (tag_a < tag_b)
+- 2,359 edges from the full 672K artist_tags dataset
+- Filters: both tags must have count >= 2, pairs must share >= 5 artists
+- LIMIT 10000 and HAVING >= 5 guard against combinatorial explosion
+- Example top pairs: hard rock + rock (187), alternative rock + rock (176), classical + composer (147)
+
+<!-- decision: Pre-compute tag statistics at pipeline build time -->
+On-demand aggregation against 672K artist_tags rows is too slow for page load. Pre-computing at pipeline build time reduces multi-second aggregations to sub-millisecond indexed lookups.
+**Rejected:** On-demand GROUP BY queries at request time, materialized views (SQLite doesn't have them)
+<!-- /decision -->
+
+### Verification Results
+
+- `tag_stats`: 57,905 rows (well above the 50K threshold)
+- `tag_cooccurrence`: 2,359 edges (within 1K–10K target range)
+- Idempotency: re-running both steps produces identical row counts, no errors
+- Constraint violations: 0 (tag_a < tag_b holds on all rows)
+- Genre pairs look sensible: rock pairs with indie/hard rock/pop rock/alternative rock, classical pairs with composer
