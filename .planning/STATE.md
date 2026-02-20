@@ -5,22 +5,22 @@
 See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Phase 6 in progress (Discovery Engine) — Plan 4 complete.
+**Current focus:** Phase 6 complete (Discovery Engine) — all 5 plans done. Next: Phase 06.1 Affiliate Buy Links.
 
 ## Current Position
 
-Phase: 6 of 15 in progress (Discovery Engine)
-Current Plan: 4 of N complete
-Status: In progress — 06-04 complete (Uniqueness Score Badge on artist pages)
-Last activity: 2026-02-20 — Phase 6 Plan 4 complete (UniquenessScore.svelte component, artist page wiring)
+Phase: 6 of 15 complete (Discovery Engine)
+Current Plan: 5 of 5 complete
+Status: Complete — 06-05 done (Crate Digging Mode /crate route, DISC-04 satisfied)
+Last activity: 2026-02-20 — Phase 6 Plan 5 complete (Crate Digging Mode UI, Tauri-only /crate route)
 
-Progress: [██████░░░░] 6/7
+Progress: [███████░░░] 7/7
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 23
-- Phase 6 Plan 03: 5min
+- Total plans completed: 24
+- Phase 6 Plan 05: 3min
 - Phase 6 Plan 04: 4min
 - Phase 6 Plan 03: 5min
 - Phase 6 Plan 02: 4min
@@ -49,7 +49,8 @@ Progress: [██████░░░░] 6/7
 | 3. Desktop App | 5/5 | 23min+ | Complete |
 | 4. Local Music Player | 5/5 | 19min+ | Complete |
 | 5. AI Foundation | 7/7 | 28min+ | Complete |
-| 6. Discovery Engine | 4/? | 17min+ | In progress |
+| 6. Discovery Engine | 5/5 | 20min+ | Complete |
+| Phase 06 P05 | 3 | 1 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -154,6 +155,7 @@ Progress: [██████░░░░] 6/7
 - UniquenessScore badge placed inline in artist-name-row (between name and FavoriteButton) — part of artist identity block, visible without restructuring layout.
 - Score tier thresholds: 0.0003/0.001/0.005 based on AVG(1/artist_count)*1000 distribution — Very Niche/Niche/Eclectic/Mainstream.
 - getArtistUniquenessScore fetched via Promise.all wrapping alongside existing Promise.allSettled network calls — no added serial latency.
+- [Phase 06]: Client-side re-fetch without URL update for crate dig — wandering is ephemeral, not bookmarkable (contrast with Discover page where state lives in URL)
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
@@ -167,5 +169,5 @@ None
 ## Session Continuity
 
 Last session: 2026-02-20
-Phase 6 Plan 4 complete — UniquenessScore.svelte badge: 4-tier categorical label (Very Niche/Niche/Eclectic/Mainstream), wired into artist page web + Tauri load paths, ARCHITECTURE.md + user-manual.md updated.
-Stopped at: Completed 06-04-PLAN.md
+Phase 6 Plan 5 complete — Crate Digging Mode: /crate route (Tauri-only), filter controls (tag, decade, country), rowid-based random artist sampling, client-side dig() re-fetch without page navigation. DISC-04 satisfied. Phase 6 complete.
+Stopped at: Completed 06-05-PLAN.md

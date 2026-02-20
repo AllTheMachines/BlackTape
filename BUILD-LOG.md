@@ -1497,3 +1497,32 @@ The tier boundaries (0.0003 / 0.001 / 0.005) were set based on the score distrib
 ### Verification
 
 - `npm run check` — 0 errors, 0 warnings (357 files)
+
+> **Commit 35ee09d** (2026-02-20 23:56) — docs(06-04): complete uniqueness score badge plan
+> Files changed: 6
+
+> **Commit 3f0703b** (2026-02-20 23:58) — feat(06-05): add Crate Digging Mode — Tauri-only /crate route
+> Files changed: 2
+
+## Entry 026 — 2026-02-20 — Phase 6 Plan 5: Crate Digging Mode
+
+### What Was Built
+
+The serendipity mechanism. `/crate` is a Tauri-only route that lets you roll random artists from a filtered slice of the database. Pick a genre tag, a decade, a country code — or leave everything open — hit "Dig", and get 20 random artists you've never heard of.
+
+**+page.ts** — Universal load, Tauri-gated. If running on web, returns empty artists with `isTauri: false`. If running in Tauri, reads optional filters from URL params and calls `getCrateDigArtists(db, filters, 20)`. Errors are caught and silently degraded — page always renders.
+
+**+page.svelte** — Filter row at top (tag text input, decade select, country code input), "Dig" button, artist grid below. On button click, `dig()` calls `getCrateDigArtists()` directly with current filter values — no page navigation, no URL update, just a fresh random batch replacing the grid. Loading state disables the button and shows "Digging...".
+
+Web visitors see a simple "available in the desktop app" message using PROJECT_NAME from config.
+
+### Implementation Notes
+
+The key design choice: client-side re-fetching without URL navigation. Unlike the Discover page (where state lives in the URL for shareability), crate digging state is ephemeral by nature — you're wandering, not bookmarking. Each "Dig" is just a direct DB call that replaces the grid. Simple and fast.
+
+The rowid-based random sampling from Plan 02 (`getCrateDigArtists`) does the heavy lifting. This page is just the UI wrapper.
+
+### Verification
+
+- `npm run check` — 0 errors, 3 warnings (361 files)
+- Warnings are Svelte 5 lint hints about `data` prop captured into `$state` at init — intentional pattern, not bugs
