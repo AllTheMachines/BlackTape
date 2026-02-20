@@ -47,13 +47,15 @@ export const load: PageServerLoad = async ({ params, platform, fetch }) => {
 	let bio: string | null = null;
 
 	// Fire network requests and DB uniqueness score concurrently
-	const [[linksResult, releasesResult], uniquenessData] = await Promise.all([
+	// getArtistUniquenessScore may fail if tag_stats isn't yet populated — degrade gracefully
+	const [[linksResult, releasesResult], uniquenessResult] = await Promise.all([
 		Promise.allSettled([
 			fetch(`/api/artist/${artist.mbid}/links`),
 			fetch(`/api/artist/${artist.mbid}/releases`)
 		]),
-		getArtistUniquenessScore(provider, artist.id)
+		getArtistUniquenessScore(provider, artist.id).catch(() => null)
 	]);
+	const uniquenessData = uniquenessResult;
 
 	// Process links response
 	if (linksResult.status === 'fulfilled' && linksResult.value.ok) {

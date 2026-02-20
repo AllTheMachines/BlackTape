@@ -16,12 +16,16 @@ export const load: PageServerLoad = async ({ url, platform }) => {
 
 	const db = new D1Provider(platform.env.DB);
 
-	const [popularTags, artists] = await Promise.all([
-		getPopularTags(db, 100),
-		tags.length > 0
-			? getArtistsByTagIntersection(db, tags, 50)
-			: getDiscoveryRankedArtists(db, 50)
-	]);
-
-	return { popularTags, artists, tags };
+	try {
+		const [popularTags, artists] = await Promise.all([
+			getPopularTags(db, 100),
+			tags.length > 0
+				? getArtistsByTagIntersection(db, tags, 50)
+				: getDiscoveryRankedArtists(db, 50)
+		]);
+		return { popularTags, artists, tags };
+	} catch {
+		// tag_stats table not yet populated — return empty, page shows graceful state
+		return { popularTags: [], artists: [], tags };
+	}
 };
