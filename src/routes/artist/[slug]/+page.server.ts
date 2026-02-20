@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { getArtistBySlug } from '$lib/db/queries';
+import { getArtistBySlug, getArtistUniquenessScore } from '$lib/db/queries';
 import { D1Provider } from '$lib/db/d1-provider';
 import { fetchWikipediaBio } from '$lib/bio';
 import type { PlatformLinks, CategorizedLinks, ReleaseGroup } from '$lib/embeds/types';
@@ -27,7 +27,9 @@ export const load: PageServerLoad = async ({ params, platform, fetch }) => {
 			links: EMPTY_LINKS,
 			categorizedLinks: emptyCategorizedLinks(),
 			releases: [] as ReleaseGroup[],
-			bio: null as string | null
+			bio: null as string | null,
+			uniquenessScore: null as number | null,
+			uniquenessTagCount: 0
 		};
 	}
 
@@ -38,16 +40,19 @@ export const load: PageServerLoad = async ({ params, platform, fetch }) => {
 		throw error(404, 'Artist not found');
 	}
 
-	// Parallel fetch: releases, links, bio
+	// Parallel fetch: releases, links, bio, and uniqueness score
 	let links: PlatformLinks = EMPTY_LINKS;
 	let categorizedLinks: CategorizedLinks = emptyCategorizedLinks();
 	let releases: ReleaseGroup[] = [];
 	let bio: string | null = null;
 
-	// Fire all three requests concurrently
-	const [linksResult, releasesResult] = await Promise.allSettled([
-		fetch(`/api/artist/${artist.mbid}/links`),
-		fetch(`/api/artist/${artist.mbid}/releases`)
+	// Fire network requests and DB uniqueness score concurrently
+	const [[linksResult, releasesResult], uniquenessData] = await Promise.all([
+		Promise.allSettled([
+			fetch(`/api/artist/${artist.mbid}/links`),
+			fetch(`/api/artist/${artist.mbid}/releases`)
+		]),
+		getArtistUniquenessScore(provider, artist.id)
 	]);
 
 	// Process links response
@@ -75,6 +80,8 @@ export const load: PageServerLoad = async ({ params, platform, fetch }) => {
 		links,
 		categorizedLinks,
 		releases,
-		bio
+		bio,
+		uniquenessScore: uniquenessData?.uniqueness_score ?? null,
+		uniquenessTagCount: uniquenessData?.tag_count ?? 0
 	};
 };

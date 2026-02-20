@@ -27,7 +27,7 @@ export const load: PageLoad = async ({ params, data, fetch }) => {
 
 	// Tauri desktop: query local database + fetch external data
 	const { getProvider } = await import('$lib/db/provider');
-	const { getArtistBySlug } = await import('$lib/db/queries');
+	const { getArtistBySlug, getArtistUniquenessScore } = await import('$lib/db/queries');
 
 	const { slug } = params;
 	const provider = await getProvider();
@@ -36,6 +36,9 @@ export const load: PageLoad = async ({ params, data, fetch }) => {
 	if (!artist) {
 		throw error(404, 'Artist not found');
 	}
+
+	// Fetch uniqueness score concurrently with external data
+	const uniquenessData = await getArtistUniquenessScore(provider, artist.id);
 
 	// Initialize empty external data -- populated by best-effort fetches below
 	let links: PlatformLinks = {
@@ -205,5 +208,13 @@ export const load: PageLoad = async ({ params, data, fetch }) => {
 		console.error('Bio fetch error:', err);
 	}
 
-	return { artist, links, categorizedLinks, releases, bio };
+	return {
+		artist,
+		links,
+		categorizedLinks,
+		releases,
+		bio,
+		uniquenessScore: uniquenessData?.uniqueness_score ?? null,
+		uniquenessTagCount: uniquenessData?.tag_count ?? 0
+	};
 };

@@ -4,6 +4,7 @@
 	import TagChip from '$lib/components/TagChip.svelte';
 	import ReleaseCard from '$lib/components/ReleaseCard.svelte';
 	import FavoriteButton from '$lib/components/FavoriteButton.svelte';
+	import UniquenessScore from '$lib/components/UniquenessScore.svelte';
 	import AiRecommendations from '$lib/components/AiRecommendations.svelte';
 	import { LINK_CATEGORY_ORDER, LINK_CATEGORY_LABELS } from '$lib/embeds/types';
 	import { isTauri } from '$lib/platform';
@@ -118,6 +119,7 @@
 	<header class="artist-header">
 		<div class="artist-name-row">
 			<h1 class="artist-name">{data.artist.name}</h1>
+			<UniquenessScore score={data.uniquenessScore} tagCount={data.uniquenessTagCount} />
 			<FavoriteButton mbid={data.artist.mbid} name={data.artist.name} slug={data.artist.slug} />
 		</div>
 
