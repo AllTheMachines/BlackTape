@@ -51,6 +51,9 @@
 	<a href="/" class="site-name">{PROJECT_NAME}</a>
 	{#if tauriMode}
 		<nav class="nav-links">
+			<a href="/discover" class="nav-link">Discover</a>
+			<a href="/style-map" class="nav-link">Style Map</a>
+			<a href="/crate" class="nav-link">Dig</a>
 			<a href="/library" class="nav-link">Library</a>
 			<a href="/explore" class="nav-link">Explore</a>
 			<a href="/settings" class="nav-link">Settings</a>
@@ -71,6 +74,11 @@
 				<span class="ai-label">AI</span>
 			</span>
 		{/if}
+	{:else}
+		<nav class="nav-links">
+			<a href="/discover" class="nav-link">Discover</a>
+			<a href="/style-map" class="nav-link">Style Map</a>
+		</nav>
 	{/if}
 </header>
 
