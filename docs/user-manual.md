@@ -534,4 +534,4 @@ Local model processing time depends on your hardware. The generation model (Qwen
 
 ---
 
-*Mercury v0.1.0 — Last updated: 2026-02-20*
+*Mercury v0.1.0 — Last updated: 2026-02-21*

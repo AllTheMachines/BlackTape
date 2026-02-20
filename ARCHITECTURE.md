@@ -221,6 +221,7 @@ Mercury/
 │       ├── library/              # Local music library (Tauri only)
 │       ├── explore/              # NL explore page (Tauri only)
 │       ├── settings/             # Settings page (Tauri only)
+│       ├── discover/             # Tag intersection browsing (web + Tauri)
 │       ├── crate/                # Crate digging mode (Tauri only)
 │       ├── style-map/            # Style Map visualization (web + Tauri)
 │       └── api/                  # Server-side API routes (web only)
@@ -290,6 +291,23 @@ Contains 2.8 million artists sourced from MusicBrainz data dumps. This is the se
 |--------|--------|
 | name | Artist name (tokenized with porter stemmer + unicode61) |
 | tags | All tags concatenated |
+
+**tag_stats** — Pre-computed per-tag popularity statistics. Built at pipeline time to avoid slow GROUP BY against 672K artist_tags rows at query time.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| tag | TEXT PK | Tag name |
+| artist_count | INTEGER | Number of artists with this tag |
+
+**tag_cooccurrence** — Pre-computed co-occurrence edges between tag pairs. Built at pipeline time. Used by the Style Map visualization.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| tag_a | TEXT | First tag (CHECK tag_a < tag_b — canonical ordering, no duplicate edges) |
+| tag_b | TEXT | Second tag |
+| shared_artists | INTEGER | Number of artists tagged with both |
+
+Filters applied at build time: both tags must have `artist_count >= 2`, pairs must have `shared_artists >= 5`, total limited to 10,000 rows to prevent combinatorial explosion.
 
 ### Local Library (library.db)
 
@@ -670,6 +688,21 @@ layoutNodes = settled;
 
 Tauri-only route for serendipitous discovery. Displays 20 random artists from the database, with optional filters for tag, decade range, and country. Uses rowid-based random sampling (O(limit), not O(total_rows)) with a wrap-around fallback. Re-fetch without URL update — wandering is ephemeral, not bookmarkable.
 
+### Navigation
+
+- **Web:** Header shows `Discover` and `Style Map` links only. These are the two discovery features that work on both platforms.
+- **Tauri:** Header shows `Discover`, `Style Map`, `Dig`, `Library`, `Explore`, `Settings`. The `Dig` link leads to `/crate` (Tauri-only). All links use the same `.nav-link` CSS class.
+- **Route availability:** `/discover` — web + Tauri; `/style-map` — web + Tauri; `/crate` — Tauri only (shows desktop-only fallback on web).
+
+### Anti-Patterns (Avoided)
+
+| Anti-pattern | Why avoided | Alternative used |
+|---|---|---|
+| `ORDER BY RANDOM()` on artists table | O(total_rows) — catastrophic at 2.8M rows | Rowid-based random sampling: `a.id > randomStart` with wrap-around fallback |
+| On-demand co-occurrence JOIN | `JOIN artist_tags at2 ON at.tag = at2.tag` across 672K rows at query time | Pre-computed `tag_cooccurrence` table in pipeline |
+| D3 DOM manipulation inside Svelte | `on('tick')` callback would trigger 500+ reactive state updates during layout | Headless `simulation.tick(500)` — no reactive wiring, single assignment after stop |
+| Subquery array parameters for style map edges | D1 has bound parameter limits — passing tag arrays as params fails at scale | Subquery IN for edge filtering avoids the parameter count limit |
+
 ---
 
 ## Build System
@@ -965,4 +998,4 @@ Tags tracked by source: `library`, `favorite`, `manual`. Recomputation clears co
 
 ---
 
-*Last updated: 2026-02-21 — After Phase 6 Plan 6 (Style Map Visualization) completion.*
+*Last updated: 2026-02-21 — After Phase 6 Plan 7 (Navigation + Documentation) completion.*
