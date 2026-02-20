@@ -1,7 +1,7 @@
 <script lang="ts">
 	/**
 	 * Displays an artist's uniqueness score as a categorical label.
-	 * Score is the raw value from getArtistUniquenessScore() (0.0001–0.01+ range).
+	 * Score is the raw value from getArtistUniquenessScore() (0.06–1000 range, * 1000 applied in query).
 	 * Null score means no tags — badge is hidden.
 	 */
 	let { score, tagCount = 0 }: { score: number | null; tagCount?: number } = $props();
@@ -13,14 +13,16 @@
 	};
 
 	function getScoreTier(s: number, tags: number): ScoreTier {
-		// Score thresholds derived from tag rarity distribution:
-		// Very niche: top ~5% (score > 0.005) — ultra-rare tags, very few total tags
-		// Niche: top ~20% (score 0.001–0.005) — uncommon tags
-		// Eclectic: middle (score 0.0003–0.001) — mix of common and uncommon
-		// Mainstream: bottom ~30% (score < 0.0003) — many common tags
-		if (s >= 0.005) return { label: 'Very Niche', className: 'very-niche', description: 'Extremely rare tag combination' };
-		if (s >= 0.001) return { label: 'Niche', className: 'niche', description: 'Uncommon genre profile' };
-		if (s >= 0.0003) return { label: 'Eclectic', className: 'eclectic', description: 'Broad genre profile' };
+		// Thresholds calibrated against real tag_stats distribution (241K artists with tags):
+		// Score = AVG(1 / tag_artist_count) * 1000
+		// P25=0.36, P50=1.47, P75=8.4, P90=107, P95=334
+		// Very Niche: top ~10% (score >= 100) — ultra-rare tag combinations
+		// Niche: top ~25% (score 8–100) — uncommon genre profile
+		// Eclectic: P25–P75 (score 0.36–8) — broad or mixed genre profile
+		// Mainstream: bottom ~25% (score < 0.36) — common, well-tagged genres
+		if (s >= 100) return { label: 'Very Niche', className: 'very-niche', description: 'Extremely rare tag combination' };
+		if (s >= 8) return { label: 'Niche', className: 'niche', description: 'Uncommon genre profile' };
+		if (s >= 0.36) return { label: 'Eclectic', className: 'eclectic', description: 'Broad genre profile' };
 		return { label: 'Mainstream', className: 'mainstream', description: 'Widely tagged genres' };
 	}
 
