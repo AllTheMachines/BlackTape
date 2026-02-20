@@ -37,8 +37,14 @@ export const load: PageLoad = async ({ params, data, fetch }) => {
 		throw error(404, 'Artist not found');
 	}
 
-	// Fetch uniqueness score concurrently with external data
-	const uniquenessData = await getArtistUniquenessScore(provider, artist.id);
+	// Fetch uniqueness score — wrapped in try/catch: tag_stats may not exist
+	// in older local DBs that predate Phase 6 pipeline additions.
+	let uniquenessData = null;
+	try {
+		uniquenessData = await getArtistUniquenessScore(provider, artist.id);
+	} catch {
+		// tag_stats table missing — badge simply won't render
+	}
 
 	// Initialize empty external data -- populated by best-effort fetches below
 	let links: PlatformLinks = {

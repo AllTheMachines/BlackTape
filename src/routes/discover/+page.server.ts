@@ -8,7 +8,13 @@ import {
 
 export const load: PageServerLoad = async ({ url, platform }) => {
 	const tags = url.searchParams.get('tags')?.split(',').filter(Boolean) ?? [];
-	const db = new D1Provider(platform!.env.DB);
+
+	// No D1 in Tauri dev mode — universal load (+page.ts) handles Tauri path
+	if (!platform?.env?.DB) {
+		return { popularTags: [], artists: [], tags };
+	}
+
+	const db = new D1Provider(platform.env.DB);
 
 	const [popularTags, artists] = await Promise.all([
 		getPopularTags(db, 100),
