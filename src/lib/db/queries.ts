@@ -287,3 +287,150 @@ export async function getDiscoveryRankedArtists(
 		limit
 	);
 }
+
+/**
+ * Return a random sample of artists for crate digging mode.
+ * Uses fast rowid-based random start with a wrap-around fallback
+ * when the random position is near the end of the table.
+ * Optional filters narrow by tag, decade range, or country.
+ */
+export async function getCrateDigArtists(
+	db: DbProvider,
+	filters: CrateFilters = {},
+	limit = 20
+): Promise<ArtistResult[]> {
+	const maxRow = await db.get<{ max_id: number }>(`SELECT MAX(id) as max_id FROM artists`);
+	if (!maxRow) return [];
+
+	const randomStart = Math.floor(Math.random() * maxRow.max_id);
+
+	const whereClauses: string[] = [`a.id > ?`];
+	const params: unknown[] = [randomStart];
+
+	if (filters.tag) {
+		whereClauses.push(`EXISTS (SELECT 1 FROM artist_tags WHERE artist_id = a.id AND tag = ?)`);
+		params.push(filters.tag);
+	}
+	if (filters.decadeMin !== undefined) {
+		whereClauses.push(`a.begin_year >= ?`);
+		params.push(filters.decadeMin);
+	}
+	if (filters.decadeMax !== undefined) {
+		whereClauses.push(`a.begin_year < ?`);
+		params.push(filters.decadeMax);
+	}
+	if (filters.country) {
+		whereClauses.push(`a.country = ?`);
+		params.push(filters.country);
+	}
+	whereClauses.push(`a.id IN (SELECT DISTINCT artist_id FROM artist_tags)`);
+
+	const where = whereClauses.join(' AND ');
+	params.push(limit);
+
+	const results = await db.all<ArtistResult>(
+		`SELECT a.id, a.mbid, a.name, a.slug, a.country,
+		        (SELECT GROUP_CONCAT(tag, ', ') FROM artist_tags WHERE artist_id = a.id) AS tags
+		 FROM artists a
+		 WHERE ${where}
+		 LIMIT ?`,
+		...params
+	);
+
+	// Wrap-around fallback: if near end of table, fill remaining from start
+	if (results.length < Math.floor(limit / 2)) {
+		const fallbackParams: unknown[] = [randomStart];
+		const fallbackWhere = [`a.id <= ?`];
+		if (filters.tag) {
+			fallbackWhere.push(
+				`EXISTS (SELECT 1 FROM artist_tags WHERE artist_id = a.id AND tag = ?)`
+			);
+			fallbackParams.push(filters.tag);
+		}
+		if (filters.decadeMin !== undefined) {
+			fallbackWhere.push(`a.begin_year >= ?`);
+			fallbackParams.push(filters.decadeMin);
+		}
+		if (filters.decadeMax !== undefined) {
+			fallbackWhere.push(`a.begin_year < ?`);
+			fallbackParams.push(filters.decadeMax);
+		}
+		if (filters.country) {
+			fallbackWhere.push(`a.country = ?`);
+			fallbackParams.push(filters.country);
+		}
+		fallbackWhere.push(`a.id IN (SELECT DISTINCT artist_id FROM artist_tags)`);
+		fallbackParams.push(limit - results.length);
+
+		const fallback = await db.all<ArtistResult>(
+			`SELECT a.id, a.mbid, a.name, a.slug, a.country,
+			        (SELECT GROUP_CONCAT(tag, ', ') FROM artist_tags WHERE artist_id = a.id) AS tags
+			 FROM artists a
+			 WHERE ${fallbackWhere.join(' AND ')}
+			 ORDER BY RANDOM()
+			 LIMIT ?`,
+			...fallbackParams
+		);
+		return [...results, ...fallback];
+	}
+
+	return results;
+}
+
+/**
+ * Return the uniqueness score and tag count for a single artist by ID.
+ * Score = average inverse tag popularity across the artist's tags, scaled to 0–1000.
+ * Higher score = rarer combination of tags.
+ */
+export async function getArtistUniquenessScore(
+	db: DbProvider,
+	artistId: number
+): Promise<UniquenessResult | null> {
+	return db.get<UniquenessResult>(
+		`SELECT
+		   ROUND(
+		     COALESCE(
+		       (SELECT AVG(1.0 / NULLIF(ts.artist_count, 0)) * 1000.0
+		        FROM artist_tags at3
+		        JOIN tag_stats ts ON ts.tag = at3.tag
+		        WHERE at3.artist_id = ?),
+		       0
+		     ),
+		     2
+		   ) AS uniqueness_score,
+		   (SELECT COUNT(*) FROM artist_tags WHERE artist_id = ?) AS tag_count`,
+		artistId,
+		artistId
+	);
+}
+
+/**
+ * Return top-N tags as nodes and their co-occurrence pairs as edges.
+ * Used to drive the style map visualization.
+ * Edges are filtered to only include connections between the top-N tags.
+ */
+export async function getStyleMapData(
+	db: DbProvider,
+	tagLimit = 50
+): Promise<{ nodes: StyleMapNode[]; edges: StyleMapEdge[] }> {
+	const nodes = await db.all<StyleMapNode>(
+		`SELECT tag, artist_count FROM tag_stats ORDER BY artist_count DESC LIMIT ?`,
+		tagLimit
+	);
+
+	if (nodes.length === 0) return { nodes: [], edges: [] };
+
+	// Fetch edges between the top-N tags only (stay within D1 limits)
+	// Use a subquery to filter — avoids sending all tags as bound params
+	const edges = await db.all<StyleMapEdge>(
+		`SELECT tc.tag_a, tc.tag_b, tc.shared_artists
+		 FROM tag_cooccurrence tc
+		 WHERE tc.tag_a IN (SELECT tag FROM tag_stats ORDER BY artist_count DESC LIMIT ?)
+		   AND tc.tag_b IN (SELECT tag FROM tag_stats ORDER BY artist_count DESC LIMIT ?)
+		 ORDER BY tc.shared_artists DESC`,
+		tagLimit,
+		tagLimit
+	);
+
+	return { nodes, edges };
+}
