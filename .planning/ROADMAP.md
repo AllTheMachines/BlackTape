@@ -132,7 +132,24 @@ Plans:
   4. Style map visualization shows tag relationships and clusters
   5. Crate Digging Mode — serendipitous browsing through filtered stacks (genre, decade, country)
   6. Generic artists sink, niche artists rise — naturally demotes AI-generated slop
-**Plans**: TBD
+**Plans**: 7 plans
+Plans:
+- [ ] 06-01-PLAN.md — Pipeline additions: tag_stats and tag_cooccurrence tables in mercury.db
+- [ ] 06-02-PLAN.md — Discovery query library: tag intersection, ranking, crate digging, uniqueness, style map
+- [ ] 06-03-PLAN.md — Discover page: tag intersection browser with niche-first ranking
+- [ ] 06-04-PLAN.md — Artist uniqueness score badge on all artist pages
+- [ ] 06-05-PLAN.md — Crate Digging Mode: serendipitous random sampling with filters (Tauri-only)
+- [ ] 06-06-PLAN.md — Style Map: D3 force-directed genre relationship visualization
+- [ ] 06-07-PLAN.md — Navigation links + docs update + end-to-end verification checkpoint
+
+### Phase 06.1: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
+
+**Goal:** [Urgent work - to be planned]
+**Depends on:** Phase 6
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 06.1 to break down)
 
 ### Phase 7: Knowledge Base
 **Goal**: The genre/scene map — Mercury's biggest differentiator. A living encyclopedia of music: genres, scenes, movements, cities, eras. A place you can get lost in for hours. Content builds in layers over time.
@@ -272,7 +289,7 @@ Plans:
 | 3. Desktop App Foundation | 5/5 | Complete | 2026-02-16 |
 | 4. Local Music Player | 5/5 | Complete | 2026-02-17 |
 | 5. AI Foundation | 0/TBD | Not started | - |
-| 6. Discovery Engine | 0/TBD | Not started | - |
+| 6. Discovery Engine | 0/7 | Not started | - |
 | 7. Knowledge Base | 0/TBD | Not started | - |
 | 8. Underground Aesthetic | 0/TBD | Not started | - |
 | 9. Community Foundation | 0/TBD | Not started | - |
