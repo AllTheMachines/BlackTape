@@ -1290,3 +1290,36 @@ ROADMAP.md rewritten: 12 phases → 15 phases. Old Phase 8 (Social Layer) split 
 
 > **Commit 368d9b8** (2026-02-17 18:20) — wip: vision questionnaire + roadmap rewrite (12 to 15 phases)
 > Files changed: 6
+
+> **Commit 42d6b69** (2026-02-20 18:53) — fix(05-07): sidecar stability + UX fixes from verification run
+> Files changed: 8
+
+---
+
+## Entry 021 — 2026-02-20 — Phase 5 Complete: Mercury Has a Brain
+
+Phase 5 (AI Foundation) is done. All 6 verification suites passed.
+
+### What Got Built
+
+Seven plans over several sessions:
+
+- **05-01:** AI engine — llama-server sidecar, provider abstraction, opt-in settings, model download with progress
+- **05-02:** Settings UI — AI toggle, download flow, provider config (local vs remote API)
+- **05-03:** Taste profile — taste.db schema, signals from favorites/library/tags, recomputation engine
+- **05-04:** Artist page AI — favorite button, "You might also like" recommendations, AI summary fallback
+- **05-05:** NL Explore page — natural language queries through the AI provider, refinement loop, conversation history
+- **05-06:** Taste editor — tag weight sliders, source badges, artist anchor pinning
+- **05-07:** Verification + docs — full end-to-end test, ARCHITECTURE.md and user-manual.md updated
+
+### The Hard Part
+
+The sidecar. llama-server on Windows needs its companion DLLs (ggml.dll, llama.dll) alongside the .exe. Tauri's `externalBin` only copies the executable itself. Build script now copies DLLs manually. Health poll timeout extended from 60s to 180s — large models genuinely take that long to load into memory.
+
+### Verification Results
+
+All pass. Opt-in flow → download → model load → explore NL queries → refinement → artist favorites → recommendations → taste profile editing → persistence across restart → web build clean.
+
+### What's Next
+
+Phase 6. Roadmap now runs to 15 phases (expanded during vision questionnaire). Phase 6 is the Knowledge Base — deeper artist data, genre relationships, scene mapping. But before planning, worth taking stock: Mercury can now search, play local music, and think. Three foundations in place.
