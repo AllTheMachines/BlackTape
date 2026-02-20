@@ -21,7 +21,7 @@ Phase 8 is the turning point — where Mercury stops being a tool and starts bei
 - [x] **Phase 3: Desktop App Foundation** — Tauri shell, local SQLite, database distribution, offline search
 - [x] **Phase 4: Local Music Player** — Folder scanning, metadata, playback, library-meets-discovery
 - [ ] **Phase 5: AI Foundation** — Client-side models, recommendations, natural-language exploration, taste profiling
-- [ ] **Phase 6: Discovery Engine** — Composite ranking, tag browsing, crate digging, uniqueness scoring, style map
+- [x] **Phase 6: Discovery Engine** — Composite ranking, tag browsing, crate digging, uniqueness scoring, style map (completed 2026-02-20)
 - [ ] **Phase 7: Knowledge Base** — Genre/scene map, multi-layer content, scene maps, time machine, liner notes
 - [ ] **Phase 8: Underground Aesthetic** — Dense playful UI, taste-based theming, panels/controls, templates, game-like feel
 - [ ] **Phase 9: Community Foundation** — Identity system, taste matching, collections, taste fingerprint, import/export
@@ -146,7 +146,7 @@ Plans:
 
 **Goal:** [Urgent work - to be planned]
 **Depends on:** Phase 6
-**Plans:** 6/7 plans executed
+**Plans:** 7/7 plans complete
 
 Plans:
 - [ ] TBD (run /gsd:plan-phase 06.1 to break down)
@@ -289,7 +289,7 @@ Plans:
 | 3. Desktop App Foundation | 5/5 | Complete | 2026-02-16 |
 | 4. Local Music Player | 5/5 | Complete | 2026-02-17 |
 | 5. AI Foundation | 0/TBD | Not started | - |
-| 6. Discovery Engine | 6/7 | In Progress|  |
+| 6. Discovery Engine | 7/7 | Complete   | 2026-02-20 |
 | 7. Knowledge Base | 0/TBD | Not started | - |
 | 8. Underground Aesthetic | 0/TBD | Not started | - |
 | 9. Community Foundation | 0/TBD | Not started | - |

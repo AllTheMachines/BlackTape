@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Phase 6 complete (Discovery Engine) — all 6 plans done. Next: Phase 06.1 Affiliate Buy Links.
+**Current focus:** Phase 6 Plan 7 at checkpoint — navigation wired, docs updated, awaiting human verification of all 4 discovery features.
 
 ## Current Position
 
-Phase: 6 of 15 complete (Discovery Engine)
-Current Plan: 6 of 6 complete
-Status: Complete — 06-06 done (Style Map /style-map route, DISC-03 satisfied, Phase 6 fully complete)
-Last activity: 2026-02-21 — Phase 6 Plan 6 complete (Style Map D3 force-directed visualization)
+Phase: 6 of 15 (Discovery Engine — at verification checkpoint)
+Current Plan: 7 of 7 (at checkpoint:human-verify)
+Status: At Checkpoint — 06-07 tasks 1+2 done, awaiting human-verify before plan completion
+Last activity: 2026-02-21 — Phase 6 Plan 7 tasks complete (navigation links + docs update)
 
 Progress: [███████░░░] 7/7
 
@@ -53,6 +53,7 @@ Progress: [███████░░░] 7/7
 | 6. Discovery Engine | 6/6 | 25min+ | Complete |
 | Phase 06 P05 | 3 | 1 tasks | 3 files |
 | Phase 06 P06 | 5 | 2 tasks | 4 files |
+| Phase 06 P07 | 2 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -160,6 +161,8 @@ Progress: [███████░░░] 7/7
 - [Phase 06]: Client-side re-fetch without URL update for crate dig — wandering is ephemeral, not bookmarkable (contrast with Discover page where state lives in URL)
 - [Phase 06]: Headless D3 force simulation via simulation.tick(500) — no on('tick') wiring to Svelte state, single assignment after simulation stops (zero layout thrashing)
 - [Phase 06]: Log10 node radius scaling (clamped 6–30px) — prevents popular genre tags from dominating the style map canvas
+- [Phase 06-discovery-engine]: Web nav shows only Discover + Style Map; Tauri nav order: Discover, Style Map, Dig, Library, Explore, Settings
+- [Phase 06-discovery-engine]: Anti-patterns table in ARCHITECTURE.md documents ORDER BY RANDOM, on-demand JOIN, and D3 DOM manipulation pitfalls from Phase 6
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
@@ -173,5 +176,5 @@ None
 ## Session Continuity
 
 Last session: 2026-02-21
-Phase 6 Plan 6 complete — Style Map Visualization: /style-map route (web + Tauri), StyleMap.svelte with D3 headless force simulation (tick(500)), log10 node sizing, click-to-discover navigation. d3-force@3.0.0 + @types/d3-force installed. DISC-03 satisfied. Phase 6 fully complete.
-Stopped at: Completed 06-06-PLAN.md
+Phase 6 Plan 7 at checkpoint — Navigation links added (web: Discover + Style Map; Tauri: Discover, Style Map, Dig, Library, Explore, Settings). ARCHITECTURE.md updated (tag_stats/tag_cooccurrence tables, Navigation section, Anti-Patterns table). All four Phase 6 features awaiting human verification.
+Stopped at: Checkpoint in 06-07-PLAN.md (human-verify)
