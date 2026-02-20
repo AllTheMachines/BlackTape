@@ -2,7 +2,8 @@
 	import '$lib/styles/theme.css';
 	import { PROJECT_NAME } from '$lib/config';
 	import favicon from '$lib/assets/favicon.svg';
-	import { navigating } from '$app/stores';
+	import { navigating, page } from '$app/stores';
+	import { goto } from '$app/navigation';
 	import { isTauri } from '$lib/platform';
 	import Player from '$lib/components/Player.svelte';
 	import { playerState } from '$lib/player/state.svelte';
@@ -13,6 +14,7 @@
 
 	let showPlayer = $state(false);
 	let tauriMode = $state(false);
+	let canGoBack = $derived($page.url.pathname !== '/');
 
 	onMount(async () => {
 		tauriMode = isTauri();
@@ -39,6 +41,13 @@
 {/if}
 
 <header>
+	{#if canGoBack}
+		<button class="back-btn" onclick={() => history.back()} title="Go back" aria-label="Go back">
+			<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+				<polyline points="15 18 9 12 15 6" />
+			</svg>
+		</button>
+	{/if}
 	<a href="/" class="site-name">{PROJECT_NAME}</a>
 	{#if tauriMode}
 		<nav class="nav-links">
@@ -84,6 +93,24 @@
 		padding: 0 var(--space-lg);
 		background: var(--bg-surface);
 		border-bottom: 1px solid var(--border-subtle);
+	}
+
+	.back-btn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: none;
+		border: none;
+		color: var(--text-muted);
+		cursor: pointer;
+		padding: 4px;
+		margin-right: var(--space-xs);
+		border-radius: 4px;
+		transition: color 0.15s;
+	}
+
+	.back-btn:hover {
+		color: var(--text-primary);
 	}
 
 	.site-name {

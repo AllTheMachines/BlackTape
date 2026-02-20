@@ -105,8 +105,9 @@
 		anchorSearching = true;
 
 		try {
-			// Search mercury.db for the artist
+			// Search mercury.db for the artist — try exact match first, fall back to FTS5
 			const { getProvider } = await import('$lib/db/provider');
+			const { searchArtists } = await import('$lib/db/queries');
 			const provider = await getProvider();
 			if (!provider) {
 				anchorSearchError = 'Database not available';
@@ -114,13 +115,29 @@
 				return;
 			}
 
-			const results = await provider.all<{ mbid: string; name: string }>(
+			// Try exact case-insensitive match first
+			let results = await provider.all<{ mbid: string; name: string }>(
 				`SELECT mbid, name FROM artists WHERE name = ? COLLATE NOCASE LIMIT 1`,
 				[name]
 			);
 
+			// Fall back to FTS5 search if exact match fails
 			if (results.length === 0) {
-				anchorSearchError = 'Artist not found';
+				const searchResults = await searchArtists(provider, name, 5);
+				// Pick the closest match (case-insensitive)
+				const exact = searchResults.find(
+					(r) => r.name.toLowerCase() === name.toLowerCase()
+				);
+				if (exact) {
+					results = [{ mbid: exact.mbid, name: exact.name }];
+				} else if (searchResults.length > 0) {
+					// Use best FTS match
+					results = [{ mbid: searchResults[0].mbid, name: searchResults[0].name }];
+				}
+			}
+
+			if (results.length === 0) {
+				anchorSearchError = 'Artist not found in database';
 				anchorSearching = false;
 				return;
 			}

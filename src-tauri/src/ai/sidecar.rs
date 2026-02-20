@@ -2,6 +2,7 @@ use serde::Serialize;
 use std::path::Path;
 use std::sync::Mutex;
 use tauri::Manager;
+use tauri_plugin_shell::process::CommandEvent;
 use tauri_plugin_shell::ShellExt;
 
 /// Default port for the generation (chat/completion) llama-server instance.
@@ -87,9 +88,12 @@ pub fn start_generation_server(
             "--no-mmap",
         ]);
 
-    let (mut _rx, child) = command
+    let (rx, child) = command
         .spawn()
         .map_err(|e| format!("Failed to spawn generation server: {}", e))?;
+
+    // Log sidecar output for debugging
+    spawn_output_logger(rx, "llama-gen");
 
     // Write PID file for orphan detection
     let app_data = app.path().app_data_dir().map_err(|e| e.to_string())?;
@@ -145,9 +149,12 @@ pub fn start_embedding_server(
             "--embedding",
         ]);
 
-    let (mut _rx, child) = command
+    let (rx, child) = command
         .spawn()
         .map_err(|e| format!("Failed to spawn embedding server: {}", e))?;
+
+    // Log sidecar output for debugging
+    spawn_output_logger(rx, "llama-embed");
 
     // Write PID file for orphan detection
     let app_data = app.path().app_data_dir().map_err(|e| e.to_string())?;
@@ -243,4 +250,29 @@ fn write_pid_file(app_data: &Path, pid_file: &str, pid: u32) {
 fn remove_pid_file(app_data: &Path, pid_file: &str) {
     let path = app_data.join(pid_file);
     let _ = std::fs::remove_file(&path);
+}
+
+/// Spawn an async task to log sidecar stdout/stderr for debugging.
+fn spawn_output_logger(mut rx: tauri::async_runtime::Receiver<CommandEvent>, label: &'static str) {
+    tauri::async_runtime::spawn(async move {
+        while let Some(event) = rx.recv().await {
+            match event {
+                CommandEvent::Stdout(data) => {
+                    if let Ok(line) = String::from_utf8(data) {
+                        eprintln!("[{label}] {}", line.trim_end());
+                    }
+                }
+                CommandEvent::Stderr(data) => {
+                    if let Ok(line) = String::from_utf8(data) {
+                        eprintln!("[{label}] {}", line.trim_end());
+                    }
+                }
+                CommandEvent::Terminated(payload) => {
+                    eprintln!("[{label}] terminated (code: {:?}, signal: {:?})", payload.code, payload.signal);
+                    break;
+                }
+                _ => {}
+            }
+        }
+    });
 }

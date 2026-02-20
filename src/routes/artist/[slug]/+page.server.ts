@@ -20,7 +20,15 @@ export const load: PageServerLoad = async ({ params, platform, fetch }) => {
 
 	const db = platform?.env?.DB;
 	if (!db) {
-		throw error(503, 'Database not available');
+		// No D1 database (e.g., Tauri dev mode) — return empty data.
+		// The universal +page.ts load will detect Tauri and query local SQLite.
+		return {
+			artist: { name: '', mbid: '', slug, tags: '', country: '', type: '', begin_year: null, ended: false },
+			links: EMPTY_LINKS,
+			categorizedLinks: emptyCategorizedLinks(),
+			releases: [] as ReleaseGroup[],
+			bio: null as string | null
+		};
 	}
 
 	const provider = new D1Provider(db);

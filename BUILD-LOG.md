@@ -1287,3 +1287,6 @@ Mercury provides tools for both open and closed spaces. The community decides th
 
 ### Roadmap Updated
 ROADMAP.md rewritten: 12 phases → 15 phases. Old Phase 8 (Social Layer) split into Phase 8 (Underground Aesthetic), Phase 9 (Community Foundation), Phase 10 (Communication Layer), Phase 11 (Scene Building). Old phases 9-12 renumbered to 12-15. Sustainability stages renumbered to match. Three new deferred items added.
+
+> **Commit 368d9b8** (2026-02-17 18:20) — wip: vision questionnaire + roadmap rewrite (12 to 15 phases)
+> Files changed: 6

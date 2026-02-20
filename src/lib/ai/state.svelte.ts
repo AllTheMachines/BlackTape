@@ -151,13 +151,25 @@ export async function initializeAi(): Promise<void> {
 		await invoke<string>('start_generation_server');
 		await invoke<string>('start_embedding_server');
 
-		// Poll health until both servers are ready (max 60s)
+		// Poll health until both servers are ready (max 180s — large models need time to load)
 		const startTime = Date.now();
-		const timeout = 60_000;
-		const pollInterval = 500;
+		const timeout = 180_000;
+		const pollInterval = 1000;
 
 		while (Date.now() - startTime < timeout) {
 			try {
+				// Check if sidecar processes are still alive
+				const status = await invoke<{
+					generation_running: boolean;
+					embedding_running: boolean;
+				}>('get_ai_status');
+
+				if (!status.generation_running && !status.embedding_running) {
+					aiState.status = 'error';
+					aiState.error = 'AI servers crashed during startup. Check that models downloaded correctly.';
+					return;
+				}
+
 				const [genHealth, embedHealth] = await Promise.all([
 					fetch('http://127.0.0.1:8847/health').then((r) => r.ok).catch(() => false),
 					fetch('http://127.0.0.1:8848/health').then((r) => r.ok).catch(() => false)
@@ -182,7 +194,10 @@ export async function initializeAi(): Promise<void> {
 			aiState.status = 'ready';
 		} else {
 			aiState.status = 'error';
-			aiState.error = 'AI servers failed to start within 60 seconds';
+			const elapsed = Math.round((Date.now() - startTime) / 1000);
+			const genStatus = aiState.generationReady ? 'ready' : 'not responding';
+			const embedStatus = aiState.embeddingReady ? 'ready' : 'not responding';
+			aiState.error = `AI servers failed to start within ${elapsed}s (generation: ${genStatus}, embedding: ${embedStatus})`;
 		}
 	} catch (err) {
 		aiState.status = 'error';

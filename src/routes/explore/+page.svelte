@@ -18,6 +18,7 @@
 	let originalQuery = $state('');
 	let refinementCount = $state(0);
 	let hasSearched = $state(false);
+	let conversationHistory = $state<Array<{ role: 'user' | 'refinement'; text: string }>>([]);
 	const MAX_REFINEMENTS = 5;
 
 	let queryInputEl: HTMLInputElement | undefined = $state();
@@ -117,6 +118,7 @@
 		refinementCount = 0;
 		refinementInput = '';
 		originalQuery = trimmed;
+		conversationHistory = [{ role: 'user', text: trimmed }];
 
 		try {
 			// Build prompt: taste-aware if taste data exists
@@ -206,6 +208,7 @@
 
 			results = matched;
 			refinementCount++;
+			conversationHistory = [...conversationHistory, { role: 'refinement', text: trimmed }];
 			refinementInput = '';
 		} catch (err) {
 			console.error('Explore refinement failed:', err);
@@ -225,6 +228,7 @@
 		originalQuery = '';
 		hasSearched = false;
 		errorMessage = '';
+		conversationHistory = [];
 
 		// Focus the main query input
 		requestAnimationFrame(() => {
@@ -319,6 +323,17 @@
 				disabled={isLoading}
 			/>
 		</div>
+
+		{#if conversationHistory.length > 0}
+			<div class="conversation-history">
+				{#each conversationHistory as entry}
+					<div class="history-entry">
+						<span class="history-label">{entry.role === 'user' ? 'Asked' : 'Refined'}</span>
+						<span class="history-text">{entry.text}</span>
+					</div>
+				{/each}
+			</div>
+		{/if}
 
 		{#if errorMessage}
 			<p class="error-message">{errorMessage}</p>
@@ -511,6 +526,37 @@
 
 	.query-input:disabled {
 		opacity: 0.6;
+	}
+
+	/* Conversation history */
+	.conversation-history {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-xs);
+		margin-bottom: var(--space-md);
+	}
+
+	.history-entry {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		padding: 4px 10px;
+		background: var(--bg-elevated);
+		border: 1px solid var(--border-subtle);
+		border-radius: 999px;
+		font-size: 0.75rem;
+	}
+
+	.history-label {
+		color: var(--text-muted);
+		font-weight: 500;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		font-size: 0.65rem;
+	}
+
+	.history-text {
+		color: var(--text-secondary);
 	}
 
 	/* Error message */
