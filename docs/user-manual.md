@@ -68,7 +68,7 @@ Click any artist from search results to see their full page.
 
 ### What You'll See
 
-**Header** — Artist name, country, active years, and type (person, group, etc.)
+**Header** — Artist name, country, active years, and type (person, group, etc.). A small uniqueness badge appears next to the artist name for artists with tags — see [Uniqueness Badge](#uniqueness-badge) below.
 
 **Tags** — Clickable genre/style tags. Click any tag to discover more artists with the same tag.
 
@@ -87,6 +87,19 @@ Click any artist from search results to see their full page.
 - **Social** — Twitter, Instagram, Facebook, Mastodon
 - **Info** — Wikipedia, Discogs, RateYourMusic, AllMusic
 - **Support** — Patreon, Ko-fi, crowdfunding pages
+
+### Uniqueness Badge
+
+Next to the artist name, a small badge shows how niche the artist is relative to the full Mercury catalog. The badge maps the artist's uniqueness score to four tiers:
+
+| Badge | Meaning |
+|-------|---------|
+| **Very Niche** | Extremely rare tag combination — ultra-niche artist |
+| **Niche** | Uncommon genre profile — not on the well-worn path |
+| **Eclectic** | Broad or mixed genre profile |
+| **Mainstream** | Widely tagged genres — commonly known styles |
+
+The badge is absent for artists with no tags. This is the core Mercury thesis made visible: the more niche you are, the more discoverable you become through the tag intersection system.
 
 ### Important
 
@@ -469,4 +482,4 @@ Local model processing time depends on your hardware. The generation model (Qwen
 
 ---
 
-*Mercury v0.1.0 — Last updated: 2026-02-17*
+*Mercury v0.1.0 — Last updated: 2026-02-20*

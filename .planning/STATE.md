@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Phase 6 in progress (Discovery Engine) — Plan 3 complete.
+**Current focus:** Phase 6 in progress (Discovery Engine) — Plan 4 complete.
 
 ## Current Position
 
 Phase: 6 of 15 in progress (Discovery Engine)
-Current Plan: 3 of N complete
-Status: In progress — 06-03 complete (Discover page — tag browser + niche-first artist grid)
-Last activity: 2026-02-20 — Phase 6 Plan 3 complete (Discover page route, TagFilter component)
+Current Plan: 4 of N complete
+Status: In progress — 06-04 complete (Uniqueness Score Badge on artist pages)
+Last activity: 2026-02-20 — Phase 6 Plan 4 complete (UniquenessScore.svelte component, artist page wiring)
 
 Progress: [██████░░░░] 6/7
 
@@ -20,6 +20,8 @@ Progress: [██████░░░░] 6/7
 
 **Velocity:**
 - Total plans completed: 23
+- Phase 6 Plan 03: 5min
+- Phase 6 Plan 04: 4min
 - Phase 6 Plan 03: 5min
 - Phase 6 Plan 02: 4min
 - Phase 6 Plan 01: 5min
@@ -47,7 +49,7 @@ Progress: [██████░░░░] 6/7
 | 3. Desktop App | 5/5 | 23min+ | Complete |
 | 4. Local Music Player | 5/5 | 19min+ | Complete |
 | 5. AI Foundation | 7/7 | 28min+ | Complete |
-| 6. Discovery Engine | 2/? | 9min+ | In progress |
+| 6. Discovery Engine | 4/? | 17min+ | In progress |
 
 ## Accumulated Context
 
@@ -149,6 +151,9 @@ Progress: [██████░░░░] 6/7
 - Tag state in URL (?tags=...) via goto() + page store — shareable/bookmarkable discover pages without client-side session state.
 - TagFilter disables chips at 5-tag max (not silently ignores) — clear UX feedback at the D1 parameter limit.
 - Universal +page.ts pattern: passthrough on web (server data unchanged), dynamic imports + getProvider() on Tauri — same pattern as search/explore pages.
+- UniquenessScore badge placed inline in artist-name-row (between name and FavoriteButton) — part of artist identity block, visible without restructuring layout.
+- Score tier thresholds: 0.0003/0.001/0.005 based on AVG(1/artist_count)*1000 distribution — Very Niche/Niche/Eclectic/Mainstream.
+- getArtistUniquenessScore fetched via Promise.all wrapping alongside existing Promise.allSettled network calls — no added serial latency.
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
@@ -162,5 +167,5 @@ None
 ## Session Continuity
 
 Last session: 2026-02-20
-Phase 6 Plan 3 complete — Discover page built: TagFilter.svelte (URL-driven tag chip cloud), /discover route (3 files), ARCHITECTURE.md + user-manual.md updated.
-Stopped at: Completed 06-03-PLAN.md
+Phase 6 Plan 4 complete — UniquenessScore.svelte badge: 4-tier categorical label (Very Niche/Niche/Eclectic/Mainstream), wired into artist page web + Tauri load paths, ARCHITECTURE.md + user-manual.md updated.
+Stopped at: Completed 06-04-PLAN.md

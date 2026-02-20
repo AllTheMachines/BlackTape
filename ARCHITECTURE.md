@@ -209,7 +209,8 @@ Mercury/
 │   │       ├── AiSettings.svelte
 │   │       ├── FavoriteButton.svelte
 │   │       ├── ExploreResult.svelte
-│   │       └── TasteEditor.svelte
+│   │       ├── TasteEditor.svelte
+│   │       └── UniquenessScore.svelte
 │   └── routes/
 │       ├── +layout.svelte        # Root layout (header, nav, player)
 │       ├── +layout.ts            # SSR toggle
@@ -592,6 +593,7 @@ Tag state lives entirely in the URL. This makes discover pages shareable and boo
 
 - **`TagFilter.svelte`** — Renders the tag chip cloud. Active tags shown in a separate "Filtering by:" row above the cloud. Chips for tags not yet active are disabled at 5-tag max (D1 bound parameter limit). `toggleTag()` handles add/remove via `goto()`.
 - **`ArtistCard.svelte`** — Reused from search page. Displays artist name (link), country, and top 5 tags as `TagChip` components.
+- **`UniquenessScore.svelte`** — Small pill badge rendered in the artist page header. Maps a raw decimal score (0.0001–0.01+ range) to four human-readable tiers: Very Niche, Niche, Eclectic, Mainstream. Badge hidden when score is null (artists with no tags). Sits in the `artist-name-row` alongside the artist name and FavoriteButton.
 
 ### Data Flow
 
@@ -614,6 +616,9 @@ URL ?tags param
 | `getPopularTags(db, limit)` | Top tags from `tag_stats` by `artist_count DESC` |
 | `getArtistsByTagIntersection(db, tags, limit)` | AND-logic multi-tag filter, niche-first. Dynamic JOIN per tag. Capped at 5 tags. |
 | `getDiscoveryRankedArtists(db, limit)` | Composite score: rarity + recency + active status |
+| `getArtistUniquenessScore(db, artistId)` | Per-artist uniqueness badge score — average inverse tag popularity, scaled. Works on both D1 and TauriProvider. |
+| `getCrateDigArtists(db, filters, limit)` | Random artist sampling with filters. Rowid-based for O(limit) performance. |
+| `getStyleMapData(db, tagLimit)` | Top-N tags as nodes + co-occurrence pairs as edges for style map visualization. |
 
 The tag intersection uses dynamic JOIN construction — one `JOIN artist_tags` per tag, with the tag value as a bound parameter. This avoids SQL injection while staying within D1's bound parameter limits.
 
@@ -912,4 +917,4 @@ Tags tracked by source: `library`, `favorite`, `manual`. Recomputation clears co
 
 ---
 
-*Last updated: 2026-02-17 — After Phase 5 (AI Foundation) completion.*
+*Last updated: 2026-02-20 — After Phase 6 Plan 4 (Uniqueness Score Badge) completion.*

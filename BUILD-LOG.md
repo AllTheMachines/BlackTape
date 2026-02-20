@@ -1463,3 +1463,37 @@ Niche-first ordering is implicit in the query (`ORDER BY artist_tag_count ASC`) 
 
 > **Commit 766688f** (2026-02-20 23:46) — feat(06-03): add Discover page universal load and page component
 > Files changed: 2
+
+> **Commit 829e8d6** (2026-02-20 23:49) — docs(06-03): complete Discover page plan
+> Files changed: 6
+
+> **Commit 62f111f** (2026-02-20 23:50) — feat(06-04): add UniquenessScore badge component
+> Files changed: 1
+
+> **Commit eab4809** (2026-02-20 23:52) — feat(06-04): wire uniqueness score into artist page (web + Tauri)
+> Files changed: 3
+
+## Entry 025 — 2026-02-20 — Phase 6 Plan 4: Uniqueness Score Badge
+
+### What Was Built
+
+The uniqueness score badge — the most important piece of Mercury's UX thesis made visible.
+
+**UniquenessScore.svelte** — A minimal pill badge that renders in the artist header. Raw score (a small decimal like 0.0012) is mapped to 4 human-readable tiers: Very Niche, Niche, Eclectic, Mainstream. Color-coded: Very Niche uses the accent color (gold), Niche uses a green tone, Eclectic and Mainstream are subdued. Badge is absent when score is null (artists with no tags).
+
+**Artist page data wiring** — `getArtistUniquenessScore()` was already built in Plan 02. This plan wires it into both load paths:
+- `+page.server.ts` (web): fetches score concurrently with links/releases via `Promise.all([Promise.allSettled([...]), getArtistUniquenessScore(...)])`
+- `+page.ts` (Tauri): fetches score from local SQLite after artist lookup
+
+<!-- decision: Badge placement in artist name row -->
+The badge sits inline in the `artist-name-row` between the artist name and the Favorite button. This places it in the artist's "identity block" — the most prominent visible location — without requiring a new layout section or restructuring anything. Small pill badge doesn't compete with the artist name.
+**Rejected:** Below tags (too buried), dedicated section (too prominent for a metadata signal)
+<!-- /decision -->
+
+### Score Thresholds
+
+The tier boundaries (0.0003 / 0.001 / 0.005) were set based on the score distribution from the `getArtistUniquenessScore` query math. Score = average(1 / artist_count) * 1000 across all tags. A tag used by 50k artists contributes 0.02 to the per-tag score; a tag used by 100 artists contributes 10.0. The aggregate averages are small because popular tags dominate most artists' profiles.
+
+### Verification
+
+- `npm run check` — 0 errors, 0 warnings (357 files)
