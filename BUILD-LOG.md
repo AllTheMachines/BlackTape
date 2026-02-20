@@ -1371,3 +1371,62 @@ On-demand aggregation against 672K artist_tags rows is too slow for page load. P
 - Idempotency: re-running both steps produces identical row counts, no errors
 - Constraint violations: 0 (tag_a < tag_b holds on all rows)
 - Genre pairs look sensible: rock pairs with indie/hard rock/pop rock/alternative rock, classical pairs with composer
+
+> **Commit c2f0f6c** (2026-02-20 23:36) — feat(06-01): add tag_stats and tag_cooccurrence tables to pipeline
+> Files changed: 2
+
+> **Commit f23b85c** (2026-02-20 23:38) — docs(06-01): complete tag statistics pre-computation plan
+> Files changed: 4
+
+> **Commit 558eb3e** (2026-02-20 23:39) — feat(06-02): add tag intersection and discovery ranking queries
+> Files changed: 1
+
+> **Commit 953d942** (2026-02-20 23:40) — feat(06-02): add crate digging, uniqueness score, and style map queries
+> Files changed: 1
+
+## Entry 023 — 2026-02-20 — Phase 6 Plan 2: Discovery Query Functions
+
+Phase 6 Discovery Engine, Plan 2. Six new query functions added to `src/lib/db/queries.ts` — the complete query layer for all discovery features.
+
+### What Got Built
+
+Six new exported async functions plus four new types added to `queries.ts`:
+
+**Types added:**
+- `CrateFilters` — tag, decadeMin, decadeMax, country filter options for crate dig mode
+- `StyleMapNode` — tag + artist_count for style map visualization nodes
+- `StyleMapEdge` — tag_a, tag_b, shared_artists for style map edges
+- `UniquenessResult` — uniqueness_score + tag_count for the artist page badge
+
+**Functions added:**
+
+`getPopularTags(db, limit)` — Top tags by artist_count from tag_stats. Powers the initial state of the tag browser. Simple descending sort, limit param.
+
+`getArtistsByTagIntersection(db, tags, limit)` — AND logic tag filtering. Self-JOINs artist_tags once per tag (up to 5). Results ordered niche-first (fewest total tags ascending). Caps at 5 tags — D1 bound parameter safety.
+
+`getDiscoveryRankedArtists(db, limit)` — Composite discovery score: `(1/tag_count) * avg(1/tag_artist_count) * recency_boost * active_boost`. Rewards artists with rare tags, few total tags, recent formation, and still active.
+
+`getCrateDigArtists(db, filters, limit)` — Rowid-based random sampling via `a.id > randomStart`. Faster than `ORDER BY RANDOM()` on large tables. Includes wrap-around fallback when random position lands near the end of the table. All filters optional.
+
+`getArtistUniquenessScore(db, artistId)` — Artist page badge query. Computes `AVG(1/tag_artist_count) * 1000` across all artist tags, rounded to 2dp. Returns null if artist has no tags.
+
+`getStyleMapData(db, tagLimit)` — Returns `{ nodes, edges }` for the style map visualization. Nodes are top-N tags from tag_stats. Edges are from tag_cooccurrence filtered to only pairs within the top-N set (subquery avoids D1 param limits).
+
+<!-- decision: Rowid-based random sampling for crate digging -->
+`ORDER BY RANDOM()` scans the entire table. Rowid sampling (`a.id > randomStart`) reads only the tail of the table — effectively O(limit) not O(total_rows). The wrap-around fallback handles the edge case where randomStart lands in the last 20% of IDs.
+**Rejected:** ORDER BY RANDOM() (too slow at scale), pre-shuffled IDs (extra pipeline complexity)
+<!-- /decision -->
+
+<!-- decision: Subquery for style map edge filtering -->
+Passing top-N tag names as bound params would hit D1's parameter limits with tagLimit >= 100. Using `IN (SELECT tag FROM tag_stats ORDER BY artist_count DESC LIMIT ?)` avoids this entirely — single param, DB-side filtering.
+**Rejected:** Client-side edge filtering (requires fetching all edges), bound param array (D1 limit)
+<!-- /decision -->
+
+### Verification
+
+- `npm run check` — 0 errors, 0 warnings (349 files)
+- All 6 functions + 4 types exported from queries.ts
+- getCrateDigArtists handles empty filters (no-filter crate digging) correctly
+- getArtistsByTagIntersection caps at 5 tags — D1 safety confirmed
+- Same DbProvider interface — identical function signatures work on D1 (web) and TauriProvider (desktop)
+

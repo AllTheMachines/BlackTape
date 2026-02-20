@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Phase 6 in progress (Discovery Engine) — Plan 1 complete.
+**Current focus:** Phase 6 in progress (Discovery Engine) — Plan 2 complete.
 
 ## Current Position
 
 Phase: 6 of 15 in progress (Discovery Engine)
-Current Plan: 1 of N complete
-Status: In progress — 06-01 complete (tag_stats + tag_cooccurrence tables)
-Last activity: 2026-02-20 — Phase 6 Plan 1 complete (tag statistics pre-computation)
+Current Plan: 2 of N complete
+Status: In progress — 06-02 complete (discovery query functions in queries.ts)
+Last activity: 2026-02-20 — Phase 6 Plan 2 complete (six discovery query functions)
 
 Progress: [██████░░░░] 6/7
 
@@ -20,6 +20,7 @@ Progress: [██████░░░░] 6/7
 
 **Velocity:**
 - Total plans completed: 22
+- Phase 6 Plan 02: 4min
 - Phase 6 Plan 01: 5min
 - Phase 5 Plan 01: 5min
 - Phase 5 Plan 02: 7min
@@ -45,7 +46,7 @@ Progress: [██████░░░░] 6/7
 | 3. Desktop App | 5/5 | 23min+ | Complete |
 | 4. Local Music Player | 5/5 | 19min+ | Complete |
 | 5. AI Foundation | 7/7 | 28min+ | Complete |
-| 6. Discovery Engine | 1/? | 5min+ | In progress |
+| 6. Discovery Engine | 2/? | 9min+ | In progress |
 
 ## Accumulated Context
 
@@ -141,6 +142,9 @@ Progress: [██████░░░░] 6/7
 - Pre-compute tag statistics at pipeline build time (Phase F) — on-demand GROUP BY against 672K artist_tags rows is too slow for page load.
 - tag_cooccurrence filters: count >= 2 on both tags, HAVING shared_artists >= 5, LIMIT 10000 — prevent combinatorial explosion without losing meaningful signal.
 - CHECK (tag_a < tag_b) in tag_cooccurrence ensures canonical pair ordering, zero duplicate edges.
+- Rowid-based random sampling for crate digging (a.id > randomStart) — O(limit) not O(total_rows), with wrap-around fallback for table end edge case.
+- Subquery IN for style map edge filtering — avoids D1 bound parameter limits vs passing tag array as params.
+- Tag intersection capped at 5 tags — D1 safety limit on bound parameters per query.
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
@@ -154,5 +158,5 @@ None
 ## Session Continuity
 
 Last session: 2026-02-20
-Phase 6 Plan 1 complete — tag_stats (57,905 tags) and tag_cooccurrence (2,359 edges) added to pipeline.
-Stopped at: Completed 06-01-PLAN.md
+Phase 6 Plan 2 complete — six discovery query functions added to queries.ts (getPopularTags, getArtistsByTagIntersection, getDiscoveryRankedArtists, getCrateDigArtists, getArtistUniquenessScore, getStyleMapData).
+Stopped at: Completed 06-02-PLAN.md
