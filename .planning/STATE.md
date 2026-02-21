@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Phase 06.1 (Affiliate Buy Links) — affiliate module built, building release pages next.
+**Current focus:** Phase 06.1 (Affiliate Buy Links) — BuyOnBar UI component built, ready for release page integration.
 
 ## Current Position
 
 Phase: 06.1 of 15 (Affiliate Buy Links — in progress)
-Current Plan: 06.1-02 (next to execute)
-Status: Phase 06.1 Plan 01 COMPLETE — affiliate module foundation built 2026-02-21.
-Last activity: 2026-02-21 — 06.1-01 complete. src/lib/affiliates/ module with types, config, construct, index.
+Current Plan: 06.1-04 (next to execute)
+Status: Phase 06.1 Plan 03 COMPLETE — BuyOnBar.svelte component built 2026-02-21.
+Last activity: 2026-02-21 — 06.1-03 complete. src/lib/components/BuyOnBar.svelte with isDirect indicator and platform hover colors.
 
-Progress: [██░░░░░░░░] 1/5 plans complete
+Progress: [███░░░░░░░] 3/5 plans complete
 
 ## Performance Metrics
 
@@ -55,6 +55,7 @@ Progress: [██░░░░░░░░] 1/5 plans complete
 | Phase 06 P05 | 3 | 1 tasks | 3 files |
 | Phase 06 P06 | 5 | 2 tasks | 4 files |
 | Phase 06 P07 | 2 | 2 tasks | 3 files |
+| Phase 06.1 P03 | 1min | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -182,6 +183,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-21
-Plan 06.1-01 complete. Affiliate module foundation built: src/lib/affiliates/ with types, config, construct, index. buildBuyLinks() returns all 5 platforms. $env/dynamic/private for CF Pages runtime env vars. npm run check passes (0 errors).
-Stopped at: Completed 06.1-01-PLAN.md
-Next: Execute 06.1-02-PLAN.md (release page server routes)
+Plan 06.1-03 complete. BuyOnBar.svelte component built: renders all 5 buy platform links, search-fallback '?' indicator, platform-specific hover colors. Visual language mirrors Listen on bar. npm run check passes (0 errors).
+Stopped at: Completed 06.1-03-PLAN.md
+Next: Execute 06.1-04-PLAN.md (release page integration)
