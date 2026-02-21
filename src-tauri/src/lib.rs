@@ -48,6 +48,12 @@ pub fn run() {
             ai::taste_db::get_taste_anchors,
             ai::taste_db::add_taste_anchor,
             ai::taste_db::remove_taste_anchor,
+            ai::taste_db::record_play,
+            ai::taste_db::get_play_history,
+            ai::taste_db::delete_play,
+            ai::taste_db::clear_play_history,
+            ai::taste_db::get_play_count,
+            ai::taste_db::export_play_history,
         ])
         .plugin(tauri_plugin_sql::Builder::new().build())
         .plugin(tauri_plugin_updater::Builder::new().build())
