@@ -305,9 +305,20 @@
 	<div class="explore-page">
 		<div class="page-header">
 			<h1>Explore</h1>
-			{#if topTasteTags.length > 0}
+			{#if !tasteProfile.isLoaded}
+				<!-- Skeleton: profile is loading — show placeholder for hint area -->
+				<div class="taste-hint-skeleton">
+					<div class="skeleton-line" style="width: 55%;"></div>
+				</div>
+			{:else if topTasteTags.length > 0}
+				<!-- Normal state: taste data available -->
 				<p class="taste-hint">
 					Your taste leans toward {topTasteTags.join(', ')}
+				</p>
+			{:else}
+				<!-- Empty taste state: loaded but no data -->
+				<p class="taste-empty">
+					<a href="/">Search for artists</a> and save favorites to get personalized exploration.
 				</p>
 			{/if}
 		</div>
@@ -496,6 +507,20 @@
 		color: var(--text-muted);
 		margin: var(--space-xs) 0 0;
 		font-style: italic;
+	}
+
+	.taste-hint-skeleton {
+		margin-top: var(--space-xs, 0.4rem);
+	}
+
+	.taste-empty {
+		font-size: 0.85rem;
+		color: var(--text-muted);
+		margin-top: var(--space-xs, 0.4rem);
+	}
+
+	.taste-empty a {
+		color: var(--text-accent);
 	}
 
 	/* Query input */
