@@ -1,7 +1,7 @@
 # Requirements: Mercury
 
 **Defined:** 2026-02-15
-**Updated:** 2026-02-21 — Phase 07.3: PLAYER-01/PLAYER-02 marked Complete; traceability aligned
+**Updated:** 2026-02-21 — Phase 07.3: PLAYER-01/PLAYER-02 marked Complete; traceability aligned; COMM-01/02/03 added for Phase 9 community foundation traceability
 **Core Value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
 
 ## v1 Requirements
@@ -68,6 +68,12 @@
 - [x] **BUY-02**: "Buy on" row on release pages showing all five platforms (Bandcamp, Amazon Music, Apple Music, Beatport, Discogs) with search fallbacks where no direct URL is available; subtle indicator distinguishes search from direct
 - [x] **BUY-03**: Affiliate IDs stored in environment variables only — never hardcoded in source; Amazon Associates and Apple Performance Partners supported
 - [x] **BUY-04**: Site-wide affiliate disclosure in footer — no per-link badges
+
+### Community Foundation (Phase 9)
+
+- [ ] **COMM-01**: Pseudonymous identity system — handles + generative pixel art avatars; no real names, no photos; local-first, no central account
+- [ ] **COMM-02**: Collections / shelves curation — multiple named shelves containing saved artists and releases; artists and release pages show Save to Shelf with inline creation
+- [ ] **COMM-03**: Generative avatar system — pixel art avatar driven by user taste data; in-app editor for manual customization; three layers (generative default, pixel editor, preset selection)
 
 ### Social
 
@@ -174,6 +180,9 @@
 | UX-02 | Phase 8 | Complete — 08-01 (palette.ts + engine.svelte.ts, OKLCH theming) |
 | UX-03 | Phase 8 | Complete |
 | UX-04 | Phase 8 | Complete |
+| COMM-01 | Phase 9 | Pending |
+| COMM-02 | Phase 9 | Pending |
+| COMM-03 | Phase 9 | Pending |
 | SOCIAL-01 | Phase 9 | Pending |
 | SOCIAL-02 | Phase 9 | Pending |
 | SOCIAL-03 | Phase 9 | Pending |
@@ -207,10 +216,10 @@
 | SUST-10 | Phase 0 / Stage 4 | Pending |
 
 **Coverage:**
-- v1 requirements: 64 total (added 4 UX for Phase 8)
-- Mapped to phases: 64
+- v1 requirements: 67 total (added 4 UX for Phase 8; added 3 COMM for Phase 9 community foundation traceability)
+- Mapped to phases: 67
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-15*
-*Last updated: 2026-02-21 — Phase 8: added UX-01 through UX-04; fixed SOCIAL traceability (Phase 9, not Phase 8); KB-01 marked Complete*
+*Last updated: 2026-02-21 — Phase 8: added UX-01 through UX-04; fixed SOCIAL traceability (Phase 9, not Phase 8); KB-01 marked Complete. Phase 9 revision: added COMM-01/02/03 definitions and traceability rows.*
