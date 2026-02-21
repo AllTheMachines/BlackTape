@@ -23,7 +23,7 @@ Phase 8 is the turning point — where Mercury stops being a tool and starts bei
 - [ ] **Phase 5: AI Foundation** — Client-side models, recommendations, natural-language exploration, taste profiling
 - [x] **Phase 6: Discovery Engine** — Composite ranking, tag browsing, crate digging, uniqueness scoring, style map (completed 2026-02-20)
 - [x] **Phase 7: Knowledge Base** — Genre/scene map, multi-layer content, scene maps, time machine, liner notes (completed 2026-02-21)
-- [ ] **Phase 07.1: Integration Hotfixes** (INSERTED) — loadTasteProfile startup fix, /about route, genre→/discover link
+- [x] **Phase 07.1: Integration Hotfixes** (INSERTED) — loadTasteProfile startup fix, /about route, genre→/discover link (completed 2026-02-21)
 - [ ] **Phase 07.2: Playback → Taste Signal** (INSERTED) — Audio engine hooks to feed taste profile from local playback
 - [ ] **Phase 07.3: Requirements & Verification Cleanup** (INSERTED) — REQUIREMENTS.md updates, Phase 04 VERIFICATION.md, platform! guards, schema docs
 - [ ] **Phase 8: Underground Aesthetic** — Dense playful UI, taste-based theming, panels/controls, templates, game-like feel
@@ -199,7 +199,7 @@ Plans:
   3. Genre/scene pages link to `/discover?tags=<mb_tag>` — Phase 6→Phase 7 navigation wired
   4. AI explore page uses taste context on first load for users with established taste profiles
   5. KB personalized starter graph works on Tauri startup without opening Settings first
-**Plans:** 3 plans
+**Plans:** 3/3 plans complete
 Plans:
 - [ ] 07.1-01-PLAN.md — Layout startup wiring (loadTasteProfile) + /about route + nav links (GAP-01, GAP-02)
 - [ ] 07.1-02-PLAN.md — KB reactive personalization + explore taste skeleton/empty state (GAP-01 consumers)
@@ -355,7 +355,7 @@ Plans:
 | 6. Discovery Engine | 7/7 | Complete   | 2026-02-20 |
 | 06.1. Affiliate Buy Links | 5/5 | Complete    | 2026-02-21 |
 | 7. Knowledge Base | 7/7 | Complete   | 2026-02-21 |
-| 07.1. Integration Hotfixes | 0/TBD | Not started | - |
+| 07.1. Integration Hotfixes | 3/3 | Complete   | 2026-02-21 |
 | 07.2. Playback → Taste Signal | 0/TBD | Not started | - |
 | 07.3. Requirements & Verification Cleanup | 0/TBD | Not started | - |
 | 8. Underground Aesthetic | 0/TBD | Not started | - |

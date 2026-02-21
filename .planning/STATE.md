@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Phase 07 (Knowledge Base) COMPLETE. Phase 07 Plan 07 done — documentation (ARCHITECTURE.md, user-manual.md, BUILD-LOG.md) + final build verification.
+**Current focus:** Phase 07.1 (Integration Hotfixes) COMPLETE. All 3 plans done — About page 404 fix, Explore page taste loading skeleton + empty taste CTA, KB genre→Discover navigation links.
 
 ## Current Position
 
-Phase: 07 of 15 (Knowledge Base — COMPLETE)
-Current Plan: 07-07 (complete)
-Status: Phase 07 COMPLETE — All 7 plans done. KB-01, KB-02, DISC-05, DISC-06, DISC-07 satisfied. ARCHITECTURE.md, docs/user-manual.md, and BUILD-LOG.md updated. 0 TypeScript errors. npm run build clean. 2026-02-21.
-Last activity: 2026-02-21 — 07-07 complete. ARCHITECTURE.md Knowledge Base section. user-manual.md Knowledge Base/Time Machine/Liner Notes docs. BUILD-LOG.md Phase 7 entry with 8 key decisions. Phase 7 fully documented.
+Phase: 07.1 of 15 (Integration Hotfixes — COMPLETE)
+Current Plan: 07.1-03 (complete)
+Status: Phase 07.1 COMPLETE — All 3 plans done. KB-01, KB-02 satisfied. GAP-04 closed (KB→Discover navigation bridge). 0 TypeScript errors. npm run build clean. 2026-02-21.
+Last activity: 2026-02-21 — 07.1-03 complete. Genre/scene pages now have inline discover links at top (after genre-header) and bottom (discover-footer). Both guarded by {#if data.genre.mb_tag}. KB-01 and KB-02 requirements satisfied.
 
-Progress: [███████░░░] 7/7 plans complete (Phase 07 COMPLETE)
+Progress: [███░░░░░░░] 3/3 plans complete (Phase 07.1 COMPLETE)
 
 ## Performance Metrics
 
@@ -65,6 +65,7 @@ Progress: [███████░░░] 7/7 plans complete (Phase 07 COMPLETE
 | Phase 07-knowledge-base P05 | 7min | 3 tasks | 6 files |
 | Phase 07-knowledge-base P06 | 7min | 2 tasks | 4 files |
 | Phase 07-knowledge-base P07 | 7min | 2 tasks | 3 files |
+| Phase 07.1 P03 | 2min | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -216,6 +217,11 @@ Progress: [███████░░░] 7/7 plans complete (Phase 07 COMPLETE
 - [Phase 07-07]: genres and genre_relationships tables documented in Data Model section (canonical reference location for all DB tables)
 - [Phase 07-07]: Anti-patterns table in KB section mirrors Discovery Engine anti-patterns format — consistent doc style
 - [Phase 07-07]: Community editing explicitly noted as deferred to Phase 9+ in BUILD-LOG.md
+- [Phase 07.1-integration-hotfixes]: [Phase 07.1-02]: $effect guarded by tasteProfile.tags.length > 0 on KB page — empty profiles show stub message, not silently show generic graph
+- [Phase 07.1-integration-hotfixes]: [Phase 07.1-02]: KB empty-taste stub is message + link to search (matches Explore pattern per user decision); graph still rendered below for context
+- [Phase 07.1-integration-hotfixes]: [Phase 07.1-02]: Three-state taste pattern: check isLoaded first, then tags.length — prevents skeleton showing to new users forever (conflating loading vs empty)
+- [Phase 07.1-integration-hotfixes]: [Phase 07.1-03]: Discover links on KB genre pages guarded by {#if data.genre.mb_tag} — null would produce /discover?tags=null broken URL
+- [Phase 07.1-integration-hotfixes]: [Phase 07.1-03]: Two discover link placements: inline after genre-header (top) + discover-footer as last element (bottom) — per user decision for maximum visibility
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
@@ -229,6 +235,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-21
-Phase 07 Plan 07 complete. ARCHITECTURE.md Knowledge Base section added. docs/user-manual.md Knowledge Base/Time Machine/Liner Notes documented. BUILD-LOG.md Phase 7 entry with 8 key decisions. npm run check: 0 errors. npm run build: clean.
-Stopped at: Completed 07-07-PLAN.md (Phase 07 fully complete)
+Phase 07.1 Plan 03 complete. Genre/scene pages now have conditional discover links at top and bottom. {#if data.genre.mb_tag} guard prevents null mb_tag from producing broken /discover?tags=null URL. npm run check: 0 errors. npm run build: clean. Phase 07.1 fully complete.
+Stopped at: Completed 07.1-03-PLAN.md (Phase 07.1 fully complete)
 Next: Phase 08 (per ROADMAP.md)
