@@ -11,7 +11,7 @@
 	let aiLoading = $state(false);
 
 	async function loadAiSummary() {
-		if (!isTauri()) return;
+		if (!isTauri() || !data.genre) return;
 		try {
 			aiLoading = true;
 			const { getAiProvider } = await import('$lib/ai/engine');
@@ -38,16 +38,23 @@
 	});
 
 	// Determine if scene page (has coordinates)
-	const isScene = $derived(data.genre.type === 'scene' && data.genre.origin_lat != null);
+	const isScene = $derived(
+		data.genre != null && data.genre.type === 'scene' && data.genre.origin_lat != null
+	);
 
 	// Related genres = subgraph neighbors, excluding self
-	const related = $derived(data.subgraph.nodes.filter((n) => n.slug !== data.genre.slug));
+	const related = $derived(
+		data.genre != null
+			? data.subgraph.nodes.filter((n) => n.slug !== data.genre!.slug)
+			: []
+	);
 </script>
 
 <svelte:head>
-	<title>{data.genre.name} — Knowledge Base — Mercury</title>
+	<title>{data.genre ? `${data.genre.name} — Knowledge Base — Mercury` : 'Knowledge Base — Mercury'}</title>
 </svelte:head>
 
+{#if data.genre}
 <div class="genre-page">
 	<div class="genre-header">
 		<span class="genre-type-badge">{data.genre.type}</span>
@@ -147,6 +154,7 @@
 		</div>
 	{/if}
 </div>
+{/if}
 
 <style>
 	.genre-page {

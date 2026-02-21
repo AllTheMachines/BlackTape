@@ -4,6 +4,7 @@ export const load: PageLoad = async ({ data }) => {
 	if (typeof window === 'undefined' || !(window as any).__TAURI_INTERNALS__) {
 		return data;
 	}
+	if (!data.genre) return data;
 	try {
 		const { getProvider } = await import('$lib/db/provider');
 		const { getGenreBySlug, getGenreKeyArtists, getGenreSubgraph } = await import(

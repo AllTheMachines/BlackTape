@@ -40,7 +40,15 @@ async function fetchWikipediaSummary(title: string): Promise<string | null> {
 }
 
 export const load: PageServerLoad = async ({ params, platform }) => {
-	const db = new D1Provider(platform!.env.DB);
+	if (!platform?.env?.DB) {
+		return {
+			genre: null,
+			keyArtists: [],
+			subgraph: { nodes: [], edges: [] },
+			wikipediaSummary: null
+		};
+	}
+	const db = new D1Provider(platform.env.DB);
 	const genre = await getGenreBySlug(db, params.slug);
 	if (!genre) throw error(404, 'Genre not found');
 

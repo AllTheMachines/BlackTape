@@ -11,7 +11,10 @@ export const GET: RequestHandler = async ({ url, platform }) => {
 		return json({ artists: [], year }, { status: 400 });
 	}
 
-	const db = new D1Provider(platform!.env.DB);
+	if (!platform?.env?.DB) {
+		return json({ artists: [], year });
+	}
+	const db = new D1Provider(platform.env.DB);
 	const artists = await getArtistsByYear(db, year, tag, 50);
 	return json({ artists, year });
 };
