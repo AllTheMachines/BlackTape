@@ -60,7 +60,11 @@ Transform Mercury's desktop UI from a search engine into a cockpit. Dense panel-
 <deferred>
 ## Deferred Ideas
 
-None — discussion stayed within phase scope
+- **Equalizer control** — player control expansion, deferred to a future "Player Power-User" phase
+- **Crossfade slider** — player control expansion, deferred to a future "Player Power-User" phase
+- **Shuffle modes** — player control expansion, deferred to a future "Player Power-User" phase
+
+Queue management (visible in right sidebar) remains IN SCOPE for this phase.
 
 </deferred>
 
