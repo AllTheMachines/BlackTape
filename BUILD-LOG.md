@@ -1569,3 +1569,75 @@ The style map works on both web (D1) and Tauri (local SQLite) using the same uni
 
 - `npm run check` — 0 errors, 3 warnings (369 files)
 - Warnings unchanged from previous plans (pre-existing in crate/+page.svelte)
+
+> **Commit 65c896d** (2026-02-21 00:08) — docs(06-06): complete Style Map plan — DISC-03 satisfied
+> Files changed: 6
+
+> **Commit 1b27f6b** (2026-02-21 00:09) — feat(06-07): add navigation links for Discovery Engine features
+> Files changed: 1
+
+> **Commit 50f5907** (2026-02-21 00:11) — docs(06-07): update ARCHITECTURE.md and docs/user-manual.md for Discovery Engine
+> Files changed: 2
+
+> **Commit ccaf297** (2026-02-21 00:13) — docs(06-07): complete navigation + docs plan — at verification checkpoint
+> Files changed: 3
+
+> **Commit 2195077** (2026-02-21 00:31) — fix(06): guard against missing platform.env.DB in Tauri dev mode
+> Files changed: 2
+
+> **Commit 6e893fa** (2026-02-21 00:38) — fix(06): graceful degradation when tag_stats absent from D1/local DB
+> Files changed: 3
+
+> **Commit 36286ee** (2026-02-21 00:50) — fix(06): recalibrate uniqueness score thresholds to match real data
+> Files changed: 1
+
+## Entry 028 — 2026-02-21 — Phase 6 Complete: Discovery Engine Verified
+
+### Phase Closure
+
+Human verification checkpoint passed. Phase 6 (Discovery Engine) is done.
+
+All four discovery features confirmed working via Playwright + live testing:
+
+| Feature | Route | Status |
+|---------|-------|--------|
+| Tag Intersection Browser | `/discover` | ✓ 150 tag chips, AND-filter, URL state, jazz returns artists |
+| Uniqueness Score Badge | artist pages | ✓ NICHE on Radiohead, VERY NICHE on harsh noise artist |
+| Crate Digging Mode | `/crate` | ✓ Tauri: random artist grid. Web: "desktop app" message (no 500) |
+| Style Map | `/style-map` | ✓ 50 SVG nodes, log-scale sizing, click → /discover?tags=X |
+
+### What Got Built This Phase
+
+Seven plans across the full stack:
+
+**Plan 01 — Pipeline Phase F:** Pre-computed `tag_stats` (57,905 tags with artist_count + avg uniqueness) and `tag_cooccurrence` (2,359 edges, canonical `tag_a < tag_b` ordering, min 5 shared artists) written into `pipeline/import.js`. The key insight: on-demand GROUP BY against 672K artist_tags rows is too slow for page load — pre-compute everything at pipeline time.
+
+**Plan 02 — Query Layer:** 6 new functions in `src/lib/db/queries.ts`. Rowid-based random sampling (`a.id > randomStart`) for O(limit) crate digging instead of ORDER BY RANDOM(). Tag intersection as multi-JOIN with CASE-based relevance scoring.
+
+**Plan 03 — /discover route:** Tag intersection browser. State lives in URL (`?tags=a,b,c`) via `goto()` + page store — shareable and bookmarkable by design. TagFilter.svelte handles chip display, AND/remove logic, and the 5-tag cap (D1 bound parameter limit) with visible disable-state feedback.
+
+**Plan 04 — UniquenessScore badge:** Inline in the artist-name-row alongside the FavoriteButton. Score tiers calibrated to real data distribution: Very Niche (≥100), Niche (≥8), Eclectic (≥0.36), Mainstream (<0.36). The score is `AVG(1/artist_count) * 1000` across the artist's tags — mathematically rewards specificity.
+
+**Plan 05 — /crate Crate Digging:** Tauri-only route. Client-side re-fetch on "Dig" button — no URL navigation, no history push. Wandering is ephemeral, not bookmarkable. Contrast with Discover page (URL state = sharable). Web shows graceful "desktop app" fallback.
+
+**Plan 06 — /style-map Style Map:** D3 force graph via `simulation.tick(500)` headless execution — no `on('tick')` reactive wiring, single state assignment after simulation stops. Zero layout thrashing. Node radius on log10 scale clamped to 6–30px (prevents mega-genres from dominating).
+
+**Plan 07 — Navigation + Docs:** Web nav: Discover + Style Map. Tauri nav: Discover | Style Map | Dig | Library | Explore | Settings (discovery features lead). ARCHITECTURE.md + docs/user-manual.md updated with all Phase 6 content.
+
+### Post-Build Bug Fixes
+
+Three bugs caught during Playwright verification and fixed before checkpoint:
+
+1. **`platform.env.DB` null guard** — Tauri dev mode doesn't have D1. Discover/crate/style-map server loads now check `platform?.env?.DB` before constructing D1Provider.
+
+2. **Graceful degradation for missing `tag_stats`** — Dev SQLite (Wrangler state) didn't have the Phase F tables. All server loads now catch DB errors and return empty-but-valid data rather than 500.
+
+3. **Badge threshold recalibration** — Initial thresholds set for score range 0.001–0.01 but actual scores are `* 1000` larger (0.06–1000 range). Recalibrated to Very Niche ≥100, Niche ≥8, Eclectic ≥0.36.
+
+### D1 Local DB Seeding Note
+
+Wrangler's local D1 state (`.wrangler/state/v3/d1/...sqlite`) is not the same file as `pipeline/data/mercury.db`. After building tag_stats with `pipeline/build-tag-stats.mjs`, seeded directly into the Wrangler DB via Python's `sqlite3` module. 57,905 tag_stats rows + 2,359 cooccurrence edges.
+
+### Next
+
+**Phase 06.1 — Affiliate Buy Links.** Passive income from Bandcamp, Amazon, Apple purchase links on release pages. Run `/gsd:plan-phase 06.1` to break it down.

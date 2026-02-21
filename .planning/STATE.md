@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Phase 6 Plan 7 at checkpoint — navigation wired, docs updated, awaiting human verification of all 4 discovery features.
+**Current focus:** Phase 06.1 (Affiliate Buy Links) — next phase to plan and execute.
 
 ## Current Position
 
-Phase: 6 of 15 (Discovery Engine — at verification checkpoint)
-Current Plan: 7 of 7 (at checkpoint:human-verify)
-Status: At Checkpoint — 06-07 tasks 1+2 done, awaiting human-verify before plan completion
-Last activity: 2026-02-21 — Phase 6 Plan 7 tasks complete (navigation links + docs update)
+Phase: 06.1 of 15 (Affiliate Buy Links — starting)
+Current Plan: None (run /gsd:plan-phase 06.1 to begin)
+Status: Phase 6 COMPLETE — human verification passed 2026-02-21. Advancing to Phase 06.1.
+Last activity: 2026-02-21 — Phase 6 verified and closed. All 4 discovery features confirmed working.
 
-Progress: [███████░░░] 7/7
+Progress: [██████████] 7/7 COMPLETE
 
 ## Performance Metrics
 
@@ -50,7 +50,8 @@ Progress: [███████░░░] 7/7
 | 3. Desktop App | 5/5 | 23min+ | Complete |
 | 4. Local Music Player | 5/5 | 19min+ | Complete |
 | 5. AI Foundation | 7/7 | 28min+ | Complete |
-| 6. Discovery Engine | 6/6 | 25min+ | Complete |
+| 6. Discovery Engine | 7/7 | 27min+ | Complete ✓ |
+| 06.1. Affiliate Buy Links | 0/? | - | Up Next |
 | Phase 06 P05 | 3 | 1 tasks | 3 files |
 | Phase 06 P06 | 5 | 2 tasks | 4 files |
 | Phase 06 P07 | 2 | 2 tasks | 3 files |
@@ -176,5 +177,5 @@ None
 ## Session Continuity
 
 Last session: 2026-02-21
-Phase 6 Plan 7 at checkpoint — Navigation links added (web: Discover + Style Map; Tauri: Discover, Style Map, Dig, Library, Explore, Settings). ARCHITECTURE.md updated (tag_stats/tag_cooccurrence tables, Navigation section, Anti-Patterns table). All four Phase 6 features awaiting human verification.
-Stopped at: Checkpoint in 06-07-PLAN.md (human-verify)
+Phase 6 complete. Human verification passed for all 4 discovery features: /discover (tag intersection), UniquenessScore badge, /crate (Crate Digging, Tauri-only), /style-map (D3 force graph). All Playwright checks passed. VERIFICATION.md written.
+Next: Plan Phase 06.1 (Affiliate Buy Links)
