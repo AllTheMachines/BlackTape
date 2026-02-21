@@ -146,10 +146,10 @@
 | PLAYER-01 | Phase 4 / Phase 07.3 | Pending — implemented; needs VERIFICATION.md + checkbox update |
 | PLAYER-02 | Phase 4 / Phase 07.3 | Pending — implemented; needs VERIFICATION.md + checkbox update |
 | PLAYER-03 | Phase 4 / Phase 07.2 | Pending — NowPlayingDiscovery works; playback→taste signal broken (GAP-03) |
-| AI-01 | Phase 5 / Phase 07.1 | Pending — code exists; loadTasteProfile() not called at startup (GAP-01) |
-| AI-02 | Phase 5 / Phase 07.1 | Pending — code exists; taste context empty at startup (GAP-01) |
+| AI-01 | Phase 5 / Phase 07.1 | Complete |
+| AI-02 | Phase 5 / Phase 07.1 | Complete |
 | AI-03 | Phase 5 / Phase 7 | Complete |
-| AI-04 | Phase 5 / Phase 07.1 / Phase 07.2 | Pending — startup bug (GAP-01) + playback not triggering recompute (GAP-03) |
+| AI-04 | Phase 5 / Phase 07.1 / Phase 07.2 | Pending — startup bug fixed (GAP-01); playback not triggering recompute still open (GAP-03, Phase 07.2) |
 | DISC-01 | Phase 6 | Complete |
 | DISC-02 | Phase 6 | Complete |
 | DISC-03 | Phase 6 | Complete |
@@ -159,7 +159,7 @@
 | BUY-03 | Phase 06.1 | Complete |
 | BUY-04 | Phase 06.1 | Complete |
 | KB-01 | Phase 7 / Phase 07.1 | Pending — graph works; personalization broken (GAP-01); no /discover link (GAP-04) |
-| KB-02 | Phase 7 / Phase 07.1 | Pending — layers 1-3 work; /about 404 breaks layer 4 CTA (GAP-02) |
+| KB-02 | Phase 7 / Phase 07.1 | Complete |
 | DISC-05 | Phase 7 | Complete |
 | DISC-06 | Phase 7 | Complete |
 | DISC-07 | Phase 7 | Complete |
@@ -202,4 +202,4 @@
 
 ---
 *Requirements defined: 2026-02-15*
-*Last updated: 2026-02-21 — Gap closure phases 07.1/07.2/07.3 added; AI-01, AI-02, AI-04, KB-01, KB-02 reset to Pending (integration bugs found in audit); AI-03 marked Complete (both Phase 5 artist + Phase 7 genre/scene summaries done)*
+*Last updated: 2026-02-21 — Phase 07.1-01 complete: AI-01, AI-02, KB-02 marked Complete (GAP-01 startup wiring + GAP-02 about page fixed); AI-04 partially fixed (GAP-01 done, GAP-03 pending Phase 07.2)*
