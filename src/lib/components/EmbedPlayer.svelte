@@ -7,10 +7,12 @@
 
 	let {
 		links,
-		soundcloudEmbedHtml
+		soundcloudEmbedHtml,
+		artistName  // NEW: passed from artist page for embed play attribution
 	}: {
 		links: PlatformLinks;
 		soundcloudEmbedHtml?: string;
+		artistName?: string;
 	} = $props();
 
 	/** Track which embeds the user has clicked to load. */
@@ -19,6 +21,85 @@
 	function revealEmbed(key: string) {
 		loadedEmbeds[key] = true;
 	}
+
+	// SoundCloud widget hook — runs after iframe is rendered
+	async function hookSoundCloudWidget(containerEl: HTMLElement): Promise<void> {
+		// Load SoundCloud Widget API (singleton — checks window.SC first)
+		if (!(window as unknown as { SC?: unknown }).SC) {
+			await new Promise<void>((resolve, reject) => {
+				const script = document.createElement('script');
+				script.src = 'https://w.soundcloud.com/player/api.js';
+				script.onload = () => resolve();
+				script.onerror = () => reject(new Error('SC Widget API failed to load'));
+				document.head.appendChild(script);
+			});
+		}
+
+		type SCWidget = {
+			bind: (event: string, handler: (...args: unknown[]) => void) => void;
+		};
+		type SCWidgetConstructor = ((iframe: HTMLIFrameElement) => SCWidget) & {
+			Events: { PLAY: string; PLAY_PROGRESS: string };
+		};
+		const sc = (window as unknown as { SC: { Widget: SCWidgetConstructor } }).SC;
+
+		const iframe = containerEl.querySelector('iframe') as HTMLIFrameElement | null;
+		if (!iframe) return;
+
+		const widget = sc.Widget(iframe);
+		let progressFired = false;
+
+		widget.bind(sc.Widget.Events.PLAY, () => {
+			progressFired = false;  // reset on new play start
+		});
+
+		widget.bind(sc.Widget.Events.PLAY_PROGRESS, (data: unknown) => {
+			const pos = (data as { relativePosition: number }).relativePosition;
+			if (!progressFired && pos >= 0.70) {
+				progressFired = true;
+				// Fire-and-forget: record embed play
+				import('$lib/player/playback.svelte').then(({ recordEmbedPlay }) => {
+					recordEmbedPlay({ artistName: artistName ?? null });
+				});
+			}
+		});
+	}
+
+	$effect(() => {
+		// After any SC embed is revealed, attempt to hook the widget
+		for (const [key, loaded] of Object.entries(loadedEmbeds)) {
+			if (loaded && key.startsWith('sc-')) {
+				// Find the SC embed container
+				const containers = document.querySelectorAll('.sc-embed-container');
+				containers.forEach((el) => {
+					if (!(el as HTMLElement).dataset.hooked) {
+						(el as HTMLElement).dataset.hooked = 'true';
+						hookSoundCloudWidget(el as HTMLElement).catch(() => {
+							// Best-effort — SC Widget API may fail in some contexts
+						});
+					}
+				});
+			}
+		}
+	});
+
+	// Hook SC widget on mount if soundcloudEmbedHtml is already set (non-click-to-load path)
+	$effect(() => {
+		if (soundcloudEmbedHtml) {
+			// Use setTimeout to ensure the DOM has rendered the injected HTML
+			setTimeout(() => {
+				const containers = document.querySelectorAll('.sc-embed-container');
+				containers.forEach((el) => {
+					if (!(el as HTMLElement).dataset.hooked) {
+						(el as HTMLElement).dataset.hooked = 'true';
+						hookSoundCloudWidget(el as HTMLElement).catch(() => {
+							// Best-effort — SC Widget API may fail in some contexts
+						});
+					}
+				});
+			}, 500);
+		}
+	});
 </script>
 
 <div class="embed-player">
@@ -61,7 +142,7 @@
 
 				{:else if platform === 'soundcloud'}
 					{#if soundcloudEmbedHtml}
-						<div class="iframe-wrap soundcloud-embed">
+						<div class="iframe-wrap soundcloud-embed sc-embed-container">
 							{@html soundcloudEmbedHtml}
 						</div>
 					{:else}
