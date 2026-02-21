@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Phase 07 (Knowledge Base) — Plan 06 COMPLETE. LinerNotes component, KB genre links on artist pages, nav integration.
+**Current focus:** Phase 07 (Knowledge Base) COMPLETE. Phase 07 Plan 07 done — documentation (ARCHITECTURE.md, user-manual.md, BUILD-LOG.md) + final build verification.
 
 ## Current Position
 
-Phase: 07 of 15 (Knowledge Base — IN PROGRESS)
-Current Plan: 07-06 (complete)
-Status: Phase 07 Plan 06 COMPLETE — LinerNotes.svelte (lazy MusicBrainz credits), KB genre tag links on artist pages, Explore this scene panel, Knowledge Base + Time Machine nav links. 0 TypeScript errors. 2026-02-21.
-Last activity: 2026-02-21 — 07-06 complete. LinerNotes component lazy-fetches MB credits on expand. Artist page genre tags dual-link to /kb/genre/[slug]. Explore scene panel below tags. KB + Time Machine added to web + Tauri nav.
+Phase: 07 of 15 (Knowledge Base — COMPLETE)
+Current Plan: 07-07 (complete)
+Status: Phase 07 COMPLETE — All 7 plans done. KB-01, KB-02, DISC-05, DISC-06, DISC-07 satisfied. ARCHITECTURE.md, docs/user-manual.md, and BUILD-LOG.md updated. 0 TypeScript errors. npm run build clean. 2026-02-21.
+Last activity: 2026-02-21 — 07-07 complete. ARCHITECTURE.md Knowledge Base section. user-manual.md Knowledge Base/Time Machine/Liner Notes docs. BUILD-LOG.md Phase 7 entry with 8 key decisions. Phase 7 fully documented.
 
-Progress: [██████░░░░] 6/7 plans complete (Phase 07 in progress)
+Progress: [███████░░░] 7/7 plans complete (Phase 07 COMPLETE)
 
 ## Performance Metrics
 
@@ -64,6 +64,7 @@ Progress: [██████░░░░] 6/7 plans complete (Phase 07 in progr
 | Phase 07-knowledge-base P03 | 5min | 2 tasks | 4 files |
 | Phase 07-knowledge-base P05 | 7min | 3 tasks | 6 files |
 | Phase 07-knowledge-base P06 | 7min | 2 tasks | 4 files |
+| Phase 07-knowledge-base P07 | 7min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -211,6 +212,10 @@ Progress: [██████░░░░] 6/7 plans complete (Phase 07 in progr
 - [Phase 07-06]: resp.json() cast to MbRelease typed interface — inline interfaces within component, strict TypeScript pattern
 - [Phase 07-06]: Knowledge Base + Time Machine nav links on both web and Tauri — web-first features, no platform gating needed
 - [Phase 07-06]: tags[0] as primary genre for Explore this scene panel — most prominent MB tag is best genre signal
+- [Phase 07-07]: ARCHITECTURE.md Knowledge Base section added between Discovery Engine and Build System — natural placement after discovery features
+- [Phase 07-07]: genres and genre_relationships tables documented in Data Model section (canonical reference location for all DB tables)
+- [Phase 07-07]: Anti-patterns table in KB section mirrors Discovery Engine anti-patterns format — consistent doc style
+- [Phase 07-07]: Community editing explicitly noted as deferred to Phase 9+ in BUILD-LOG.md
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
@@ -224,6 +229,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-21
-Phase 07 Plan 06 complete. LinerNotes.svelte (lazy MB credits on expand, 204 lines). Artist page genre tags dual-link to KB + Explore scene panel. KB + Time Machine in both web + Tauri nav. npm run check: 0 errors.
-Stopped at: Completed 07-06-PLAN.md
-Next: Phase 07 Plan 07 (final plan in phase)
+Phase 07 Plan 07 complete. ARCHITECTURE.md Knowledge Base section added. docs/user-manual.md Knowledge Base/Time Machine/Liner Notes documented. BUILD-LOG.md Phase 7 entry with 8 key decisions. npm run check: 0 errors. npm run build: clean.
+Stopped at: Completed 07-07-PLAN.md (Phase 07 fully complete)
+Next: Phase 08 (per ROADMAP.md)
