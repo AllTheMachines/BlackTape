@@ -8,15 +8,29 @@
 	import Player from '$lib/components/Player.svelte';
 	import { playerState } from '$lib/player/state.svelte';
 	import { aiState, loadAiSettings, initializeAi } from '$lib/ai/state.svelte';
-	import { loadTasteProfile } from '$lib/taste/profile.svelte';
+	import { loadTasteProfile, tasteProfile } from '$lib/taste/profile.svelte';
 	import { loadPlaybackSettings } from '$lib/player/playback.svelte';
 	import { onMount } from 'svelte';
+	import PanelLayout from '$lib/components/PanelLayout.svelte';
+	import LeftSidebar from '$lib/components/LeftSidebar.svelte';
+	import RightSidebar from '$lib/components/RightSidebar.svelte';
+	import ControlBar from '$lib/components/ControlBar.svelte';
+	import { initTheme, updateThemeFromTaste, themeState } from '$lib/theme/engine.svelte';
+	import { loadThemePreferences, loadLayoutPreference, saveLayoutPreference, loadStreamingPreference } from '$lib/theme/preferences.svelte';
+	import type { LayoutTemplate } from '$lib/theme/templates';
+	import { DEFAULT_TEMPLATE, LAYOUT_TEMPLATES, TEMPLATE_LIST } from '$lib/theme/templates';
 
 	let { children } = $props();
 
 	let showPlayer = $state(false);
 	let tauriMode = $state(false);
 	let canGoBack = $derived($page.url.pathname !== '/');
+
+	/** Active layout template — Tauri only */
+	let activeTemplate = $state<LayoutTemplate>(DEFAULT_TEMPLATE);
+
+	/** All templates for ControlBar (built-ins only for now — user templates loaded async) */
+	let allTemplates = $state(TEMPLATE_LIST);
 
 	onMount(async () => {
 		tauriMode = isTauri();
@@ -28,12 +42,40 @@
 			if (aiState.enabled) {
 				initializeAi();
 			}
+
+			// Load layout and theme preferences
+			const [themePrefs, layoutPref] = await Promise.all([
+				loadThemePreferences(),
+				loadLayoutPreference()
+			]);
+			activeTemplate = layoutPref as LayoutTemplate;
+
+			// Initialize theme engine — applies saved palette
+			initTheme(tasteProfile.tags, themePrefs);
+
+			// Load streaming preference — updates reactive streamingPref state
+			await loadStreamingPreference();
 		}
 	});
 
 	$effect(() => {
 		showPlayer = isTauri() && playerState.currentTrack !== null;
 	});
+
+	/** Reactively update theme when taste profile changes (Tauri only). */
+	$effect(() => {
+		if (tauriMode && tasteProfile.isLoaded && themeState.mode === 'taste') {
+			updateThemeFromTaste(tasteProfile.tags);
+		}
+	});
+
+	/** Handle template change from ControlBar. */
+	function handleTemplateChange(templateId: string) {
+		activeTemplate = templateId as LayoutTemplate;
+		if (tauriMode) {
+			saveLayoutPreference(templateId);
+		}
+	}
 </script>
 
 <svelte:head>
@@ -92,9 +134,31 @@
 	{/if}
 </header>
 
-<main class:has-player={showPlayer}>
-	{@render children()}
-</main>
+{#if tauriMode}
+	<!-- Tauri cockpit layout: ControlBar + PanelLayout -->
+	<ControlBar
+		currentTemplateId={activeTemplate}
+		{allTemplates}
+		onTemplateChange={handleTemplateChange}
+	/>
+
+	<PanelLayout template={activeTemplate} hasPlayer={showPlayer}>
+		{#snippet sidebar()}
+			<LeftSidebar />
+		{/snippet}
+
+		{#snippet context()}
+			<RightSidebar pagePath={$page.url.pathname} />
+		{/snippet}
+
+		{@render children()}
+	</PanelLayout>
+{:else}
+	<!-- Web: standard single-column layout — unchanged -->
+	<main class:has-player={showPlayer}>
+		{@render children()}
+	</main>
+{/if}
 
 <footer class="site-footer">
 	<p class="affiliate-disclosure">
