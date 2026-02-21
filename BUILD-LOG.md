@@ -2610,3 +2610,45 @@ Auto-fixed one bug during implementation: removed a dead `queueState.setQueue` p
 ### Plan 02 Complete
 
 PaneForge installed, all four components compile, real content in all panels. Ready for Plan 03 (wiring into the root layout).
+
+> **Commit 4bff9c9** (2026-02-21 20:22) — docs(08-02): complete panel layout system plan
+> Files changed: 4
+
+> **Commit d231804** (2026-02-21 20:25) — feat(08-03): integrate PanelLayout, theme engine, and ControlBar into root layout
+> Files changed: 1
+
+> **Commit 5c353ca** (2026-02-21 20:26) — feat(08-03): implement streaming preference reordering in EmbedPlayer and artist page
+> Files changed: 2
+
+## 2026-02-21 — Phase 08 Plan 03: Integration — Layout + Embeds Wired
+
+**The integration plan. Phase 8 comes alive.** Plans 01 and 02 built the engine and the panels; Plan 03 wires them into the running application.
+
+### What Changed
+
+**`src/routes/+layout.svelte`** — The root layout now branches on `tauriMode`:
+
+- **Tauri path:** Header (unchanged) → ControlBar (32px toolbar with search + layout switcher + theme dot) → PanelLayout with LeftSidebar + RightSidebar snippets → Footer → Player. The ControlBar sits between the header and the panel area as the workspace control strip.
+- **Web path:** Exactly as before. No panels, no ControlBar, no sidebars. Zero regression.
+
+Theme engine integration: `initTheme(tasteProfile.tags, themePrefs)` called in onMount after loading layout + theme prefs. A reactive `$effect` calls `updateThemeFromTaste` whenever `tasteProfile.isLoaded && themeState.mode === 'taste'` — OKLCH colors update live as taste profile populates. Layout template persists via `saveLayoutPreference` on every switch.
+
+**`src/lib/components/EmbedPlayer.svelte`** — Added `orderedPlatforms` derived from `streamingPref.platform`. When a preference is set, the preferred platform jumps to position 0; the rest follow in default `PLATFORM_PRIORITY` order. The embed loop now uses `orderedPlatforms` instead of the static constant.
+
+**`src/routes/artist/[slug]/+page.svelte`** — Added `sortedStreamingLinks` derived. Same sort logic: if `streamingPref.platform` is set, the link whose label includes that platform string sorts to the front. The Listen On bar uses `sortedStreamingLinks`.
+
+### Two Small Issues Fixed
+
+**1. `hasPlayer` undefined in PanelLayout call** — Plan said `{hasPlayer}` shorthand but `hasPlayer` doesn't exist in root layout scope (it was `showPlayer`). Changed to `hasPlayer={showPlayer}`. Caught immediately by `svelte-check` (0 errors after fix).
+
+**2. Misplaced import** — First draft put the `streamingPref` import inside the `<script>` body after variable declarations. Moved to the top-of-file import block before the check caught it.
+
+### Result
+
+`npm run check`: 0 errors. `npm run build`: clean.
+
+Tauri desktop app now launches in cockpit mode with three resizable panes, a ControlBar workspace strip, theme colors from taste profile, and streaming platform ordering throughout.
+
+### Plan 03 Complete
+
+Phase 08 Integration done. All three plans (theme engine, panel layout, wiring) complete. The underground aesthetic is live in the desktop app.

@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Phase 08 in progress. Plans 01 and 02 complete: OKLCH theme engine + PaneForge panel layout system (4 components + templates.ts).
+**Current focus:** Phase 08 in progress. Plans 01-03 complete: OKLCH theme engine + PaneForge panel layout system + integration wired into root layout.
 
 ## Current Position
 
 Phase: 08-underground-aesthetic of 15 (Underground Aesthetic — IN PROGRESS)
-Current Plan: 08-02 (complete)
-Status: Phase 08 Plan 02 complete — PaneForge installed, templates.ts created, PanelLayout/LeftSidebar/RightSidebar/ControlBar components built. npm run check 0 errors, npm run build clean. 2026-02-21.
-Last activity: 2026-02-21 — 08-02 complete. PaneForge panel infrastructure created. LeftSidebar (nav + discovery filters), RightSidebar (context-aware: artist/genre/default + queue), ControlBar (32px toolbar with search + layout switcher + theme dot). Not yet wired into root layout (Plan 03).
+Current Plan: 08-03 (complete)
+Status: Phase 08 Plan 03 complete — PanelLayout + ControlBar + theme engine wired into root layout. EmbedPlayer and artist page respect streaming preference ordering. npm run check 0 errors, npm run build clean. 2026-02-21.
+Last activity: 2026-02-21 — 08-03 complete. Root layout now branches on tauriMode: Tauri gets ControlBar + PanelLayout(cockpit) with LeftSidebar + RightSidebar snippets + theme engine init; web path unchanged. EmbedPlayer and artist Listen On bar respect streamingPref.platform ordering.
 
-Progress: [████░░░░░░] 2/4 plans complete (Phase 08 in progress)
+Progress: [██████░░░░] 3/4 plans complete (Phase 08 in progress)
 
 ## Performance Metrics
 
@@ -74,6 +74,7 @@ Progress: [████░░░░░░] 2/4 plans complete (Phase 08 in progr
 | Phase 07.3 P03 | 4min | 2 tasks | 7 files |
 | Phase 08 P01 | 4min | 2 tasks | 4 files |
 | Phase 08-underground-aesthetic P02 | 12 | 2 tasks | 7 files |
+| Phase 08-underground-aesthetic P03 | 4min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -256,6 +257,9 @@ Progress: [████░░░░░░] 2/4 plans complete (Phase 08 in progr
 - [Phase 08-underground-aesthetic]: [Phase 08-02]: LayoutTemplate typed as string (not literal union) to accommodate user template IDs alongside built-in IDs
 - [Phase 08-underground-aesthetic]: [Phase 08-02]: LeftSidebar discovery controls filter sidebar panel only — sidebar is a parallel browse viewport, not a main content filter
 - [Phase 08-underground-aesthetic]: [Phase 08-02]: RightSidebar queue replaces floating Queue overlay in cockpit mode — always-visible in sidebar, no backdrop needed
+- [Phase 08-underground-aesthetic]: [Phase 08-03]: ControlBar positioned between header and PanelLayout — header provides site identity (unchanged), ControlBar provides workspace controls (additive, not replacement)
+- [Phase 08-underground-aesthetic]: [Phase 08-03]: Streaming pref loaded in root layout onMount Tauri block — sets reactive streamingPref.platform, all embed/artist components read reactively without async
+- [Phase 08-underground-aesthetic]: [Phase 08-03]: sortedStreamingLinks uses label.toLowerCase().includes(platform) — label-based match handles label variants without requiring exact key match
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
@@ -269,6 +273,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-21
-Phase 08 Plan 02 complete. PaneForge installed (^1.0.2). templates.ts exports LayoutTemplate, LAYOUT_TEMPLATES (cockpit/focus/minimal), DEFAULT_TEMPLATE ('cockpit'), TEMPLATE_LIST, UserTemplateRecord, expandUserTemplate, createUserTemplateRecord. preferences.svelte.ts extended with loadUserTemplates and saveUserTemplates. Four Svelte components: PanelLayout.svelte (PaneForge 3/2/1 pane + collapsible sidebars), LeftSidebar.svelte (8 nav links + tag input + decade + niche score + debounced results), RightSidebar.svelte (artist/genre/default context modes + queue panel), ControlBar.svelte (32px toolbar: search + layout switcher + theme dot). 1 auto-fix: removed dead queueState.setQueue property reference. npm run check 0 errors, npm run build clean.
-Stopped at: Completed 08-02-PLAN.md
-Next: Phase 08 Plan 03 (wire PanelLayout into root layout)
+Phase 08 Plan 03 complete. Root layout now branches on tauriMode: Tauri renders ControlBar (32px toolbar: search + layout switcher + theme dot) + PanelLayout with {#snippet sidebar()} LeftSidebar + {#snippet context()} RightSidebar; web path completely unchanged. initTheme called on Tauri mount with saved theme prefs + taste tags. $effect reactive taste update when tasteProfile.isLoaded + themeState.mode === 'taste'. handleTemplateChange persists via saveLayoutPreference. EmbedPlayer: orderedPlatforms derived — preferred platform first. Artist page: sortedStreamingLinks derived — preferred platform first in Listen On bar. 2 auto-fixes: hasPlayer → showPlayer prop name, misplaced import moved to top. npm run check 0 errors, npm run build clean.
+Stopped at: Completed 08-03-PLAN.md
+Next: Phase 08 Plan 04 (Settings UI for theme + streaming + layout preferences)
