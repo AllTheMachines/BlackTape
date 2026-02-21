@@ -57,10 +57,10 @@
 
 ### Buy Links (Phase 06.1)
 
-- [ ] **BUY-01**: Release detail pages exist — cover art, tracklist, personnel credits, and link rows
+- [x] **BUY-01**: Release detail pages exist — cover art, tracklist, personnel credits, and link rows
 - [x] **BUY-02**: "Buy on" row on release pages showing all five platforms (Bandcamp, Amazon Music, Apple Music, Beatport, Discogs) with search fallbacks where no direct URL is available; subtle indicator distinguishes search from direct
 - [x] **BUY-03**: Affiliate IDs stored in environment variables only — never hardcoded in source; Amazon Associates and Apple Performance Partners supported
-- [ ] **BUY-04**: Site-wide affiliate disclosure in footer — no per-link badges
+- [x] **BUY-04**: Site-wide affiliate disclosure in footer — no per-link badges
 
 ### Social
 
@@ -154,10 +154,10 @@
 | DISC-02 | Phase 6 | Complete |
 | DISC-03 | Phase 6 | Complete |
 | DISC-04 | Phase 6 | Complete |
-| BUY-01 | Phase 06.1 | Pending |
+| BUY-01 | Phase 06.1 | Complete |
 | BUY-02 | Phase 06.1 | Complete |
 | BUY-03 | Phase 06.1 | Complete |
-| BUY-04 | Phase 06.1 | Pending |
+| BUY-04 | Phase 06.1 | Complete |
 | KB-01 | Phase 7 | Pending |
 | KB-02 | Phase 7 | Pending |
 | DISC-05 | Phase 7 | Pending |

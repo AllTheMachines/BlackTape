@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-15)
 
 ## Current Position
 
-Phase: 06.1 of 15 (Affiliate Buy Links — in progress)
-Current Plan: 06.1-04 (next to execute)
-Status: Phase 06.1 Plan 03 COMPLETE — BuyOnBar.svelte component built 2026-02-21.
-Last activity: 2026-02-21 — 06.1-03 complete. src/lib/components/BuyOnBar.svelte with isDirect indicator and platform hover colors.
+Phase: 06.1 of 15 (Affiliate Buy Links — COMPLETE)
+Current Plan: 06.1-04 (complete)
+Status: Phase 06.1 Plan 04 COMPLETE — Release page UI wired, ReleaseCard navigation, affiliate footer. Phase 06.1 done 2026-02-21.
+Last activity: 2026-02-21 — 06.1-04 complete. Release page UI, ReleaseCard navigation links, affiliate footer in layout.
 
-Progress: [███░░░░░░░] 3/5 plans complete
+Progress: [█████░░░░░] 4/4 plans complete (Phase 06.1 DONE)
 
 ## Performance Metrics
 
@@ -173,6 +173,8 @@ Progress: [███░░░░░░░] 3/5 plans complete
 - [Phase 06.1]: Bandcamp isDirect: true only for release-level MusicBrainz URLs — artist-level URLs send users to homepage not specific album
 - [Phase 06.1 P02]: platform.caches.default (not global caches.default) for Cloudflare Cache in page.server.ts — matches existing API route pattern, CacheStorage type has no .default property
 - [Phase 06.1 P02]: Tauri universal load passes null affiliate config to buildBuyLinks — buy links degrade to non-coded search fallbacks (no server env in Tauri)
+- [Phase 06.1 P04]: Cover art AND title both link to release page in ReleaseCard — two tap targets on mobile, same destination, buy intent highest before tracklist
+- [Phase 06.1 P04]: Affiliate disclosure footer on all pages (global visibility), not scoped to release pages only — standard disclosure best practice
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
@@ -186,6 +188,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-21
-Plan 06.1-03 complete. BuyOnBar.svelte component built: renders all 5 buy platform links, search-fallback '?' indicator, platform-specific hover colors. Visual language mirrors Listen on bar. npm run check passes (0 errors).
-Stopped at: Completed 06.1-03-PLAN.md
-Next: Execute 06.1-04-PLAN.md (release page integration)
+Plan 06.1-04 complete. Release detail page built (+page.svelte): hero cover art, BuyOnBar, tracklist with M:SS formatting, credits. ReleaseCard made navigable (cover + title both link to release page). Footer affiliate disclosure added to root layout. npm run check (0 errors) and npm run build pass. Phase 06.1 COMPLETE.
+Stopped at: Completed 06.1-04-PLAN.md
+Next: Phase 07 (TBD)

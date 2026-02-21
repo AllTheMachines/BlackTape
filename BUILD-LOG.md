@@ -1783,3 +1783,51 @@ Two new SvelteKit route files:
 - `npm run check` — 0 errors (379 files, up from 377)
 - Both files in place under `src/routes/artist/[slug]/release/[mbid]/`
 - No `getAffiliateConfig` import in `+page.ts` (would fail in universal context)
+
+> **Commit f7d331c** (2026-02-21 09:36) — docs(06.1-02): add build log entry 031 for release page data layer
+> Files changed: 1
+
+---
+
+## Entry 033 — 2026-02-21 — Phase 06.1 Plan 04: Release Page UI + Navigation
+
+### What Was Built
+
+Phase 06.1 is now complete. The release page is fully wired — every piece from the last three plans connects together.
+
+**`src/routes/artist/[slug]/release/[mbid]/+page.svelte`** — Release detail page:
+- Hero: 220px cover art with error fallback placeholder, title, year badge, type badge
+- Artist back-link below the title
+- BuyOnBar component (always shown — Buy on Bandcamp, Amazon, Apple, Beatport, Discogs)
+- Tracklist: numbered tracks, M:SS duration format (321000ms → 5:21)
+- Credits/personnel section (from MusicBrainz artist-rels)
+- Graceful null state — shows "Loading release details…" if data fetch failed
+- Full mobile responsive: hero stacks vertically on narrow screens
+
+**`src/lib/components/ReleaseCard.svelte`** — Now navigates to release detail:
+- Added `artistSlug: string` prop
+- Cover art wrapped in `<a href="/artist/{slug}/release/{mbid}">`
+- Release title wrapped in same link
+- CSS: no visual regression — same colors/styles, link wrapper is transparent
+
+**`src/routes/artist/[slug]/+page.svelte`** — Passes `artistSlug={data.artist.slug}` to each ReleaseCard
+
+**`src/routes/+layout.svelte`** — Footer with affiliate disclosure:
+- Appears on all pages (web and desktop)
+- 0.7rem muted text, centered, max-width 860px
+- Text: "Some links on release pages are affiliate links..."
+
+### Verification
+
+- `npm run check` — 0 errors (380 files)
+- `npm run build` — clean build, Cloudflare adapter successful
+- Release page imports and uses BuyOnBar
+- ReleaseCard has `artistSlug` prop with navigation links
+- Artist page passes `data.artist.slug` to each card
+- Layout footer contains "affiliate" disclosure
+
+> **Commit 486c5f2** (2026-02-21 09:38) — feat(06.1-04): add release detail page UI
+> Files changed: 1
+
+> **Commit 252bf59** (2026-02-21 09:40) — feat(06.1-04): wire release navigation + add affiliate footer
+> Files changed: 3
