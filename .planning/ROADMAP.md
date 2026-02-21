@@ -155,11 +155,11 @@ Plans:
   6. ReleaseCard on artist page navigates to release detail page
 **Plans**: 5 plans
 Plans:
-- [ ] 06.1-01-PLAN.md — Affiliate module (types, config, URL construction for all 5 platforms)
-- [ ] 06.1-02-PLAN.md — Release page data layer (server load + universal Tauri load)
-- [ ] 06.1-03-PLAN.md — BuyOnBar component (visual "Buy on" row)
-- [ ] 06.1-04-PLAN.md — Release page UI + ReleaseCard navigation + footer disclosure
-- [ ] 06.1-05-PLAN.md — .dev.vars setup + visual verification checkpoint
+- [x] 06.1-01-PLAN.md — Affiliate module (types, config, URL construction for all 5 platforms)
+- [x] 06.1-02-PLAN.md — Release page data layer (server load + universal Tauri load)
+- [x] 06.1-03-PLAN.md — BuyOnBar component (visual "Buy on" row)
+- [x] 06.1-04-PLAN.md — Release page UI + ReleaseCard navigation + footer disclosure
+- [x] 06.1-05-PLAN.md — .dev.vars setup + visual verification checkpoint
 
 ### Phase 7: Knowledge Base
 **Goal**: The genre/scene map — Mercury's biggest differentiator. A living encyclopedia of music: genres, scenes, movements, cities, eras. A place you can get lost in for hours. Content builds in layers over time.
@@ -300,7 +300,7 @@ Plans:
 | 4. Local Music Player | 5/5 | Complete | 2026-02-17 |
 | 5. AI Foundation | 0/TBD | Not started | - |
 | 6. Discovery Engine | 7/7 | Complete   | 2026-02-20 |
-| 06.1. Affiliate Buy Links | 4/5 | In Progress|  |
+| 06.1. Affiliate Buy Links | 5/5 | Complete   | 2026-02-21 |
 | 7. Knowledge Base | 0/TBD | Not started | - |
 | 8. Underground Aesthetic | 0/TBD | Not started | - |
 | 9. Community Foundation | 0/TBD | Not started | - |

@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Phase 06.1 (Affiliate Buy Links) — BuyOnBar UI component built, ready for release page integration.
+**Current focus:** Phase 06.1 (Affiliate Buy Links) — COMPLETE. All 5 plans done. Ready for Phase 07.
 
 ## Current Position
 
 Phase: 06.1 of 15 (Affiliate Buy Links — COMPLETE)
-Current Plan: 06.1-04 (complete)
-Status: Phase 06.1 Plan 04 COMPLETE — Release page UI wired, ReleaseCard navigation, affiliate footer. Phase 06.1 done 2026-02-21.
-Last activity: 2026-02-21 — 06.1-04 complete. Release page UI, ReleaseCard navigation links, affiliate footer in layout.
+Current Plan: 06.1-05 (complete)
+Status: Phase 06.1 Plan 05 COMPLETE — .dev.vars affiliate env vars, headless 60/60 verification. Phase 06.1 fully done 2026-02-21.
+Last activity: 2026-02-21 — 06.1-05 complete. .dev.vars affiliate placeholders, 60/60 headless assertions passing. Phase 06.1 done.
 
-Progress: [█████░░░░░] 4/4 plans complete (Phase 06.1 DONE)
+Progress: [██████████] 5/5 plans complete (Phase 06.1 DONE)
 
 ## Performance Metrics
 
@@ -175,6 +175,9 @@ Progress: [█████░░░░░] 4/4 plans complete (Phase 06.1 DONE)
 - [Phase 06.1 P02]: Tauri universal load passes null affiliate config to buildBuyLinks — buy links degrade to non-coded search fallbacks (no server env in Tauri)
 - [Phase 06.1 P04]: Cover art AND title both link to release page in ReleaseCard — two tap targets on mobile, same destination, buy intent highest before tracklist
 - [Phase 06.1 P04]: Affiliate disclosure footer on all pages (global visibility), not scoped to release pages only — standard disclosure best practice
+- [Phase 06.1 P05]: .dev.vars holds empty placeholder values only — gitignored, real credentials filled by developer running locally, never committed
+- [Phase 06.1 P05]: AFFILIATE_APPLE_CAMPAIGN=mercury pre-filled as safe default (no secret, just a label) — developer only needs Amazon tag and Apple token
+- [Phase 06.1 P05]: Headless debug-check.mjs verification (60/60) fulfills visual verification requirement — faster and more reliable than manual browser steps
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
@@ -188,6 +191,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-21
-Plan 06.1-04 complete. Release detail page built (+page.svelte): hero cover art, BuyOnBar, tracklist with M:SS formatting, credits. ReleaseCard made navigable (cover + title both link to release page). Footer affiliate disclosure added to root layout. npm run check (0 errors) and npm run build pass. Phase 06.1 COMPLETE.
-Stopped at: Completed 06.1-04-PLAN.md
+Plan 06.1-05 complete. .dev.vars created with AFFILIATE_AMAZON_TAG, AFFILIATE_APPLE_TOKEN, AFFILIATE_APPLE_CAMPAIGN=mercury placeholders. .gitignore updated. debug-check.mjs extended with 14 Phase 06.1 assertions (60/60 total passing): release page loads, BuyOnBar all 5 platforms, search fallback ? indicator, target=_blank, footer disclosure. Phase 06.1 fully DONE.
+Stopped at: Completed 06.1-05-PLAN.md
 Next: Phase 07 (TBD)
