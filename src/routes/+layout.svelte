@@ -53,6 +53,8 @@
 		<nav class="nav-links">
 			<a href="/discover" class="nav-link">Discover</a>
 			<a href="/style-map" class="nav-link">Style Map</a>
+			<a href="/kb" class="nav-link" class:active={$page.url.pathname.startsWith('/kb')}>Knowledge Base</a>
+			<a href="/time-machine" class="nav-link" class:active={$page.url.pathname.startsWith('/time-machine')}>Time Machine</a>
 			<a href="/crate" class="nav-link">Dig</a>
 			<a href="/library" class="nav-link">Library</a>
 			<a href="/explore" class="nav-link">Explore</a>
@@ -78,6 +80,8 @@
 		<nav class="nav-links">
 			<a href="/discover" class="nav-link">Discover</a>
 			<a href="/style-map" class="nav-link">Style Map</a>
+			<a href="/kb" class="nav-link" class:active={$page.url.pathname.startsWith('/kb')}>Knowledge Base</a>
+			<a href="/time-machine" class="nav-link" class:active={$page.url.pathname.startsWith('/time-machine')}>Time Machine</a>
 		</nav>
 	{/if}
 </header>
@@ -157,6 +161,10 @@
 	.nav-link:hover {
 		color: var(--text-secondary);
 		text-decoration: none;
+	}
+
+	.nav-link.active {
+		color: var(--text-accent);
 	}
 
 	.ai-indicator {

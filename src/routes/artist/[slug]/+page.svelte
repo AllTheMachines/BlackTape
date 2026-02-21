@@ -130,8 +130,24 @@
 		{#if tags.length > 0}
 			<div class="tags">
 				{#each tags as tag}
-					<TagChip {tag} />
+					<span class="tag-pair">
+						<TagChip {tag} />
+						<a
+							href="/kb/genre/{tag.toLowerCase().replace(/\s+/g, '-')}"
+							class="tag-kb-link"
+							title="Explore {tag} in Knowledge Base"
+						>↗</a>
+					</span>
 				{/each}
+			</div>
+
+			<div class="explore-scene-panel">
+				<a
+					href="/kb/genre/{tags[0].toLowerCase().replace(/\s+/g, '-')}"
+					class="explore-scene-link"
+				>
+					Explore {tags[0]} scene →
+				</a>
 			</div>
 		{/if}
 
@@ -270,6 +286,42 @@
 		flex-wrap: wrap;
 		gap: var(--space-xs);
 		margin-top: var(--space-xs);
+	}
+
+	.tag-pair {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.2rem;
+	}
+
+	.tag-kb-link {
+		font-size: 0.7rem;
+		color: var(--text-muted);
+		text-decoration: none;
+		vertical-align: super;
+		line-height: 1;
+		transition: color 0.15s;
+	}
+
+	.tag-kb-link:hover {
+		color: var(--text-accent);
+		text-decoration: none;
+	}
+
+	.explore-scene-panel {
+		margin-top: var(--space-xs);
+	}
+
+	.explore-scene-link {
+		font-size: 0.85rem;
+		color: var(--text-muted);
+		text-decoration: none;
+		transition: color 0.15s;
+	}
+
+	.explore-scene-link:hover {
+		color: var(--text-accent);
+		text-decoration: none;
 	}
 
 	.bio {
