@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Phase 07 (Knowledge Base) — Plans 04+05 COMPLETE. Genre detail page + Time Machine built.
+**Current focus:** Phase 07 (Knowledge Base) — Plan 06 COMPLETE. LinerNotes component, KB genre links on artist pages, nav integration.
 
 ## Current Position
 
 Phase: 07 of 15 (Knowledge Base — IN PROGRESS)
-Current Plan: 07-05 (complete)
-Status: Phase 07 Plan 04 COMPLETE — /kb/genre/[slug] page UI (4 content layers: Wikipedia, AI, CTA), SceneMap Leaflet component, genreSummary AI prompt. 0 TypeScript errors. 2026-02-21.
-Last activity: 2026-02-21 — 07-04 complete. Genre detail page with Wikipedia summary, AI genreSummary (Tauri-only, temp 0.6), Leaflet scene map (origin_lat conditional), key artists grid (10 via mb_tag), related genres chips, mini GenreGraph in-page. genreSummary added to prompts.ts.
+Current Plan: 07-06 (complete)
+Status: Phase 07 Plan 06 COMPLETE — LinerNotes.svelte (lazy MusicBrainz credits), KB genre tag links on artist pages, Explore this scene panel, Knowledge Base + Time Machine nav links. 0 TypeScript errors. 2026-02-21.
+Last activity: 2026-02-21 — 07-06 complete. LinerNotes component lazy-fetches MB credits on expand. Artist page genre tags dual-link to /kb/genre/[slug]. Explore scene panel below tags. KB + Time Machine added to web + Tauri nav.
 
-Progress: [█████░░░░░] 5/7 plans complete (Phase 07 in progress)
+Progress: [██████░░░░] 6/7 plans complete (Phase 07 in progress)
 
 ## Performance Metrics
 
@@ -63,6 +63,7 @@ Progress: [█████░░░░░] 5/7 plans complete (Phase 07 in progr
 | Phase 07-knowledge-base P02 | 1min | 1 tasks | 1 files |
 | Phase 07-knowledge-base P03 | 5min | 2 tasks | 4 files |
 | Phase 07-knowledge-base P05 | 7min | 3 tasks | 6 files |
+| Phase 07-knowledge-base P06 | 7min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -206,6 +207,10 @@ Progress: [█████░░░░░] 5/7 plans complete (Phase 07 in progr
 - [Phase 07-04]: $derived for computed values from page data prop (isScene, related) — prevents Svelte state_referenced_locally warning
 - [Phase 07-04]: Leaflet CSS via document.head link injection not dynamic import — works across web + Tauri builds without Vite rejection
 - [Phase 07-04]: Genre detail page layers: Wikipedia (Layer 2) > AI genreSummary (Layer 3, Tauri-only, temp 0.6) > sparse CTA invitation (Layer 1)
+- [Phase 07-06]: LinerNotes uses browse endpoint (release-group MBID + limit=1) — consistent with page.server.ts, avoids resolving actual release MBID client-side
+- [Phase 07-06]: resp.json() cast to MbRelease typed interface — inline interfaces within component, strict TypeScript pattern
+- [Phase 07-06]: Knowledge Base + Time Machine nav links on both web and Tauri — web-first features, no platform gating needed
+- [Phase 07-06]: tags[0] as primary genre for Explore this scene panel — most prominent MB tag is best genre signal
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
@@ -219,6 +224,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-21
-Phase 07 Plan 04 complete. /kb/genre/[slug] page UI (251 lines) with 4 content layers (Wikipedia, AI genreSummary, CTA), Leaflet SceneMap (dynamic import, link injection), key artists grid, related genres chips, mini GenreGraph. genreSummary() added to prompts.ts. npm run check: 0 errors.
-Stopped at: Completed 07-04-PLAN.md
-Next: Phase 07 Plan 06 (plans 03-05 already complete)
+Phase 07 Plan 06 complete. LinerNotes.svelte (lazy MB credits on expand, 204 lines). Artist page genre tags dual-link to KB + Explore scene panel. KB + Time Machine in both web + Tauri nav. npm run check: 0 errors.
+Stopped at: Completed 07-06-PLAN.md
+Next: Phase 07 Plan 07 (final plan in phase)

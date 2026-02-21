@@ -2041,3 +2041,51 @@ The `/time-machine` route — the DISC-06 requirement for browsing releases by y
 
 > **Commit 6bbbc82** (2026-02-21 12:51) — docs(07-05): complete Time Machine plan — /time-machine route, /api/genres, GenreGraphEvolution
 > Files changed: 4
+
+> **Commit d69d297** (2026-02-21 12:52) — docs(07-04): complete genre detail page plan
+> Files changed: 3
+
+> **Commit 67fb4a7** (2026-02-21 12:55) — feat(07-06): add LinerNotes component with lazy MusicBrainz credits fetch
+> Files changed: 2
+
+> **Commit b182a42** (2026-02-21 12:56) — feat(07-06): wire KB links into artist page + add nav links
+> Files changed: 2
+
+---
+
+## Entry — 2026-02-21 — Phase 07 Plan 06: App Integration (Liner Notes + KB Links + Nav)
+
+### What Was Built
+
+Phase 07 Plan 06 wires the Knowledge Base into the existing app UI — three integration points:
+
+**1. LinerNotes.svelte — Expandable credits panel on release pages**
+
+A collapsible section that appears below the credits section on every release page. Collapsed by default (zero network requests on page load). On first expand, lazy-fetches the MusicBrainz release-group browse endpoint with `inc=artist-credits+labels+recordings`. Shows three credit types:
+- Artist credits (e.g., "Aphex Twin")
+- Label info with catalog numbers (e.g., "Warp Records · WARP CD30")
+- Per-track recording credits (only shown for tracks that have them)
+
+Rate-limiting awareness: if MusicBrainz returns non-200, shows a human-readable error message rather than crashing. Uses properly typed inline interfaces (`MbRelease`, `MbArtistCredit`, etc.) for TypeScript strict compliance — consistent with how the server route handles the same API.
+
+**2. Artist page: Genre tags as dual-purpose links**
+
+Every genre tag chip on artist pages now has a small `↗` superscript link to the corresponding `/kb/genre/[slug]` page. The existing TagChip (which links to `/search?q=...&mode=tag`) is preserved — users get both: search the catalog AND explore the genre's full context.
+
+Slug conversion: `tag.toLowerCase().replace(/\s+/g, '-')` — same pattern as the KB pipeline uses for `mb_tag`.
+
+**3. Artist page: "Explore this scene" panel**
+
+A subtle call-to-action below the tags block: "Explore [primary genre] scene →". Only shown when `tags.length > 0`. The primary genre is `tags[0]` (most prominent tag from MB). Links to the genre's `/kb/genre/[slug]` page.
+
+**4. Navigation: Knowledge Base + Time Machine links**
+
+Both links added to web and Tauri nav bars (after Style Map). Both platforms can use the KB and Time Machine — no platform gating needed. Active state detection via `$page.url.pathname.startsWith('/kb')` and `.startsWith('/time-machine')`.
+
+### Key Decisions
+
+**Browse endpoint pattern for LinerNotes (not direct release MBID lookup).** The release page is structured around the release-group MBID (from URL params). Rather than adding a second server-side fetch to get the actual release MBID, LinerNotes uses the same browse endpoint as `+page.server.ts`: `/ws/2/release?release-group={mbid}&inc=...&limit=1`. The first release in the response is taken. Consistent, no extra data loading complexity.
+
+**TypeScript strict types for MB response shapes.** `resp.json()` returns `unknown` in strict mode — explicit interface cast required. Defined inline interfaces (`MbRelease`, `MbArtistCredit`, `MbLabelInfo`, `MbTrack`, `MbMedium`) within the component script. Consistent with how existing components handle strict JSON typing.
+
+**Both web and Tauri get Knowledge Base + Time Machine nav links.** The plan explicitly stated "should appear on BOTH web and Tauri." Unlike Library/Explore/Settings (Tauri-only), the KB and Time Machine are web-first features. They just work on both platforms.
