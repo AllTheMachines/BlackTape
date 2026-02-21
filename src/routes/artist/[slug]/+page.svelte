@@ -8,6 +8,7 @@
 	import AiRecommendations from '$lib/components/AiRecommendations.svelte';
 	import { LINK_CATEGORY_ORDER, LINK_CATEGORY_LABELS } from '$lib/embeds/types';
 	import { isTauri } from '$lib/platform';
+	import { streamingPref } from '$lib/theme/preferences.svelte';
 	import { getAiProvider } from '$lib/ai/engine';
 	import { PROMPTS } from '$lib/ai/prompts';
 
@@ -100,6 +101,17 @@
 	/** Streaming links for the "Listen On" bar. */
 	let streamingLinks = $derived(data.categorizedLinks.streaming);
 
+	/** Streaming links sorted by user's preferred platform — preferred platform first. */
+	let sortedStreamingLinks = $derived(
+		streamingPref.platform
+			? [...streamingLinks].sort((a, b) => {
+					const aMatch = a.label.toLowerCase().includes(streamingPref.platform) ? -1 : 0;
+					const bMatch = b.label.toLowerCase().includes(streamingPref.platform) ? -1 : 0;
+					return aMatch - bMatch;
+				})
+			: streamingLinks
+	);
+
 	/** Check if categorized links have any content (excluding streaming, shown separately). */
 	let hasAnyLinks = $derived(
 		LINK_CATEGORY_ORDER.some(cat => data.categorizedLinks[cat].length > 0)
@@ -164,11 +176,11 @@
 	</header>
 
 	<!-- Listen On -->
-	{#if streamingLinks.length > 0}
+	{#if sortedStreamingLinks.length > 0}
 		<section class="listen-on">
 			<span class="listen-label">Listen on</span>
 			<div class="listen-links">
-				{#each streamingLinks as link}
+				{#each sortedStreamingLinks as link}
 					<a
 						href={link.url}
 						target="_blank"

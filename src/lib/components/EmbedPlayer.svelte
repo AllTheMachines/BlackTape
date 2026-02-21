@@ -1,9 +1,10 @@
 <script lang="ts">
-	import type { PlatformLinks } from '$lib/embeds/types';
+	import type { PlatformLinks, PlatformType } from '$lib/embeds/types';
 	import { PLATFORM_PRIORITY } from '$lib/embeds/types';
 	import { spotifyEmbedUrl } from '$lib/embeds/spotify';
 	import { youtubeEmbedUrl, isYoutubeChannel } from '$lib/embeds/youtube';
 	import ExternalLink from './ExternalLink.svelte';
+	import { streamingPref } from '$lib/theme/preferences.svelte';
 
 	let {
 		links,
@@ -21,6 +22,13 @@
 	function revealEmbed(key: string) {
 		loadedEmbeds[key] = true;
 	}
+
+	/** Platform order respects user's streaming preference — preferred platform shown first. */
+	let orderedPlatforms = $derived(
+		streamingPref.platform
+			? [streamingPref.platform, ...PLATFORM_PRIORITY.filter(p => p !== streamingPref.platform)] as PlatformType[]
+			: PLATFORM_PRIORITY
+	);
 
 	// SoundCloud widget hook — runs after iframe is rendered
 	async function hookSoundCloudWidget(containerEl: HTMLElement): Promise<void> {
@@ -103,7 +111,7 @@
 </script>
 
 <div class="embed-player">
-	{#each PLATFORM_PRIORITY as platform}
+	{#each orderedPlatforms as platform}
 		{@const urls = links[platform]}
 		{#if urls.length > 0}
 			<div class="platform-section">
