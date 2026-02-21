@@ -355,7 +355,7 @@ Plans:
 | 6. Discovery Engine | 7/7 | Complete   | 2026-02-20 |
 | 06.1. Affiliate Buy Links | 5/5 | Complete    | 2026-02-21 |
 | 7. Knowledge Base | 7/7 | Complete   | 2026-02-21 |
-| 07.1. Integration Hotfixes | 3/3 | Complete   | 2026-02-21 |
+| 07.1. Integration Hotfixes | 3/3 | Complete    | 2026-02-21 |
 | 07.2. Playback → Taste Signal | 0/TBD | Not started | - |
 | 07.3. Requirements & Verification Cleanup | 0/TBD | Not started | - |
 | 8. Underground Aesthetic | 0/TBD | Not started | - |
