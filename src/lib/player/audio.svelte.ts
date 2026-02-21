@@ -9,6 +9,7 @@ import { playerState, type PlayerTrack } from './state.svelte';
 
 let audio: HTMLAudioElement | null = null;
 let previousVolume = 1;
+let thresholdFired = false;
 
 /**
  * Lazily create and configure the HTMLAudioElement.
@@ -25,11 +26,34 @@ function initAudio(): HTMLAudioElement {
 
 	audio.addEventListener('timeupdate', () => {
 		playerState.currentTime = audio!.currentTime;
+
+		// Threshold detection: 70% of track duration
+		// Guard against NaN, Infinity, and 0 (not yet loaded)
+		const dur = audio!.duration;
+		if (!thresholdFired && !isNaN(dur) && isFinite(dur) && dur > 0) {
+			if (audio!.currentTime / dur >= 0.70) {
+				thresholdFired = true;
+				// Fire-and-forget: never await inside timeupdate (fires ~4x/sec)
+				import('./playback.svelte').then(({ recordQualifyingPlay }) => {
+					const track = playerState.currentTrack;
+					if (track) {
+						recordQualifyingPlay({
+							path: track.path,
+							artist: track.artist,
+							title: track.title,
+							album: track.album,
+							duration: dur
+						});
+					}
+				});
+			}
+		}
 	});
 
 	audio.addEventListener('loadedmetadata', () => {
 		playerState.duration = audio!.duration;
 		playerState.isLoading = false;
+		thresholdFired = false;  // reset for new track
 	});
 
 	audio.addEventListener('ended', () => {
@@ -41,6 +65,10 @@ function initAudio(): HTMLAudioElement {
 
 	audio.addEventListener('play', () => {
 		playerState.isPlaying = true;
+		// Reset threshold flag if restarting from beginning (repeat-one)
+		if (audio!.currentTime < 1) {
+			thresholdFired = false;
+		}
 	});
 
 	audio.addEventListener('pause', () => {

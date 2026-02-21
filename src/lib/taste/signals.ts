@@ -103,6 +103,66 @@ export async function computeTasteFromFavorites(): Promise<Map<string, number>> 
 }
 
 /**
+ * Compute taste tags from play history with time-decay weighting.
+ *
+ * Recent plays weigh more than older plays (30-day half-life exponential decay).
+ * Plays grouped by unique artist before tag lookup — O(unique artists) DB queries, not O(plays).
+ * Returns empty map if below activation threshold (5 qualifying plays).
+ */
+export async function computeTasteFromPlayHistory(): Promise<Map<string, number>> {
+	const tagWeights = new Map<string, number>();
+
+	try {
+		const invoke = await getInvoke();
+
+		// Activation gate: below 5 plays, play history does not influence taste
+		const playCount = await invoke<number>('get_play_count');
+		if (playCount < 5) return tagWeights;
+
+		// Fetch all history (no limit — decay handles old plays gracefully)
+		const history = await invoke<Array<{
+			id: number;
+			track_path: string;
+			artist_name: string | null;
+			played_at: number;
+			duration_secs: number;
+		}>>('get_play_history', { limit: null });
+
+		const HALF_LIFE_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+
+		function decayWeight(playedAtSeconds: number): number {
+			const ageMs = Date.now() - playedAtSeconds * 1000;
+			// Exponential decay: weight = e^(-ln(2) * age / halfLife)
+			// Gives exactly 0.5 weight at half-life
+			return Math.exp((-0.693 * ageMs) / HALF_LIFE_MS);
+		}
+
+		// Group by artist name to avoid N tag lookups for N plays of same artist
+		const artistAccum = new Map<string, number>();
+		for (const play of history) {
+			if (!play.artist_name) continue;
+			const weight = decayWeight(play.played_at);
+			artistAccum.set(
+				play.artist_name,
+				(artistAccum.get(play.artist_name) || 0) + weight
+			);
+		}
+
+		// Look up tags for each unique artist
+		for (const [artistName, totalWeight] of artistAccum) {
+			const tags = await lookupArtistTags(artistName);
+			for (const tag of tags) {
+				tagWeights.set(tag, (tagWeights.get(tag) || 0) + totalWeight);
+			}
+		}
+	} catch {
+		// Not in Tauri or play_history not yet available
+	}
+
+	return tagWeights;
+}
+
+/**
  * Normalize a tag weight map to 0.0-1.0 range.
  */
 function normalizeWeights(weights: Map<string, number>): Map<string, number> {
@@ -130,14 +190,15 @@ export async function recomputeTaste(): Promise<void> {
 		// Clear computed tags (preserve manual)
 		const currentTags = await invoke<TasteTag[]>('get_taste_tags');
 		for (const tag of currentTags) {
-			if (tag.source === 'library' || tag.source === 'favorite') {
+			if (tag.source === 'library' || tag.source === 'favorite' || tag.source === 'playback') {
 				await invoke('remove_taste_tag', { tag: tag.tag });
 			}
 		}
 
-		// Compute from both sources
+		// Compute from all sources
 		const libraryWeights = await computeTasteFromLibrary();
 		const favoriteWeights = await computeTasteFromFavorites();
+		const playWeights = await computeTasteFromPlayHistory();
 
 		// Merge weights
 		const merged = new Map<string, { weight: number; source: string }>();
@@ -156,6 +217,18 @@ export async function recomputeTaste(): Promise<void> {
 				});
 			} else {
 				merged.set(tag, { weight, source: 'favorite' });
+			}
+		}
+
+		for (const [tag, weight] of playWeights) {
+			const existing = merged.get(tag);
+			if (existing) {
+				merged.set(tag, {
+					weight: existing.weight + weight,
+					source: existing.source  // existing source wins (library/favorite > playback)
+				});
+			} else {
+				merged.set(tag, { weight, source: 'playback' });
 			}
 		}
 

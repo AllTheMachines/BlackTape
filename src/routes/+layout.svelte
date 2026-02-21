@@ -9,6 +9,7 @@
 	import { playerState } from '$lib/player/state.svelte';
 	import { aiState, loadAiSettings, initializeAi } from '$lib/ai/state.svelte';
 	import { loadTasteProfile } from '$lib/taste/profile.svelte';
+	import { loadPlaybackSettings } from '$lib/player/playback.svelte';
 	import { onMount } from 'svelte';
 
 	let { children } = $props();
@@ -23,6 +24,7 @@
 		if (isTauri()) {
 			await loadAiSettings();
 			loadTasteProfile();  // fire-and-forget — populates tasteProfile state async
+			loadPlaybackSettings();  // fire-and-forget — loads private mode + play count
 			if (aiState.enabled) {
 				initializeAi();
 			}
