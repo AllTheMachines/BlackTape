@@ -2089,3 +2089,87 @@ Both links added to web and Tauri nav bars (after Style Map). Both platforms can
 **TypeScript strict types for MB response shapes.** `resp.json()` returns `unknown` in strict mode — explicit interface cast required. Defined inline interfaces (`MbRelease`, `MbArtistCredit`, `MbLabelInfo`, `MbTrack`, `MbMedium`) within the component script. Consistent with how existing components handle strict JSON typing.
 
 **Both web and Tauri get Knowledge Base + Time Machine nav links.** The plan explicitly stated "should appear on BOTH web and Tauri." Unlike Library/Explore/Settings (Tauri-only), the KB and Time Machine are web-first features. They just work on both platforms.
+
+> **Commit dafa552** (2026-02-21 12:58) — docs(07-06): complete app integration plan — LinerNotes + KB links + nav
+> Files changed: 4
+
+> **Commit 0fe0ff4** (2026-02-21 13:01) — docs(07-07): update ARCHITECTURE.md and user-manual.md for Phase 7
+> Files changed: 2
+
+---
+
+## Entry — 2026-02-21 — Phase 7 Complete: Knowledge Base
+
+### What Phase 7 Built
+
+Phase 7 adds Mercury's genre and scene encyclopedia — the Knowledge Base. It connects the 2.8M-artist catalog to a structured graph of musical genres, scenes, and cities, with geographic context, Wikipedia descriptions, AI-generated vibe summaries, and deep links back to artist pages.
+
+Seven plans, completed in one session:
+
+| Plan | What |
+|------|------|
+| 07-01 | Genre data pipeline (Phase G) — Wikidata SPARQL + Nominatim geocoding |
+| 07-02 | DB schema (`genres`, `genre_relationships`) + 6 query functions |
+| 07-03 | KB landing page + GenreGraph component |
+| 07-04 | Genre/scene detail page + SceneMap + AI genreSummary |
+| 07-05 | Time Machine page + GenreGraphEvolution |
+| 07-06 | App integration — LinerNotes + KB genre links on artist pages + nav |
+| 07-07 | Documentation — ARCHITECTURE.md + user-manual.md + BUILD-LOG.md |
+
+### Key Decisions
+
+<!-- decision: Genre data from Wikidata SPARQL at pipeline time -->
+**Genre data source: Wikidata SPARQL, pipeline-time only.** Not manual curation (wouldn't scale), not runtime fetch (rate limits + latency). The `pipeline/build-genre-data.mjs` script queries Wikidata once at DB build time and bakes everything into the `genres` table. MusicBrainz provides the `mb_tag` bridge column — same slug format as `artist_tags.tag`, direct join, no mapping table.
+<!-- /decision -->
+
+<!-- decision: Nominatim geocoding is pipeline-only -->
+**Geocoding is pipeline-only.** Nominatim enforces a hard rate limit of 1 request per second. At runtime that would add 1+ seconds of latency per scene page load. Instead, coordinates are fetched at build time with a 1100ms delay between requests, stored in `origin_lat`/`origin_lng`, and served statically from the DB. The anti-pattern (geocoding at runtime) is documented in ARCHITECTURE.md.
+<!-- /decision -->
+
+<!-- decision: GenreGraph extends StyleMap headless D3 tick() pattern -->
+**GenreGraph extends StyleMap's headless D3 tick(300) pattern.** The same anti-pattern that applies to StyleMap applies here — never wire `on('tick')` to Svelte state. Run 300 iterations synchronously, single state assignment after stop. Zero layout thrashing. Three node types: genre (circle, accent color), scene (diamond, warm orange), city (dashed circle, teal). Subgenre edges 0.4 strength/solid; influenced_by 0.15/dashed.
+<!-- /decision -->
+
+<!-- decision: Leaflet loaded via dynamic import in onMount -->
+**Leaflet via dynamic import in onMount — SSR-safe pattern.** Top-level `import L from 'leaflet'` crashes SSR with `window is not defined`. Dynamic import inside `onMount` ensures Leaflet only loads client-side. Leaflet CSS injected via `document.head` link element (not Vite dynamic import) — works in both web and Tauri builds without Vite CSS rejection.
+<!-- /decision -->
+
+<!-- decision: Time Machine opening state: current year - 30 -->
+**Time Machine opens at current year minus 30.** A deliberate nostalgia default — puts users in the era they likely grew up with (±30 years). Adjust freely with the decade buttons and year slider. No persistence; reset on every visit.
+<!-- /decision -->
+
+<!-- decision: LinerNotes lazy-fetches on expand -->
+**LinerNotes fetches on first expand — never on page load.** Rate limit consideration: MusicBrainz allows 1 req/sec. Loading credits for every release on page load would violate that at scale, and most users don't need credits. Lazy expansion means zero network cost until the user explicitly asks. If MB returns non-200, shows a human-readable error rather than crashing.
+<!-- /decision -->
+
+<!-- decision: AI genreSummary temperature 0.6, Tauri-only -->
+**AI genre summary: temperature 0.6, Tauri-only, Wikipedia takes priority.** Slightly warmer than the artistSummary prompt (0.5) to allow more evocative language for genre descriptions. Wikipedia descriptions always take Layer 2 priority — the AI summary is Layer 3 (shown only when Wikipedia isn't available). Best-effort: if the AI isn't initialized, the section simply doesn't render. `genreSummary` exported as a standalone function in `prompts.ts` (not inside the PROMPTS object) — required for dynamic import named export pattern.
+<!-- /decision -->
+
+<!-- decision: Genre tags on artist pages dual-linked -->
+**Genre tags on artist pages are dual-linked.** Each tag chip still links to `/discover?tags=...` (catalog search). A small `↗` superscript link now also leads to `/kb/genre/[slug]` (encyclopedia context). Users get both: "find more artists like this" AND "understand what this genre actually is." The "Explore [genre] scene →" panel below the tags block uses `tags[0]` (most prominent MB tag) as the primary genre signal.
+<!-- /decision -->
+
+<!-- decision: Community editing deferred to Phase 9+ -->
+**Community editing mechanics explicitly deferred to Phase 9+.** Who can edit, version history, moderation — none of this is scoped to Phase 7. Pages with sparse data show a contribution invitation CTA. The system is built to accept community content later (description column exists in `genres` table) but none of the write infrastructure is implemented yet.
+<!-- /decision -->
+
+### Architecture Additions
+
+**New DB tables:** `genres` (slug, name, type, wikidata_id, description, inception_year, origin_lat/lng, mb_tag) and `genre_relationships` (from_id, to_id, rel_type). Both documented in ARCHITECTURE.md Data Model section.
+
+**New components:** GenreGraph.svelte, SceneMap.svelte, GenreGraphEvolution.svelte, LinerNotes.svelte.
+
+**New routes:** `/kb` (landing), `/kb/genre/[slug]` (detail), `/time-machine` (year browser).
+
+**New pipeline step:** `pipeline/build-genre-data.mjs` (Phase G).
+
+**New query functions:** getGenreSubgraph, getGenreBySlug, getGenreKeyArtists, getArtistsByYear, getStarterGenreGraph, getAllGenreGraph — all in `src/lib/db/queries.ts`.
+
+**New AI prompt:** genreSummary (standalone export in prompts.ts, temperature 0.6).
+
+### Build Verification
+
+Both `npm run check` and `npm run build` pass with 0 errors after all Phase 7 work.
+
+Phase 7 complete. Requirements KB-01, KB-02, DISC-05, DISC-06, DISC-07 all satisfied.
