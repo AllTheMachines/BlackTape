@@ -273,7 +273,14 @@ Plans:
   7. Import from Spotify, Last.fm, Apple Music, CSV
   8. Export all user data — your data is yours
   9. No vanity metrics anywhere — no follower counts, no like counts, no play counts
-**Plans**: TBD
+**Plans**: 6 plans
+Plans:
+- [ ] 09-01-PLAN.md — taste.db schema extension (identity + collections tables) + Rust CRUD commands + save_base64_to_file
+- [ ] 09-02-PLAN.md — DiceBear avatar system: npm install + avatar.ts + AvatarPreview + AvatarEditor (16x16 pixel grid)
+- [ ] 09-03-PLAN.md — collections.svelte.ts reactive state + four import modules (Spotify/Last.fm/Apple/CSV) + CollectionShelf component
+- [ ] 09-04-PLAN.md — /profile route + TasteFingerprint component (D3 force constellation + PNG export)
+- [ ] 09-05-PLAN.md — Save to Shelf buttons on artist/release pages + Settings Identity/Import/Export sections
+- [ ] 09-06-PLAN.md — Profile nav link + ARCHITECTURE.md + user-manual.md + BUILD-LOG.md + final build verification
 
 ### Phase 10: Communication Layer
 **Goal**: People found each other in Phase 9. Now they can talk. Encrypted, layered communication: private DMs, persistent scene rooms, and ephemeral sessions. Zero server cost is a hard constraint. Infrastructure architecture (Matrix, P2P, relay, Nostr) requires research — the right answer depends on the ecosystem at build time.
