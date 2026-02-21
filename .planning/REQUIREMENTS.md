@@ -53,7 +53,7 @@
 - [x] **KB-02**: Multi-layer content system (open data → links/embeds → AI summaries → community written)
 - [x] **DISC-05**: Scene Maps — geographic + temporal visualization of music scenes using MusicBrainz location data
 - [x] **DISC-06**: Time Machine — browse releases by year, scrub timeline, filter by tags, watch genre evolution
-- [ ] **DISC-07**: Liner Notes — rich expandable credits, relationships, and production details on release pages
+- [x] **DISC-07**: Liner Notes — rich expandable credits, relationships, and production details on release pages
 
 ### Buy Links (Phase 06.1)
 
@@ -162,7 +162,7 @@
 | KB-02 | Phase 7 | Complete |
 | DISC-05 | Phase 7 | Complete |
 | DISC-06 | Phase 7 | Complete |
-| DISC-07 | Phase 7 | Pending |
+| DISC-07 | Phase 7 | Complete |
 | SOCIAL-01 | Phase 8 | Pending |
 | SOCIAL-02 | Phase 8 | Pending |
 | SOCIAL-03 | Phase 8 | Pending |
