@@ -1911,3 +1911,96 @@ This is the pipeline step that makes genre pages possible — every knowledge ba
 - 2712 relationships (subgenre + influenced_by edges)
 - 1273 scene nodes with origin cities pending geocoding
 - Collision-safe slugs: base slug used when unique, Q-number suffix appended on collision
+
+> **Commit c3fcb5a** (2026-02-21 12:39) — docs(07-01): complete genre encyclopedia pipeline plan
+> Files changed: 3
+
+> **Commit 33ef83b** (2026-02-21 12:39) — docs(07-01): mark KB-01 and DISC-05 requirements complete
+> Files changed: 1
+
+> **Commit 8b67b07** (2026-02-21 12:41) — feat(07-02): add genre graph query functions to queries.ts
+> Files changed: 1
+
+> **Commit 5b6a2db** (2026-02-21 12:43) — docs(07-02): complete genre query functions plan
+> Files changed: 4
+
+> **Commit ad56299** (2026-02-21 12:45) — feat(07-05): add Time Machine API route and server/universal loads
+> Files changed: 3
+
+> **Commit a500b47** (2026-02-21 12:46) — feat(07-03): create GenreGraph.svelte — D3 force graph with 3 node types
+> Files changed: 1
+
+> **Commit 33f5f56** (2026-02-21 12:46) — feat(07-05): add /api/genres endpoint and GenreGraphEvolution component
+> Files changed: 2
+
+> **Commit 6b1a410** (2026-02-21 12:47) — feat(07-03): create /kb route — server load, universal load, landing page
+> Files changed: 8
+
+---
+
+## Entry — 2026-02-21 — Phase 07 Plan 03: KB Landing Page + GenreGraph
+
+### What Was Built
+
+The Knowledge Base landing page (`/kb`) with the `GenreGraph.svelte` component — the primary entry point to the genre encyclopedia.
+
+**GenreGraph.svelte** extended directly from the StyleMap.svelte pattern:
+- Same headless D3 tick(300) approach — no `on('tick')` wired to Svelte state, single `$state` assignment after simulation stops
+- Three visually distinct node types: genre (filled circle, accent color), scene (diamond/polygon, warm orange), city (dashed outline circle with center dot)
+- Log10 radius scaling with connectivity bonus — highly-connected nodes are larger but capped
+- subgenre edges stronger than influenced_by (0.4 vs 0.15 force strength), influenced_by rendered as dashed lines
+- Hover dims non-neighbors to 25% opacity for focus clarity
+- `focusSlug` prop for side-panel mode (1.4x radius emphasis)
+- Reactive to prop changes via `$effect` — new subgraph triggers re-simulation
+- Legend in bottom-right corner showing all three node types
+
+**`/kb` route:**
+- `+page.server.ts`: D1Provider fetches top-connected genre graph (no taste on web — no profile)
+- `+page.ts`: `isTauri()` branch loads `tasteProfile.tags` for personalized starting graph (top 5 tags, falls back to top-connected if empty)
+- `+page.svelte`: Clean landing page with header + graph, empty state guides user to run pipeline
+
+### Decisions
+
+**Used isTauri() from $lib/platform instead of inline window check.** The plan spec showed the raw `window.__TAURI_INTERNALS__` check, but the existing style-map page uses the `isTauri()` utility. Consistent with established pattern.
+
+**Graceful platform.env.DB guard in server load.** Added `if (!platform?.env?.DB)` check matching the style-map pattern — returns empty graph on local dev without D1.
+
+**Try/catch wraps DB calls.** If genres table not yet populated (fresh install before pipeline runs), returns empty graph and shows the CLI command for the user to run. Zero crash risk.
+
+> **Commit 7c0b5b5** (2026-02-21 12:48) — feat(07-05): create Time Machine page UI with decade buttons, year scrubber, and artist list
+> Files changed: 1
+
+> **Commit bd97411** (2026-02-21 12:49) — feat(07-04): add genreSummary AI prompt to prompts.ts
+> Files changed: 1
+
+> **Commit 397cc99** (2026-02-21 12:49) — feat(07-04): genre page UI — layered content, scene map, key artists, related genres
+> Files changed: 1
+
+---
+
+## Entry — 2026-02-21 — Phase 07 Plan 05: Time Machine Page
+
+### What Was Built
+
+The `/time-machine` route — the DISC-06 requirement for browsing releases by year, scrubbing a timeline, filtering by tags, and watching genre evolution.
+
+**Three views, per CONTEXT.md locked decision:**
+
+1. **Animated genre graph evolution** (`GenreGraphEvolution.svelte`) — D3 force-directed graph that shows only genres whose `inception_year <= currentYear`. As you advance the year slider, new genres "emerge" with a scale-up animation. Uses `from_id`/`to_id` from `GenreEdge` (not D3's internal `.source`/`.target` fields) for filtering via `Set<number>`.
+
+2. **Year snapshot heading** — "What was happening in [year]" updates reactively as the slider moves.
+
+3. **Filtered artist list** — Artists whose `begin_year` matches the selected year, optionally narrowed by genre tag.
+
+**Navigation:** Decade buttons (60s-20s) jump to the decade midpoint and constrain the slider range. Fine scrub within the decade fires a 300ms debounced `loadYear()` call. Tag filter fires with 500ms debounce.
+
+**Platform branching (critical):**
+- `loadYear()` branches on `isTauri()` — Tauri queries `getArtistsByYear()` directly, web fetches `/api/time-machine`
+- `onMount` branches on `isTauri()` — Tauri calls `getAllGenreGraph()` directly, web fetches `/api/genres`
+- Tauri adapter-static has no server — any fetch to `/api/*` would silently fail
+
+### Key Decisions
+
+**Used `d3-force` imports (not `import * as d3 from 'd3'`).** The plan spec showed the full D3 bundle import, but only `d3-force` is installed in this project. Used the same named-function import pattern as `StyleMap.svelte`. Zero new dependency — reused the already-installed `forceSimulation`, `forceLink`, `forceManyBody`, `forceCenter`.
+
+**`resp.json()` requires explicit type assertion.** Added `as { artists: ...; year: number }` and `as { nodes: GenreNode[]; edges: GenreEdge[] }` casts to silence strict TypeScript `unknown` type errors — consistent with the codebase pattern.

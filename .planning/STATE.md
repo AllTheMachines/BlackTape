@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Phase 07 (Knowledge Base) — Plan 02 COMPLETE. Genre query functions added to queries.ts.
+**Current focus:** Phase 07 (Knowledge Base) — Plan 03 COMPLETE. GenreGraph.svelte + /kb landing page built.
 
 ## Current Position
 
 Phase: 07 of 15 (Knowledge Base — IN PROGRESS)
-Current Plan: 07-02 (complete)
-Status: Phase 07 Plan 02 COMPLETE — 6 genre query functions + GenreNode/GenreEdge/GenreGraph types in queries.ts. 0 TypeScript errors. 2026-02-21.
-Last activity: 2026-02-21 — 07-02 complete. getGenreSubgraph, getGenreBySlug, getGenreKeyArtists, getArtistsByYear, getStarterGenreGraph, getAllGenreGraph added.
+Current Plan: 07-03 (complete)
+Status: Phase 07 Plan 03 COMPLETE — GenreGraph.svelte (D3 force, 3 node types) + /kb route (server + universal + page). 0 TypeScript errors. 2026-02-21.
+Last activity: 2026-02-21 — 07-03 complete. GenreGraph.svelte with headless tick(300), genre/scene/city node types, hover/focus behavior. /kb route with taste-personalized Tauri path (tasteProfile.tags) and top-connected web path.
 
-Progress: [████░░░░░░] 2/5 plans complete (Phase 07 in progress)
+Progress: [█████░░░░░] 3/7 plans complete (Phase 07 in progress)
 
 ## Performance Metrics
 
@@ -61,6 +61,7 @@ Progress: [████░░░░░░] 2/5 plans complete (Phase 07 in progr
 | Phase 03-desktop-and-distribution P05 | 5 | 1 tasks | 4 files |
 | Phase 07-knowledge-base P01 | 6min | 2 tasks | 2 files |
 | Phase 07-knowledge-base P02 | 1min | 1 tasks | 1 files |
+| Phase 07-knowledge-base P03 | 5min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -193,6 +194,9 @@ Progress: [████░░░░░░] 2/5 plans complete (Phase 07 in progr
 - [Phase 07-02]: getGenreKeyArtists uses at2.count (not at2.votes) — artist_tags schema uses count column, not votes
 - [Phase 07-02]: getAllGenreGraph has no WHERE filter — full table dump ordered by inception_year ASC for client-side evolution animation
 - [Phase 07-02]: getStarterGenreGraph falls back to top-connected genre_relationships from_id when no taste tags match mb_tag
+- [Phase 07-03]: isTauri() utility (not inline window check) in universal load — consistent with style-map pattern
+- [Phase 07-03]: [Phase 07-03]: GenreGraph uses headless tick(300) + 3 node types: genre=circle/accent, scene=diamond/warm-orange, city=dashed-circle/teal
+- [Phase 07-03]: [Phase 07-03]: subgenre edges 0.4 strength/solid; influenced_by 0.15 strength/dashed — visual hierarchy matches relationship semantics
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
@@ -206,6 +210,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-21
-Phase 07 Plan 02 complete. 6 genre query functions (getGenreSubgraph, getGenreBySlug, getGenreKeyArtists, getArtistsByYear, getStarterGenreGraph, getAllGenreGraph) + 3 TypeScript interfaces (GenreNode, GenreEdge, GenreGraph) appended to src/lib/db/queries.ts. 1 bug auto-fixed: plan spec used at2.votes but schema uses at2.count. npm run check: 0 errors.
-Stopped at: Completed 07-02-PLAN.md
-Next: Phase 07 Plan 03
+Phase 07 Plan 03 complete. GenreGraph.svelte (D3 force-directed, headless tick(300), 3 node types: genre=circle/accent, scene=diamond/warm-orange, city=dashed-circle/teal) + /kb route (server load D1 top-connected, universal load Tauri taste-aware via tasteProfile.tags). npm run check: 0 errors.
+Stopped at: Completed 07-03-PLAN.md
+Next: Phase 07 Plan 04
