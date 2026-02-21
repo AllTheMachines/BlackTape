@@ -11,8 +11,8 @@ See: .planning/PROJECT.md (updated 2026-02-15)
 
 Phase: 07 of 15 (Knowledge Base — IN PROGRESS)
 Current Plan: 07-05 (complete)
-Status: Phase 07 Plan 05 COMPLETE — /time-machine route (server + universal + page) + /api/time-machine + /api/genres + GenreGraphEvolution.svelte. 0 TypeScript errors. 2026-02-21.
-Last activity: 2026-02-21 — 07-05 complete. Time Machine page with decade buttons, year scrubber, animated genre graph evolution, filtered artist list. Tauri/web branching via isTauri(). DISC-06 requirement fulfilled.
+Status: Phase 07 Plan 04 COMPLETE — /kb/genre/[slug] page UI (4 content layers: Wikipedia, AI, CTA), SceneMap Leaflet component, genreSummary AI prompt. 0 TypeScript errors. 2026-02-21.
+Last activity: 2026-02-21 — 07-04 complete. Genre detail page with Wikipedia summary, AI genreSummary (Tauri-only, temp 0.6), Leaflet scene map (origin_lat conditional), key artists grid (10 via mb_tag), related genres chips, mini GenreGraph in-page. genreSummary added to prompts.ts.
 
 Progress: [█████░░░░░] 5/7 plans complete (Phase 07 in progress)
 
@@ -202,6 +202,10 @@ Progress: [█████░░░░░] 5/7 plans complete (Phase 07 in progr
 - [Phase 07-05]: Time Machine loadYear() and onMount both branch on isTauri() — Tauri direct DB, web fetch /api/time-machine and /api/genres (no static-adapter server)
 - [Phase 07-05]: d3-force named imports (not full d3 bundle) — only d3-force is installed, same pattern as StyleMap.svelte
 - [Phase 07-05]: resp.json() requires explicit type cast in strict TypeScript — unknown type by default, must cast to typed interface
+- [Phase 07-04]: genreSummary exported as standalone function (not inside PROMPTS object) — dynamic import requires named export
+- [Phase 07-04]: $derived for computed values from page data prop (isScene, related) — prevents Svelte state_referenced_locally warning
+- [Phase 07-04]: Leaflet CSS via document.head link injection not dynamic import — works across web + Tauri builds without Vite rejection
+- [Phase 07-04]: Genre detail page layers: Wikipedia (Layer 2) > AI genreSummary (Layer 3, Tauri-only, temp 0.6) > sparse CTA invitation (Layer 1)
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
@@ -215,6 +219,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-21
-Phase 07 Plan 05 complete. /time-machine route (server + universal + page, 227 lines) + /api/time-machine + /api/genres + GenreGraphEvolution.svelte (206 lines, d3-force, inception_year filtering, node-appear animation). DISC-06 fulfilled. npm run check: 0 errors.
-Stopped at: Completed 07-05-PLAN.md
-Next: Phase 07 Plan 06
+Phase 07 Plan 04 complete. /kb/genre/[slug] page UI (251 lines) with 4 content layers (Wikipedia, AI genreSummary, CTA), Leaflet SceneMap (dynamic import, link injection), key artists grid, related genres chips, mini GenreGraph. genreSummary() added to prompts.ts. npm run check: 0 errors.
+Stopped at: Completed 07-04-PLAN.md
+Next: Phase 07 Plan 06 (plans 03-05 already complete)

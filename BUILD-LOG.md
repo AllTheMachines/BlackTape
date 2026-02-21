@@ -2038,3 +2038,6 @@ The `/time-machine` route — the DISC-06 requirement for browsing releases by y
 
 > **Commit 073bb2a** (2026-02-21 12:49) — docs(07-03): complete KB landing page plan — GenreGraph + /kb route
 > Files changed: 4
+
+> **Commit 6bbbc82** (2026-02-21 12:51) — docs(07-05): complete Time Machine plan — /time-machine route, /api/genres, GenreGraphEvolution
+> Files changed: 4
