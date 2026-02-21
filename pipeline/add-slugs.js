@@ -73,9 +73,11 @@ function main() {
 			if (entries.length === 1) {
 				update.run(slug, entries[0].id);
 			} else {
-				// Collision: append first 8 chars of MBID
+				// Collision: append first 12 chars of MBID (dashes removed) for disambiguation.
+				// 12 hex chars give 48 bits of entropy — collision probability is negligible.
 				for (const entry of entries) {
-					const disambiguated = `${slug}-${entry.mbid.slice(0, 8)}`;
+					const mbidPrefix = entry.mbid.replace(/-/g, '').slice(0, 12);
+					const disambiguated = `${slug}-${mbidPrefix}`;
 					update.run(disambiguated, entry.id);
 				}
 			}

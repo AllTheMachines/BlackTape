@@ -1641,3 +1641,46 @@ Wrangler's local D1 state (`.wrangler/state/v3/d1/...sqlite`) is not the same fi
 ### Next
 
 **Phase 06.1 — Affiliate Buy Links.** Passive income from Bandcamp, Amazon, Apple purchase links on release pages. Run `/gsd:plan-phase 06.1` to break it down.
+
+> **Commit 52f1e45** (2026-02-21 01:00) — feat(06): phase 6 complete — Discovery Engine verified
+> Files changed: 3
+
+## Entry 029 — 2026-02-21 — Headless Debug Harness + 3 Bugs Fixed
+
+### Approach
+
+Steve asked for a way to debug everything without clicking through the app UI. The insight: button clicks trigger underlying commands — just execute those directly. Built a headless test harness that runs every DB query and HTTP route programmatically.
+
+### What Was Built
+
+**`tools/debug-check.mjs`** — comprehensive headless test suite:
+- Schema checks for both mercury.db (Tauri dev) and wrangler D1 (web dev)
+- All 13 DB query functions tested as raw SQL against the wrangler D1 SQLite
+- 6 data integrity checks (no orphan tags, no null slugs, no MBID-prefix edge inversions)
+- HTTP route tests: all 9 routes + 3 API endpoints against live wrangler server
+- Run with `node tools/debug-check.mjs` (DB only) or `--http` (with HTTP tests)
+
+### Bugs Found and Fixed
+
+**Bug 1 (CRITICAL): `pipeline/data/mercury.db` had no slugs.**
+All 10,000 artists had `slug = NULL` — the `add-slugs.js` step had never been run on the Tauri dev DB. This meant the Tauri desktop app couldn't navigate to any artist page (all links would resolve to `/artist/null` or 404).
+
+Fix: `node pipeline/add-slugs.js` run on the dev DB. 10,000 artists now have slugs.
+
+**Bug 2 (MINOR): 3 slug collisions in wrangler D1.**
+The MBID-based slug disambiguation was using 8 chars of the MBID as the disambiguation suffix. For artists with non-ASCII names (Cyrillic, CJK) that produce empty base slugs, this isn't always enough — 3 pairs of artists shared the same first 8 MBID chars, making one artist in each pair unreachable.
+
+Fix: Updated the collision entries directly in the D1 SQLite to use 12-char disambiguation. Also fixed `pipeline/add-slugs.js` to use 12 no-dash chars for all future DB builds. Zero collisions now.
+
+**Bug 3 (TEST): 404 check was wrong.**
+The test helper treated any non-200 as failure, including intentional 404s. Fixed `get()` to accept an expected status code parameter.
+
+### Results
+
+```
+Results: 44 passed, 0 failed
+```
+- 19 DB + integrity checks
+- 16 HTTP route + API checks (including MusicBrainz proxy, search API, 404 handling)
+- Rust: `cargo check` clean (0 errors)
+- TypeScript: `npm run check` — 0 errors, 3 pre-existing Svelte 5 lint hints
