@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Phase 07.2 (Playback Taste Signal). Plan 01 complete — play_history table + 6 Tauri commands. PLAYER-03 and AI-04 satisfied.
+**Current focus:** Phase 07.2 (Playback Taste Signal). Plan 02 complete — play tracking frontend, 70% threshold detection, play history taste signal with 30-day decay.
 
 ## Current Position
 
 Phase: 07.2 of 15 (Playback Taste Signal — IN PROGRESS)
-Current Plan: 07.2-01 (complete)
-Status: Phase 07.2 Plan 01 complete — play_history table in taste.db, 6 Tauri commands registered. cargo check clean. npm run build clean. 2026-02-21.
-Last activity: 2026-02-21 — 07.2-01 complete. play_history table + indexes in taste.db. record_play, get_play_history, delete_play, clear_play_history, get_play_count, export_play_history registered in Rust. private_listening default seeded in ai_settings.
+Current Plan: 07.2-02 (complete)
+Status: Phase 07.2 Plan 02 complete — playback.svelte.ts + history.ts + threshold detection in audio.svelte.ts + computeTasteFromPlayHistory in signals.ts + loadPlaybackSettings in layout. npm run build clean. 2026-02-21.
+Last activity: 2026-02-21 — 07.2-02 complete. 70% threshold fires recordQualifyingPlay() once per track. Private mode gates all recording. computeTasteFromPlayHistory() with 30-day half-life decay, 5-play activation gate. recomputeTaste() merges 'playback' source. loadPlaybackSettings() in root layout onMount.
 
-Progress: [█░░░░░░░░░] 1/? plans complete (Phase 07.2 IN PROGRESS)
+Progress: [██░░░░░░░░] 2/? plans complete (Phase 07.2 IN PROGRESS)
 
 ## Performance Metrics
 
@@ -67,6 +67,7 @@ Progress: [█░░░░░░░░░] 1/? plans complete (Phase 07.2 IN PRO
 | Phase 07-knowledge-base P07 | 7min | 2 tasks | 3 files |
 | Phase 07.1 P03 | 2min | 1 tasks | 1 files |
 | Phase 07.2 P01 | 3min | 2 tasks | 2 files |
+| Phase 07.2 P02 | 5min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -228,6 +229,9 @@ Progress: [█░░░░░░░░░] 1/? plans complete (Phase 07.2 IN PRO
 - [Phase 07.2-01]: play_history lives in taste.db not library.db — play history is a taste signal, belongs with taste profile data (taste_tags, favorite_artists, taste_anchors)
 - [Phase 07.2-01]: 70% completion threshold is frontend-enforced, not in Rust — record_play is generic write, caller decides qualifying plays, threshold adjustable without Rust recompile
 - [Phase 07.2-01]: private_listening default seeded in ai_settings at init — INSERT OR IGNORE means existing users get default without migration
+- [Phase 07.2-02]: thresholdFired resets on loadedmetadata (new track) AND play-from-start (currentTime < 1) — covers new track + repeat-one restart without double-counting
+- [Phase 07.2-02]: playback source is lowest priority in taste merge — existing.source wins over 'playback'; source hierarchy: manual > favorite/library > playback
+- [Phase 07.2-02]: 5-play activation gate in computeTasteFromPlayHistory — below 5 plays, history has no influence on taste (noise prevention)
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
@@ -241,6 +245,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-21
-Phase 07.2 Plan 01 complete. play_history table + 6 Tauri commands in taste_db.rs. record_play, get_play_history, delete_play, clear_play_history, get_play_count, export_play_history registered in lib.rs. private_listening default in ai_settings. cargo check clean. npm run build clean.
-Stopped at: Completed 07.2-01-PLAN.md
-Next: Phase 07.2 Plan 02 (play tracking frontend — 70% completion tracker + private_listening toggle)
+Phase 07.2 Plan 02 complete. playback.svelte.ts (playbackState, recordQualifyingPlay, loadPlaybackSettings). history.ts (CRUD wrappers). audio.svelte.ts (70% threshold + thresholdFired). signals.ts (computeTasteFromPlayHistory + recomputeTaste extended). layout.svelte (loadPlaybackSettings wired). npm run check 0 errors, npm run build clean.
+Stopped at: Completed 07.2-02-PLAN.md
+Next: Phase 07.2 Plan 03 (private mode UI toggle + play count display in Settings)

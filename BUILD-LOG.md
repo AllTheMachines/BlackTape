@@ -2299,3 +2299,62 @@ Also added `private_listening` default to `ai_settings` defaults array — will 
 
 > **Commit bb3e19d** (2026-02-21 15:43) — feat(07.2-01): register 6 play history commands in lib.rs
 > Files changed: 1
+
+> **Commit dd09513** (2026-02-21 15:45) — docs(07.2-01): complete play history persistence layer plan
+> Files changed: 5
+
+> **Commit 6f93004** (2026-02-21 15:47) — feat(07.2-02): create playback.svelte.ts and history.ts — recording pipeline + CRUD wrappers
+> Files changed: 2
+
+> **Commit 04748a1** (2026-02-21 15:49) — feat(07.2-02): hook threshold detection, extend signals with play history, wire layout
+> Files changed: 3
+
+## Entry — 2026-02-21 — Phase 07.2 Plan 02: Play Tracking Frontend + Taste Signal Computation
+
+### What Was Built
+
+The frontend pipeline that turns listening behavior into taste data. Four files, two tasks:
+
+| Task | Files | What |
+|------|-------|------|
+| 01 | `playback.svelte.ts`, `history.ts` | Recording pipeline + CRUD wrappers |
+| 02 | `audio.svelte.ts`, `signals.ts`, `+layout.svelte` | Threshold detection + taste signal merge + startup wiring |
+
+### The 70% Threshold
+
+`audio.svelte.ts` now detects when a local track passes the 70% completion mark. A module-level `thresholdFired` flag prevents double-counting — it resets on `loadedmetadata` (new track) and on `play` events where `currentTime < 1` (repeat-one restart). The detection fires inside `timeupdate` which runs ~4x/sec, but the actual recording is a fire-and-forget dynamic import so it never blocks the event loop.
+
+<!-- decision: 70% threshold fires once per track load via thresholdFired flag -->
+The `thresholdFired` flag lives at module scope alongside the `audio` element. It resets in `loadedmetadata` (new track src) and in `play` when `currentTime < 1` (restart from beginning). This covers the two ways a play can "reset" without creating false double-counts from seeking backward past the threshold.
+<!-- /decision -->
+
+### Private Mode
+
+`playbackState.privateMode` gates all recording. If `true`, `recordQualifyingPlay()` returns immediately without invoking Rust. The mode persists to `ai_settings` in `taste.db` and is loaded on app startup via `loadPlaybackSettings()` — so incognito listening is respected from the very first track, not just after the first event.
+
+### Taste Signal Merge
+
+`computeTasteFromPlayHistory()` uses exponential decay with a 30-day half-life:
+
+```
+weight = e^(-0.693 * age_ms / 30d_in_ms)
+```
+
+Plays from today get weight ~1.0. Plays from 30 days ago get weight ~0.5. Plays from 90 days ago get weight ~0.125. Old binges fade naturally — the taste profile reflects recent listening more than ancient history.
+
+The activation gate (5 qualifying plays minimum) means casual listeners aren't influenced by noise. Only after 5 full plays does play history start shaping taste computation.
+
+<!-- decision: 'playback' source loses to 'library' and 'favorite' in source priority -->
+When play history generates a tag that already exists from library or favorites, the existing source is preserved. `source: existing.source` wins over `source: 'playback'`. This means manually touched tags (`source: 'manual'`) also survive — the source hierarchy is: manual (survives recompute) > favorite > library > playback. Tags from play history are additive to weight but don't override human-defined provenance.
+<!-- /decision -->
+
+### Auto-Fix Applied
+
+One deviation from the plan: `@tauri-apps/plugin-fs` isn't installed in this project (not in Cargo.toml). The plan's `exportPlayHistory()` function tries to import it. At runtime the try/catch handles the absence gracefully, but TypeScript's compiler still rejects the unknown module. Fixed with a `@ts-ignore` directive on the dynamic import — the function falls back to the Rust invoke path or blob download in all real scenarios.
+
+### Build Verification
+
+- `npm run check`: 0 TypeScript errors
+- `npm run build`: clean (6.55s)
+- `grep thresholdFired audio.svelte.ts`: 5 occurrences (declaration, guard, set, two resets)
+- `grep computeTasteFromPlayHistory signals.ts`: defined + called in recomputeTaste
