@@ -55,6 +55,13 @@
 - [x] **DISC-06**: Time Machine — browse releases by year, scrub timeline, filter by tags, watch genre evolution
 - [x] **DISC-07**: Liner Notes — rich expandable credits, relationships, and production details on release pages
 
+### UX (Phase 8)
+
+- [ ] **UX-01**: Dense, panel-based UI — multiple information sources visible simultaneously, not hidden behind navigation (Tauri desktop)
+- [ ] **UX-02**: Taste-based theming engine — color palette generated from user's taste profile; two different people see two different Mercurys
+- [ ] **UX-03**: Layout templates — users can choose and customize their workspace arrangement (predefined templates, not a layout editor)
+- [ ] **UX-04**: Interactive controls everywhere — dropdowns, sliders, toggles; using Mercury feels like playing, not scrolling
+
 ### Buy Links (Phase 06.1)
 
 - [x] **BUY-01**: Release detail pages exist — cover art, tracklist, personnel credits, and link rows
@@ -158,21 +165,25 @@
 | BUY-02 | Phase 06.1 | Complete |
 | BUY-03 | Phase 06.1 | Complete |
 | BUY-04 | Phase 06.1 | Complete |
-| KB-01 | Phase 7 / Phase 07.1 | Pending — graph works; personalization broken (GAP-01); no /discover link (GAP-04) |
+| KB-01 | Phase 7 / Phase 07.1 | Complete — personalization fixed (07.1 loadTasteProfile startup); /discover link added (07.1 GAP-04) |
 | KB-02 | Phase 7 / Phase 07.1 | Complete |
 | DISC-05 | Phase 7 | Complete |
 | DISC-06 | Phase 7 | Complete |
 | DISC-07 | Phase 7 | Complete |
-| SOCIAL-01 | Phase 8 | Pending |
-| SOCIAL-02 | Phase 8 | Pending |
-| SOCIAL-03 | Phase 8 | Pending |
-| SOCIAL-04 | Phase 8 | Pending |
-| SOCIAL-05 | Phase 8 | Pending |
-| SOCIAL-06 | Phase 8 | Pending |
-| SOCIAL-07 | Phase 8 | Pending |
-| SOCIAL-08 | Phase 8 | Pending |
-| SOCIAL-09 | Phase 8 | Pending |
-| SOCIAL-10 | Phase 8 | Pending |
+| UX-01 | Phase 8 | Pending |
+| UX-02 | Phase 8 | Pending |
+| UX-03 | Phase 8 | Pending |
+| UX-04 | Phase 8 | Pending |
+| SOCIAL-01 | Phase 9 | Pending |
+| SOCIAL-02 | Phase 9 | Pending |
+| SOCIAL-03 | Phase 9 | Pending |
+| SOCIAL-04 | Phase 9 | Pending |
+| SOCIAL-05 | Phase 9 | Pending |
+| SOCIAL-06 | Phase 9 | Pending |
+| SOCIAL-07 | Phase 9 | Pending |
+| SOCIAL-08 | Phase 9 | Pending |
+| SOCIAL-09 | Phase 9 | Pending |
+| SOCIAL-10 | Phase 9 | Pending |
 | BLOG-01 | Phase 9 | Pending |
 | BLOG-02 | Phase 9 | Pending |
 | BLOG-03 | Phase 9 | Pending |
@@ -196,10 +207,10 @@
 | SUST-10 | Phase 0 / Stage 4 | Pending |
 
 **Coverage:**
-- v1 requirements: 60 total (added 4 for Phase 06.1 buy links)
-- Mapped to phases: 60
+- v1 requirements: 64 total (added 4 UX for Phase 8)
+- Mapped to phases: 64
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-15*
-*Last updated: 2026-02-21 — Phase 07.3 Plan 01: PLAYER-01 and PLAYER-02 marked Complete; traceability aligned for all four player/AI requirements*
+*Last updated: 2026-02-21 — Phase 8: added UX-01 through UX-04; fixed SOCIAL traceability (Phase 9, not Phase 8); KB-01 marked Complete*
