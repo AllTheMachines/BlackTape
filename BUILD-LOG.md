@@ -2418,3 +2418,91 @@ The `@tauri-apps/plugin-fs` dynamic import in `history.ts` was suppressed with `
 - `npm run check`: 0 TypeScript errors
 - `npm run build`: clean (2.12s)
 - All 7 plan verification greps pass
+
+> **Commit 445953c** (2026-02-21 16:00) — docs(07.2-03): complete SoundCloud widget hook + Listening History UI plan
+> Files changed: 5
+
+> **Commit f06e974** (2026-02-21 18:05) — docs(07.3): complete requirements & verification cleanup research
+> Files changed: 1
+
+> **Commit 71933e9** (2026-02-21 18:10) — docs(07.3): create phase plan
+> Files changed: 4
+
+> **Commit 49de713** (2026-02-21 18:22) — docs(07.3-01): mark PLAYER-01 and PLAYER-02 as Complete in REQUIREMENTS.md
+> Files changed: 1
+
+> **Commit c816163** (2026-02-21 18:24) — docs(07.3-01): complete requirements checkbox alignment plan
+> Files changed: 3
+
+> **Commit dc17163** (2026-02-21 18:24) — fix(07.3-03): replace platform! assertions with graceful guards in 4 server routes
+> Files changed: 6
+
+> **Commit edec2d8** (2026-02-21 18:24) — docs(07.3-02): retroactive Phase 04 verification report
+> Files changed: 1
+
+> **Commit 73b60ec** (2026-02-21 18:25) — docs(07.3-03): add pipeline execution order comments to schema.sql
+> Files changed: 1
+
+> **Commit 5b5bccb** (2026-02-21 18:27) — docs(07.3-02): complete retroactive Phase 04 verification plan
+> Files changed: 3
+
+> **Commit 941c3c7** (2026-02-21 18:28) — docs(07.3-03): complete platform guard cleanup plan
+> Files changed: 2
+
+> **Commit 103da68** (2026-02-21 18:31) — docs(phase-07.3): complete phase execution
+> Files changed: 2
+
+> **Commit 470b43d** (2026-02-21 18:58) — docs(phase-08): research underground aesthetic domain
+> Files changed: 1
+
+> **Commit c17e590** (2026-02-21 19:07) — docs(08-underground-aesthetic): create phase plan
+> Files changed: 5
+
+> **Commit 1ad5d4a** (2026-02-21 19:14) — docs(phase-08): capture context and research for Underground Aesthetic
+> Files changed: 2
+
+> **Commit 8aa622a** (2026-02-21 19:23) — docs(08-underground-aesthetic): create phase plan
+> Files changed: 5
+
+> **Commit 00b4ac8** (2026-02-21 19:29) — fix(08-underground-aesthetic): revise plans based on checker feedback
+> Files changed: 5
+
+---
+
+## Entry — 2026-02-21 — Phase 08 Plan 01: Theme Engine Foundation
+
+### What's Being Built
+
+Phase 8 is the turning point. Mercury stops looking like a search engine and starts feeling like a place. Plan 01 is the foundation: an OKLCH color theming engine that generates a personalized palette from the user's taste profile.
+
+**"Two different people see two different Mercurys."** The theme engine converts a user's top taste tags into a deterministic hue, then generates a full color palette using OKLCH color space. Same tags always produce the same color — no randomness, no state drift.
+
+### Design Decisions
+
+<!-- decision: OKLCH chosen over HSL for taste-based theming -->
+OKLCH (perceptual lightness, chroma, hue) is used instead of HSL because OKLCH maintains perceptually consistent brightness across hues. Shifting a blue background to a green background in HSL can make the green look brighter than the blue at the same L value — OKLCH corrects for this. The theme engine shifts hue only, keeping L and C fixed, so the UI density and contrast feel identical regardless of which hue your taste generates.
+<!-- /decision -->
+
+<!-- decision: djb2-style hash chosen for tag-to-hue mapping -->
+Tag-to-hue mapping uses a djb2-style polynomial hash (hash = ((hash << 5) - hash + charCode) | 0). Simple, deterministic, no dependencies, distributes well across 0-360. The top 5 tags by weight are sorted alphabetically before hashing — alphabet sort ensures same tags always produce the same order regardless of original sort.
+<!-- /decision -->
+
+<!-- decision: Text properties excluded from palette generation -->
+--text-primary, --text-secondary, --text-muted, --text-accent are intentionally excluded from the generated palette. They stay at fixed lightness values for WCAG AA readability regardless of hue. Coloring body text with a taste hue would compromise legibility without adding much visual value.
+<!-- /decision -->
+
+### Task 1 Results
+
+Three new modules in `src/lib/theme/`:
+
+| File | Exports |
+|------|---------|
+| `palette.ts` | `tasteTagsToHue`, `generatePalette`, `TASTE_PALETTE_KEYS` |
+| `engine.svelte.ts` | `themeState`, `applyPalette`, `clearPalette`, `initTheme`, `updateThemeFromTaste` |
+| `preferences.svelte.ts` | `loadThemePreferences`, `saveThemePreference`, `loadStreamingPreference`, `saveStreamingPreference`, `loadLayoutPreference`, `saveLayoutPreference`, `streamingPref` |
+
+`npm run check`: 0 errors.
+
+<!-- status -->
+Phase 08-01: Task 1 done (theme modules). Working on Task 2 (theme.css OKLCH conversion).
+<!-- /status -->
