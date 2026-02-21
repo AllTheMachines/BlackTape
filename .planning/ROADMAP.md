@@ -244,7 +244,7 @@ Plans:
 ### Phase 8: Underground Aesthetic
 **Goal**: The turning point. Mercury stops looking like a search engine and starts feeling like a place. The UI becomes dense, playful, and game-like — panels, controls, dropdowns everywhere. A cockpit, not a feed. Your taste shapes your colors through taste-based theming. Layout templates let you customize your workspace. This ships before community features because the vibe has to be right first.
 **Depends on**: Phase 5 (taste profiles for theming), Phase 6 (discovery for panel content)
-**Requirements**: UX-01, UX-02, UX-03, UX-04
+**Requirements**: UX-01, UX-02, UX-03, UX-04, EMBED-02
 **Success Criteria**:
   1. Dense, panel-based UI — multiple information sources visible simultaneously, not hidden behind navigation
   2. Taste-based theming engine — color palette generated from user's taste profile. Two different people see two different Mercurys.
@@ -252,7 +252,12 @@ Plans:
   4. Interactive controls everywhere — dropdowns, sliders, toggles. Using Mercury feels like playing, not scrolling.
   5. Streaming service preference — embeds default to user's chosen platform
   6. The app feels like something you PLAY with, not something you consume from
-**Plans**: TBD
+**Plans**: 4 plans
+Plans:
+- [ ] 08-01-PLAN.md — Theme engine: OKLCH palette generation + preference persistence
+- [ ] 08-02-PLAN.md — PaneForge panel layout + 4 layout templates
+- [ ] 08-03-PLAN.md — Layout/theme integration + streaming preference + ControlBar + settings UI
+- [ ] 08-04-PLAN.md — Documentation updates + build verification
 
 ### Phase 9: Community Foundation
 **Goal**: Taste as identity. Find people who share your exact obscure corner of music. The first step toward "underground is alive." All local-first, no central server accounts. Identity is pseudonymous — a handle, a lo-fi avatar, and your pure taste profile. No bios, no photos. The music speaks.
