@@ -401,6 +401,84 @@ if (TEST_HTTP) {
     // Edge cases
     await get('/artist/this-artist-does-not-exist-xyz123', '404 for unknown artist slug', 404);
     await get('/discover?tags=jazz,soul,metal,punk,ambient', 'Discover (5-tag max)');
+
+    // ── Phase 06.1: Release pages + Buy links ───────────────────────────────
+    section('Phase 06.1: Release pages + Buy links');
+
+    // Get a real release-group MBID from the releases API
+    const releases06 = await getJson(`/api/artist/${RADIOHEAD_MBID}/releases`, 'Releases API for release MBID');
+    let releaseMbid = null;
+    if (releases06 && Array.isArray(releases06) && releases06.length > 0) {
+      releaseMbid = releases06[0].mbid;
+      ok(`Got release MBID from API: ${releaseMbid}`);
+    } else {
+      fail('Got release MBID from releases API', 'Empty or non-array response');
+    }
+
+    if (releaseMbid) {
+      // 1. Release detail page loads (200)
+      const releaseRes = await get(`/artist/radiohead/release/${releaseMbid}`, 'Release detail page (200)');
+
+      if (releaseRes) {
+        const html = await releaseRes.text();
+
+        // 2. BuyOnBar is rendered (buy-on class present)
+        if (html.includes('buy-on')) ok('BuyOnBar rendered (buy-on class present)');
+        else fail('BuyOnBar rendered', 'buy-on class not found in HTML');
+
+        // 3. All 5 buy platforms present
+        const platforms = ['bandcamp', 'amazon', 'apple', 'beatport', 'discogs'];
+        for (const p of platforms) {
+          if (html.includes(`platform-${p}`)) ok(`Buy link: ${p} platform rendered`);
+          else fail(`Buy link: ${p} platform rendered`, `platform-${p} class not found in HTML`);
+        }
+
+        // 4. Search fallback indicator (?) present (all links are fallbacks when no affiliate IDs set)
+        if (html.includes('search-indicator') || html.includes('isDirect') || html.includes('?</span>') || html.includes('title="Opens platform search')) {
+          ok('Search fallback indicator (?) present in buy links');
+        } else {
+          // Check for the ? badge text more broadly
+          if (html.includes('Opens platform search')) ok('Search fallback indicator present (title attr)');
+          else fail('Search fallback indicator present', 'No ? or search indicator found — check BuyOnBar.svelte');
+        }
+
+        // 5. Buy links open in new tab (target="_blank")
+        const buyIdx = html.indexOf('buy-links');
+        const buySection = buyIdx >= 0 ? html.slice(buyIdx, buyIdx + 2000) : '';
+        if (buySection.includes('target="_blank"')) ok('Buy links have target="_blank"');
+        else fail('Buy links have target="_blank"', 'Not found in buy-links section');
+
+        // 6. Affiliate disclosure in footer
+        if (html.includes('affiliate') || html.includes('commission') || html.includes('Disclosure')) {
+          ok('Affiliate disclosure present in page');
+        } else {
+          fail('Affiliate disclosure present', 'No affiliate/commission/Disclosure text found in HTML');
+        }
+
+        // 7. Release title/cover art section rendered
+        if (html.includes('release-hero') || html.includes('cover-art') || html.includes('release-title')) {
+          ok('Release hero section rendered');
+        } else {
+          fail('Release hero section rendered', 'No release-hero/cover-art/release-title class found');
+        }
+
+        // 8. Back link to artist page
+        if (html.includes('/artist/radiohead')) ok('Back link to artist page present');
+        else fail('Back link to artist page present', '/artist/radiohead not found in HTML');
+      }
+    }
+
+    // 9. Release page handles unknown MBID gracefully (200 with loading state, not crash)
+    const unknownRes = await get('/artist/radiohead/release/00000000-0000-0000-0000-000000000000', 'Release page — unknown MBID handled gracefully (200)', 200);
+    if (unknownRes) {
+      const unknownHtml = await unknownRes.text();
+      // Should not crash — should either show loading state or not-found message
+      if (!unknownHtml.includes('Error') && !unknownHtml.includes('500')) {
+        ok('Unknown MBID does not crash (no 500 error in HTML)');
+      } else {
+        fail('Unknown MBID does not crash', '500 error or crash content detected in HTML');
+      }
+    }
   }
 }
 
