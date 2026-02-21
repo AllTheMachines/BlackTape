@@ -23,9 +23,9 @@
 
 ### Desktop
 
-- [ ] **DESKTOP-01**: Tauri desktop app reads local SQLite, works offline
-- [ ] **DESKTOP-02**: Same SvelteKit UI runs in Tauri shell and on web
-- [ ] **DIST-01**: Database file downloadable and torrentable, auto-updates distributed as diffs
+- [x] **DESKTOP-01**: Tauri desktop app reads local SQLite, works offline
+- [x] **DESKTOP-02**: Same SvelteKit UI runs in Tauri shell and on web
+- [x] **DIST-01**: Database file downloadable and torrentable; app auto-update infrastructure in place (signing keys, updater plugin); database updates via full replacement download (diff-based updates deferred as future optimization)
 
 ### Local Music Player
 
@@ -140,9 +140,9 @@
 | SEARCH-03 | Phase 2 | Complete |
 | EMBED-01 | Phase 2 | Complete |
 | EMBED-02 | Phase 8 | Pending |
-| DESKTOP-01 | Phase 3 | Pending |
-| DESKTOP-02 | Phase 3 | Pending |
-| DIST-01 | Phase 3 | Pending |
+| DESKTOP-01 | Phase 3 | Complete |
+| DESKTOP-02 | Phase 3 | Complete |
+| DIST-01 | Phase 3 | Complete |
 | PLAYER-01 | Phase 4 | Pending |
 | PLAYER-02 | Phase 4 | Pending |
 | PLAYER-03 | Phase 4 | Pending |
