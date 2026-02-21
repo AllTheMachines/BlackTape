@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Phase 07 (Knowledge Base) — Plan 03 COMPLETE. GenreGraph.svelte + /kb landing page built.
+**Current focus:** Phase 07 (Knowledge Base) — Plans 04+05 COMPLETE. Genre detail page + Time Machine built.
 
 ## Current Position
 
 Phase: 07 of 15 (Knowledge Base — IN PROGRESS)
-Current Plan: 07-03 (complete)
-Status: Phase 07 Plan 03 COMPLETE — GenreGraph.svelte (D3 force, 3 node types) + /kb route (server + universal + page). 0 TypeScript errors. 2026-02-21.
-Last activity: 2026-02-21 — 07-03 complete. GenreGraph.svelte with headless tick(300), genre/scene/city node types, hover/focus behavior. /kb route with taste-personalized Tauri path (tasteProfile.tags) and top-connected web path.
+Current Plan: 07-05 (complete)
+Status: Phase 07 Plan 05 COMPLETE — /time-machine route (server + universal + page) + /api/time-machine + /api/genres + GenreGraphEvolution.svelte. 0 TypeScript errors. 2026-02-21.
+Last activity: 2026-02-21 — 07-05 complete. Time Machine page with decade buttons, year scrubber, animated genre graph evolution, filtered artist list. Tauri/web branching via isTauri(). DISC-06 requirement fulfilled.
 
-Progress: [█████░░░░░] 3/7 plans complete (Phase 07 in progress)
+Progress: [█████░░░░░] 5/7 plans complete (Phase 07 in progress)
 
 ## Performance Metrics
 
@@ -62,6 +62,7 @@ Progress: [█████░░░░░] 3/7 plans complete (Phase 07 in progr
 | Phase 07-knowledge-base P01 | 6min | 2 tasks | 2 files |
 | Phase 07-knowledge-base P02 | 1min | 1 tasks | 1 files |
 | Phase 07-knowledge-base P03 | 5min | 2 tasks | 4 files |
+| Phase 07-knowledge-base P05 | 7min | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -197,6 +198,10 @@ Progress: [█████░░░░░] 3/7 plans complete (Phase 07 in progr
 - [Phase 07-03]: isTauri() utility (not inline window check) in universal load — consistent with style-map pattern
 - [Phase 07-03]: [Phase 07-03]: GenreGraph uses headless tick(300) + 3 node types: genre=circle/accent, scene=diamond/warm-orange, city=dashed-circle/teal
 - [Phase 07-03]: [Phase 07-03]: subgenre edges 0.4 strength/solid; influenced_by 0.15 strength/dashed — visual hierarchy matches relationship semantics
+- [Phase 07-05]: GenreGraphEvolution uses from_id/to_id + Set<number> for O(1) edge filtering — D3 mutates .source/.target, original fields stay clean
+- [Phase 07-05]: Time Machine loadYear() and onMount both branch on isTauri() — Tauri direct DB, web fetch /api/time-machine and /api/genres (no static-adapter server)
+- [Phase 07-05]: d3-force named imports (not full d3 bundle) — only d3-force is installed, same pattern as StyleMap.svelte
+- [Phase 07-05]: resp.json() requires explicit type cast in strict TypeScript — unknown type by default, must cast to typed interface
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
@@ -210,6 +215,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-21
-Phase 07 Plan 03 complete. GenreGraph.svelte (D3 force-directed, headless tick(300), 3 node types: genre=circle/accent, scene=diamond/warm-orange, city=dashed-circle/teal) + /kb route (server load D1 top-connected, universal load Tauri taste-aware via tasteProfile.tags). npm run check: 0 errors.
-Stopped at: Completed 07-03-PLAN.md
-Next: Phase 07 Plan 04
+Phase 07 Plan 05 complete. /time-machine route (server + universal + page, 227 lines) + /api/time-machine + /api/genres + GenreGraphEvolution.svelte (206 lines, d3-force, inception_year filtering, node-appear animation). DISC-06 fulfilled. npm run check: 0 errors.
+Stopped at: Completed 07-05-PLAN.md
+Next: Phase 07 Plan 06
