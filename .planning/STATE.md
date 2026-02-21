@@ -58,6 +58,7 @@ Progress: [██████████] 5/5 plans complete (Phase 06.1 DONE)
 | Phase 06.1 P02 | 3min | 2 tasks | 2 files |
 | Phase 06.1 P03 | 1min | 1 tasks | 1 files |
 | Phase 03-desktop-and-distribution P04 | 12 | 2 tasks | 7 files |
+| Phase 03-desktop-and-distribution P05 | 5 | 1 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -179,6 +180,9 @@ Progress: [██████████] 5/5 plans complete (Phase 06.1 DONE)
 - [Phase 06.1 P05]: .dev.vars holds empty placeholder values only — gitignored, real credentials filled by developer running locally, never committed
 - [Phase 06.1 P05]: AFFILIATE_APPLE_CAMPAIGN=mercury pre-filled as safe default (no secret, just a label) — developer only needs Amazon tag and Apple token
 - [Phase 06.1 P05]: Headless debug-check.mjs verification (60/60) fulfills visual verification requirement — faster and more reliable than manual browser steps
+- [Phase 03-desktop-and-distribution]: NSIS installer over MSI for WebView2 bootstrapping on Windows 10
+- [Phase 03-desktop-and-distribution]: Private key stored at ~/.tauri/mercury.key — gitignored, never committed
+- [Phase 03-desktop-and-distribution]: Database updates use full replacement download — diff-based updates explicitly deferred as future optimization
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
