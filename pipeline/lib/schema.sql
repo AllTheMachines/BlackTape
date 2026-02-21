@@ -34,3 +34,31 @@ CREATE INDEX IF NOT EXISTS idx_artist_tags_artist ON artist_tags(artist_id);
 CREATE INDEX IF NOT EXISTS idx_artist_tags_tag ON artist_tags(tag);
 CREATE INDEX IF NOT EXISTS idx_artists_mbid ON artists(mbid);
 CREATE INDEX IF NOT EXISTS idx_artists_slug ON artists(slug);
+
+-- Phase G: Genre encyclopedia entities
+CREATE TABLE IF NOT EXISTS genres (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  slug TEXT UNIQUE NOT NULL,
+  name TEXT NOT NULL,
+  type TEXT NOT NULL DEFAULT 'genre',    -- 'genre' | 'scene' | 'city'
+  wikidata_id TEXT,
+  wikipedia_title TEXT,
+  inception_year INTEGER,
+  origin_city TEXT,
+  origin_lat REAL,
+  origin_lng REAL,
+  mb_tag TEXT
+);
+
+-- Phase G: Genre parent/child + influenced-by relationships
+CREATE TABLE IF NOT EXISTS genre_relationships (
+  from_id INTEGER NOT NULL REFERENCES genres(id),
+  to_id INTEGER NOT NULL REFERENCES genres(id),
+  rel_type TEXT NOT NULL DEFAULT 'subgenre',   -- 'subgenre' | 'influenced_by' | 'scene_of'
+  PRIMARY KEY (from_id, to_id, rel_type)
+);
+
+CREATE INDEX IF NOT EXISTS idx_genre_slug ON genres(slug);
+CREATE INDEX IF NOT EXISTS idx_genre_mb_tag ON genres(mb_tag);
+CREATE INDEX IF NOT EXISTS idx_genre_rel_from ON genre_relationships(from_id);
+CREATE INDEX IF NOT EXISTS idx_genre_rel_to ON genre_relationships(to_id);
