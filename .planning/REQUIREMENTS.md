@@ -57,10 +57,10 @@
 
 ### UX (Phase 8)
 
-- [ ] **UX-01**: Dense, panel-based UI — multiple information sources visible simultaneously, not hidden behind navigation (Tauri desktop)
+- [x] **UX-01**: Dense, panel-based UI — multiple information sources visible simultaneously, not hidden behind navigation (Tauri desktop)
 - [x] **UX-02**: Taste-based theming engine — color palette generated from user's taste profile; two different people see two different Mercurys
 - [ ] **UX-03**: Layout templates — users can choose and customize their workspace arrangement (predefined templates, not a layout editor)
-- [ ] **UX-04**: Interactive controls everywhere — dropdowns, sliders, toggles; using Mercury feels like playing, not scrolling
+- [x] **UX-04**: Interactive controls everywhere — dropdowns, sliders, toggles; using Mercury feels like playing, not scrolling
 
 ### Buy Links (Phase 06.1)
 
@@ -170,10 +170,10 @@
 | DISC-05 | Phase 7 | Complete |
 | DISC-06 | Phase 7 | Complete |
 | DISC-07 | Phase 7 | Complete |
-| UX-01 | Phase 8 | Pending |
+| UX-01 | Phase 8 | Complete |
 | UX-02 | Phase 8 | Complete — 08-01 (palette.ts + engine.svelte.ts, OKLCH theming) |
 | UX-03 | Phase 8 | Pending |
-| UX-04 | Phase 8 | Pending |
+| UX-04 | Phase 8 | Complete |
 | SOCIAL-01 | Phase 9 | Pending |
 | SOCIAL-02 | Phase 9 | Pending |
 | SOCIAL-03 | Phase 9 | Pending |

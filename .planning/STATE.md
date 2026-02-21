@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Phase 07.3 complete. All 3 plans done: requirements checkboxes, retroactive verification, platform guard cleanup.
+**Current focus:** Phase 08 in progress. Plans 01 and 02 complete: OKLCH theme engine + PaneForge panel layout system (4 components + templates.ts).
 
 ## Current Position
 
 Phase: 08-underground-aesthetic of 15 (Underground Aesthetic — IN PROGRESS)
-Current Plan: 08-01 (complete)
-Status: Phase 08 Plan 01 complete — OKLCH theme engine modules created (palette.ts, engine.svelte.ts, preferences.svelte.ts), theme.css converted to OKLCH. npm run check 0 errors, npm run build clean. 2026-02-21.
-Last activity: 2026-02-21 — 08-01 complete. Three theme modules compile cleanly. OKLCH palette generation, reactive engine state, preference CRUD all done. theme.css visually identical with OKLCH values.
+Current Plan: 08-02 (complete)
+Status: Phase 08 Plan 02 complete — PaneForge installed, templates.ts created, PanelLayout/LeftSidebar/RightSidebar/ControlBar components built. npm run check 0 errors, npm run build clean. 2026-02-21.
+Last activity: 2026-02-21 — 08-02 complete. PaneForge panel infrastructure created. LeftSidebar (nav + discovery filters), RightSidebar (context-aware: artist/genre/default + queue), ControlBar (32px toolbar with search + layout switcher + theme dot). Not yet wired into root layout (Plan 03).
 
-Progress: [██░░░░░░░░] 1/4 plans complete (Phase 08 in progress)
+Progress: [████░░░░░░] 2/4 plans complete (Phase 08 in progress)
 
 ## Performance Metrics
 
@@ -73,6 +73,7 @@ Progress: [██░░░░░░░░] 1/4 plans complete (Phase 08 in progr
 | Phase 07.3 P02 | 4min | 2 tasks | 1 files |
 | Phase 07.3 P03 | 4min | 2 tasks | 7 files |
 | Phase 08 P01 | 4min | 2 tasks | 4 files |
+| Phase 08-underground-aesthetic P02 | 12 | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -251,6 +252,10 @@ Progress: [██░░░░░░░░] 1/4 plans complete (Phase 08 in progr
 - [Phase 08-01]: Transition add/remove pattern in applyPalette/clearPalette — adds CSS transition to :root before applying, removes after 600ms; smooth fade without permanent performance overhead
 - [Phase 08-01]: streamingPref reactive $state in preferences module — components read platform reactively without async invoke calls
 - [Phase 08-01]: Default layout template is 'cockpit' (3-pane full) — per user decision: new Tauri users get full cockpit experience immediately
+- [Phase 08-underground-aesthetic]: PaneForge chosen for resizable panel engine — built for SvelteKit, PaneGroup/Pane/PaneResizer primitives, autoSaveId for per-template localStorage size persistence
+- [Phase 08-underground-aesthetic]: [Phase 08-02]: LayoutTemplate typed as string (not literal union) to accommodate user template IDs alongside built-in IDs
+- [Phase 08-underground-aesthetic]: [Phase 08-02]: LeftSidebar discovery controls filter sidebar panel only — sidebar is a parallel browse viewport, not a main content filter
+- [Phase 08-underground-aesthetic]: [Phase 08-02]: RightSidebar queue replaces floating Queue overlay in cockpit mode — always-visible in sidebar, no backdrop needed
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
@@ -264,6 +269,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-21
-Phase 08 Plan 01 complete. Three theme modules in src/lib/theme/: palette.ts (tasteTagsToHue djb2 hash, generatePalette OKLCH, TASTE_PALETTE_KEYS), engine.svelte.ts (themeState $state, applyPalette with transition, clearPalette, initTheme, updateThemeFromTaste), preferences.svelte.ts (load/save for theme/streaming/layout, reactive streamingPref). theme.css converted from hex to OKLCH equivalents. No deviations. npm run check 0 errors, npm run build clean.
-Stopped at: Completed 08-01-PLAN.md
-Next: Phase 08 Plan 02 (PaneForge panel layout)
+Phase 08 Plan 02 complete. PaneForge installed (^1.0.2). templates.ts exports LayoutTemplate, LAYOUT_TEMPLATES (cockpit/focus/minimal), DEFAULT_TEMPLATE ('cockpit'), TEMPLATE_LIST, UserTemplateRecord, expandUserTemplate, createUserTemplateRecord. preferences.svelte.ts extended with loadUserTemplates and saveUserTemplates. Four Svelte components: PanelLayout.svelte (PaneForge 3/2/1 pane + collapsible sidebars), LeftSidebar.svelte (8 nav links + tag input + decade + niche score + debounced results), RightSidebar.svelte (artist/genre/default context modes + queue panel), ControlBar.svelte (32px toolbar: search + layout switcher + theme dot). 1 auto-fix: removed dead queueState.setQueue property reference. npm run check 0 errors, npm run build clean.
+Stopped at: Completed 08-02-PLAN.md
+Next: Phase 08 Plan 03 (wire PanelLayout into root layout)

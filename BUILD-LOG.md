@@ -2524,3 +2524,89 @@ Both tasks done. Theme engine foundation is in place and ready for Plan 03 integ
 
 > **Commit bac28d7** (2026-02-21 20:08) — feat(08-01): create OKLCH theme engine modules
 > Files changed: 4
+
+> **Commit f77b9e2** (2026-02-21 20:10) — feat(08-01): convert theme.css to OKLCH color space
+> Files changed: 2
+
+> **Commit 4389cee** (2026-02-21 20:12) — docs(08-01): complete theme engine foundation plan
+> Files changed: 4
+
+> **Commit eb0a2de** (2026-02-21 20:15) — feat(08-02): install PaneForge and create layout template definitions
+> Files changed: 4
+
+> **Commit 149abf9** (2026-02-21 20:18) — feat(08-02): create PanelLayout, LeftSidebar, RightSidebar, ControlBar components
+> Files changed: 4
+
+---
+
+## Entry — 2026-02-21 — Phase 08 Plan 02: Panel Layout System
+
+### What's Being Built
+
+The cockpit infrastructure. PaneForge provides the resizable split-pane engine. Four new components wire together the "Foobar2000 energy" workspace: left sidebar, main content area, right context panel, and a dense 32px toolbar.
+
+This is all scaffolding — not wired into the live layout yet (Plan 03 does that). The goal is components that compile, have real content, and are ready to slot in.
+
+### Design Decisions
+
+<!-- decision: PaneForge chosen for resizable panel engine -->
+PaneForge (built on top of SvelteKit) provides PaneGroup, Pane, PaneResizer primitives. Handles resize via mouse drag and keyboard, auto-saves pane sizes to localStorage via autoSaveId, has full TypeScript types. Zero configuration needed beyond wrapping content in panes.
+<!-- /decision -->
+
+<!-- decision: Three built-in layout templates — cockpit/focus/minimal -->
+Rather than a free-form layout editor, Mercury offers three named templates with different pane counts. Cockpit (3-pane) is the default — full workspace feel. Focus (2-pane) is main + right context for when you want to see related content but not the full nav. Minimal (single column) for the cleanest reading experience. User templates can be created on top of these by saving pane proportions under a custom name.
+<!-- /decision -->
+
+<!-- decision: LayoutTemplate type extended to 'string' for user template IDs -->
+Built-in templates use literal union type ('cockpit' | 'focus' | 'minimal'). User templates use string IDs like 'user-1706123456789'. Rather than a complex union of string literals + string, LayoutTemplate is typed as `string` with the LAYOUT_TEMPLATES record keyed by string. Built-in IDs are still effectively enumerated by TEMPLATE_LIST.
+<!-- /decision -->
+
+<!-- decision: LeftSidebar discovery controls filter sidebar panel only -->
+Per earlier user decision: sidebar filter controls (tag input, decade, niche score) feed a local result panel inside the sidebar, not the main content area. The main content area has its own filters on each page. This keeps the sidebar as a "browse mode" viewport — always available, non-intrusive.
+<!-- /decision -->
+
+<!-- decision: RightSidebar queue in sidebar eliminates overlay Queue component in cockpit mode -->
+In cockpit mode, the queue lives permanently in the right sidebar. This replaces the floating Queue overlay (which required backdrop + fixed positioning). Sidebar queue is always visible when expanded, doesn't block content, and fits the workspace paradigm. The floating Queue.svelte overlay remains for non-cockpit contexts.
+<!-- /decision -->
+
+### Task 1 Results
+
+PaneForge installed (6 packages). `src/lib/theme/templates.ts` created:
+
+| Export | Purpose |
+|--------|---------|
+| `LayoutTemplate` | Type alias (`string`) |
+| `TemplateConfig` | Interface: id, label, description, panes, autoSaveId, sizes |
+| `LAYOUT_TEMPLATES` | Record with cockpit/focus/minimal configs |
+| `DEFAULT_TEMPLATE` | `'cockpit'` |
+| `TEMPLATE_LIST` | Array of all built-in TemplateConfig objects |
+| `UserTemplateRecord` | Interface: id (timestamp), label, basePanes |
+| `expandUserTemplate` | Converts UserTemplateRecord → full TemplateConfig |
+| `createUserTemplateRecord` | Creates new UserTemplateRecord from label + basePanes |
+
+`preferences.svelte.ts` extended with `loadUserTemplates` and `saveUserTemplates` — persist user template array as JSON under key `user_layout_templates` in taste.db.
+
+`npm run check`: 0 errors.
+
+### Task 2 Results
+
+Four new Svelte components:
+
+**PanelLayout.svelte** — PaneForge wrapper. Renders 3-pane, 2-pane, or single column based on template config. Left and right panes are collapsible (collapse to 2% width with expand arrow). PaneResizer is 4px wide, hover-highlights on mouse and data-active. Accepts sidebar, context, and children snippets.
+
+**LeftSidebar.svelte** — Navigation + discovery. Quick nav with 8 links (active state from $page). Tag input with chip display (max 5, backspace-to-remove, Enter/comma to add). Decade dropdown (All + 1950s–2020s). Niche score dropdown (All/Mainstream/Eclectic/Niche/Very Niche). 300ms debounced fetch against `/api/search` populates a sidebar result panel (up to 5 artist cards with name + tags).
+
+**RightSidebar.svelte** — Context-aware. Three modes keyed on pagePath:
+- `/artist/*`: related tags from artistData + collapsible queue panel
+- `/kb/genre/*`: subgenres, related genres, key artists from genreData
+- Default: now playing info (if track playing), collapsible queue, top 5 taste tags from tasteProfile
+
+**ControlBar.svelte** — 32px toolbar. Left: search form (200px, submits to /search). Center: reserved. Right: layout switcher `<select>` with `<optgroup label="My Layouts">` for user templates, theme indicator dot (navigates to /settings, color derived from themeState.computedHue).
+
+Auto-fixed one bug during implementation: removed a dead `queueState.setQueue` property reference (queueState has no such property — setQueue is a module-level function, not attached to state).
+
+`npm run check`: 0 errors. `npm run build`: clean.
+
+### Plan 02 Complete
+
+PaneForge installed, all four components compile, real content in all panels. Ready for Plan 03 (wiring into the root layout).
