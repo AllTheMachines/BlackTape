@@ -61,6 +61,12 @@
 		{/if}
 	</div>
 
+	{#if data.genre.mb_tag}
+		<a href="/discover?tags={data.genre.mb_tag}" class="discover-link">
+			Explore {data.genre.name} in Discover
+		</a>
+	{/if}
+
 	<!-- Layer 2: Wikipedia summary (always shown first if available) -->
 	{#if data.wikipediaSummary}
 		<div class="genre-description layer-wikipedia">
@@ -131,6 +137,14 @@
 				focusSlug={data.genre.slug}
 			/>
 		</section>
+	{/if}
+
+	{#if data.genre.mb_tag}
+		<div class="discover-footer">
+			<a href="/discover?tags={data.genre.mb_tag}" class="discover-link">
+				Explore {data.genre.name} in Discover
+			</a>
+		</div>
 	{/if}
 </div>
 
@@ -247,5 +261,24 @@
 
 	.genre-graph-panel {
 		min-height: 300px;
+	}
+
+	.discover-link {
+		display: inline-block;
+		font-size: 0.85rem;
+		color: var(--text-accent, #60a5fa);
+		text-decoration: none;
+		margin-bottom: var(--space-md, 1rem);
+	}
+
+	.discover-link:hover {
+		text-decoration: underline;
+	}
+
+	.discover-footer {
+		margin-top: var(--space-xl, 2rem);
+		padding-top: var(--space-md, 1rem);
+		border-top: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.06));
+		text-align: center;
 	}
 </style>
