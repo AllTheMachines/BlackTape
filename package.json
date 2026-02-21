@@ -5,6 +5,8 @@
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev",
+		"dev:fresh": "node tools/kill-dev.mjs && vite dev",
+		"kill": "node tools/kill-dev.mjs",
 		"build": "vite build",
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
@@ -39,6 +41,7 @@
 		"@tauri-apps/plugin-sql": "^2.3.2",
 		"@tauri-apps/plugin-updater": "^2.10.0",
 		"d3-force": "^3.0.0",
-		"leaflet": "^1.9.4"
+		"leaflet": "^1.9.4",
+		"paneforge": "^1.0.2"
 	}
 }

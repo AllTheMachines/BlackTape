@@ -10,7 +10,10 @@
  * - theme_manual_hue    — '0'..'360' as string
  * - preferred_platform  — 'bandcamp' | 'spotify' | 'soundcloud' | 'youtube' | ''
  * - layout_template     — 'cockpit' | 'focus' | 'minimal'
+ * - user_layout_templates — JSON array of UserTemplateRecord
  */
+
+import type { UserTemplateRecord } from './templates';
 
 /** Reactive streaming platform preference — readable by components without invoking. */
 export const streamingPref = $state({ platform: '' as string });
@@ -116,5 +119,43 @@ export async function saveLayoutPreference(template: string): Promise<void> {
 		await invoke('set_ai_setting', { key: 'layout_template', value: template });
 	} catch (err) {
 		console.error('Failed to save layout preference:', err);
+	}
+}
+
+// ─── User layout templates ────────────────────────────────────────────────────
+
+/**
+ * Load all user-created layout templates from taste.db.
+ * Returns an empty array if none are saved or on error.
+ */
+export async function loadUserTemplates(): Promise<UserTemplateRecord[]> {
+	try {
+		const invoke = await getInvoke();
+		const settings = await invoke<Record<string, string>>('get_all_ai_settings');
+		const raw = settings['user_layout_templates'];
+		if (!raw) return [];
+		try {
+			return JSON.parse(raw) as UserTemplateRecord[];
+		} catch {
+			return [];
+		}
+	} catch (err) {
+		console.error('Failed to load user templates:', err);
+		return [];
+	}
+}
+
+/**
+ * Save the full array of user-created layout templates to taste.db.
+ */
+export async function saveUserTemplates(templates: UserTemplateRecord[]): Promise<void> {
+	try {
+		const invoke = await getInvoke();
+		await invoke('set_ai_setting', {
+			key: 'user_layout_templates',
+			value: JSON.stringify(templates)
+		});
+	} catch (err) {
+		console.error('Failed to save user templates:', err);
 	}
 }
