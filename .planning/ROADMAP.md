@@ -21,7 +21,7 @@ Phase 8 is the turning point — where Mercury stops being a tool and starts bei
 - [x] **Phase 3: Desktop App Foundation** — Tauri shell, local SQLite, database distribution, offline search
 - [x] **Phase 4: Local Music Player** — Folder scanning, metadata, playback, library-meets-discovery
 - [ ] **Phase 5: AI Foundation** — Client-side models, recommendations, natural-language exploration, taste profiling
-- [x] **Phase 6: Discovery Engine** — Composite ranking, tag browsing, crate digging, uniqueness scoring, style map (completed 2026-02-20)
+- [x] **Phase 6: Discovery Engine** — Composite ranking, tag browsing, crate digging, uniqueness scoring, style map (completed 2026-02-20)
 - [ ] **Phase 7: Knowledge Base** — Genre/scene map, multi-layer content, scene maps, time machine, liner notes
 - [ ] **Phase 8: Underground Aesthetic** — Dense playful UI, taste-based theming, panels/controls, templates, game-like feel
 - [ ] **Phase 9: Community Foundation** — Identity system, taste matching, collections, taste fingerprint, import/export
@@ -142,14 +142,24 @@ Plans:
 - [ ] 06-06-PLAN.md — Style Map: D3 force-directed genre relationship visualization
 - [ ] 06-07-PLAN.md — Navigation links + docs update + end-to-end verification checkpoint
 
-### Phase 06.1: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
-
-**Goal:** [Urgent work - to be planned]
-**Depends on:** Phase 6
-**Plans:** 7/7 plans complete
-
+### Phase 06.1: Affiliate Buy Links (INSERTED)
+**Goal**: Release detail pages with affiliate-coded purchase links across five platforms (Bandcamp, Amazon Music, Apple Music, Beatport, Discogs). Passive income layer on top of existing discovery infrastructure. All five platforms always shown — search fallback links where no direct URL is available.
+**Depends on**: Phase 6
+**Requirements**: BUY-01, BUY-02, BUY-03, BUY-04
+**Success Criteria**:
+  1. Release detail pages exist at /artist/{slug}/release/{mbid} with cover art, tracklist, and credits
+  2. "Buy on" row below "Listen on" bar shows all five platforms
+  3. Affiliate IDs (Amazon Associates, Apple Performance Partners) in env vars — never hardcoded
+  4. Search fallback links have subtle '?' indicator so users know they're searching, not going to a product page
+  5. Footer affiliate disclosure on all pages
+  6. ReleaseCard on artist page navigates to release detail page
+**Plans**: 5 plans
 Plans:
-- [ ] TBD (run /gsd:plan-phase 06.1 to break down)
+- [ ] 06.1-01-PLAN.md — Affiliate module (types, config, URL construction for all 5 platforms)
+- [ ] 06.1-02-PLAN.md — Release page data layer (server load + universal Tauri load)
+- [ ] 06.1-03-PLAN.md — BuyOnBar component (visual "Buy on" row)
+- [ ] 06.1-04-PLAN.md — Release page UI + ReleaseCard navigation + footer disclosure
+- [ ] 06.1-05-PLAN.md — .dev.vars setup + visual verification checkpoint
 
 ### Phase 7: Knowledge Base
 **Goal**: The genre/scene map — Mercury's biggest differentiator. A living encyclopedia of music: genres, scenes, movements, cities, eras. A place you can get lost in for hours. Content builds in layers over time.
@@ -290,6 +300,7 @@ Plans:
 | 4. Local Music Player | 5/5 | Complete | 2026-02-17 |
 | 5. AI Foundation | 0/TBD | Not started | - |
 | 6. Discovery Engine | 7/7 | Complete   | 2026-02-20 |
+| 06.1. Affiliate Buy Links | 0/5 | Planning complete | - |
 | 7. Knowledge Base | 0/TBD | Not started | - |
 | 8. Underground Aesthetic | 0/TBD | Not started | - |
 | 9. Community Foundation | 0/TBD | Not started | - |
