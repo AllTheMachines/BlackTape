@@ -23,7 +23,8 @@ Phase 8 is the turning point — where Mercury stops being a tool and starts bei
 - [ ] **Phase 5: AI Foundation** — Client-side models, recommendations, natural-language exploration, taste profiling
 - [x] **Phase 6: Discovery Engine** — Composite ranking, tag browsing, crate digging, uniqueness scoring, style map (completed 2026-02-20)
 - [x] **Phase 7: Knowledge Base** — Genre/scene map, multi-layer content, scene maps, time machine, liner notes (completed 2026-02-21)
-- [x] **Phase 07.1: Integration Hotfixes** (INSERTED) — loadTasteProfile startup fix, /about route, genre→/discover link (completed 2026-02-21)
+- [x] **Phase 07.1: Integration Hotfixes** (INSERTED) — loadTasteProfile startup fix, /about route, genre→/discover link
+ (completed 2026-02-21)
 - [ ] **Phase 07.2: Playback → Taste Signal** (INSERTED) — Audio engine hooks to feed taste profile from local playback
 - [ ] **Phase 07.3: Requirements & Verification Cleanup** (INSERTED) — REQUIREMENTS.md updates, Phase 04 VERIFICATION.md, platform! guards, schema docs
 - [ ] **Phase 8: Underground Aesthetic** — Dense playful UI, taste-based theming, panels/controls, templates, game-like feel
@@ -216,6 +217,11 @@ Plans:
   3. After listening to 5+ local tracks, taste profile reflects those plays
   4. AI recommendations update without manual favorites or Settings interaction
   5. PLAYER-03 fully satisfied — local library listening IS taste data
+**Plans:** 3 plans
+Plans:
+- [ ] 07.2-01-PLAN.md — play_history Rust backend (taste.db table + 6 Tauri commands)
+- [ ] 07.2-02-PLAN.md — Playback tracking engine + taste signal extension with time-decay
+- [ ] 07.2-03-PLAN.md — SoundCloud embed hook + Listening History UI in Settings
 
 ### Phase 07.3: Requirements & Verification Cleanup (INSERTED)
 **Goal**: Align documentation with reality. Update REQUIREMENTS.md, produce Phase 04 VERIFICATION.md, fix P3 code issues.
