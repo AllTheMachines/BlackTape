@@ -1684,3 +1684,49 @@ Results: 44 passed, 0 failed
 - 16 HTTP route + API checks (including MusicBrainz proxy, search API, 404 handling)
 - Rust: `cargo check` clean (0 errors)
 - TypeScript: `npm run check` — 0 errors, 3 pre-existing Svelte 5 lint hints
+
+> **Commit 684f4c9** (2026-02-21 01:18) — fix: headless debug harness + slug bugs fixed
+> Files changed: 3
+
+> **Commit 50e740e** (2026-02-21 09:00) — docs(06.1): capture phase context
+> Files changed: 1
+
+> **Commit 3a04b8b** (2026-02-21 09:23) — docs(06.1): create phase plan
+> Files changed: 6
+
+## Entry 030 — 2026-02-21 — Phase 06.1 Plan 01: Affiliate Module Foundation
+
+### What Was Built
+
+Pure-logic affiliate URL builder for all five buy platforms. This is the foundation everything else in Phase 06.1 imports. Completely decoupled from UI.
+
+**`src/lib/affiliates/`** — new module mirroring the embeds/ structure:
+- `types.ts` — BuyLink, BuyPlatform, AffiliateConfig interfaces
+- `config.ts` — getAffiliateConfig() reading from $env/dynamic/private
+- `construct.ts` — buildBuyLinks() returning all 5 platforms always
+- `index.ts` — public re-exports
+
+### Key Decisions
+
+**$env/dynamic/private vs static:** Cloudflare Pages environment variables are runtime-only — they're not baked in at build time. Using `$env/static/private` would result in null affiliate IDs in production. Always use dynamic.
+
+**Discogs URL:** `/sell/list?q=...` not `/search?q=...` — the sell/list endpoint shows vinyl for sale in the marketplace, which is what someone clicking "buy" actually wants. The search endpoint shows the music database for cataloguing.
+
+**buildBuyLinks() always returns 5 links:** No conditional logic based on data availability. The isDirect flag distinguishes "we have a real product URL" from "here's a search fallback." UI layer can render them consistently.
+
+**Affiliate program reality:** Only Amazon (5% commission) and Apple Music (7%) have active programs. Bandcamp, Beatport (ended 2008), and Discogs (never launched) get search fallbacks only. Links still useful — users can buy, Mercury just doesn't earn commission from those three.
+
+### Verification
+
+- `npm run check` — 0 errors, 3 pre-existing Svelte 5 warnings (unrelated)
+- All 4 files in place, public API exports working
+- No affiliate IDs hardcoded anywhere — env vars only
+
+> **Commit 3f2267d** (2026-02-21 09:27) — feat(06.1-01): create affiliate module types and config
+> Files changed: 2
+
+> **Commit cfc4d6a** (2026-02-21 09:28) — feat(06.1-01): create affiliate URL construction and public index
+> Files changed: 2
+
+> **Commit 2ecdd96** (2026-02-21 09:30) — docs(06.1-01): complete affiliate module foundation plan
+> Files changed: 4
