@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Phase 06.1 (Affiliate Buy Links) — next phase to plan and execute.
+**Current focus:** Phase 06.1 (Affiliate Buy Links) — affiliate module built, building release pages next.
 
 ## Current Position
 
-Phase: 06.1 of 15 (Affiliate Buy Links — starting)
-Current Plan: None (run /gsd:plan-phase 06.1 to begin)
-Status: Phase 6 COMPLETE — human verification passed 2026-02-21. Advancing to Phase 06.1.
-Last activity: 2026-02-21 — Phase 6 verified and closed. All 4 discovery features confirmed working.
+Phase: 06.1 of 15 (Affiliate Buy Links — in progress)
+Current Plan: 06.1-02 (next to execute)
+Status: Phase 06.1 Plan 01 COMPLETE — affiliate module foundation built 2026-02-21.
+Last activity: 2026-02-21 — 06.1-01 complete. src/lib/affiliates/ module with types, config, construct, index.
 
-Progress: [██████████] 7/7 COMPLETE
+Progress: [██░░░░░░░░] 1/5 plans complete
 
 ## Performance Metrics
 
@@ -164,6 +164,11 @@ Progress: [██████████] 7/7 COMPLETE
 - [Phase 06]: Log10 node radius scaling (clamped 6–30px) — prevents popular genre tags from dominating the style map canvas
 - [Phase 06-discovery-engine]: Web nav shows only Discover + Style Map; Tauri nav order: Discover, Style Map, Dig, Library, Explore, Settings
 - [Phase 06-discovery-engine]: Anti-patterns table in ARCHITECTURE.md documents ORDER BY RANDOM, on-demand JOIN, and D3 DOM manipulation pitfalls from Phase 6
+- [Phase 06.1]: $env/dynamic/private (not static) for Cloudflare Pages runtime env vars — CF Pages vars are runtime-only, not available at build time
+- [Phase 06.1]: Discogs buy links use /sell/list (marketplace) not /search (database) — users want to buy vinyl, not catalog it
+- [Phase 06.1]: affiliates/ module mirrors embeds/ structure: types + config + construct + index
+- [Phase 06.1]: buildBuyLinks() always returns all 5 BuyLinks — never conditional on data availability, isDirect flag distinguishes direct URLs from search fallbacks
+- [Phase 06.1]: Bandcamp isDirect: true only for release-level MusicBrainz URLs — artist-level URLs send users to homepage not specific album
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
@@ -177,5 +182,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-21
-Phase 6 complete. Human verification passed for all 4 discovery features: /discover (tag intersection), UniquenessScore badge, /crate (Crate Digging, Tauri-only), /style-map (D3 force graph). All Playwright checks passed. VERIFICATION.md written.
-Next: Plan Phase 06.1 (Affiliate Buy Links)
+Plan 06.1-01 complete. Affiliate module foundation built: src/lib/affiliates/ with types, config, construct, index. buildBuyLinks() returns all 5 platforms. $env/dynamic/private for CF Pages runtime env vars. npm run check passes (0 errors).
+Stopped at: Completed 06.1-01-PLAN.md
+Next: Execute 06.1-02-PLAN.md (release page server routes)

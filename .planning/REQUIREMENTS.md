@@ -1,7 +1,7 @@
 # Requirements: Mercury
 
 **Defined:** 2026-02-15
-**Updated:** 2026-02-16 — desktop-first pivot, added local player, AI, and knowledge base requirements
+**Updated:** 2026-02-21 — added Phase 06.1 affiliate buy link requirements
 **Core Value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
 
 ## v1 Requirements
@@ -42,10 +42,10 @@
 
 ### Discovery
 
-- [ ] **DISC-01**: User can browse and intersect tags
+- [x] **DISC-01**: User can browse and intersect tags
 - [x] **DISC-02**: Composite discovery ranking — inverse popularity + tag rarity scoring + scene freshness
 - [x] **DISC-03**: Style map visualization shows tag relationships and clusters
-- [ ] **DISC-04**: Crate Digging Mode — serendipitous browsing through filtered stacks (genre, decade, country)
+- [x] **DISC-04**: Crate Digging Mode — serendipitous browsing through filtered stacks (genre, decade, country)
 
 ### Knowledge Base
 
@@ -54,6 +54,13 @@
 - [ ] **DISC-05**: Scene Maps — geographic + temporal visualization of music scenes using MusicBrainz location data
 - [ ] **DISC-06**: Time Machine — browse releases by year, scrub timeline, filter by tags, watch genre evolution
 - [ ] **DISC-07**: Liner Notes — rich expandable credits, relationships, and production details on release pages
+
+### Buy Links (Phase 06.1)
+
+- [ ] **BUY-01**: Release detail pages exist — cover art, tracklist, personnel credits, and link rows
+- [x] **BUY-02**: "Buy on" row on release pages showing all five platforms (Bandcamp, Amazon Music, Apple Music, Beatport, Discogs) with search fallbacks where no direct URL is available; subtle indicator distinguishes search from direct
+- [x] **BUY-03**: Affiliate IDs stored in environment variables only — never hardcoded in source; Amazon Associates and Apple Performance Partners supported
+- [ ] **BUY-04**: Site-wide affiliate disclosure in footer — no per-link badges
 
 ### Social
 
@@ -143,10 +150,14 @@
 | AI-02 | Phase 5 | Pending |
 | AI-03 | Phase 5 | Pending |
 | AI-04 | Phase 5 | Pending |
-| DISC-01 | Phase 6 | Pending |
+| DISC-01 | Phase 6 | Complete |
 | DISC-02 | Phase 6 | Complete |
 | DISC-03 | Phase 6 | Complete |
-| DISC-04 | Phase 6 | Pending |
+| DISC-04 | Phase 6 | Complete |
+| BUY-01 | Phase 06.1 | Pending |
+| BUY-02 | Phase 06.1 | Complete |
+| BUY-03 | Phase 06.1 | Complete |
+| BUY-04 | Phase 06.1 | Pending |
 | KB-01 | Phase 7 | Pending |
 | KB-02 | Phase 7 | Pending |
 | DISC-05 | Phase 7 | Pending |
@@ -185,10 +196,10 @@
 | SUST-10 | Phase 0 / Stage 4 | Pending |
 
 **Coverage:**
-- v1 requirements: 56 total (was 47, added 9 for player, AI, knowledge base)
-- Mapped to phases: 56
+- v1 requirements: 60 total (added 4 for Phase 06.1 buy links)
+- Mapped to phases: 60
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-15*
-*Last updated: 2026-02-16 — desktop-first pivot, new requirement categories*
+*Last updated: 2026-02-21 — added BUY-01, BUY-02, BUY-03, BUY-04 for Phase 06.1 affiliate buy links*
