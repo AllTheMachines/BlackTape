@@ -1730,3 +1730,56 @@ Pure-logic affiliate URL builder for all five buy platforms. This is the foundat
 
 > **Commit 2ecdd96** (2026-02-21 09:30) — docs(06.1-01): complete affiliate module foundation plan
 > Files changed: 4
+
+> **Commit bc69e75** (2026-02-21 09:31) — docs(06.1-01): add build log entry 030 for affiliate module foundation
+> Files changed: 1
+
+> **Commit b86730d** (2026-02-21 09:32) — feat(06.1-03): add BuyOnBar component
+> Files changed: 1
+
+> **Commit ddb0955** (2026-02-21 09:33) — feat(06.1-02): add release page server load (SSR + Cloudflare)
+> Files changed: 1
+
+> **Commit 1c15668** (2026-02-21 09:34) — docs(06.1-03): complete BuyOnBar component plan
+> Files changed: 3
+
+> **Commit e96b33e** (2026-02-21 09:34) — feat(06.1-02): add release page universal load (Tauri passthrough)
+> Files changed: 1
+
+> **Commit 5afc7fb** (2026-02-21 09:36) — docs(06.1-02): complete release page data layer plan
+> Files changed: 3
+
+---
+
+## Entry 031 — 2026-02-21 — Phase 06.1 Plan 02: Release Page Data Layer
+
+### What Was Built
+
+The SSR and Tauri data loading layer for release detail pages at `/artist/{slug}/release/{mbid}`.
+
+Two new SvelteKit route files:
+
+**`+page.server.ts`** — Cloudflare SSR load:
+- Guards on `platform?.env?.DB` — graceful null shell for non-Cloudflare contexts
+- MusicBrainz browse endpoint: `/ws/2/release?release-group={mbid}&inc=recordings+artist-credits+media+artist-rels`
+- Cloudflare Cache API with 24hr TTL
+- Extracts tracklist (Track[]), personnel credits (Credit[]), release-level Bandcamp URL
+- Calls `getAffiliateConfig()` + `buildBuyLinks()` server-side
+
+**`+page.ts`** — Universal load (web passthrough / Tauri direct):
+- Web: returns server data unchanged
+- Tauri: fetches MusicBrainz directly, dynamic import of `buildBuyLinks` with null affiliate config
+
+### Key Decisions
+
+**platform.caches.default, not global caches:** Plan code used `typeof caches !== 'undefined' ? caches.default : null` as a fallback. TypeScript caught it — standard Web API `CacheStorage` has no `.default` property. Fixed to `platform.caches ? platform.caches.default : null`, matching the exact pattern in existing API route handlers.
+
+**Tauri gets non-coded buy links:** In Tauri context there's no server environment, so affiliate IDs (`amazonTag`, `appleToken`) aren't available. Buy links still work — they just don't earn commission. Users can still buy; Mercury just doesn't get the referral fee on desktop. Acceptable tradeoff.
+
+**Interfaces exported from +page.server.ts:** `Track`, `Credit`, `ReleaseDetail` are exported from the server file and imported by `+page.ts`. Standard SvelteKit pattern — type sharing across server/universal boundary.
+
+### Verification
+
+- `npm run check` — 0 errors (379 files, up from 377)
+- Both files in place under `src/routes/artist/[slug]/release/[mbid]/`
+- No `getAffiliateConfig` import in `+page.ts` (would fail in universal context)
