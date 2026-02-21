@@ -11,13 +11,14 @@ Mercury is a music discovery engine that indexes all music from open databases a
 3. [Artist Pages](#artist-pages)
 4. [Discover Page](#discover-page)
 5. [Style Map](#style-map)
-6. [Local Music Library](#local-music-library)
-7. [Music Player](#music-player)
-8. [Discovery Features](#discovery-features)
-9. [Crate Digging Mode](#crate-digging-mode)
-10. [AI Features](#ai-features)
-11. [Web vs Desktop](#web-vs-desktop)
-12. [Troubleshooting](#troubleshooting)
+6. [Knowledge Base](#knowledge-base)
+7. [Local Music Library](#local-music-library)
+8. [Music Player](#music-player)
+9. [Discovery Features](#discovery-features)
+10. [Crate Digging Mode](#crate-digging-mode)
+11. [AI Features](#ai-features)
+12. [Web vs Desktop](#web-vs-desktop)
+13. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -167,6 +168,42 @@ The Style Map (`/style-map`) is a visual overview of how music genres relate to 
 ### Technical Note
 
 The graph layout is computed once on page load using D3's force simulation (500 iterations, run synchronously). The result is a static snapshot — no animation loop, no continuous layout updates.
+
+---
+
+## Knowledge Base
+
+### Genre Map
+
+The Knowledge Base is Mercury's music encyclopedia — a living map of genres, scenes, and musical movements. Find it under **Knowledge Base** in the navigation.
+
+The genre graph starts centered on your taste. Click any genre to open its page. Genres (global), scenes (geographic/temporal), and cities are visually distinct. The graph expands as you navigate — always a neighborhood, never an overwhelming hairball.
+
+### Genre Pages
+
+Each genre or scene page shows:
+- A description pulled from Wikipedia when available
+- An AI-generated vibe summary (desktop app, when AI is enabled)
+- Key artists linked to their Mercury profiles
+- Related genres and scenes
+- For scenes with a city origin: a map pinning the location
+
+Pages with limited data show a contribution invitation — community editing comes in a future phase.
+
+### Time Machine
+
+The **Time Machine** lets you browse Mercury's catalog by year. Navigate decades (60s–20s) with the decade buttons, then fine-tune within the decade using the year slider. Add a genre tag filter to narrow the results.
+
+Opening state: approximately 30 years in the past — a natural starting point for musical nostalgia. Adjust freely.
+
+### Liner Notes
+
+On any release page, expand **Liner Notes** at the bottom to see:
+- Full artist credits
+- Record label and catalog number
+- Per-track recording credits (when available)
+
+Liner Notes are fetched from MusicBrainz on demand — expanding is instant when MusicBrainz responds quickly. Credits may show a brief loading state.
 
 ---
 
@@ -440,6 +477,9 @@ When using a remote API provider, your queries are sent to whichever endpoint yo
 | Embedded players (Bandcamp, etc.) | Yes | Yes |
 | Discover page (tag intersection browsing) | Yes | Yes |
 | Style Map (genre graph visualization) | Yes | Yes |
+| Knowledge Base (genre encyclopedia) | Yes | Yes |
+| Time Machine (browse by year) | Yes | Yes |
+| Liner Notes (release credits) | Yes | Yes |
 | Local music library | No | Yes |
 | Audio playback of local files | No | Yes |
 | Player bar + queue | No | Yes |
@@ -447,6 +487,7 @@ When using a remote API provider, your queries are sent to whichever endpoint yo
 | Unified search (local + discovery) | No | Yes |
 | Crate Digging Mode | No | Yes |
 | AI features (explore, recommendations, taste) | No | Yes |
+| AI genre summaries in Knowledge Base | No | Yes |
 | Offline search | No | Yes |
 | Requires internet for artist pages | Yes | Yes* |
 
@@ -534,4 +575,4 @@ Local model processing time depends on your hardware. The generation model (Qwen
 
 ---
 
-*Mercury v0.1.0 — Last updated: 2026-02-21*
+*Mercury v0.1.0 — Last updated: 2026-02-21 (Phase 7: Knowledge Base)*
