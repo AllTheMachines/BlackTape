@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Phase 07 (Knowledge Base) — Plan 01 COMPLETE. Genre encyclopedia pipeline (Phase G) done.
+**Current focus:** Phase 07 (Knowledge Base) — Plan 02 COMPLETE. Genre query functions added to queries.ts.
 
 ## Current Position
 
 Phase: 07 of 15 (Knowledge Base — IN PROGRESS)
-Current Plan: 07-01 (complete)
-Status: Phase 07 Plan 01 COMPLETE — genres/genre_relationships schema + build-genre-data.mjs. 2905 genres, 2712 relationships. Wikidata SPARQL + Nominatim geocoding. 2026-02-21.
-Last activity: 2026-02-21 — 07-01 complete. Schema extended, Phase G pipeline script created, Wikidata returned 5000 rows, 2905 genres inserted.
+Current Plan: 07-02 (complete)
+Status: Phase 07 Plan 02 COMPLETE — 6 genre query functions + GenreNode/GenreEdge/GenreGraph types in queries.ts. 0 TypeScript errors. 2026-02-21.
+Last activity: 2026-02-21 — 07-02 complete. getGenreSubgraph, getGenreBySlug, getGenreKeyArtists, getArtistsByYear, getStarterGenreGraph, getAllGenreGraph added.
 
-Progress: [██░░░░░░░░] 1/5 plans complete (Phase 07 in progress)
+Progress: [████░░░░░░] 2/5 plans complete (Phase 07 in progress)
 
 ## Performance Metrics
 
@@ -60,6 +60,7 @@ Progress: [██░░░░░░░░] 1/5 plans complete (Phase 07 in progr
 | Phase 03-desktop-and-distribution P04 | 12 | 2 tasks | 7 files |
 | Phase 03-desktop-and-distribution P05 | 5 | 1 tasks | 4 files |
 | Phase 07-knowledge-base P01 | 6min | 2 tasks | 2 files |
+| Phase 07-knowledge-base P02 | 1min | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -189,6 +190,9 @@ Progress: [██░░░░░░░░] 1/5 plans complete (Phase 07 in progr
 - [Phase 07-01]: Wikidata Q188451 (music genre) via SPARQL — P279 (subclass/parent), P737 (influenced-by), P571 (inception year), P495 (country of origin)
 - [Phase 07-01]: Nominatim geocoding is pipeline-only with 1100ms delays — coordinates baked into DB, never fetched at runtime
 - [Phase 07-01]: Graceful Wikidata degradation: exits 0 with warning if unreachable — zero crash risk in automated pipeline runs
+- [Phase 07-02]: getGenreKeyArtists uses at2.count (not at2.votes) — artist_tags schema uses count column, not votes
+- [Phase 07-02]: getAllGenreGraph has no WHERE filter — full table dump ordered by inception_year ASC for client-side evolution animation
+- [Phase 07-02]: getStarterGenreGraph falls back to top-connected genre_relationships from_id when no taste tags match mb_tag
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
@@ -202,6 +206,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-21
-Phase 07 Plan 01 complete. Schema extended (genres + genre_relationships tables). build-genre-data.mjs created (Phase G, 367 lines). Wikidata SPARQL returned 5000 rows → 2905 genres + 2712 relationships. Nominatim geocoding running for 1273 scene cities. npm run check: 0 errors.
-Stopped at: Completed 07-01-PLAN.md
-Next: Phase 07 Plan 02
+Phase 07 Plan 02 complete. 6 genre query functions (getGenreSubgraph, getGenreBySlug, getGenreKeyArtists, getArtistsByYear, getStarterGenreGraph, getAllGenreGraph) + 3 TypeScript interfaces (GenreNode, GenreEdge, GenreGraph) appended to src/lib/db/queries.ts. 1 bug auto-fixed: plan spec used at2.votes but schema uses at2.count. npm run check: 0 errors.
+Stopped at: Completed 07-02-PLAN.md
+Next: Phase 07 Plan 03
