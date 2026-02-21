@@ -16,9 +16,10 @@
 	import RightSidebar from '$lib/components/RightSidebar.svelte';
 	import ControlBar from '$lib/components/ControlBar.svelte';
 	import { initTheme, updateThemeFromTaste, themeState } from '$lib/theme/engine.svelte';
-	import { loadThemePreferences, loadLayoutPreference, saveLayoutPreference, loadStreamingPreference } from '$lib/theme/preferences.svelte';
+	import { loadThemePreferences, loadLayoutPreference, saveLayoutPreference, loadStreamingPreference, loadUserTemplates } from '$lib/theme/preferences.svelte';
 	import type { LayoutTemplate } from '$lib/theme/templates';
-	import { DEFAULT_TEMPLATE, LAYOUT_TEMPLATES, TEMPLATE_LIST } from '$lib/theme/templates';
+	import { DEFAULT_TEMPLATE, LAYOUT_TEMPLATES, TEMPLATE_LIST, expandUserTemplate } from '$lib/theme/templates';
+	import { layoutState } from '$lib/theme/layout-state.svelte';
 
 	let { children } = $props();
 
@@ -26,11 +27,11 @@
 	let tauriMode = $state(false);
 	let canGoBack = $derived($page.url.pathname !== '/');
 
-	/** Active layout template — Tauri only */
-	let activeTemplate = $state<LayoutTemplate>(DEFAULT_TEMPLATE);
-
-	/** All templates for ControlBar (built-ins only for now — user templates loaded async) */
-	let allTemplates = $state(TEMPLATE_LIST);
+	/** All templates for ControlBar — built-ins + user templates */
+	let allTemplateConfigs = $derived([
+		...TEMPLATE_LIST,
+		...layoutState.userTemplates.map(expandUserTemplate)
+	]);
 
 	onMount(async () => {
 		tauriMode = isTauri();
@@ -48,7 +49,10 @@
 				loadThemePreferences(),
 				loadLayoutPreference()
 			]);
-			activeTemplate = layoutPref as LayoutTemplate;
+			layoutState.template = layoutPref as LayoutTemplate;
+
+			// Load user templates into shared state
+			layoutState.userTemplates = await loadUserTemplates();
 
 			// Initialize theme engine — applies saved palette
 			initTheme(tasteProfile.tags, themePrefs);
@@ -69,9 +73,9 @@
 		}
 	});
 
-	/** Handle template change from ControlBar. */
+	/** Handle template change from ControlBar or Settings. */
 	function handleTemplateChange(templateId: string) {
-		activeTemplate = templateId as LayoutTemplate;
+		layoutState.template = templateId as LayoutTemplate;
 		if (tauriMode) {
 			saveLayoutPreference(templateId);
 		}
@@ -137,12 +141,12 @@
 {#if tauriMode}
 	<!-- Tauri cockpit layout: ControlBar + PanelLayout -->
 	<ControlBar
-		currentTemplateId={activeTemplate}
-		{allTemplates}
+		currentTemplateId={layoutState.template}
+		allTemplates={allTemplateConfigs}
 		onTemplateChange={handleTemplateChange}
 	/>
 
-	<PanelLayout template={activeTemplate} hasPlayer={showPlayer}>
+	<PanelLayout template={layoutState.template} hasPlayer={showPlayer}>
 		{#snippet sidebar()}
 			<LeftSidebar />
 		{/snippet}
