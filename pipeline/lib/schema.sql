@@ -1,6 +1,14 @@
 -- Mercury discovery index schema
 -- Slim: artists + tags + country. That's the style map.
 -- Everything else (releases, URLs, bios) is fetched live from the internet.
+--
+-- Pipeline execution order:
+--   1. pipeline/import.js          — Phases A-E: extract MB dumps, build artists + artist_tags + artists_fts
+--   2. pipeline/build-tag-stats.mjs — Phase F: creates tag_stats + tag_cooccurrence (NOT in this file)
+--   3. pipeline/build-genre-data.mjs — Phase G: creates genres + genre_relationships (defined below)
+--
+-- NOTE: tag_stats and tag_cooccurrence tables are created at runtime by build-tag-stats.mjs,
+-- not defined in this schema file.
 
 -- Core artist table (discovery essentials only)
 CREATE TABLE IF NOT EXISTS artists (
