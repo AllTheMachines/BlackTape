@@ -173,7 +173,7 @@
 
 			<div class="releases-grid">
 				{#each visibleReleases as release (release.mbid)}
-					<ReleaseCard {release} onplayinline={handlePlayInline} />
+					<ReleaseCard {release} artistSlug={data.artist.slug} onplayinline={handlePlayInline} />
 				{/each}
 			</div>
 

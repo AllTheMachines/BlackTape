@@ -86,6 +86,12 @@
 	{@render children()}
 </main>
 
+<footer class="site-footer">
+	<p class="affiliate-disclosure">
+		Some links on release pages are affiliate links. Mercury may earn a small commission if you make a purchase — at no extra cost to you. This helps fund open infrastructure.
+	</p>
+</footer>
+
 {#if isTauri()}
 	<Player />
 {/if}
@@ -201,6 +207,21 @@
 
 	main.has-player {
 		padding-bottom: var(--player-height);
+	}
+
+	.site-footer {
+		padding: var(--space-lg);
+		border-top: 1px solid var(--border-subtle);
+		margin-top: auto;
+	}
+
+	.affiliate-disclosure {
+		font-size: 0.7rem;
+		color: var(--text-muted);
+		max-width: 860px;
+		margin: 0 auto;
+		text-align: center;
+		line-height: 1.5;
 	}
 
 	.loading-bar {

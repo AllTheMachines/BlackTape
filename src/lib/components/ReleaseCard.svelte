@@ -5,11 +5,15 @@
 
 	let {
 		release,
+		artistSlug,
 		onplayinline
 	}: {
 		release: ReleaseGroup;
+		artistSlug: string;
 		onplayinline?: (embedHtml: string) => void;
 	} = $props();
+
+	let releaseHref = $derived(`/artist/${artistSlug}/release/${release.mbid}`);
 
 	let coverError = $state(false);
 
@@ -70,23 +74,27 @@
 </script>
 
 <div class="release-card">
-	<div class="cover-art">
-		{#if !coverError && release.coverArtUrl}
-			<img
-				src={release.coverArtUrl}
-				alt="{release.title} cover art"
-				loading="lazy"
-				onerror={() => coverError = true}
-			/>
-		{:else}
-			<div class="cover-placeholder">
-				<span>{initial}</span>
-			</div>
-		{/if}
-	</div>
+	<a href={releaseHref} class="cover-art-link" aria-label="View {release.title} details">
+		<div class="cover-art">
+			{#if !coverError && release.coverArtUrl}
+				<img
+					src={release.coverArtUrl}
+					alt="{release.title} cover art"
+					loading="lazy"
+					onerror={() => coverError = true}
+				/>
+			{:else}
+				<div class="cover-placeholder">
+					<span>{initial}</span>
+				</div>
+			{/if}
+		</div>
+	</a>
 
 	<div class="release-info">
-		<span class="release-title">{release.title}</span>
+		<a href={releaseHref} class="release-title-link">
+			<span class="release-title">{release.title}</span>
+		</a>
 		<div class="release-meta">
 			{#if release.year}
 				<span class="release-year">{release.year}</span>
@@ -120,6 +128,26 @@
 		gap: var(--space-sm);
 		width: 180px;
 		min-width: 0;
+	}
+
+	.cover-art-link {
+		display: block;
+		text-decoration: none;
+		color: inherit;
+	}
+
+	.cover-art-link:hover {
+		text-decoration: none;
+	}
+
+	.release-title-link {
+		text-decoration: none;
+		color: inherit;
+	}
+
+	.release-title-link:hover .release-title {
+		color: var(--text-primary);
+		text-decoration: none;
 	}
 
 	.cover-art {
