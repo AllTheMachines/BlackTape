@@ -62,7 +62,7 @@ export async function exportPlayHistory(): Promise<void> {
 		const { invoke } = await import('@tauri-apps/api/core');
 		const json = await invoke<string>('export_play_history');
 
-		// Try Tauri dialog + fs for file save
+		// Try Tauri dialog for save path, then invoke Rust to write the file
 		try {
 			const { save } = await import('@tauri-apps/plugin-dialog');
 			const path = await save({
@@ -70,16 +70,8 @@ export async function exportPlayHistory(): Promise<void> {
 				filters: [{ name: 'JSON', extensions: ['json'] }]
 			});
 			if (path) {
-				// Use writeTextFile if plugin-fs available, else blob download
-				try {
-					// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-					// @ts-ignore — plugin-fs may not be installed; try/catch handles absence gracefully
-					const { writeTextFile } = await import('@tauri-apps/plugin-fs');
-					await (writeTextFile as (path: string, contents: string) => Promise<void>)(path, json);
-				} catch {
-					// plugin-fs not available — invoke Rust to write the file
-					await invoke('export_play_history_to_path', { path, json });
-				}
+				// Rust handles the file write — plugin-fs is not installed
+				await invoke('export_play_history_to_path', { path, json });
 			}
 		} catch {
 			// Dialog not available — fallback: download via browser blob (web context)

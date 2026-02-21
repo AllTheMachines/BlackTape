@@ -1,6 +1,7 @@
 <script lang="ts">
 	import AiSettings from '$lib/components/AiSettings.svelte';
 	import TasteEditor from '$lib/components/TasteEditor.svelte';
+	import ListeningHistory from '$lib/components/ListeningHistory.svelte';
 	import { aiState } from '$lib/ai/state.svelte';
 	import { isTauri } from '$lib/platform';
 	import { onMount } from 'svelte';
@@ -43,6 +44,15 @@
 				<TasteEditor />
 			</div>
 		{/if}
+
+		<div class="section-separator"></div>
+		<div class="settings-section">
+			<h2>Listening History</h2>
+			<p class="section-desc">
+				Tracks you listen to past 70% are recorded and shape your taste profile. Your history stays local — it never leaves your device.
+			</p>
+			<ListeningHistory />
+		</div>
 	</div>
 {/if}
 
