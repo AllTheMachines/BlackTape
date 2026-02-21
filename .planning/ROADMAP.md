@@ -199,6 +199,11 @@ Plans:
   3. Genre/scene pages link to `/discover?tags=<mb_tag>` — Phase 6→Phase 7 navigation wired
   4. AI explore page uses taste context on first load for users with established taste profiles
   5. KB personalized starter graph works on Tauri startup without opening Settings first
+**Plans:** 3 plans
+Plans:
+- [ ] 07.1-01-PLAN.md — Layout startup wiring (loadTasteProfile) + /about route + nav links (GAP-01, GAP-02)
+- [ ] 07.1-02-PLAN.md — KB reactive personalization + explore taste skeleton/empty state (GAP-01 consumers)
+- [ ] 07.1-03-PLAN.md — Genre→Discover navigation link at top and bottom of genre pages (GAP-04)
 
 ### Phase 07.2: Playback → Taste Signal (INSERTED)
 **Goal**: Local playback feeds the taste profile automatically. Library listening history becomes input to AI.
