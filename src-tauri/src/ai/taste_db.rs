@@ -1,5 +1,5 @@
 use rusqlite::{params, Connection};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::Path;
 use std::sync::Mutex;
@@ -44,6 +44,18 @@ pub fn init_taste_db(app_data_dir: &Path) -> Result<Connection, String> {
             key TEXT PRIMARY KEY,
             value TEXT NOT NULL
         );
+
+        CREATE TABLE IF NOT EXISTS play_history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            track_path TEXT NOT NULL,
+            artist_name TEXT,
+            track_title TEXT,
+            album_name TEXT,
+            played_at INTEGER NOT NULL,
+            duration_secs REAL NOT NULL DEFAULT 0
+        );
+        CREATE INDEX IF NOT EXISTS idx_play_history_played_at ON play_history(played_at DESC);
+        CREATE INDEX IF NOT EXISTS idx_play_history_artist ON play_history(artist_name);
         ",
     )
     .map_err(|e| format!("Failed to create taste.db tables: {}", e))?;
@@ -60,6 +72,7 @@ pub fn init_taste_db(app_data_dir: &Path) -> Result<Connection, String> {
         ("api_model", ""),
         ("local_gen_model_status", "none"),
         ("local_embed_model_status", "none"),
+        ("private_listening", "false"),
     ];
 
     for (key, value) in &defaults {
@@ -366,4 +379,130 @@ pub fn remove_taste_anchor(
     .map_err(|e| format!("Failed to remove taste anchor: {}", e))?;
 
     Ok(())
+}
+
+// --- Play History CRUD ---
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct PlayRecord {
+    pub id: i64,
+    pub track_path: String,
+    pub artist_name: Option<String>,
+    pub track_title: Option<String>,
+    pub album_name: Option<String>,
+    pub played_at: i64,
+    pub duration_secs: f64,
+}
+
+/// Record a qualifying play (track reached 70%+ completion).
+#[tauri::command]
+pub fn record_play(
+    track_path: String,
+    artist_name: Option<String>,
+    track_title: Option<String>,
+    album_name: Option<String>,
+    duration_secs: f64,
+    state: tauri::State<'_, TasteDbState>,
+) -> Result<(), String> {
+    let conn = state.0.lock().map_err(|e| format!("Lock error: {}", e))?;
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_secs() as i64;
+    conn.execute(
+        "INSERT INTO play_history (track_path, artist_name, track_title, album_name, played_at, duration_secs)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+        params![track_path, artist_name, track_title, album_name, now, duration_secs],
+    ).map_err(|e| format!("Failed to record play: {}", e))?;
+    Ok(())
+}
+
+/// Get play history ordered by most recent first, optional limit.
+#[tauri::command]
+pub fn get_play_history(
+    limit: Option<i64>,
+    state: tauri::State<'_, TasteDbState>,
+) -> Result<Vec<PlayRecord>, String> {
+    let conn = state.0.lock().map_err(|e| format!("Lock error: {}", e))?;
+    let query = match limit {
+        Some(n) => format!("SELECT id, track_path, artist_name, track_title, album_name, played_at, duration_secs FROM play_history ORDER BY played_at DESC LIMIT {}", n),
+        None => "SELECT id, track_path, artist_name, track_title, album_name, played_at, duration_secs FROM play_history ORDER BY played_at DESC".to_string(),
+    };
+    let mut stmt = conn.prepare(&query).map_err(|e| format!("Failed to prepare query: {}", e))?;
+    let records = stmt.query_map([], |row| {
+        Ok(PlayRecord {
+            id: row.get(0)?,
+            track_path: row.get(1)?,
+            artist_name: row.get(2)?,
+            track_title: row.get(3)?,
+            album_name: row.get(4)?,
+            played_at: row.get(5)?,
+            duration_secs: row.get(6)?,
+        })
+    }).map_err(|e| format!("Failed to query play history: {}", e))?
+    .collect::<Result<Vec<_>, _>>()
+    .map_err(|e| format!("Failed to collect play history: {}", e))?;
+    Ok(records)
+}
+
+/// Delete a specific play record by id.
+#[tauri::command]
+pub fn delete_play(
+    id: i64,
+    state: tauri::State<'_, TasteDbState>,
+) -> Result<(), String> {
+    let conn = state.0.lock().map_err(|e| format!("Lock error: {}", e))?;
+    conn.execute("DELETE FROM play_history WHERE id = ?1", params![id])
+        .map_err(|e| format!("Failed to delete play: {}", e))?;
+    Ok(())
+}
+
+/// Clear all play history.
+#[tauri::command]
+pub fn clear_play_history(
+    state: tauri::State<'_, TasteDbState>,
+) -> Result<(), String> {
+    let conn = state.0.lock().map_err(|e| format!("Lock error: {}", e))?;
+    conn.execute("DELETE FROM play_history", [])
+        .map_err(|e| format!("Failed to clear play history: {}", e))?;
+    Ok(())
+}
+
+/// Get total count of qualifying plays (used for activation gate).
+#[tauri::command]
+pub fn get_play_count(
+    state: tauri::State<'_, TasteDbState>,
+) -> Result<i64, String> {
+    let conn = state.0.lock().map_err(|e| format!("Lock error: {}", e))?;
+    let count: i64 = conn.query_row(
+        "SELECT COUNT(*) FROM play_history",
+        [],
+        |row| row.get(0),
+    ).map_err(|e| format!("Failed to get play count: {}", e))?;
+    Ok(count)
+}
+
+/// Export full play history as a JSON string (frontend saves to file).
+#[tauri::command]
+pub fn export_play_history(
+    state: tauri::State<'_, TasteDbState>,
+) -> Result<String, String> {
+    let conn = state.0.lock().map_err(|e| format!("Lock error: {}", e))?;
+    let mut stmt = conn.prepare(
+        "SELECT id, track_path, artist_name, track_title, album_name, played_at, duration_secs FROM play_history ORDER BY played_at DESC"
+    ).map_err(|e| format!("Failed to prepare export query: {}", e))?;
+    let records = stmt.query_map([], |row| {
+        Ok(PlayRecord {
+            id: row.get(0)?,
+            track_path: row.get(1)?,
+            artist_name: row.get(2)?,
+            track_title: row.get(3)?,
+            album_name: row.get(4)?,
+            played_at: row.get(5)?,
+            duration_secs: row.get(6)?,
+        })
+    }).map_err(|e| format!("Failed to query for export: {}", e))?
+    .collect::<Result<Vec<_>, _>>()
+    .map_err(|e| format!("Failed to collect for export: {}", e))?;
+    serde_json::to_string(&records).map_err(|e| format!("Failed to serialize history: {}", e))
 }
