@@ -18,10 +18,11 @@ A comprehensive guide to how Mercury works, how its parts connect, and how data 
 10. [Discovery Bridge](#discovery-bridge)
 11. [Discovery Engine](#discovery-engine)
 12. [Knowledge Base](#knowledge-base)
-13. [Build System](#build-system)
-14. [Configuration Reference](#configuration-reference)
-15. [AI Subsystem](#ai-subsystem)
-16. [Module Dependency Map](#module-dependency-map)
+13. [Underground Aesthetic](#underground-aesthetic)
+14. [Build System](#build-system)
+15. [Configuration Reference](#configuration-reference)
+16. [AI Subsystem](#ai-subsystem)
+17. [Module Dependency Map](#module-dependency-map)
 
 ---
 
@@ -828,6 +829,135 @@ The following patterns were discovered and explicitly avoided during Phase 7:
 
 ---
 
+## Underground Aesthetic
+
+Phase 8 adds three subsystems to the Tauri desktop app: a taste-based OKLCH theme engine, a resizable panel workspace layout, and a streaming platform preference. All three are Tauri-only; the web path is unchanged.
+
+### Theme Engine
+
+**Files:** `src/lib/theme/palette.ts`, `src/lib/theme/engine.svelte.ts`, `src/lib/theme/preferences.svelte.ts`
+
+Three modes:
+
+| Mode | Behavior |
+|------|----------|
+| `default` | No overrides — static OKLCH values in `theme.css` apply |
+| `taste` | Hue derived from user's top taste tags via djb2 hash |
+| `manual` | User-chosen hue from slider in Settings |
+
+**Tag-to-hue mapping (`palette.ts`):**
+
+1. Filter taste tags to those with `weight > 0`
+2. Sort by weight descending, take top 5
+3. Sort alphabetically (same tags → same hue, always)
+4. Join with `'|'` and hash via djb2-style polynomial hash
+5. Modulo 360 → hue angle
+
+**Palette generation (`palette.ts → generatePalette`):**
+
+Returns 14 OKLCH values as a `Record<string, string>` keyed by CSS custom property name (e.g., `--bg-base`, `--link-color`). Text colors (`--text-*`) are intentionally excluded — they remain achromatic at fixed lightness for WCAG AA readability regardless of the generated hue.
+
+**Applying the palette (`engine.svelte.ts → applyPalette`):**
+
+```
+generatePalette(hue)
+    → root.style.setProperty(key, value) × 14
+    → adds CSS transition to :root (smooth 0.5s fade)
+    → removes transition after 600ms (no permanent overhead)
+```
+
+`clearPalette` removes all 14 properties, reverting to `theme.css` static defaults.
+
+**Preference storage:**
+
+All theme preferences use the existing `ai_settings` key-value table in `taste.db`:
+
+| Key | Values |
+|-----|--------|
+| `theme_mode` | `taste` \| `manual` \| `default` |
+| `theme_manual_hue` | `0`..`360` as string |
+| `preferred_platform` | `bandcamp` \| `spotify` \| `soundcloud` \| `youtube` \| `''` |
+| `layout_template` | `cockpit` \| `focus` \| `minimal` \| `user-{timestamp}` |
+| `user_layout_templates` | JSON array of `UserTemplateRecord` |
+
+**Initialization flow:**
+
+```
+root layout onMount (Tauri only)
+    → loadThemePreferences() → { mode, manualHue }
+    → initTheme(tasteProfile.tags, themePrefs)
+        → applyPalette() or clearPalette() based on mode
+
+$effect: tasteProfile.isLoaded && themeState.mode === 'taste'
+    → updateThemeFromTaste(tasteProfile.tags) → recompute + reapply
+```
+
+**Web:** No runtime theming. `theme.css` OKLCH values serve as the fixed defaults. The engine never runs on web.
+
+### Panel Layout
+
+**Files:** `src/lib/components/PanelLayout.svelte`, `src/lib/components/LeftSidebar.svelte`, `src/lib/components/RightSidebar.svelte`, `src/lib/components/ControlBar.svelte`, `src/lib/theme/templates.ts`, `src/lib/theme/layout-state.svelte.ts`
+
+**PaneForge** provides resizable split panes (`PaneGroup`, `Pane`, `PaneResizer`). Each template has a unique `autoSaveId` — PaneForge uses `localStorage` to persist panel sizes independently per template.
+
+**Built-in templates:**
+
+| ID | Label | Panes | Description |
+|----|-------|-------|-------------|
+| `cockpit` | Cockpit | 3 (22/56/22 default) | Full workspace: left nav + main + right context |
+| `focus` | Focus | 2 (70/30 default) | Main content + context sidebar |
+| `minimal` | Minimal | 1 (100%) | Classic single-column layout |
+
+**`PanelLayout.svelte`** — Renders the correct pane split based on the `template` prop. Accepts three Svelte snippets: `sidebar` (LeftSidebar), `context` (RightSidebar), `children` (page content). Tauri-only, gated in root layout via `{#if tauriMode}`.
+
+**`LeftSidebar.svelte`** — Quick navigation links + discovery filters (tag input, decade selector, niche score dropdown). Discovery controls query `/api/search` and render results inside the sidebar panel — this is a parallel browse viewport, not a main content filter.
+
+**`RightSidebar.svelte`** — Context-aware panel. Switches content based on the current page path:
+- `/artist/*` — Related tags from the artist page + queue panel
+- `/kb/genre/*` — Subgenres, related genres, key artists
+- Default — Now playing info + queue + taste tag summary
+
+**`ControlBar.svelte`** — 32px toolbar positioned between the site header and PanelLayout. Left: search form. Right: layout switcher dropdown + theme indicator dot. The layout switcher shows built-in templates in one `<optgroup>` and user templates in "My Layouts".
+
+**`layoutState` (layout-state.svelte.ts)** — Shared reactive module-level state (`$state`) for `template` (active template ID) and `userTemplates` (user-created template records). Used by both root layout (reads template for PanelLayout/ControlBar) and settings page (reads/writes template selection and user template list). Keeps both in sync without prop drilling.
+
+**User Templates:**
+
+Users can save the current layout as a named template from Settings. User templates are stored as `UserTemplateRecord` (id + label + basePanes) in `taste.db` under `user_layout_templates`. At runtime, `expandUserTemplate()` converts a record to a full `TemplateConfig` using the nearest built-in template as the size default. User templates appear in the ControlBar dropdown under "My Layouts" and in the Settings layout picker.
+
+### Streaming Preference
+
+**Implementation of EMBED-02.**
+
+The user's preferred streaming platform is stored in `taste.db` (`preferred_platform` key) and surfaced as the reactive `streamingPref.platform` state in `preferences.svelte.ts`.
+
+Two components respect the preference:
+
+**`EmbedPlayer.svelte`** — `orderedPlatforms` derived: preferred platform moved to index 0, then default `PLATFORM_PRIORITY` order. The embed loop renders in this order, so the preferred platform's embed appears first.
+
+**Artist page Listen On bar** — `sortedStreamingLinks` derived: link whose `label.toLowerCase()` includes the platform string sorts to the front. Label-based matching handles variants ('Spotify', 'Spotify (streaming)').
+
+The server-side page data stays neutral — sorting happens client-side only, so web and API consumers are unaffected.
+
+**Settings page** — `src/routes/settings/+page.svelte` is the full configuration interface for all three Phase 8 subsystems. New sections appear above the existing AI Settings section:
+
+1. **Appearance** — Theme mode radio (Default / Taste / Custom) + hue slider (Custom mode only)
+2. **Layout** — Built-in template picker + user template list + save-as-template UI
+3. **Streaming Preference** — Platform dropdown
+
+All changes apply immediately (live preview) and persist to `taste.db` via the existing preference save functions.
+
+### Anti-Patterns (Underground Aesthetic)
+
+| Anti-pattern | Why avoided | Alternative used |
+|---|---|---|
+| Applying PanelLayout on web | Breaks single-column responsive layout | `{#if tauriMode}` gate in root layout — web path is completely unchanged |
+| Overriding `--text-*` in OKLCH palette | Hue-dependent text lightness breaks WCAG AA contrast | Text colors excluded from `TASTE_PALETTE_KEYS` — stay at fixed achromatic lightness |
+| Storing layout template in both localStorage and taste.db | Causes drift between two sources of truth | PaneForge uses localStorage for panel _sizes_ (fine, read by PaneForge directly); template _selection_ goes in taste.db only |
+| Duplicating layout template state in settings | Two separate `$state` variables go out of sync | `layoutState` shared module exports a single reactive object imported by both root layout and settings |
+
+---
+
 ## Build System
 
 ### Web Build
@@ -948,12 +1078,22 @@ Two llama-server instances run as Tauri sidecars (via `tauri-plugin-shell`), man
 
 A third database alongside mercury.db and library.db. Managed by rusqlite (same as library.db). Stores AI settings, taste profile data, and vector embeddings.
 
-**ai_settings** — Key-value store for AI configuration.
+**ai_settings** — Key-value store for AI configuration and user preferences.
 
 | Column | Type | Description |
 |--------|------|-------------|
 | key | TEXT PK | Setting name (e.g., `ai_enabled`, `provider_type`) |
 | value | TEXT | Setting value |
+
+Phase 8 added these keys:
+
+| Key | Values | Purpose |
+|-----|--------|---------|
+| `theme_mode` | `taste` \| `manual` \| `default` | Theme engine mode |
+| `theme_manual_hue` | `0`..`360` as string | Manual hue slider value |
+| `layout_template` | `cockpit` \| `focus` \| `minimal` \| `user-{ts}` | Active layout template |
+| `preferred_platform` | `bandcamp` \| `spotify` \| `soundcloud` \| `youtube` \| `''` | Streaming platform preference |
+| `user_layout_templates` | JSON array | User-created layout template records |
 
 **taste_tags** — Tags with weights derived from listening behavior and manual curation.
 
@@ -1121,4 +1261,4 @@ Tags tracked by source: `library`, `favorite`, `manual`. Recomputation clears co
 
 ---
 
-*Last updated: 2026-02-21 — After Phase 7 Plan 7 (Knowledge Base Documentation) completion.*
+*Last updated: 2026-02-21 — After Phase 8 Plan 4 (Underground Aesthetic — Settings, Docs) completion.*

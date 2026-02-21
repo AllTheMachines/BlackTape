@@ -17,8 +17,13 @@ Mercury is a music discovery engine that indexes all music from open databases a
 9. [Discovery Features](#discovery-features)
 10. [Crate Digging Mode](#crate-digging-mode)
 11. [AI Features](#ai-features)
-12. [Web vs Desktop](#web-vs-desktop)
-13. [Troubleshooting](#troubleshooting)
+12. [Desktop Workspace](#desktop-workspace)
+    - [ControlBar](#controlbar)
+    - [Layout Templates](#layout-templates)
+    - [Theme Modes](#theme-modes)
+    - [Streaming Preference](#streaming-preference)
+13. [Web vs Desktop](#web-vs-desktop)
+14. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -467,6 +472,94 @@ When using a remote API provider, your queries are sent to whichever endpoint yo
 
 ---
 
+## Desktop Workspace
+
+*Desktop app only.*
+
+The Mercury desktop app has a configurable workspace with resizable panels, a personalized color theme, and a streaming platform preference. All of these are set from the **Settings** page.
+
+### ControlBar
+
+The ControlBar is the thin toolbar that appears below the site header in the desktop app. It provides workspace-level controls that are separate from the navigation.
+
+**Left side:** A search box — same as the header search, just more convenient when you're deep in a panel.
+
+**Right side:**
+- **Layout switcher** — A dropdown to switch between layout templates. Built-in templates appear first; your saved layouts appear under "My Layouts."
+- **Theme dot** — A small colored circle showing your current theme hue. Click it to open Settings.
+
+### Layout Templates
+
+Mercury's desktop workspace supports three built-in layouts and unlimited user-created layouts.
+
+**Built-in layouts:**
+
+| Template | Panels | Best for |
+|----------|--------|----------|
+| **Cockpit** | Left sidebar + Main + Right sidebar | Power users — maximum context at once |
+| **Focus** | Main + Right sidebar | Browsing with context panel |
+| **Minimal** | Main only | Clean, distraction-free |
+
+**Switching layouts:**
+
+- Use the layout switcher dropdown in the ControlBar (top right of workspace)
+- Or go to **Settings > Layout** and click any template
+
+Panel sizes are remembered independently per template — resize them once and Mercury remembers your preference for each layout.
+
+**Left sidebar (Cockpit and Focus modes):**
+- Quick navigation links (Discover, Style Map, Dig, Library, Explore, Settings)
+- Discovery filters: tag input, decade selector, niche score — results appear inside the sidebar without affecting the main content
+
+**Right sidebar (Cockpit mode):**
+- On artist pages: related tags and queue panel
+- On genre pages: subgenres, related scenes, and key artists
+- Elsewhere: now-playing info, queue, and your top taste tags
+
+**Saving a custom layout:**
+
+1. Switch to the layout that feels closest to what you want
+2. Resize the panels to your liking
+3. Go to **Settings > Layout**
+4. Type a name in the "Name this layout..." field and click **Save layout**
+
+Your custom layout appears in the ControlBar dropdown under "My Layouts" and in the Settings layout picker. Use it, resize it further, and Mercury remembers the new panel sizes independently.
+
+**Deleting a custom layout:**
+
+In **Settings > Layout > My Layouts**, click the **×** next to any custom layout. If that layout was active, Mercury falls back to Cockpit. Built-in templates cannot be deleted.
+
+### Theme Modes
+
+Mercury's desktop app can color itself based on your music taste — or you can pick your own color.
+
+Go to **Settings > Appearance** to choose a theme mode:
+
+**Default** — Classic dark theme. The static OKLCH colors from Mercury's base theme apply. No personalization.
+
+**Taste** — Colors derived from your music taste. Mercury takes your top taste tags, hashes them to a hue angle, and generates a full color palette in OKLCH space. The same taste always produces the same color — it's deterministic. Switch artists or add favorites and the theme shifts to match.
+
+This option requires a taste profile (needs 5+ favorites OR 20+ library tracks). If you don't have enough data yet, it shows "(need more data)" — add favorites to unlock it.
+
+**Custom** — Pick your own hue. A slider appears (0–360 degrees) that lets you choose any hue in the OKLCH color wheel. The preview circle shows the current selection. Changes apply live.
+
+All theme settings persist across app restarts.
+
+**Technical note:** Only background, border, link, and accent colors shift with the hue. Text colors stay at fixed lightness values — WCAG AA contrast is maintained regardless of which hue you choose.
+
+### Streaming Preference
+
+Mercury embeds music from Bandcamp, Spotify, SoundCloud, and YouTube. By default, Bandcamp is shown first (most direct artist support). If you prefer a different platform, go to **Settings > Streaming Preference** and choose it from the dropdown.
+
+Your preference affects two places:
+
+1. **Embedded player on artist pages** — Your preferred platform's embed appears first, so you don't have to scroll past platforms you don't use.
+2. **"Listen on" links** — The links bar under the embedded player shows your preferred platform first.
+
+Setting "No preference" restores the default order (Bandcamp → Spotify → SoundCloud → YouTube). Server data is always platform-neutral — only the display order changes, client-side only.
+
+---
+
 ## Web vs Desktop
 
 | Feature | Web | Desktop |
@@ -489,6 +582,9 @@ When using a remote API provider, your queries are sent to whichever endpoint yo
 | AI features (explore, recommendations, taste) | No | Yes |
 | AI genre summaries in Knowledge Base | No | Yes |
 | Offline search | No | Yes |
+| Panel workspace (Cockpit, Focus, Minimal layouts) | No | Yes |
+| Custom theme (taste-based or manual hue) | No | Yes |
+| Streaming platform preference | No | Yes |
 | Requires internet for artist pages | Yes | Yes* |
 
 *Artist pages fetch releases and links from MusicBrainz, which requires internet. Search works offline using the local database.
@@ -575,4 +671,4 @@ Local model processing time depends on your hardware. The generation model (Qwen
 
 ---
 
-*Mercury v0.1.0 — Last updated: 2026-02-21 (Phase 7: Knowledge Base)*
+*Mercury v0.1.0 — Last updated: 2026-02-21 (Phase 8: Underground Aesthetic — workspace layout, taste theming, streaming preference)*

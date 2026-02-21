@@ -2652,3 +2652,55 @@ Tauri desktop app now launches in cockpit mode with three resizable panes, a Con
 ### Plan 03 Complete
 
 Phase 08 Integration done. All three plans (theme engine, panel layout, wiring) complete. The underground aesthetic is live in the desktop app.
+
+> **Commit 0f55317** (2026-02-21 20:29) — docs(08-03): complete integration plan — layout + embeds wired
+> Files changed: 5
+
+> **Commit 382cc83** (2026-02-21 20:34) — feat(08-04): add theme/layout/streaming sections to Settings, shared layout state
+> Files changed: 3
+
+## 2026-02-21 — Phase 08 Complete: Underground Aesthetic
+
+Phase 8 is done. Four plans, one goal: Mercury stops being a search engine and starts being a place.
+
+### What Was Built
+
+**Theme Engine** (`src/lib/theme/palette.ts`, `engine.svelte.ts`, `preferences.svelte.ts`) — OKLCH palette generation from taste tags. djb2 hash on alphabetically-sorted top-5 taste tags produces a deterministic hue (0-360). 14 CSS custom properties are overridden at runtime via `document.documentElement.style`. Text colors intentionally excluded — WCAG AA readability is non-negotiable. Three modes: default (static), taste (from profile), manual (hue slider). Preferences persist in taste.db.
+
+**Panel Layout** (`PanelLayout.svelte`, `LeftSidebar.svelte`, `RightSidebar.svelte`, `ControlBar.svelte`, `templates.ts`) — PaneForge provides resizable split panes. Three built-in templates: cockpit (3-pane), focus (2-pane), minimal (1-column). `autoSaveId` per template means panel sizes persist independently in localStorage. User templates are created from Settings, stored as JSON in taste.db, and appear alongside built-ins in the ControlBar dropdown.
+
+**Streaming Preference** — Single `preferred_platform` setting in taste.db. Both `EmbedPlayer` and the artist page Listen On bar sort by preference client-side — server data stays neutral.
+
+**Settings Page** — Three new sections above AI Settings: Appearance (theme mode + hue slider), Layout (template picker + user template CRUD + save-as-template), Streaming Preference (platform dropdown). Shared `layoutState` module ensures the ControlBar and Settings stay in sync without prop drilling.
+
+### Key Decisions
+
+<!-- decision: OKLCH for taste theming -->
+OKLCH over HSL: perceptually uniform lightness. Shifting hue by 180 degrees with HSL visually changes brightness — with OKLCH it doesn't. The UI feels identical regardless of which hue your tags land on.
+<!-- /decision -->
+
+<!-- decision: djb2 hash on top-5 alphabetical tags -->
+Simple, no dependencies, distributes well across 0-360. The alphabetical sort on the top-5 tags ensures determinism: same taste → same colors, always. Different taste → different Mercury.
+<!-- /decision -->
+
+<!-- decision: layoutState shared module for cross-page state -->
+Both root layout and settings page need to read and write the active template. Rather than duplicate state (which would cause drift), a small `.svelte.ts` module exports a single `$state` object. Both files import from it. No props, no events, no stores — just a shared reactive object.
+<!-- /decision -->
+
+<!-- decision: User templates in taste.db, not in localStorage -->
+Panel _sizes_ go in localStorage (PaneForge does this automatically via autoSaveId). Template _selection_ goes in taste.db. These are different things: sizes are ephemeral UI preferences, template selection is a named configuration choice. Mixing them would create drift between two sources of truth.
+<!-- /decision -->
+
+### The Vibe
+
+> Mercury stops being a search engine and starts being a place. You open the app and it *looks like your taste*. The layout is yours — you arranged those panels. The colors came from your tags. The embeds lead with the platform you actually use.
+
+This is what Phase 8 was for. The data was always there. Now the shell matches the music.
+
+### Phase 08 Numbers
+
+- 4 plans, 8 tasks
+- Files created: `palette.ts`, `engine.svelte.ts`, `preferences.svelte.ts`, `templates.ts`, `layout-state.svelte.ts`, `PanelLayout.svelte`, `LeftSidebar.svelte`, `RightSidebar.svelte`, `ControlBar.svelte`
+- Files modified: `theme.css`, `+layout.svelte`, `settings/+page.svelte`, `EmbedPlayer.svelte`, `artist/[slug]/+page.svelte`, `ARCHITECTURE.md`, `docs/user-manual.md`
+- `npm run check`: 0 errors across all 4 plans
+- `npm run build`: clean across all 4 plans
