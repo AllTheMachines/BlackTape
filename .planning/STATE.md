@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-15)
 
 ## Current Position
 
-Phase: 07.3 of 15 (Requirements & Verification Cleanup — COMPLETE)
-Current Plan: 07.3-03 (complete)
-Status: Phase 07.3 Plan 03 complete — 4 platform!.env.DB assertions replaced with graceful guards, schema.sql pipeline docs added. npm run check 0 errors, npm run build clean. 2026-02-21.
-Last activity: 2026-02-21 — 07.3-03 complete. All 4 server routes now use platform?.env?.DB guards. schema.sql documents pipeline execution order. Phase 07.3 COMPLETE (all 3 plans done).
+Phase: 08-underground-aesthetic of 15 (Underground Aesthetic — IN PROGRESS)
+Current Plan: 08-01 (complete)
+Status: Phase 08 Plan 01 complete — OKLCH theme engine modules created (palette.ts, engine.svelte.ts, preferences.svelte.ts), theme.css converted to OKLCH. npm run check 0 errors, npm run build clean. 2026-02-21.
+Last activity: 2026-02-21 — 08-01 complete. Three theme modules compile cleanly. OKLCH palette generation, reactive engine state, preference CRUD all done. theme.css visually identical with OKLCH values.
 
-Progress: [██████████] 3/3 plans complete (Phase 07.3 COMPLETE)
+Progress: [██░░░░░░░░] 1/4 plans complete (Phase 08 in progress)
 
 ## Performance Metrics
 
@@ -72,6 +72,7 @@ Progress: [██████████] 3/3 plans complete (Phase 07.3 COMPLE
 | Phase 07.3 P01 | 1min | 1 tasks | 1 files |
 | Phase 07.3 P02 | 4min | 2 tasks | 1 files |
 | Phase 07.3 P03 | 4min | 2 tasks | 7 files |
+| Phase 08 P01 | 4min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -244,6 +245,12 @@ Progress: [██████████] 3/3 plans complete (Phase 07.3 COMPLE
 - [Phase 07.3-02]: Phase 04 scanner code lives in src-tauri/src/scanner/ and src-tauri/src/library/ (not audio/ as plan specified) — paths corrected in verification report
 - [Phase 07.3-03]: Genre detail null guard: {#if data.genre} block in +page.svelte + null check in +page.ts to satisfy TypeScript when server returns genre: null
 - [Phase 07.3-03]: svelte:head cannot be inside {#if} blocks — moved outside with ternary conditional for title
+- [Phase 08-01]: OKLCH over HSL for taste theming — perceptually uniform lightness means hue shifts don't change apparent brightness; same UI density/contrast regardless of generated hue
+- [Phase 08-01]: djb2 hash on alphabetically sorted top-5 taste tags by weight — deterministic, no dependencies, distributes well across 0-360; same tags always produce same hue
+- [Phase 08-01]: Text properties excluded from generated palette — --text-* stay achromatic at fixed lightness for WCAG AA; coloring body text with taste hue would compromise legibility
+- [Phase 08-01]: Transition add/remove pattern in applyPalette/clearPalette — adds CSS transition to :root before applying, removes after 600ms; smooth fade without permanent performance overhead
+- [Phase 08-01]: streamingPref reactive $state in preferences module — components read platform reactively without async invoke calls
+- [Phase 08-01]: Default layout template is 'cockpit' (3-pane full) — per user decision: new Tauri users get full cockpit experience immediately
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
@@ -257,6 +264,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-21
-Phase 07.3 Plan 03 complete. 4 platform!.env.DB assertions replaced with platform?.env?.DB graceful guards in time-machine, api/time-machine, api/genres, kb/genre/[slug]. schema.sql documents pipeline execution order. Genre detail +page.svelte and +page.ts updated with null guards (deviation Rule 1). npm run check 0 errors, npm run build clean. Phase 07.3 COMPLETE (all 3 plans done).
-Stopped at: Completed 07.3-03-PLAN.md
-Next: Phase 08 (next phase)
+Phase 08 Plan 01 complete. Three theme modules in src/lib/theme/: palette.ts (tasteTagsToHue djb2 hash, generatePalette OKLCH, TASTE_PALETTE_KEYS), engine.svelte.ts (themeState $state, applyPalette with transition, clearPalette, initTheme, updateThemeFromTaste), preferences.svelte.ts (load/save for theme/streaming/layout, reactive streamingPref). theme.css converted from hex to OKLCH equivalents. No deviations. npm run check 0 errors, npm run build clean.
+Stopped at: Completed 08-01-PLAN.md
+Next: Phase 08 Plan 02 (PaneForge panel layout)

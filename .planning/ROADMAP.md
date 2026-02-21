@@ -254,13 +254,13 @@ Plans:
   6. The app feels like something you PLAY with, not something you consume from
 **Plans**: 4 plans
 Plans:
-- [ ] 08-01-PLAN.md — Theme engine: OKLCH palette generation, engine state, preference persistence, theme.css OKLCH conversion
+- [x] 08-01-PLAN.md — Theme engine: OKLCH palette generation, engine state, preference persistence, theme.css OKLCH conversion
 - [ ] 08-02-PLAN.md — PaneForge panel layout: install, 3 templates, PanelLayout + sidebars + ControlBar components
 - [ ] 08-03-PLAN.md — Layout/theme integration into root layout + streaming preference in embeds/artist page
 - [ ] 08-04-PLAN.md — Settings UI (theme/layout/streaming sections) + ARCHITECTURE.md + user-manual.md + build verification
 
 ### Phase 9: Community Foundation
-**Goal**: Taste as identity. Find people who share your exact obscure corner of music. The first step toward "underground is alive." All local-first, no central server accounts. Identity is pseudonymous — a handle, a lo-fi avatar, and your pure taste profile. No bios, no photos. The music speaks.
+**Goal**: Taste as identity. Find people who share your exact obscure corner of music. The first step toward "underground is alive." All local-first, no central server accounts. Identity is pseudonymous — a handle, a lo-fi avatar, and your pure taste profile. No bios, no photos. The music speaks. Also includes template sharing — export/import user-created layouts and browse community templates (Phase 8 builds the templates; Phase 9 makes them shareable).
 **Depends on**: Phase 8 (aesthetic must feel right first), Phase 5 (taste profiles)
 **Requirements**: COMM-01, COMM-02, COMM-03, SOCIAL-01, SOCIAL-02, SOCIAL-03, SOCIAL-04
 **Success Criteria**:
@@ -374,7 +374,7 @@ Plans:
 | 07.1. Integration Hotfixes | 3/3 | Complete    | 2026-02-21 |
 | 07.2. Playback → Taste Signal | 3/3 | Complete   | 2026-02-21 |
 | 07.3. Requirements & Verification Cleanup | 3/3 | Complete    | 2026-02-21 |
-| 8. Underground Aesthetic | 0/TBD | Not started | - |
+| 8. Underground Aesthetic | 1/4 | In progress | - |
 | 9. Community Foundation | 0/TBD | Not started | - |
 | 10. Communication Layer | 0/TBD | Not started | - |
 | 11. Scene Building | 0/TBD | Not started | - |
