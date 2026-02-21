@@ -23,6 +23,9 @@ Phase 8 is the turning point — where Mercury stops being a tool and starts bei
 - [ ] **Phase 5: AI Foundation** — Client-side models, recommendations, natural-language exploration, taste profiling
 - [x] **Phase 6: Discovery Engine** — Composite ranking, tag browsing, crate digging, uniqueness scoring, style map (completed 2026-02-20)
 - [x] **Phase 7: Knowledge Base** — Genre/scene map, multi-layer content, scene maps, time machine, liner notes (completed 2026-02-21)
+- [ ] **Phase 07.1: Integration Hotfixes** (INSERTED) — loadTasteProfile startup fix, /about route, genre→/discover link
+- [ ] **Phase 07.2: Playback → Taste Signal** (INSERTED) — Audio engine hooks to feed taste profile from local playback
+- [ ] **Phase 07.3: Requirements & Verification Cleanup** (INSERTED) — REQUIREMENTS.md updates, Phase 04 VERIFICATION.md, platform! guards, schema docs
 - [ ] **Phase 8: Underground Aesthetic** — Dense playful UI, taste-based theming, panels/controls, templates, game-like feel
 - [ ] **Phase 9: Community Foundation** — Identity system, taste matching, collections, taste fingerprint, import/export
 - [ ] **Phase 10: Communication Layer** — Encrypted DMs + scene rooms + ephemeral sessions, hybrid moderation
@@ -185,6 +188,43 @@ Plans:
 - [x] 07-06-PLAN.md — Liner Notes component + artist page KB wiring + nav links
 - [x] 07-07-PLAN.md — ARCHITECTURE.md + user-manual.md + BUILD-LOG.md + final build verification
 
+### Phase 07.1: Integration Hotfixes (INSERTED)
+**Goal**: Close the 3 critical/medium integration gaps that silently break the entire taste-aware feature set and KB navigation.
+**Depends on**: Phase 7
+**Gap Closure**: Closes gaps from v1.0 audit — GAP-01 (taste startup), GAP-02 (/about 404), GAP-04 (genre→discover link)
+**Requirements**: AI-01, AI-02, AI-04, KB-01, KB-02
+**Success Criteria**:
+  1. `loadTasteProfile()` called in `+layout.svelte` `onMount` — AI recommendations render at app launch
+  2. `/about` route exists (placeholder minimum) — no 404 on sparse genre pages
+  3. Genre/scene pages link to `/discover?tags=<mb_tag>` — Phase 6→Phase 7 navigation wired
+  4. AI explore page uses taste context on first load for users with established taste profiles
+  5. KB personalized starter graph works on Tauri startup without opening Settings first
+
+### Phase 07.2: Playback → Taste Signal (INSERTED)
+**Goal**: Local playback feeds the taste profile automatically. Library listening history becomes input to AI.
+**Depends on**: Phase 07.1
+**Gap Closure**: Closes GAP-03 from v1.0 audit
+**Requirements**: PLAYER-03, AI-04
+**Success Criteria**:
+  1. Play-completion hook in `audio.svelte.ts` triggers `recomputeTaste()`
+  2. Accumulated play time threshold tracked (e.g. >50% of track = counted)
+  3. After listening to 5+ local tracks, taste profile reflects those plays
+  4. AI recommendations update without manual favorites or Settings interaction
+  5. PLAYER-03 fully satisfied — local library listening IS taste data
+
+### Phase 07.3: Requirements & Verification Cleanup (INSERTED)
+**Goal**: Align documentation with reality. Update REQUIREMENTS.md, produce Phase 04 VERIFICATION.md, fix P3 code issues.
+**Depends on**: Phase 07.1, Phase 07.2
+**Gap Closure**: Tech debt items from v1.0 audit
+**Requirements**: PLAYER-01, PLAYER-02, PLAYER-03, AI-03 (documentation accuracy)
+**Success Criteria**:
+  1. REQUIREMENTS.md checkboxes match actual implementation state
+  2. PLAYER-01, PLAYER-02 checked off as Complete; PLAYER-03 updated to reflect gap closure (Phase 07.2)
+  3. AI-03 checked off as Complete (genre/scene summaries implemented in Phase 7)
+  4. Phase 04 VERIFICATION.md produced (retroactive — runtime tests skipped with reason documented)
+  5. 4 `platform!.env.DB` non-null assertions replaced with graceful guards
+  6. `schema.sql` comments document pipeline execution order (import → build-tag-stats → build-genre-data)
+
 ### Phase 8: Underground Aesthetic
 **Goal**: The turning point. Mercury stops looking like a search engine and starts feeling like a place. The UI becomes dense, playful, and game-like — panels, controls, dropdowns everywhere. A cockpit, not a feed. Your taste shapes your colors through taste-based theming. Layout templates let you customize your workspace. This ships before community features because the vibe has to be right first.
 **Depends on**: Phase 5 (taste profiles for theming), Phase 6 (discovery for panel content)
@@ -310,6 +350,9 @@ Plans:
 | 6. Discovery Engine | 7/7 | Complete   | 2026-02-20 |
 | 06.1. Affiliate Buy Links | 5/5 | Complete    | 2026-02-21 |
 | 7. Knowledge Base | 7/7 | Complete   | 2026-02-21 |
+| 07.1. Integration Hotfixes | 0/TBD | Not started | - |
+| 07.2. Playback → Taste Signal | 0/TBD | Not started | - |
+| 07.3. Requirements & Verification Cleanup | 0/TBD | Not started | - |
 | 8. Underground Aesthetic | 0/TBD | Not started | - |
 | 9. Community Foundation | 0/TBD | Not started | - |
 | 10. Communication Layer | 0/TBD | Not started | - |

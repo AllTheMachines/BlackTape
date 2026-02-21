@@ -1,7 +1,7 @@
 # Requirements: Mercury
 
 **Defined:** 2026-02-15
-**Updated:** 2026-02-21 — added Phase 06.1 affiliate buy link requirements
+**Updated:** 2026-02-21 — gap closure phases 07.1/07.2/07.3 added; reset partial requirements to Pending
 **Core Value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
 
 ## v1 Requirements
@@ -35,10 +35,10 @@
 
 ### AI
 
-- [x] **AI-01**: Client-side AI recommendations from taste profile and listening history (open models, no cloud dependency)
-- [x] **AI-02**: Natural-language discovery queries ("find me something like X but darker")
-- [ ] **AI-03**: AI-generated summaries for genres, artists, and scenes from public sources — artist summaries complete (Phase 5); genre/scene summaries deferred to Phase 7 (KB-01) when those pages exist
-- [x] **AI-04**: Taste profiling — builds automatically from listening history, collection, and browsing
+- [ ] **AI-01**: Client-side AI recommendations from taste profile and listening history (open models, no cloud dependency)
+- [ ] **AI-02**: Natural-language discovery queries ("find me something like X but darker")
+- [x] **AI-03**: AI-generated summaries for genres, artists, and scenes from public sources — artist summaries (Phase 5) + genre/scene summaries (Phase 7) both complete
+- [ ] **AI-04**: Taste profiling — builds automatically from listening history, collection, and browsing
 
 ### Discovery
 
@@ -49,8 +49,8 @@
 
 ### Knowledge Base
 
-- [x] **KB-01**: Genre/scene map with navigable relationships (genres, scenes, movements, cities, eras)
-- [x] **KB-02**: Multi-layer content system (open data → links/embeds → AI summaries → community written)
+- [ ] **KB-01**: Genre/scene map with navigable relationships (genres, scenes, movements, cities, eras)
+- [ ] **KB-02**: Multi-layer content system (open data → links/embeds → AI summaries → community written)
 - [x] **DISC-05**: Scene Maps — geographic + temporal visualization of music scenes using MusicBrainz location data
 - [x] **DISC-06**: Time Machine — browse releases by year, scrub timeline, filter by tags, watch genre evolution
 - [x] **DISC-07**: Liner Notes — rich expandable credits, relationships, and production details on release pages
@@ -143,13 +143,13 @@
 | DESKTOP-01 | Phase 3 | Complete |
 | DESKTOP-02 | Phase 3 | Complete |
 | DIST-01 | Phase 3 | Complete |
-| PLAYER-01 | Phase 4 | Pending |
-| PLAYER-02 | Phase 4 | Pending |
-| PLAYER-03 | Phase 4 | Pending |
-| AI-01 | Phase 5 | Complete |
-| AI-02 | Phase 5 | Complete |
-| AI-03 | Phase 5 / Phase 7 | Partial — artist summaries complete; genre/scene deferred to Phase 7 |
-| AI-04 | Phase 5 | Complete |
+| PLAYER-01 | Phase 4 / Phase 07.3 | Pending — implemented; needs VERIFICATION.md + checkbox update |
+| PLAYER-02 | Phase 4 / Phase 07.3 | Pending — implemented; needs VERIFICATION.md + checkbox update |
+| PLAYER-03 | Phase 4 / Phase 07.2 | Pending — NowPlayingDiscovery works; playback→taste signal broken (GAP-03) |
+| AI-01 | Phase 5 / Phase 07.1 | Pending — code exists; loadTasteProfile() not called at startup (GAP-01) |
+| AI-02 | Phase 5 / Phase 07.1 | Pending — code exists; taste context empty at startup (GAP-01) |
+| AI-03 | Phase 5 / Phase 7 | Complete |
+| AI-04 | Phase 5 / Phase 07.1 / Phase 07.2 | Pending — startup bug (GAP-01) + playback not triggering recompute (GAP-03) |
 | DISC-01 | Phase 6 | Complete |
 | DISC-02 | Phase 6 | Complete |
 | DISC-03 | Phase 6 | Complete |
@@ -158,8 +158,8 @@
 | BUY-02 | Phase 06.1 | Complete |
 | BUY-03 | Phase 06.1 | Complete |
 | BUY-04 | Phase 06.1 | Complete |
-| KB-01 | Phase 7 | Complete |
-| KB-02 | Phase 7 | Complete |
+| KB-01 | Phase 7 / Phase 07.1 | Pending — graph works; personalization broken (GAP-01); no /discover link (GAP-04) |
+| KB-02 | Phase 7 / Phase 07.1 | Pending — layers 1-3 work; /about 404 breaks layer 4 CTA (GAP-02) |
 | DISC-05 | Phase 7 | Complete |
 | DISC-06 | Phase 7 | Complete |
 | DISC-07 | Phase 7 | Complete |
@@ -202,4 +202,4 @@
 
 ---
 *Requirements defined: 2026-02-15*
-*Last updated: 2026-02-21 — AI-01, AI-02, AI-04 marked complete (Phase 5); AI-03 partial (artist summaries done, genre/scene deferred to Phase 7)*
+*Last updated: 2026-02-21 — Gap closure phases 07.1/07.2/07.3 added; AI-01, AI-02, AI-04, KB-01, KB-02 reset to Pending (integration bugs found in audit); AI-03 marked Complete (both Phase 5 artist + Phase 7 genre/scene summaries done)*
