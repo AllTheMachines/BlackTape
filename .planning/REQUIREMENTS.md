@@ -142,6 +142,7 @@
 |---------|--------|-------------|
 | Cross-platform playlist sync | Platform ToS risks, fragile APIs | — |
 | Remote streaming (phone ← home) | NAT traversal, relay servers, infrastructure complexity | — |
+| User-side tagging (personal taxonomy within collections) | Not discussed in Phase 9 CONTEXT.md session; roadmap success criteria only mention "save artists/releases, organize them — feels like a real shelf"; deferred to a future phase | SOCIAL-03 |
 
 ## Traceability
 
@@ -185,7 +186,7 @@
 | COMM-03 | Phase 9 | Pending |
 | SOCIAL-01 | Phase 9 | Pending |
 | SOCIAL-02 | Phase 9 | Pending |
-| SOCIAL-03 | Phase 9 | Pending |
+| SOCIAL-03 | Deferred | Deferred — per-item tagging not in Phase 9 scope; see Deferred table |
 | SOCIAL-04 | Phase 9 | Pending |
 | SOCIAL-05 | Phase 9 | Pending |
 | SOCIAL-06 | Phase 9 | Pending |
