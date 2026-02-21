@@ -235,6 +235,11 @@ Plans:
   4. Phase 04 VERIFICATION.md produced (retroactive — runtime tests skipped with reason documented)
   5. 4 `platform!.env.DB` non-null assertions replaced with graceful guards
   6. `schema.sql` comments document pipeline execution order (import → build-tag-stats → build-genre-data)
+**Plans**: 3 plans
+Plans:
+- [ ] 07.3-01-PLAN.md — REQUIREMENTS.md checkbox and traceability updates (PLAYER-01/02/03, AI-03)
+- [ ] 07.3-02-PLAN.md — Retroactive Phase 04 VERIFICATION.md production
+- [ ] 07.3-03-PLAN.md — Platform guard fixes (4 routes) + schema.sql pipeline comments
 
 ### Phase 8: Underground Aesthetic
 **Goal**: The turning point. Mercury stops looking like a search engine and starts feeling like a place. The UI becomes dense, playful, and game-like — panels, controls, dropdowns everywhere. A cockpit, not a feed. Your taste shapes your colors through taste-based theming. Layout templates let you customize your workspace. This ships before community features because the vibe has to be right first.
@@ -363,7 +368,7 @@ Plans:
 | 7. Knowledge Base | 7/7 | Complete   | 2026-02-21 |
 | 07.1. Integration Hotfixes | 3/3 | Complete    | 2026-02-21 |
 | 07.2. Playback → Taste Signal | 3/3 | Complete   | 2026-02-21 |
-| 07.3. Requirements & Verification Cleanup | 0/TBD | Not started | - |
+| 07.3. Requirements & Verification Cleanup | 0/3 | Not started | - |
 | 8. Underground Aesthetic | 0/TBD | Not started | - |
 | 9. Community Foundation | 0/TBD | Not started | - |
 | 10. Communication Layer | 0/TBD | Not started | - |
