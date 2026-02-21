@@ -35,10 +35,10 @@
 
 ### AI
 
-- [ ] **AI-01**: Client-side AI recommendations from taste profile and listening history (open models, no cloud dependency)
-- [ ] **AI-02**: Natural-language discovery queries ("find me something like X but darker")
+- [x] **AI-01**: Client-side AI recommendations from taste profile and listening history (open models, no cloud dependency)
+- [x] **AI-02**: Natural-language discovery queries ("find me something like X but darker")
 - [x] **AI-03**: AI-generated summaries for genres, artists, and scenes from public sources — artist summaries (Phase 5) + genre/scene summaries (Phase 7) both complete
-- [ ] **AI-04**: Taste profiling — builds automatically from listening history, collection, and browsing
+- [x] **AI-04**: Taste profiling — builds automatically from listening history, collection, and browsing
 
 ### Discovery
 

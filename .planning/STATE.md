@@ -222,6 +222,8 @@ Progress: [███░░░░░░░] 3/3 plans complete (Phase 07.1 COMPLE
 - [Phase 07.1-integration-hotfixes]: [Phase 07.1-02]: Three-state taste pattern: check isLoaded first, then tags.length — prevents skeleton showing to new users forever (conflating loading vs empty)
 - [Phase 07.1-integration-hotfixes]: [Phase 07.1-03]: Discover links on KB genre pages guarded by {#if data.genre.mb_tag} — null would produce /discover?tags=null broken URL
 - [Phase 07.1-integration-hotfixes]: [Phase 07.1-03]: Two discover link placements: inline after genre-header (top) + discover-footer as last element (bottom) — per user decision for maximum visibility
+- [Phase 07.1-01]: loadTasteProfile() called fire-and-forget (no await) in Tauri onMount — tasteProfile.isLoaded flag signals completion to consumers
+- [Phase 07.1-01]: About page is pure static (no +page.server.ts) — SPA fallback in adapter-static handles Tauri routing, consistent with other static pages
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
@@ -235,6 +237,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-21
-Phase 07.1 Plan 03 complete. Genre/scene pages now have conditional discover links at top and bottom. {#if data.genre.mb_tag} guard prevents null mb_tag from producing broken /discover?tags=null URL. npm run check: 0 errors. npm run build: clean. Phase 07.1 fully complete.
-Stopped at: Completed 07.1-03-PLAN.md (Phase 07.1 fully complete)
+Phase 07.1 Plan 02 complete (executed after 01+03). KB page has $effect + loadPersonalizedGraph() + skeleton + kb-taste-empty stub. Explore page has three-state taste hint (skeleton/hint/empty CTA). npm run check: 0 errors. npm run build: clean. Phase 07.1 fully complete.
+Stopped at: Completed 07.1-02-PLAN.md (Phase 07.1 fully complete)
 Next: Phase 08 (per ROADMAP.md)
