@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { PROJECT_NAME } from '$lib/config';
 	import BuyOnBar from '$lib/components/BuyOnBar.svelte';
+	import LinerNotes from '$lib/components/LinerNotes.svelte';
 	import type { ReleaseDetail } from './+page.server';
 
 	let { data } = $props();
@@ -113,6 +114,9 @@
 				</ul>
 			</section>
 		{/if}
+
+		<!-- Liner Notes — expandable credits panel, lazy-fetches MusicBrainz on open -->
+		<LinerNotes releaseMbid={data.mbid} />
 
 	{/if}
 </div>
