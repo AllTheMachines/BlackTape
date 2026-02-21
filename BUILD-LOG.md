@@ -2503,6 +2503,24 @@ Three new modules in `src/lib/theme/`:
 
 `npm run check`: 0 errors.
 
-<!-- status -->
-Phase 08-01: Task 1 done (theme modules). Working on Task 2 (theme.css OKLCH conversion).
-<!-- /status -->
+### Task 2 Results
+
+`theme.css` updated: all taste-affected properties converted from hex to OKLCH equivalents.
+
+- Backgrounds: `oklch(0.07 0 0)` through `oklch(0.18 0 0)` — achromatic (chroma 0), visually identical to previous hex values
+- Borders: `oklch(0.15 0 0)` through `oklch(0.27 0 0)` — achromatic
+- Interactive (link/tag/progress): `oklch(0.72 0.08 220)` — blue-tinted defaults at hue 220
+- Player: `oklch(0.06 0 0)` and `oklch(0.11 0 0)` — near-black achromatic
+- Text properties: kept at fixed achromatic lightness (WCAG AA — never hue-tinted)
+- Platform colors: kept as hex brand colors (not taste-tintable)
+
+Visual appearance is identical to the previous hex theme — same perceptual lightness, same hue. When the taste engine overrides at runtime, the color space is already consistent (no hex→oklch visual jump on first theme activation).
+
+`npm run check`: 0 errors. `npm run build`: clean (9.13s).
+
+### Plan 01 Complete
+
+Both tasks done. Theme engine foundation is in place and ready for Plan 03 integration (layout wiring, initTheme call from root layout, streaming preference in embeds).
+
+> **Commit bac28d7** (2026-02-21 20:08) — feat(08-01): create OKLCH theme engine modules
+> Files changed: 4
