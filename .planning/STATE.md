@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Phase 08 in progress. Plans 01-03 complete: OKLCH theme engine + PaneForge panel layout system + integration wired into root layout.
+**Current focus:** Phase 08 complete. All 4 plans done: OKLCH theme engine + PaneForge panel layout system + integration wired into root layout + Settings UI + documentation.
 
 ## Current Position
 
-Phase: 08-underground-aesthetic of 15 (Underground Aesthetic — IN PROGRESS)
-Current Plan: 08-03 (complete)
-Status: Phase 08 Plan 03 complete — PanelLayout + ControlBar + theme engine wired into root layout. EmbedPlayer and artist page respect streaming preference ordering. npm run check 0 errors, npm run build clean. 2026-02-21.
-Last activity: 2026-02-21 — 08-03 complete. Root layout now branches on tauriMode: Tauri gets ControlBar + PanelLayout(cockpit) with LeftSidebar + RightSidebar snippets + theme engine init; web path unchanged. EmbedPlayer and artist Listen On bar respect streamingPref.platform ordering.
+Phase: 08-underground-aesthetic of 15 (Underground Aesthetic — COMPLETE)
+Current Plan: 08-04 (complete)
+Status: Phase 08 complete — Settings page with Appearance/Layout/Streaming sections, shared layoutState module, ARCHITECTURE.md and user manual updated. All 5 Phase 8 requirements complete. npm run check 0 errors, npm run build clean. 2026-02-21.
+Last activity: 2026-02-21 — 08-04 complete. Settings page has three new sections (Appearance, Layout, Streaming Preference). layout-state.svelte.ts shared module created for root layout + settings sync. ARCHITECTURE.md Underground Aesthetic section added. User manual Desktop Workspace section added. Phase 8 complete.
 
-Progress: [██████░░░░] 3/4 plans complete (Phase 08 in progress)
+Progress: [████████░░] 4/4 plans complete (Phase 08 COMPLETE)
 
 ## Performance Metrics
 
@@ -75,6 +75,7 @@ Progress: [██████░░░░] 3/4 plans complete (Phase 08 in progr
 | Phase 08 P01 | 4min | 2 tasks | 4 files |
 | Phase 08-underground-aesthetic P02 | 12 | 2 tasks | 7 files |
 | Phase 08-underground-aesthetic P03 | 4min | 2 tasks | 3 files |
+| Phase 08-underground-aesthetic P04 | 7min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -260,6 +261,9 @@ Progress: [██████░░░░] 3/4 plans complete (Phase 08 in progr
 - [Phase 08-underground-aesthetic]: [Phase 08-03]: ControlBar positioned between header and PanelLayout — header provides site identity (unchanged), ControlBar provides workspace controls (additive, not replacement)
 - [Phase 08-underground-aesthetic]: [Phase 08-03]: Streaming pref loaded in root layout onMount Tauri block — sets reactive streamingPref.platform, all embed/artist components read reactively without async
 - [Phase 08-underground-aesthetic]: [Phase 08-03]: sortedStreamingLinks uses label.toLowerCase().includes(platform) — label-based match handles label variants without requiring exact key match
+- [Phase 08-underground-aesthetic]: [Phase 08-04]: layoutState shared .svelte.ts module — single $state object imported by both root layout and settings; no prop drilling, no drift
+- [Phase 08-underground-aesthetic]: [Phase 08-04]: Settings section ordering: Appearance → Layout → Streaming → AI Settings — new workspace config sections above existing AI sections
+- [Phase 08-underground-aesthetic]: [Phase 08-04]: Accessibility: Theme Mode row uses span (non-control caption); Hue and Preferred Platform rows use label with for attribute pointing to id'd inputs
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
@@ -273,6 +277,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-21
-Phase 08 Plan 03 complete. Root layout now branches on tauriMode: Tauri renders ControlBar (32px toolbar: search + layout switcher + theme dot) + PanelLayout with {#snippet sidebar()} LeftSidebar + {#snippet context()} RightSidebar; web path completely unchanged. initTheme called on Tauri mount with saved theme prefs + taste tags. $effect reactive taste update when tasteProfile.isLoaded + themeState.mode === 'taste'. handleTemplateChange persists via saveLayoutPreference. EmbedPlayer: orderedPlatforms derived — preferred platform first. Artist page: sortedStreamingLinks derived — preferred platform first in Listen On bar. 2 auto-fixes: hasPlayer → showPlayer prop name, misplaced import moved to top. npm run check 0 errors, npm run build clean.
-Stopped at: Completed 08-03-PLAN.md
-Next: Phase 08 Plan 04 (Settings UI for theme + streaming + layout preferences)
+Phase 08 Plan 04 complete. Settings page has Appearance section (theme mode radio group + hue slider for manual mode), Layout section (3-column template grid for built-ins + user template list with × delete + save-as-template row), Streaming Preference section (platform dropdown). layout-state.svelte.ts created as shared reactive $state module — root layout and settings both import it. Root layout migrated: activeTemplate → layoutState.template, loadUserTemplates() on startup, allTemplateConfigs derived. 1 auto-fix: accessibility labels (span for Theme Mode caption, for/id on Hue and Platform). npm run check 0 errors, npm run build clean. ARCHITECTURE.md Underground Aesthetic section + Phase 8 ai_settings keys in data model. User manual Desktop Workspace section. Phase 8 complete.
+Stopped at: Completed 08-04-PLAN.md
+Next: Phase 09 (TBD)

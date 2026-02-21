@@ -27,7 +27,7 @@ Phase 8 is the turning point — where Mercury stops being a tool and starts bei
  (completed 2026-02-21)
 - [x] **Phase 07.2: Playback → Taste Signal** (INSERTED) — Audio engine hooks to feed taste profile from local playback (completed 2026-02-21)
 - [x] **Phase 07.3: Requirements & Verification Cleanup** (INSERTED) — REQUIREMENTS.md updates, Phase 04 VERIFICATION.md, platform! guards, schema docs (completed 2026-02-21)
-- [ ] **Phase 8: Underground Aesthetic** — Dense playful UI, taste-based theming, panels/controls, templates, game-like feel
+- [x] **Phase 8: Underground Aesthetic** — Dense playful UI, taste-based theming, panels/controls, templates, game-like feel (completed 2026-02-21)
 - [ ] **Phase 9: Community Foundation** — Identity system, taste matching, collections, taste fingerprint, import/export
 - [ ] **Phase 10: Communication Layer** — Encrypted DMs + scene rooms + ephemeral sessions, hybrid moderation
 - [ ] **Phase 11: Scene Building** — AI scene detection, label collectives, community-driven creation tools
@@ -374,7 +374,7 @@ Plans:
 | 07.1. Integration Hotfixes | 3/3 | Complete    | 2026-02-21 |
 | 07.2. Playback → Taste Signal | 3/3 | Complete   | 2026-02-21 |
 | 07.3. Requirements & Verification Cleanup | 3/3 | Complete    | 2026-02-21 |
-| 8. Underground Aesthetic | 3/4 | In Progress|  |
+| 8. Underground Aesthetic | 4/4 | Complete   | 2026-02-21 |
 | 9. Community Foundation | 0/TBD | Not started | - |
 | 10. Communication Layer | 0/TBD | Not started | - |
 | 11. Scene Building | 0/TBD | Not started | - |
