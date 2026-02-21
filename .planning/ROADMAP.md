@@ -300,7 +300,7 @@ Plans:
 | 4. Local Music Player | 5/5 | Complete | 2026-02-17 |
 | 5. AI Foundation | 0/TBD | Not started | - |
 | 6. Discovery Engine | 7/7 | Complete   | 2026-02-20 |
-| 06.1. Affiliate Buy Links | 2/5 | In Progress|  |
+| 06.1. Affiliate Buy Links | 3/5 | In Progress|  |
 | 7. Knowledge Base | 0/TBD | Not started | - |
 | 8. Underground Aesthetic | 0/TBD | Not started | - |
 | 9. Community Foundation | 0/TBD | Not started | - |

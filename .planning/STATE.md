@@ -55,6 +55,7 @@ Progress: [███░░░░░░░] 3/5 plans complete
 | Phase 06 P05 | 3 | 1 tasks | 3 files |
 | Phase 06 P06 | 5 | 2 tasks | 4 files |
 | Phase 06 P07 | 2 | 2 tasks | 3 files |
+| Phase 06.1 P02 | 3min | 2 tasks | 2 files |
 | Phase 06.1 P03 | 1min | 1 tasks | 1 files |
 
 ## Accumulated Context
@@ -170,6 +171,8 @@ Progress: [███░░░░░░░] 3/5 plans complete
 - [Phase 06.1]: affiliates/ module mirrors embeds/ structure: types + config + construct + index
 - [Phase 06.1]: buildBuyLinks() always returns all 5 BuyLinks — never conditional on data availability, isDirect flag distinguishes direct URLs from search fallbacks
 - [Phase 06.1]: Bandcamp isDirect: true only for release-level MusicBrainz URLs — artist-level URLs send users to homepage not specific album
+- [Phase 06.1 P02]: platform.caches.default (not global caches.default) for Cloudflare Cache in page.server.ts — matches existing API route pattern, CacheStorage type has no .default property
+- [Phase 06.1 P02]: Tauri universal load passes null affiliate config to buildBuyLinks — buy links degrade to non-coded search fallbacks (no server env in Tauri)
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
