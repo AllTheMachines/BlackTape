@@ -1,7 +1,7 @@
 # Requirements: Mercury
 
 **Defined:** 2026-02-15
-**Updated:** 2026-02-21 — gap closure phases 07.1/07.2/07.3 added; reset partial requirements to Pending
+**Updated:** 2026-02-21 — Phase 07.3: PLAYER-01/PLAYER-02 marked Complete; traceability aligned
 **Core Value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
 
 ## v1 Requirements
@@ -29,8 +29,8 @@
 
 ### Local Music Player
 
-- [ ] **PLAYER-01**: Desktop app scans local folders and reads music file metadata (ID3, FLAC, Vorbis, MP4 tags)
-- [ ] **PLAYER-02**: Audio playback of local files with standard player controls (play, pause, skip, seek, volume, queue)
+- [x] **PLAYER-01**: Desktop app scans local folders and reads music file metadata (ID3, FLAC, Vorbis, MP4 tags)
+- [x] **PLAYER-02**: Audio playback of local files with standard player controls (play, pause, skip, seek, volume, queue)
 - [x] **PLAYER-03**: Local library unified with online discovery — playing local files shows related artists and tags from the index
 
 ### AI
@@ -143,8 +143,8 @@
 | DESKTOP-01 | Phase 3 | Complete |
 | DESKTOP-02 | Phase 3 | Complete |
 | DIST-01 | Phase 3 | Complete |
-| PLAYER-01 | Phase 4 / Phase 07.3 | Pending — implemented; needs VERIFICATION.md + checkbox update |
-| PLAYER-02 | Phase 4 / Phase 07.3 | Pending — implemented; needs VERIFICATION.md + checkbox update |
+| PLAYER-01 | Phase 4 / Phase 07.3 | Complete |
+| PLAYER-02 | Phase 4 / Phase 07.3 | Complete |
 | PLAYER-03 | Phase 4 / Phase 07.2 | Complete — playback→taste signal implemented; 70% threshold fires recomputeTaste() |
 | AI-01 | Phase 5 / Phase 07.1 | Complete |
 | AI-02 | Phase 5 / Phase 07.1 | Complete |
@@ -202,4 +202,4 @@
 
 ---
 *Requirements defined: 2026-02-15*
-*Last updated: 2026-02-21 — Phase 07.2 complete: PLAYER-03 and AI-04 marked Complete (GAP-03 fully resolved — playback→taste pipeline live, SoundCloud widget hook, Listening History UI)*
+*Last updated: 2026-02-21 — Phase 07.3 Plan 01: PLAYER-01 and PLAYER-02 marked Complete; traceability aligned for all four player/AI requirements*
