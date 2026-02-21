@@ -5,6 +5,28 @@
  * Plans 04-06 will expand these as features are built.
  */
 
+/**
+ * Generate a 2-3 sentence genre/scene vibe description prompt.
+ * Used by the genre detail page (Layer 3 AI content).
+ * Temperature 0.6 — descriptive but not too creative.
+ */
+export function genreSummary(
+	genreName: string,
+	inceptionYear: number | null,
+	originCity: string | null
+): string {
+	const context = [
+		inceptionYear ? `emerged around ${inceptionYear}` : null,
+		originCity ? `originating in ${originCity}` : null
+	]
+		.filter(Boolean)
+		.join(', ');
+
+	return `Write a 2-3 sentence description of the ${genreName} music genre/scene${context ? ` (${context})` : ''}.
+Capture the vibe, sound, and cultural feeling. Write like a knowledgeable friend describing it, not like Wikipedia.
+Be specific and evocative. Keep it punchy — people skim.`;
+}
+
 export const PROMPTS = {
 	artistSummary: (artistName: string, tags: string, country: string) =>
 		`Write a concise 2-3 sentence description of the musical artist "${artistName}". ${tags ? `Their music is tagged as: ${tags}.` : ''} ${country ? `They are from ${country}.` : ''} Focus on their sound, genre, and significance. Be factual — do not speculate or fabricate details you are unsure about.`,
