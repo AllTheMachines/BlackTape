@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Phase 07.1 (Integration Hotfixes) COMPLETE. All 3 plans done — About page 404 fix, Explore page taste loading skeleton + empty taste CTA, KB genre→Discover navigation links.
+**Current focus:** Phase 07.2 (Playback Taste Signal). Plan 01 complete — play_history table + 6 Tauri commands. PLAYER-03 and AI-04 satisfied.
 
 ## Current Position
 
-Phase: 07.1 of 15 (Integration Hotfixes — COMPLETE)
-Current Plan: 07.1-03 (complete)
-Status: Phase 07.1 COMPLETE — All 3 plans done. KB-01, KB-02 satisfied. GAP-04 closed (KB→Discover navigation bridge). 0 TypeScript errors. npm run build clean. 2026-02-21.
-Last activity: 2026-02-21 — 07.1-03 complete. Genre/scene pages now have inline discover links at top (after genre-header) and bottom (discover-footer). Both guarded by {#if data.genre.mb_tag}. KB-01 and KB-02 requirements satisfied.
+Phase: 07.2 of 15 (Playback Taste Signal — IN PROGRESS)
+Current Plan: 07.2-01 (complete)
+Status: Phase 07.2 Plan 01 complete — play_history table in taste.db, 6 Tauri commands registered. cargo check clean. npm run build clean. 2026-02-21.
+Last activity: 2026-02-21 — 07.2-01 complete. play_history table + indexes in taste.db. record_play, get_play_history, delete_play, clear_play_history, get_play_count, export_play_history registered in Rust. private_listening default seeded in ai_settings.
 
-Progress: [███░░░░░░░] 3/3 plans complete (Phase 07.1 COMPLETE)
+Progress: [█░░░░░░░░░] 1/? plans complete (Phase 07.2 IN PROGRESS)
 
 ## Performance Metrics
 
@@ -66,6 +66,7 @@ Progress: [███░░░░░░░] 3/3 plans complete (Phase 07.1 COMPLE
 | Phase 07-knowledge-base P06 | 7min | 2 tasks | 4 files |
 | Phase 07-knowledge-base P07 | 7min | 2 tasks | 3 files |
 | Phase 07.1 P03 | 2min | 1 tasks | 1 files |
+| Phase 07.2 P01 | 3min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -224,6 +225,9 @@ Progress: [███░░░░░░░] 3/3 plans complete (Phase 07.1 COMPLE
 - [Phase 07.1-integration-hotfixes]: [Phase 07.1-03]: Two discover link placements: inline after genre-header (top) + discover-footer as last element (bottom) — per user decision for maximum visibility
 - [Phase 07.1-01]: loadTasteProfile() called fire-and-forget (no await) in Tauri onMount — tasteProfile.isLoaded flag signals completion to consumers
 - [Phase 07.1-01]: About page is pure static (no +page.server.ts) — SPA fallback in adapter-static handles Tauri routing, consistent with other static pages
+- [Phase 07.2-01]: play_history lives in taste.db not library.db — play history is a taste signal, belongs with taste profile data (taste_tags, favorite_artists, taste_anchors)
+- [Phase 07.2-01]: 70% completion threshold is frontend-enforced, not in Rust — record_play is generic write, caller decides qualifying plays, threshold adjustable without Rust recompile
+- [Phase 07.2-01]: private_listening default seeded in ai_settings at init — INSERT OR IGNORE means existing users get default without migration
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
@@ -237,6 +241,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-21
-Phase 07.1 Plan 02 complete (executed after 01+03). KB page has $effect + loadPersonalizedGraph() + skeleton + kb-taste-empty stub. Explore page has three-state taste hint (skeleton/hint/empty CTA). npm run check: 0 errors. npm run build: clean. Phase 07.1 fully complete.
-Stopped at: Completed 07.1-02-PLAN.md (Phase 07.1 fully complete)
-Next: Phase 08 (per ROADMAP.md)
+Phase 07.2 Plan 01 complete. play_history table + 6 Tauri commands in taste_db.rs. record_play, get_play_history, delete_play, clear_play_history, get_play_count, export_play_history registered in lib.rs. private_listening default in ai_settings. cargo check clean. npm run build clean.
+Stopped at: Completed 07.2-01-PLAN.md
+Next: Phase 07.2 Plan 02 (play tracking frontend — 70% completion tracker + private_listening toggle)

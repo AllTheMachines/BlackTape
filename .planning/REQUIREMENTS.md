@@ -31,7 +31,7 @@
 
 - [ ] **PLAYER-01**: Desktop app scans local folders and reads music file metadata (ID3, FLAC, Vorbis, MP4 tags)
 - [ ] **PLAYER-02**: Audio playback of local files with standard player controls (play, pause, skip, seek, volume, queue)
-- [ ] **PLAYER-03**: Local library unified with online discovery — playing local files shows related artists and tags from the index
+- [x] **PLAYER-03**: Local library unified with online discovery — playing local files shows related artists and tags from the index
 
 ### AI
 

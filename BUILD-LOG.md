@@ -2173,3 +2173,129 @@ Seven plans, completed in one session:
 Both `npm run check` and `npm run build` pass with 0 errors after all Phase 7 work.
 
 Phase 7 complete. Requirements KB-01, KB-02, DISC-05, DISC-06, DISC-07 all satisfied.
+
+> **Commit fd71821** (2026-02-21 13:03) — docs(07-07): add Phase 7 BUILD-LOG entry with all key decisions
+> Files changed: 1
+
+> **Commit a268dea** (2026-02-21 13:05) — docs(07-07): complete Knowledge Base documentation plan
+> Files changed: 3
+
+> **Commit 56743ae** (2026-02-21 13:10) — docs(phase-07): complete phase execution — knowledge base
+> Files changed: 2
+
+> **Commit 733d37f** (2026-02-21 13:17) — test(07): complete UAT — 28 passed, 0 issues
+> Files changed: 1
+
+> **Commit cc0f55f** (2026-02-21 13:39) — docs(roadmap): add gap closure phases 07.1-07.3
+> Files changed: 5
+
+> **Commit 53abbd3** (2026-02-21 13:54) — docs(07.1): capture phase context
+> Files changed: 1
+
+> **Commit db2e484** (2026-02-21 13:57) — docs(07.1): update context — no popular artists in taste empty state
+> Files changed: 1
+
+> **Commit fc49144** (2026-02-21 14:01) — docs(07.1): research phase — integration hotfixes
+> Files changed: 1
+
+> **Commit 1a36081** (2026-02-21 14:06) — docs(07.1): create phase plan
+> Files changed: 4
+
+> **Commit f153c06** (2026-02-21 14:10) — fix(07.1): revise plan 02 — add KB empty-taste stub per user decision
+> Files changed: 1
+
+> **Commit 078d989** (2026-02-21 14:30) — feat(07.1-02): KB landing page — reactive personalization + skeleton
+> Files changed: 1
+
+> **Commit a2d2a72** (2026-02-21 14:30) — feat(07.1-01): wire loadTasteProfile into layout startup + add About nav/footer links
+> Files changed: 1
+
+> **Commit dbd7700** (2026-02-21 14:31) — feat(07.1-03): add genre→discover navigation links (top and bottom)
+> Files changed: 1
+
+> **Commit 8e93122** (2026-02-21 14:31) — feat(07.1-02): Explore page — taste-loading skeleton + empty taste CTA
+> Files changed: 1
+
+> **Commit eef54e9** (2026-02-21 14:32) — feat(07.1-01): create /about page with 5 structured sections and CTA links
+> Files changed: 1
+
+> **Commit 8b4661d** (2026-02-21 14:33) — docs(07.1-03): complete genre discover navigation plan
+> Files changed: 4
+
+> **Commit 4cfd770** (2026-02-21 14:33) — docs(07.1-02): complete KB+Explore taste states plan — SUMMARY, STATE, requirements
+> Files changed: 3
+
+> **Commit aaacbcc** (2026-02-21 14:34) — docs(07.1-01): complete layout startup wiring + about page plan
+> Files changed: 2
+
+> **Commit 5cf9c2f** (2026-02-21 14:38) — docs(phase-07.1): complete phase execution
+> Files changed: 2
+
+> **Commit be2df33** (2026-02-21 15:12) — docs(07.2): capture phase context
+> Files changed: 1
+
+> **Commit 94b009d** (2026-02-21 15:30) — docs(07.2): research playback taste signal phase
+> Files changed: 1
+
+> **Commit c6ad925** (2026-02-21 15:37) — docs(07.2): create phase plan
+> Files changed: 4
+
+## Entry — 2026-02-21 — Phase 07.2 Plan 01: Play History Persistence Layer
+
+### What Was Built
+
+Added the `play_history` table to `taste.db` and implemented the full Rust backend for recording, querying, and exporting listening history. This is the foundational data layer for the playback-to-taste pipeline — nothing in Phase 07.2 can be built without these commands.
+
+Two tasks, two commits:
+
+| Task | What |
+|------|------|
+| 01 | `play_history` table + indexes + `PlayRecord` struct + 6 Tauri commands in `taste_db.rs` |
+| 02 | Register all 6 commands in `lib.rs` handler macro + `cargo check` verification |
+
+### Schema
+
+```sql
+CREATE TABLE IF NOT EXISTS play_history (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    track_path TEXT NOT NULL,
+    artist_name TEXT,
+    track_title TEXT,
+    album_name TEXT,
+    played_at INTEGER NOT NULL,
+    duration_secs REAL NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS idx_play_history_played_at ON play_history(played_at DESC);
+CREATE INDEX IF NOT EXISTS idx_play_history_artist ON play_history(artist_name);
+```
+
+<!-- decision: play_history in taste.db, not library.db -->
+**`play_history` lives in `taste.db`, not `library.db`.** Play history is a taste signal — it belongs alongside `taste_tags`, `favorite_artists`, and `taste_anchors` in the taste profile database. `library.db` is a catalog of tracks; `taste.db` is the user's relationship with those tracks.
+<!-- /decision -->
+
+<!-- decision: 70% completion threshold is frontend-enforced, not in Rust -->
+**The 70% completion gate lives in the frontend, not in the Rust command.** `record_play` simply writes a row — the caller decides when a "qualifying play" has occurred. This keeps the Rust layer generic (could replay from imports, could have different thresholds in future) while making the threshold easy to adjust in TypeScript without a Rust recompile.
+<!-- /decision -->
+
+### Commands Added
+
+- `record_play` — writes a play event to the database
+- `get_play_history` — returns records ordered by most recent, optional limit
+- `delete_play` — deletes a specific record by id
+- `clear_play_history` — wipes all history
+- `get_play_count` — returns count for the activation gate (5+ plays)
+- `export_play_history` — serializes full history to JSON string for user export
+
+Also added `private_listening` default to `ai_settings` defaults array — will be used in Plan 02 to gate whether plays are recorded at all.
+
+### Build Verification
+
+- `cargo check`: clean, 0 errors
+- `npm run check`: 0 TypeScript errors
+- `npm run build`: clean
+
+> **Commit d5f5106** (2026-02-21 15:42) — feat(07.2-01): add play_history table and 6 Tauri commands to taste_db.rs
+> Files changed: 1
+
+> **Commit bb3e19d** (2026-02-21 15:43) — feat(07.2-01): register 6 play history commands in lib.rs
+> Files changed: 1
