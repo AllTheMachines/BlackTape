@@ -2358,3 +2358,63 @@ One deviation from the plan: `@tauri-apps/plugin-fs` isn't installed in this pro
 - `npm run build`: clean (6.55s)
 - `grep thresholdFired audio.svelte.ts`: 5 occurrences (declaration, guard, set, two resets)
 - `grep computeTasteFromPlayHistory signals.ts`: defined + called in recomputeTaste
+
+> **Commit 19a0545** (2026-02-21 15:52) — docs(07.2-02): complete play tracking frontend + taste signal computation plan
+> Files changed: 3
+
+> **Commit bc75b61** (2026-02-21 15:54) — feat(07.2-03): hook SoundCloud widget events in EmbedPlayer
+> Files changed: 1
+
+> **Commit 4f77f24** (2026-02-21 15:57) — feat(07.2-03): add ListeningHistory component + Settings page section
+> Files changed: 3
+
+---
+
+## 2026-02-21 — Phase 07.2 Plan 03: SoundCloud Widget Hook + Listening History UI
+
+Phase 07.2 complete. The user-facing side of the playback taste pipeline is now fully visible and controllable.
+
+### What Was Built
+
+| Task | Files | What |
+|------|-------|------|
+| 01 | `EmbedPlayer.svelte` | SoundCloud Widget API hook for 70% play detection |
+| 02 | `ListeningHistory.svelte`, `settings/+page.svelte`, `history.ts` | History UI + Settings section + bug fix |
+
+### SoundCloud Widget Hook
+
+`EmbedPlayer.svelte` now loads the SoundCloud Widget API on demand (singleton — `window.SC` guard prevents double-load). After a SoundCloud embed is in the DOM, `hookSoundCloudWidget()` binds to two widget events:
+
+- `PLAY` — resets `progressFired` flag on every new track start
+- `PLAY_PROGRESS` — fires `recordEmbedPlay()` once when `relativePosition >= 0.70`
+
+Two `$effect` blocks cover both render paths: the click-to-load path (watching `loadedEmbeds` for `sc-` keys) and the direct render path (when `soundcloudEmbedHtml` is already set on mount). The `sc-embed-container` class marks the wrapper div for DOM lookup.
+
+The `artistName` prop threads through from the artist page — SoundCloud plays are attributed to the correct artist in taste computation.
+
+### Listening History UI
+
+`ListeningHistory.svelte` gives users full visibility and control:
+
+- **Private mode toggle** — checkbox at the top, wired to `togglePrivateMode()`, live status text reflects current mode
+- **Stats row** — total qualifying plays count + activation badge (shows "Active" or "N more to activate" at threshold 5)
+- **History list** — scrollable, up to 200 most recent entries, each with track/artist/album/date + delete button
+- **Actions** — Export JSON (saves via Tauri dialog + Rust write) and Clear All (two-step confirm pattern)
+
+The section lives in Settings below the Taste Profile, visible whenever the app is in Tauri mode (not gated on `aiState.enabled` — play history is orthogonal to AI state).
+
+### Auto-Fixes Applied
+
+<!-- decision: SC Widget type definition uses merged type (plan had duplicate Widget identifier) -->
+The plan's type definition for `SC.Widget` declared the same property twice with conflicting types. Fixed by splitting into `SCWidget` type alias and `SCWidgetConstructor` intersection type — TypeScript accepted it cleanly.
+<!-- /decision -->
+
+<!-- decision: @tauri-apps/plugin-fs removed from exportPlayHistory — Rollup can't resolve uninstalled packages even in dynamic imports -->
+The `@tauri-apps/plugin-fs` dynamic import in `history.ts` was suppressed with `@ts-ignore` in Plan 02 (fixing type check), but `npm run build` failed when `ListeningHistory.svelte` pulled `history.ts` into the web bundle — Rollup traverses dynamic imports and can't resolve uninstalled packages. Fixed by removing the `plugin-fs` branch entirely. The Rust `export_play_history_to_path` invoke was already the real fallback path since `plugin-fs` was never installed.
+<!-- /decision -->
+
+### Build Verification
+
+- `npm run check`: 0 TypeScript errors
+- `npm run build`: clean (2.12s)
+- All 7 plan verification greps pass

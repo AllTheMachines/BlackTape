@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Phase 07.2 (Playback Taste Signal). Plan 02 complete — play tracking frontend, 70% threshold detection, play history taste signal with 30-day decay.
+**Current focus:** Phase 07.2 complete. SoundCloud widget hook + Listening History UI done. All 3 plans complete. Phase 07.2 DONE.
 
 ## Current Position
 
-Phase: 07.2 of 15 (Playback Taste Signal — IN PROGRESS)
-Current Plan: 07.2-02 (complete)
-Status: Phase 07.2 Plan 02 complete — playback.svelte.ts + history.ts + threshold detection in audio.svelte.ts + computeTasteFromPlayHistory in signals.ts + loadPlaybackSettings in layout. npm run build clean. 2026-02-21.
-Last activity: 2026-02-21 — 07.2-02 complete. 70% threshold fires recordQualifyingPlay() once per track. Private mode gates all recording. computeTasteFromPlayHistory() with 30-day half-life decay, 5-play activation gate. recomputeTaste() merges 'playback' source. loadPlaybackSettings() in root layout onMount.
+Phase: 07.2 of 15 (Playback Taste Signal — COMPLETE)
+Current Plan: 07.2-03 (complete)
+Status: Phase 07.2 Plan 03 complete — SoundCloud Widget API hook in EmbedPlayer, ListeningHistory.svelte UI, Listening History section in Settings. npm run check 0 errors, npm run build clean. 2026-02-21.
+Last activity: 2026-02-21 — 07.2-03 complete. hookSoundCloudWidget() fires recordEmbedPlay() at 70%. ListeningHistory component shows private mode toggle, play stats, history list, export/clear. Settings page has Listening History section in Tauri context.
 
-Progress: [██░░░░░░░░] 2/? plans complete (Phase 07.2 IN PROGRESS)
+Progress: [███░░░░░░░] 3/3 plans complete (Phase 07.2 COMPLETE)
 
 ## Performance Metrics
 
@@ -68,6 +68,7 @@ Progress: [██░░░░░░░░] 2/? plans complete (Phase 07.2 IN PRO
 | Phase 07.1 P03 | 2min | 1 tasks | 1 files |
 | Phase 07.2 P01 | 3min | 2 tasks | 2 files |
 | Phase 07.2 P02 | 5min | 2 tasks | 5 files |
+| Phase 07.2 P03 | 7min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -232,6 +233,9 @@ Progress: [██░░░░░░░░] 2/? plans complete (Phase 07.2 IN PRO
 - [Phase 07.2-02]: thresholdFired resets on loadedmetadata (new track) AND play-from-start (currentTime < 1) — covers new track + repeat-one restart without double-counting
 - [Phase 07.2-02]: playback source is lowest priority in taste merge — existing.source wins over 'playback'; source hierarchy: manual > favorite/library > playback
 - [Phase 07.2-02]: 5-play activation gate in computeTasteFromPlayHistory — below 5 plays, history has no influence on taste (noise prevention)
+- [Phase 07.2-03]: SC Widget type uses SCWidget alias + SCWidgetConstructor intersection — duplicate Widget identifier in plan's type definition would not compile
+- [Phase 07.2-03]: Listening History section not gated on aiState.enabled — play history is orthogonal to AI; private mode and play count are useful regardless
+- [Phase 07.2-03]: @tauri-apps/plugin-fs dynamic import removed from history.ts — Rollup rejects unresolvable packages even in dynamic imports; Rust invoke is the real code path
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
@@ -245,6 +249,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-21
-Phase 07.2 Plan 02 complete. playback.svelte.ts (playbackState, recordQualifyingPlay, loadPlaybackSettings). history.ts (CRUD wrappers). audio.svelte.ts (70% threshold + thresholdFired). signals.ts (computeTasteFromPlayHistory + recomputeTaste extended). layout.svelte (loadPlaybackSettings wired). npm run check 0 errors, npm run build clean.
-Stopped at: Completed 07.2-02-PLAN.md
-Next: Phase 07.2 Plan 03 (private mode UI toggle + play count display in Settings)
+Phase 07.2 Plan 03 complete. EmbedPlayer.svelte (hookSoundCloudWidget, artistName prop, two $effect SC hooks). ListeningHistory.svelte (private mode, stats, history list, delete, export, clear). settings/+page.svelte (Listening History section). history.ts (plugin-fs dynamic import removed). Phase 07.2 COMPLETE (all 3 plans done). npm run check 0 errors, npm run build clean.
+Stopped at: Completed 07.2-03-PLAN.md
+Next: Phase 08 (next phase)

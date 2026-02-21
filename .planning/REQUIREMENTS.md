@@ -145,11 +145,11 @@
 | DIST-01 | Phase 3 | Complete |
 | PLAYER-01 | Phase 4 / Phase 07.3 | Pending — implemented; needs VERIFICATION.md + checkbox update |
 | PLAYER-02 | Phase 4 / Phase 07.3 | Pending — implemented; needs VERIFICATION.md + checkbox update |
-| PLAYER-03 | Phase 4 / Phase 07.2 | Pending — NowPlayingDiscovery works; playback→taste signal broken (GAP-03) |
+| PLAYER-03 | Phase 4 / Phase 07.2 | Complete — playback→taste signal implemented; 70% threshold fires recomputeTaste() |
 | AI-01 | Phase 5 / Phase 07.1 | Complete |
 | AI-02 | Phase 5 / Phase 07.1 | Complete |
 | AI-03 | Phase 5 / Phase 7 | Complete |
-| AI-04 | Phase 5 / Phase 07.1 / Phase 07.2 | Pending — startup bug fixed (GAP-01); playback not triggering recompute still open (GAP-03, Phase 07.2) |
+| AI-04 | Phase 5 / Phase 07.1 / Phase 07.2 | Complete — playback history feeds taste computation with 30-day decay; 5-play activation gate |
 | DISC-01 | Phase 6 | Complete |
 | DISC-02 | Phase 6 | Complete |
 | DISC-03 | Phase 6 | Complete |
@@ -202,4 +202,4 @@
 
 ---
 *Requirements defined: 2026-02-15*
-*Last updated: 2026-02-21 — Phase 07.1-01 complete: AI-01, AI-02, KB-02 marked Complete (GAP-01 startup wiring + GAP-02 about page fixed); AI-04 partially fixed (GAP-01 done, GAP-03 pending Phase 07.2)*
+*Last updated: 2026-02-21 — Phase 07.2 complete: PLAYER-03 and AI-04 marked Complete (GAP-03 fully resolved — playback→taste pipeline live, SoundCloud widget hook, Listening History UI)*
