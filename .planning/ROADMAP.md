@@ -175,7 +175,15 @@ Plans:
   3. Scene Maps — geographic + temporal visualization (Berlin techno '95, Buenos Aires now)
   4. Time Machine — browse by year, scrub timeline, watch genres evolve
   5. Liner Notes — rich expandable credits, relationships, and production details on release pages
-**Plans**: TBD
+**Plans**: 7 plans
+Plans:
+- [ ] 07-01-PLAN.md — Pipeline Phase G: genre/scene DB tables (Wikidata SPARQL + Nominatim geocoding)
+- [ ] 07-02-PLAN.md — Genre query library: getGenreSubgraph, getGenreBySlug, getArtistsByYear, getStarterGenreGraph
+- [ ] 07-03-PLAN.md — KB landing page: GenreGraph component (D3 force, 3 node types) + /kb route
+- [ ] 07-04-PLAN.md — Genre/scene page: layered content + SceneMap (Leaflet) + AI genreSummary prompt
+- [ ] 07-05-PLAN.md — Time Machine page: decade buttons + year scrubber + artist list + API route
+- [ ] 07-06-PLAN.md — Liner Notes component + artist page KB wiring + nav links
+- [ ] 07-07-PLAN.md — ARCHITECTURE.md + user-manual.md + BUILD-LOG.md + final build verification
 
 ### Phase 8: Underground Aesthetic
 **Goal**: The turning point. Mercury stops looking like a search engine and starts feeling like a place. The UI becomes dense, playful, and game-like — panels, controls, dropdowns everywhere. A cockpit, not a feed. Your taste shapes your colors through taste-based theming. Layout templates let you customize your workspace. This ships before community features because the vibe has to be right first.
@@ -301,7 +309,7 @@ Plans:
 | 5. AI Foundation | 0/TBD | Not started | - |
 | 6. Discovery Engine | 7/7 | Complete   | 2026-02-20 |
 | 06.1. Affiliate Buy Links | 5/5 | Complete    | 2026-02-21 |
-| 7. Knowledge Base | 0/TBD | Not started | - |
+| 7. Knowledge Base | 0/7 | Planned | - |
 | 8. Underground Aesthetic | 0/TBD | Not started | - |
 | 9. Community Foundation | 0/TBD | Not started | - |
 | 10. Communication Layer | 0/TBD | Not started | - |
