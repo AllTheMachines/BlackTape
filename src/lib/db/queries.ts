@@ -63,6 +63,34 @@ export interface UniquenessResult {
 	tag_count: number;
 }
 
+/** A genre/scene/city node in the genre graph */
+export interface GenreNode {
+	id: number;
+	slug: string;
+	name: string;
+	type: 'genre' | 'scene' | 'city';
+	inception_year: number | null;
+	origin_city: string | null;
+	origin_lat: number | null;
+	origin_lng: number | null;
+	wikidata_id: string | null;
+	wikipedia_title: string | null;
+	mb_tag: string | null;
+}
+
+/** A directed relationship edge between two genre nodes */
+export interface GenreEdge {
+	from_id: number;
+	to_id: number;
+	rel_type: string;
+}
+
+/** A genre subgraph with nodes and edges */
+export interface GenreGraph {
+	nodes: GenreNode[];
+	edges: GenreEdge[];
+}
+
 // ---------------------------------------------------------------------------
 // FTS5 helpers
 // ---------------------------------------------------------------------------
@@ -430,6 +458,217 @@ export async function getStyleMapData(
 		 ORDER BY tc.shared_artists DESC`,
 		tagLimit,
 		tagLimit
+	);
+
+	return { nodes, edges };
+}
+
+// ---------------------------------------------------------------------------
+// Genre graph queries (Phase 7 — Knowledge Base)
+// ---------------------------------------------------------------------------
+
+/**
+ * Load a subgraph centered on a genre slug (genre + up to 30 neighbors).
+ * Used by: KB landing page, GenreGraph component expansion.
+ */
+export async function getGenreSubgraph(
+	db: DbProvider,
+	genreSlug: string
+): Promise<GenreGraph> {
+	const center = await db.get<GenreNode>(
+		`SELECT id, slug, name, type, inception_year, origin_city, origin_lat, origin_lng,
+		        wikidata_id, wikipedia_title, mb_tag
+		 FROM genres WHERE slug = ?`,
+		genreSlug
+	);
+	if (!center) return { nodes: [], edges: [] };
+
+	const neighbors = await db.all<GenreNode>(
+		`SELECT DISTINCT g.id, g.slug, g.name, g.type, g.inception_year,
+		        g.origin_city, g.origin_lat, g.origin_lng, g.wikidata_id, g.wikipedia_title, g.mb_tag
+		 FROM genre_relationships gr
+		 JOIN genres g ON g.id = gr.from_id OR g.id = gr.to_id
+		 WHERE (gr.from_id = ? OR gr.to_id = ?) AND g.id != ?
+		 LIMIT 30`,
+		center.id,
+		center.id,
+		center.id
+	);
+
+	const edges = await db.all<GenreEdge>(
+		`SELECT from_id, to_id, rel_type FROM genre_relationships
+		 WHERE from_id = ? OR to_id = ?`,
+		center.id,
+		center.id
+	);
+
+	return { nodes: [center, ...neighbors], edges };
+}
+
+/**
+ * Get a single genre by slug — full data for genre page.
+ * Used by: /kb/genre/[slug] server load.
+ */
+export async function getGenreBySlug(
+	db: DbProvider,
+	slug: string
+): Promise<GenreNode | null> {
+	return db.get<GenreNode>(
+		`SELECT id, slug, name, type, inception_year, origin_city, origin_lat, origin_lng,
+		        wikidata_id, wikipedia_title, mb_tag
+		 FROM genres WHERE slug = ?`,
+		slug
+	);
+}
+
+/**
+ * Get key artists for a genre via mb_tag → artist_tags bridge.
+ * Returns top N artists by tag vote count.
+ * Used by: genre page key artists section.
+ */
+export async function getGenreKeyArtists(
+	db: DbProvider,
+	mbTag: string,
+	limit = 10
+): Promise<ArtistResult[]> {
+	return db.all<ArtistResult>(
+		`SELECT a.id, a.mbid, a.name, a.slug, a.country,
+		        (SELECT GROUP_CONCAT(tag, ', ') FROM artist_tags WHERE artist_id = a.id LIMIT 5) AS tags
+		 FROM artists a
+		 JOIN artist_tags at2 ON at2.artist_id = a.id
+		 WHERE at2.tag = ?
+		 ORDER BY at2.count DESC
+		 LIMIT ?`,
+		mbTag,
+		limit
+	);
+}
+
+/**
+ * Get artists active in a given year, optionally filtered by tag.
+ * Used by: Time Machine page.
+ */
+export async function getArtistsByYear(
+	db: DbProvider,
+	year: number,
+	tag?: string,
+	limit = 50
+): Promise<ArtistResult[]> {
+	if (tag) {
+		return db.all<ArtistResult>(
+			`SELECT a.id, a.mbid, a.name, a.slug, a.country,
+			        (SELECT GROUP_CONCAT(t.tag, ', ') FROM artist_tags t WHERE t.artist_id = a.id LIMIT 5) AS tags
+			 FROM artists a
+			 WHERE a.begin_year = ?
+			   AND EXISTS (SELECT 1 FROM artist_tags WHERE artist_id = a.id AND tag = ?)
+			 ORDER BY a.name
+			 LIMIT ?`,
+			year,
+			tag,
+			limit
+		);
+	}
+	return db.all<ArtistResult>(
+		`SELECT a.id, a.mbid, a.name, a.slug, a.country,
+		        (SELECT GROUP_CONCAT(t.tag, ', ') FROM artist_tags t WHERE t.artist_id = a.id LIMIT 5) AS tags
+		 FROM artists a
+		 WHERE a.begin_year = ?
+		 ORDER BY a.name
+		 LIMIT ?`,
+		year,
+		limit
+	);
+}
+
+/**
+ * Get a starter set of genre nodes for the KB landing graph.
+ * Prefers genres whose mb_tag matches the given taste tags (max 5).
+ * Falls back to most-connected genres if no taste tags provided or matched.
+ * Used by: KB landing page initial graph load.
+ */
+export async function getStarterGenreGraph(
+	db: DbProvider,
+	tasteTags: string[] = []
+): Promise<GenreGraph> {
+	let centerIds: number[] = [];
+
+	if (tasteTags.length > 0) {
+		// Find genres matching user taste (up to 5 tags — D1 param limit already handled by caller)
+		const placeholders = tasteTags.slice(0, 5).map(() => '?').join(', ');
+		const matched = await db.all<{ id: number }>(
+			`SELECT DISTINCT g.id FROM genres g
+			 WHERE g.mb_tag IN (${placeholders})
+			 LIMIT 10`,
+			...tasteTags.slice(0, 5)
+		);
+		centerIds = matched.map((r) => r.id);
+	}
+
+	// If no taste match, fall back to top genres by relationship count
+	if (centerIds.length === 0) {
+		const top = await db.all<{ id: number }>(
+			`SELECT from_id as id, COUNT(*) as cnt
+			 FROM genre_relationships
+			 GROUP BY from_id
+			 ORDER BY cnt DESC
+			 LIMIT 10`
+		);
+		centerIds = top.map((r) => r.id);
+	}
+
+	if (centerIds.length === 0) return { nodes: [], edges: [] };
+
+	// Load the center genres + their immediate neighbors (LIMIT 50 total nodes)
+	const placeholders = centerIds.map(() => '?').join(', ');
+	const nodes = await db.all<GenreNode>(
+		`SELECT DISTINCT g.id, g.slug, g.name, g.type, g.inception_year,
+		        g.origin_city, g.origin_lat, g.origin_lng, g.wikidata_id, g.wikipedia_title, g.mb_tag
+		 FROM genres g
+		 WHERE g.id IN (${placeholders})
+		    OR g.id IN (
+		      SELECT CASE WHEN gr.from_id IN (${placeholders}) THEN gr.to_id ELSE gr.from_id END
+		      FROM genre_relationships gr
+		      WHERE gr.from_id IN (${placeholders}) OR gr.to_id IN (${placeholders})
+		    )
+		 LIMIT 50`,
+		...centerIds,
+		...centerIds,
+		...centerIds,
+		...centerIds
+	);
+
+	if (nodes.length === 0) return { nodes: [], edges: [] };
+	const nodeIds = nodes.map((n) => n.id);
+	const edgePlaceholders = nodeIds.map(() => '?').join(', ');
+
+	const edges = await db.all<GenreEdge>(
+		`SELECT from_id, to_id, rel_type FROM genre_relationships
+		 WHERE from_id IN (${edgePlaceholders}) AND to_id IN (${edgePlaceholders})`,
+		...nodeIds,
+		...nodeIds
+	);
+
+	return { nodes, edges };
+}
+
+/**
+ * Get ALL genres and ALL edges — used by Time Machine GenreGraphEvolution view.
+ * Loads the full graph so the client can filter client-side by inception_year.
+ * No taste filter — every genre is included so the evolution animation is complete.
+ * Used by: GenreGraphEvolution.svelte (Tauri path), /api/genres (web path).
+ */
+export async function getAllGenreGraph(db: DbProvider): Promise<GenreGraph> {
+	const nodes = await db.all<GenreNode>(
+		`SELECT id, slug, name, type, inception_year,
+		        origin_city, origin_lat, origin_lng, wikidata_id, wikipedia_title, mb_tag
+		 FROM genres
+		 ORDER BY inception_year ASC NULLS LAST`
+	);
+
+	if (nodes.length === 0) return { nodes: [], edges: [] };
+
+	const edges = await db.all<GenreEdge>(
+		`SELECT from_id, to_id, rel_type FROM genre_relationships`
 	);
 
 	return { nodes, edges };
