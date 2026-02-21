@@ -8,6 +8,7 @@
 	import Player from '$lib/components/Player.svelte';
 	import { playerState } from '$lib/player/state.svelte';
 	import { aiState, loadAiSettings, initializeAi } from '$lib/ai/state.svelte';
+	import { loadTasteProfile } from '$lib/taste/profile.svelte';
 	import { onMount } from 'svelte';
 
 	let { children } = $props();
@@ -21,6 +22,7 @@
 
 		if (isTauri()) {
 			await loadAiSettings();
+			loadTasteProfile();  // fire-and-forget — populates tasteProfile state async
 			if (aiState.enabled) {
 				initializeAi();
 			}
@@ -59,6 +61,7 @@
 			<a href="/library" class="nav-link">Library</a>
 			<a href="/explore" class="nav-link">Explore</a>
 			<a href="/settings" class="nav-link">Settings</a>
+			<a href="/about" class="nav-link">About</a>
 		</nav>
 		{#if aiState.status === 'loading' || aiState.status === 'downloading'}
 			<span class="ai-indicator" title="AI is loading">
@@ -82,6 +85,7 @@
 			<a href="/style-map" class="nav-link">Style Map</a>
 			<a href="/kb" class="nav-link" class:active={$page.url.pathname.startsWith('/kb')}>Knowledge Base</a>
 			<a href="/time-machine" class="nav-link" class:active={$page.url.pathname.startsWith('/time-machine')}>Time Machine</a>
+			<a href="/about" class="nav-link">About</a>
 		</nav>
 	{/if}
 </header>
@@ -94,6 +98,9 @@
 	<p class="affiliate-disclosure">
 		Some links on release pages are affiliate links. Mercury may earn a small commission if you make a purchase — at no extra cost to you. This helps fund open infrastructure.
 	</p>
+	<nav class="footer-nav">
+		<a href="/about" class="footer-link">About</a>
+	</nav>
 </footer>
 
 {#if isTauri()}
@@ -230,6 +237,21 @@
 		margin: 0 auto;
 		text-align: center;
 		line-height: 1.5;
+	}
+
+	.footer-nav {
+		margin-top: var(--space-sm, 0.5rem);
+		text-align: center;
+	}
+
+	.footer-link {
+		font-size: 0.7rem;
+		color: var(--text-muted);
+		text-decoration: none;
+	}
+
+	.footer-link:hover {
+		color: var(--text-secondary);
 	}
 
 	.loading-bar {
