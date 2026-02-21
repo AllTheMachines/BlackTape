@@ -35,10 +35,10 @@
 
 ### AI
 
-- [ ] **AI-01**: Client-side AI recommendations from taste profile and listening history (open models, no cloud dependency)
-- [ ] **AI-02**: Natural-language discovery queries ("find me something like X but darker")
-- [ ] **AI-03**: AI-generated summaries for genres, artists, and scenes from public sources
-- [ ] **AI-04**: Taste profiling — builds automatically from listening history, collection, and browsing
+- [x] **AI-01**: Client-side AI recommendations from taste profile and listening history (open models, no cloud dependency)
+- [x] **AI-02**: Natural-language discovery queries ("find me something like X but darker")
+- [ ] **AI-03**: AI-generated summaries for genres, artists, and scenes from public sources — artist summaries complete (Phase 5); genre/scene summaries deferred to Phase 7 (KB-01) when those pages exist
+- [x] **AI-04**: Taste profiling — builds automatically from listening history, collection, and browsing
 
 ### Discovery
 
@@ -146,10 +146,10 @@
 | PLAYER-01 | Phase 4 | Pending |
 | PLAYER-02 | Phase 4 | Pending |
 | PLAYER-03 | Phase 4 | Pending |
-| AI-01 | Phase 5 | Pending |
-| AI-02 | Phase 5 | Pending |
-| AI-03 | Phase 5 | Pending |
-| AI-04 | Phase 5 | Pending |
+| AI-01 | Phase 5 | Complete |
+| AI-02 | Phase 5 | Complete |
+| AI-03 | Phase 5 / Phase 7 | Partial — artist summaries complete; genre/scene deferred to Phase 7 |
+| AI-04 | Phase 5 | Complete |
 | DISC-01 | Phase 6 | Complete |
 | DISC-02 | Phase 6 | Complete |
 | DISC-03 | Phase 6 | Complete |
@@ -202,4 +202,4 @@
 
 ---
 *Requirements defined: 2026-02-15*
-*Last updated: 2026-02-21 — added BUY-01, BUY-02, BUY-03, BUY-04 for Phase 06.1 affiliate buy links*
+*Last updated: 2026-02-21 — AI-01, AI-02, AI-04 marked complete (Phase 5); AI-03 partial (artist summaries done, genre/scene deferred to Phase 7)*
