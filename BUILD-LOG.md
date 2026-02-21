@@ -1831,3 +1831,83 @@ Phase 06.1 is now complete. The release page is fully wired — every piece from
 
 > **Commit 252bf59** (2026-02-21 09:40) — feat(06.1-04): wire release navigation + add affiliate footer
 > Files changed: 3
+
+> **Commit 9a95965** (2026-02-21 09:42) — docs(06.1-04): complete release page UI plan — phase 06.1 done
+> Files changed: 5
+
+> **Commit 96c7af0** (2026-02-21 09:43) — chore(06.1-05): add .dev.vars affiliate env var placeholders
+> Files changed: 1
+
+> **Commit 86656f7** (2026-02-21 09:48) — test: extend debug-check with phase 06.1 release page + buy link checks
+> Files changed: 1
+
+> **Commit 7fd37ae** (2026-02-21 09:51) — docs(06.1-05): complete affiliate env vars + verification plan — phase 06.1 done
+> Files changed: 3
+
+> **Commit 16b1b91** (2026-02-21 09:54) — docs(phase-06.1): complete phase execution — affiliate buy links
+> Files changed: 2
+
+> **Commit e148830** (2026-02-21 10:16) — docs(03-04): complete database detection and distribution pipeline plan
+> Files changed: 3
+
+> **Commit bd1779e** (2026-02-21 10:22) — docs(03-05): complete auto-updater signing keys and NSIS installer plan
+> Files changed: 3
+
+> **Commit 533848e** (2026-02-21 10:47) — docs(phase-03): complete phase execution — desktop app foundation
+> Files changed: 2
+
+> **Commit 8b006b0** (2026-02-21 10:55) — test(04): complete UAT - 0 issues, 11 skipped (Tauri runtime checks pass)
+> Files changed: 1
+
+> **Commit 989f01d** (2026-02-21 11:04) — docs(phase-05): complete phase execution — AI foundation
+> Files changed: 2
+
+> **Commit 4e44320** (2026-02-21 11:43) — docs(07): capture phase context
+> Files changed: 1
+
+> **Commit 42ea42a** (2026-02-21 11:53) — docs(07): research knowledge base phase
+> Files changed: 1
+
+> **Commit ff1cd04** (2026-02-21 12:07) — docs(07): create phase plan
+> Files changed: 8
+
+> **Commit 3b94061** (2026-02-21 12:16) — fix(07): revise plans 03/04/05 based on checker feedback
+> Files changed: 3
+
+> **Commit 73ee43a** (2026-02-21 12:22) — fix(07): revise plans based on checker feedback
+> Files changed: 2
+
+> **Commit 69b2098** (2026-02-21 12:32) — feat(07-01): extend schema.sql with genres and genre_relationships tables
+> Files changed: 1
+
+> **Commit f9c1cd9** (2026-02-21 12:36) — feat(07-01): create build-genre-data.mjs — Phase G genre encyclopedia pipeline
+> Files changed: 1
+
+## Entry 027 — 2026-02-21 — Phase 07 Plan 01: Genre Encyclopedia Pipeline (Phase G)
+
+### What Was Built
+
+The data foundation for the Knowledge Base: `pipeline/build-genre-data.mjs` (Phase G pipeline step) plus the schema extension in `pipeline/lib/schema.sql`.
+
+This is the pipeline step that makes genre pages possible — every knowledge base article about a genre will query from these tables.
+
+### Decisions
+
+**Schema design: Three node types.** genres.type can be 'genre' (global), 'scene' (geographic/temporal — e.g. "Detroit Techno"), or 'city' (origin location node). This supports the planned genre graph visualization where scenes cluster around their birth cities.
+
+**mb_tag column as bridge.** genres.mb_tag stores the normalized lowercase slug of the genre name — same format as artist_tags.tag. This means genre pages can directly query which artists in the catalog carry that tag. No join table needed; the slug IS the link.
+
+**Wikidata as the source.** Q188451 (music genre) is the correct Wikidata class. The SPARQL query fetches 5000 rows covering genre hierarchy (P279 = subclass-of), influenced-by (P737), inception year (P571), and country of origin (P495). On first run: 2905 unique genres, 2712 relationships inserted.
+
+**Idempotent DELETE-before-INSERT.** The script clears both tables before inserting — safe to re-run as genres evolve. INSERT OR IGNORE handles any remaining collision edge cases.
+
+**Nominatim geocoding is pipeline-only.** Scene cities get lat/lng coordinates baked into the DB during pipeline runs. Never at runtime. 1100ms delays respect Nominatim's 1 req/sec limit.
+
+**Graceful degradation on network failure.** If Wikidata is unreachable, the script logs a warning and exits 0. The DB is left in whatever state it was — zero crash risk in automated pipeline runs.
+
+### What the Data Looks Like
+
+- 2905 genres (genres with unique Wikidata Q-IDs, filtered to exclude Q12345-style unlabeled entries)
+- 2712 relationships (subgenre + influenced_by edges)
+- 1273 scene nodes with origin cities pending geocoding
+- Collision-safe slugs: base slug used when unique, Q-number suffix appended on collision

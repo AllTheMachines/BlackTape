@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Phase 06.1 (Affiliate Buy Links) — COMPLETE. All 5 plans done. Ready for Phase 07.
+**Current focus:** Phase 07 (Knowledge Base) — Plan 01 COMPLETE. Genre encyclopedia pipeline (Phase G) done.
 
 ## Current Position
 
-Phase: 06.1 of 15 (Affiliate Buy Links — COMPLETE)
-Current Plan: 06.1-05 (complete)
-Status: Phase 06.1 Plan 05 COMPLETE — .dev.vars affiliate env vars, headless 60/60 verification. Phase 06.1 fully done 2026-02-21.
-Last activity: 2026-02-21 — 06.1-05 complete. .dev.vars affiliate placeholders, 60/60 headless assertions passing. Phase 06.1 done.
+Phase: 07 of 15 (Knowledge Base — IN PROGRESS)
+Current Plan: 07-01 (complete)
+Status: Phase 07 Plan 01 COMPLETE — genres/genre_relationships schema + build-genre-data.mjs. 2905 genres, 2712 relationships. Wikidata SPARQL + Nominatim geocoding. 2026-02-21.
+Last activity: 2026-02-21 — 07-01 complete. Schema extended, Phase G pipeline script created, Wikidata returned 5000 rows, 2905 genres inserted.
 
-Progress: [██████████] 5/5 plans complete (Phase 06.1 DONE)
+Progress: [██░░░░░░░░] 1/5 plans complete (Phase 07 in progress)
 
 ## Performance Metrics
 
@@ -59,6 +59,7 @@ Progress: [██████████] 5/5 plans complete (Phase 06.1 DONE)
 | Phase 06.1 P03 | 1min | 1 tasks | 1 files |
 | Phase 03-desktop-and-distribution P04 | 12 | 2 tasks | 7 files |
 | Phase 03-desktop-and-distribution P05 | 5 | 1 tasks | 4 files |
+| Phase 07-knowledge-base P01 | 6min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -183,6 +184,11 @@ Progress: [██████████] 5/5 plans complete (Phase 06.1 DONE)
 - [Phase 03-desktop-and-distribution]: NSIS installer over MSI for WebView2 bootstrapping on Windows 10
 - [Phase 03-desktop-and-distribution]: Private key stored at ~/.tauri/mercury.key — gitignored, never committed
 - [Phase 03-desktop-and-distribution]: Database updates use full replacement download — diff-based updates explicitly deferred as future optimization
+- [Phase 07-01]: genres table uses three node types: genre (global), scene (geographic/temporal), city (origin location) — supports graph visualization clustering
+- [Phase 07-01]: mb_tag column as slug bridge to artist_tags — no join table needed, same slug format as artist_tags.tag
+- [Phase 07-01]: Wikidata Q188451 (music genre) via SPARQL — P279 (subclass/parent), P737 (influenced-by), P571 (inception year), P495 (country of origin)
+- [Phase 07-01]: Nominatim geocoding is pipeline-only with 1100ms delays — coordinates baked into DB, never fetched at runtime
+- [Phase 07-01]: Graceful Wikidata degradation: exits 0 with warning if unreachable — zero crash risk in automated pipeline runs
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
@@ -196,6 +202,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-21
-Plan 06.1-05 complete. .dev.vars created with AFFILIATE_AMAZON_TAG, AFFILIATE_APPLE_TOKEN, AFFILIATE_APPLE_CAMPAIGN=mercury placeholders. .gitignore updated. debug-check.mjs extended with 14 Phase 06.1 assertions (60/60 total passing): release page loads, BuyOnBar all 5 platforms, search fallback ? indicator, target=_blank, footer disclosure. Phase 06.1 fully DONE.
-Stopped at: Completed 06.1-05-PLAN.md
-Next: Phase 07 (TBD)
+Phase 07 Plan 01 complete. Schema extended (genres + genre_relationships tables). build-genre-data.mjs created (Phase G, 367 lines). Wikidata SPARQL returned 5000 rows → 2905 genres + 2712 relationships. Nominatim geocoding running for 1273 scene cities. npm run check: 0 errors.
+Stopped at: Completed 07-01-PLAN.md
+Next: Phase 07 Plan 02
