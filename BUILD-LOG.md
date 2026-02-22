@@ -2704,3 +2704,64 @@ This is what Phase 8 was for. The data was always there. Now the shell matches t
 - Files modified: `theme.css`, `+layout.svelte`, `settings/+page.svelte`, `EmbedPlayer.svelte`, `artist/[slug]/+page.svelte`, `ARCHITECTURE.md`, `docs/user-manual.md`
 - `npm run check`: 0 errors across all 4 plans
 - `npm run build`: clean across all 4 plans
+
+> **Commit f3470e7** (2026-02-21 20:37) — docs(08-04): update ARCHITECTURE.md, user manual, and BUILD-LOG for Phase 8
+> Files changed: 3
+
+> **Commit 7e1cc6a** (2026-02-21 20:39) — docs(08-04): complete settings UI plan — Phase 8 complete
+> Files changed: 3
+
+> **Commit 3e08161** (2026-02-21 20:44) — docs(phase-08): complete phase execution and verification
+> Files changed: 1
+
+> **Commit 91abf1f** (2026-02-21 20:49) — test(08): complete UAT — 23 passed, 0 issues, 3 skipped (Tauri UI)
+> Files changed: 1
+
+> **Commit 2cb289c** (2026-02-21 21:19) — docs(09): capture phase context
+> Files changed: 1
+
+> **Commit 4b7d57d** (2026-02-21 21:29) — docs(09): research phase community foundation
+> Files changed: 1
+
+> **Commit 587b2c0** (2026-02-21 21:40) — docs(09): create phase plan
+> Files changed: 7
+
+> **Commit 224f259** (2026-02-21 21:45) — fix(09): revise plans based on checker feedback
+> Files changed: 3
+
+> **Commit e0a0a6d** (2026-02-21 21:49) — fix(09): revise plans based on checker feedback
+> Files changed: 3
+
+> **Commit 3031d50** (2026-02-21 21:52) — fix(09): revise plans based on checker feedback
+> Files changed: 4
+
+> **Commit 0e239ac** (2026-02-22 23:03) — feat(09-01): extend taste.db schema with identity and collections
+> Files changed: 2
+
+> **Commit bec760e** (2026-02-22 23:03) — feat(09-01): register new commands in lib.rs invoke_handler
+> Files changed: 1
+
+## Entry 033 — 2026-02-22 — Phase 09 Kickoff: Rust Foundation
+
+### Phase 9 Plan 01 — taste.db Identity + Collections Layer
+
+Phase 9 is Community Foundation — user profiles, collections, shareable fingerprints. The Rust layer comes first so every subsequent frontend plan can trust the IPC contract.
+
+**What was built:**
+
+Three new tables in taste.db (initialized on first app launch, `IF NOT EXISTS` safe):
+- `user_identity` — key/value store for display name, bio, avatar, pronouns, location, website
+- `collections` — named lists (id, name, created_at, updated_at)
+- `collection_items` — items in collections (artist/release/tag, with MBID + slug, UNIQUE constraint prevents dupes, cascade delete)
+
+14 new Tauri commands registered:
+- Identity: `get_identity_value`, `set_identity_value`, `get_all_identity`
+- Collections: `get_collections`, `create_collection`, `delete_collection`, `rename_collection`
+- Collection items: `get_collection_items`, `add_collection_item`, `remove_collection_item`, `is_in_collection`, `get_all_collection_items`
+- Export: `save_base64_to_file` (PNG fingerprint), `write_json_to_path` (full data export)
+
+Plus `match_artists_batch` as a free function in lib.rs — opens mercury.db directly via rusqlite (no managed state for mercury.db on Rust side, only accessible via tauri-plugin-sql from frontend).
+
+Added `base64 = "0.22"` to Cargo.toml for fingerprint PNG export.
+
+**Result:** `cargo check` exits 0, zero errors, zero warnings. `npm run check` 0 errors. All 14+ commands wired into invoke_handler.

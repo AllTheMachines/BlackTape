@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Phase 08 complete. All 4 plans done: OKLCH theme engine + PaneForge panel layout system + integration wired into root layout + Settings UI + documentation.
+**Current focus:** Phase 09 in progress. Plan 01 complete: taste.db extended with user_identity/collections/collection_items tables + 14 Tauri commands for identity/collections CRUD + fingerprint/JSON export commands.
 
 ## Current Position
 
-Phase: 08-underground-aesthetic of 15 (Underground Aesthetic — COMPLETE)
-Current Plan: 08-04 (complete)
-Status: Phase 08 complete — Settings page with Appearance/Layout/Streaming sections, shared layoutState module, ARCHITECTURE.md and user manual updated. All 5 Phase 8 requirements complete. npm run check 0 errors, npm run build clean. 2026-02-21.
-Last activity: 2026-02-21 — 08-04 complete. Settings page has three new sections (Appearance, Layout, Streaming Preference). layout-state.svelte.ts shared module created for root layout + settings sync. ARCHITECTURE.md Underground Aesthetic section added. User manual Desktop Workspace section added. Phase 8 complete.
+Phase: 09-community-foundation of 15 (Community Foundation — In Progress)
+Current Plan: 09-01 (complete)
+Status: Phase 09 Plan 01 complete — taste.db schema extended, all Rust Tauri commands for identity/collections implemented and registered. cargo check 0 errors. 2026-02-22.
+Last activity: 2026-02-22 — 09-01 complete. user_identity, collections, collection_items tables added to taste.db. 14 new Tauri commands: identity CRUD (3), collections CRUD (4), collection items CRUD (5), save_base64_to_file, write_json_to_path. match_artists_batch in lib.rs (mercury.db lookup). base64 = "0.22" added to Cargo.toml.
 
-Progress: [████████░░] 4/4 plans complete (Phase 08 COMPLETE)
+Progress: [█░░░░░░░░░] 1/6 plans complete (Phase 09 In Progress)
 
 ## Performance Metrics
 
@@ -76,6 +76,7 @@ Progress: [████████░░] 4/4 plans complete (Phase 08 COMPLETE
 | Phase 08-underground-aesthetic P02 | 12 | 2 tasks | 7 files |
 | Phase 08-underground-aesthetic P03 | 4min | 2 tasks | 3 files |
 | Phase 08-underground-aesthetic P04 | 7min | 2 tasks | 6 files |
+| Phase 09-community-foundation P01 | 3 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -264,6 +265,9 @@ Progress: [████████░░] 4/4 plans complete (Phase 08 COMPLETE
 - [Phase 08-underground-aesthetic]: [Phase 08-04]: layoutState shared .svelte.ts module — single $state object imported by both root layout and settings; no prop drilling, no drift
 - [Phase 08-underground-aesthetic]: [Phase 08-04]: Settings section ordering: Appearance → Layout → Streaming → AI Settings — new workspace config sections above existing AI sections
 - [Phase 08-underground-aesthetic]: [Phase 08-04]: Accessibility: Theme Mode row uses span (non-control caption); Hue and Preferred Platform rows use label with for attribute pointing to id'd inputs
+- [Phase 09-01]: match_artists_batch placed in lib.rs as free function (not taste_db.rs) — mercury.db has no managed Rust state, must open via AppHandle path
+- [Phase 09-01]: write_json_to_path is general-purpose accepting pre-serialized JSON string — does NOT reuse export_play_history_to_path which has a different signature
+- [Phase 09-01]: Collection IDs generated as millisecond timestamp strings — simple, unique, sortable, no external dependency
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
@@ -276,7 +280,7 @@ None
 
 ## Session Continuity
 
-Last session: 2026-02-21
-Phase 08 Plan 04 complete. Settings page has Appearance section (theme mode radio group + hue slider for manual mode), Layout section (3-column template grid for built-ins + user template list with × delete + save-as-template row), Streaming Preference section (platform dropdown). layout-state.svelte.ts created as shared reactive $state module — root layout and settings both import it. Root layout migrated: activeTemplate → layoutState.template, loadUserTemplates() on startup, allTemplateConfigs derived. 1 auto-fix: accessibility labels (span for Theme Mode caption, for/id on Hue and Platform). npm run check 0 errors, npm run build clean. ARCHITECTURE.md Underground Aesthetic section + Phase 8 ai_settings keys in data model. User manual Desktop Workspace section. Phase 8 complete.
-Stopped at: Completed 08-04-PLAN.md
-Next: Phase 09 (TBD)
+Last session: 2026-02-22
+Phase 09 Plan 01 complete. taste.db extended with user_identity (key/value), collections, and collection_items tables. 14 Tauri commands registered: get/set/get_all_identity, get/create/delete/rename_collection, get/add/remove collection items, is_in_collection, get_all_collection_items, save_base64_to_file, write_json_to_path. match_artists_batch as lib.rs free function (opens mercury.db via AppHandle). base64 = "0.22" in Cargo.toml. cargo check 0 errors, npm run check 0 errors.
+Stopped at: Completed 09-01-PLAN.md
+Next: Phase 09 Plan 02 — frontend collections state module
