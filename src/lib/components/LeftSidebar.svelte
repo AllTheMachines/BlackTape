@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import TagChip from '$lib/components/TagChip.svelte';
+	import { goto } from '$app/navigation';
+
+	const MAX_TAGS = 5;
 
 	// Quick nav links — all main sections
 	const navLinks = [
@@ -14,76 +16,39 @@
 		{ href: '/settings', label: 'Settings' }
 	] as const;
 
-	// Discovery filter state
+	// Discovery filter state — derived from URL so it stays in sync with TagFilter
+	let activeTags = $derived(
+		$page.url.searchParams.get('tags')?.split(',').filter(Boolean) ?? []
+	);
+
 	let tagInput = $state('');
-	let selectedTags = $state<string[]>([]);
-	let decade = $state(0); // 0 = all, otherwise e.g. 1990
-	let nicheLevel = $state('all'); // 'all' | 'mainstream' | 'eclectic' | 'niche' | 'very-niche'
 
-	// Search results for sidebar suggestion panel
-	let sidebarResults = $state<{ name: string; slug: string; tags: string[] }[]>([]);
-	let fetchTimer: ReturnType<typeof setTimeout> | null = null;
-
-	const decadeLabels = [
-		{ value: 0, label: 'All' },
-		{ value: 1950, label: '1950s' },
-		{ value: 1960, label: '1960s' },
-		{ value: 1970, label: '1970s' },
-		{ value: 1980, label: '1980s' },
-		{ value: 1990, label: '1990s' },
-		{ value: 2000, label: '2000s' },
-		{ value: 2010, label: '2010s' },
-		{ value: 2020, label: '2020s' }
-	];
+	/** Navigate to /discover with the given tag list. */
+	function applyTags(tags: string[]) {
+		const params = new URLSearchParams();
+		if (tags.length > 0) {
+			params.set('tags', tags.join(','));
+		}
+		goto(`/discover${tags.length > 0 ? '?' + params : ''}`, { keepFocus: true, noScroll: true });
+	}
 
 	function addTag(tag: string) {
 		const trimmed = tag.trim().toLowerCase();
-		if (!trimmed || selectedTags.includes(trimmed) || selectedTags.length >= 5) return;
-		selectedTags = [...selectedTags, trimmed];
+		if (!trimmed || activeTags.includes(trimmed) || activeTags.length >= MAX_TAGS) return;
 		tagInput = '';
-		scheduleFetch();
+		applyTags([...activeTags, trimmed]);
 	}
 
 	function removeTag(tag: string) {
-		selectedTags = selectedTags.filter((t) => t !== tag);
-		scheduleFetch();
+		applyTags(activeTags.filter((t) => t !== tag));
 	}
 
 	function handleTagKeydown(e: KeyboardEvent) {
 		if (e.key === 'Enter' || e.key === ',') {
 			e.preventDefault();
 			addTag(tagInput);
-		} else if (e.key === 'Backspace' && tagInput === '' && selectedTags.length > 0) {
-			selectedTags = selectedTags.slice(0, -1);
-			scheduleFetch();
-		}
-	}
-
-	function scheduleFetch() {
-		if (fetchTimer) clearTimeout(fetchTimer);
-		fetchTimer = setTimeout(fetchSidebarResults, 300);
-	}
-
-	async function fetchSidebarResults() {
-		if (selectedTags.length === 0 && nicheLevel === 'all') {
-			sidebarResults = [];
-			return;
-		}
-
-		try {
-			const params = new URLSearchParams();
-			if (selectedTags.length > 0) {
-				params.set('q', selectedTags[0]);
-				params.set('mode', 'tag');
-			}
-			params.set('limit', '5');
-
-			const res = await fetch(`/api/search?${params}`);
-			if (!res.ok) return;
-			const data = await res.json() as { results?: { name: string; slug: string; tags: string[] }[] };
-			sidebarResults = data.results ?? [];
-		} catch {
-			sidebarResults = [];
+		} else if (e.key === 'Backspace' && tagInput === '' && activeTags.length > 0) {
+			applyTags(activeTags.slice(0, -1));
 		}
 	}
 
@@ -92,6 +57,9 @@
 		if (href === '/') return pathname === '/';
 		return pathname.startsWith(href);
 	}
+
+	/** True when we're on the Discover page — show filter controls. */
+	let isOnDiscover = $derived($page.url.pathname === '/discover');
 </script>
 
 <aside class="left-sidebar" aria-label="Navigation and discovery">
@@ -113,86 +81,46 @@
 
 	<div class="section-divider"></div>
 
-	<!-- Discovery Filters -->
+	<!-- Discovery Filters — shown on Discover page, or as a link to get there -->
 	<section class="sidebar-section filter-section">
 		<h4 class="section-label">Discovery Filters</h4>
 
-		<!-- Tag Input -->
-		<div class="filter-group">
-			<label class="filter-label" for="sidebar-tag-input">Tags</label>
-			<input
-				id="sidebar-tag-input"
-				class="tag-input"
-				type="text"
-				placeholder={selectedTags.length >= 5 ? 'Max 5 tags' : 'Add a tag...'}
-				bind:value={tagInput}
-				disabled={selectedTags.length >= 5}
-				onkeydown={handleTagKeydown}
-				oninput={scheduleFetch}
-			/>
-			{#if selectedTags.length > 0}
-				<div class="selected-tags">
-					{#each selectedTags as tag}
-						<span class="tag-remove-wrap">
-							<TagChip {tag} clickable={false} />
-							<button
-								class="tag-remove-btn"
-								onclick={() => removeTag(tag)}
-								aria-label="Remove tag {tag}"
-							>×</button>
-						</span>
-					{/each}
-				</div>
-			{/if}
-		</div>
-
-		<!-- Decade Selector -->
-		<div class="filter-group">
-			<label class="filter-label" for="sidebar-decade">Decade</label>
-			<select
-				id="sidebar-decade"
-				class="filter-select"
-				bind:value={decade}
-				onchange={scheduleFetch}
-			>
-				{#each decadeLabels as d}
-					<option value={d.value}>{d.label}</option>
-				{/each}
-			</select>
-		</div>
-
-		<!-- Niche Score -->
-		<div class="filter-group">
-			<label class="filter-label" for="sidebar-niche">Niche Score</label>
-			<select
-				id="sidebar-niche"
-				class="filter-select"
-				bind:value={nicheLevel}
-				onchange={scheduleFetch}
-			>
-				<option value="all">All</option>
-				<option value="mainstream">Mainstream</option>
-				<option value="eclectic">Eclectic</option>
-				<option value="niche">Niche</option>
-				<option value="very-niche">Very Niche</option>
-			</select>
-		</div>
-
-		<!-- Sidebar Results -->
-		{#if sidebarResults.length > 0}
-			<div class="sidebar-results">
-				<h5 class="results-label">Results</h5>
-				{#each sidebarResults as artist}
-					<a href="/artist/{artist.slug}" class="result-card">
-						<span class="result-name">{artist.name}</span>
-						{#if artist.tags?.length}
-							<span class="result-tags">{artist.tags.slice(0, 2).join(', ')}</span>
-						{/if}
-					</a>
-				{/each}
+		{#if !isOnDiscover}
+			<p class="filter-hint">
+				<a href="/discover" class="discover-link">Go to Discover</a> to filter by tags.
+			</p>
+		{:else}
+			<!-- Tag Input -->
+			<div class="filter-group">
+				<label class="filter-label" for="sidebar-tag-input">Tags</label>
+				<input
+					id="sidebar-tag-input"
+					class="tag-input"
+					type="text"
+					placeholder={activeTags.length >= MAX_TAGS ? 'Max 5 tags' : 'Add a tag...'}
+					bind:value={tagInput}
+					disabled={activeTags.length >= MAX_TAGS}
+					onkeydown={handleTagKeydown}
+				/>
+				{#if activeTags.length > 0}
+					<div class="selected-tags">
+						{#each activeTags as tag}
+							<span class="tag-remove-wrap">
+								<span class="tag-chip-inline">{tag}</span>
+								<button
+									class="tag-remove-btn"
+									onclick={() => removeTag(tag)}
+									aria-label="Remove tag {tag}"
+								>×</button>
+							</span>
+						{/each}
+					</div>
+				{/if}
 			</div>
-		{:else if selectedTags.length > 0 || nicheLevel !== 'all'}
-			<div class="no-results">No matches found</div>
+
+			{#if activeTags.length > 0}
+				<button class="clear-btn" onclick={() => applyTags([])}>Clear all filters</button>
+			{/if}
 		{/if}
 	</section>
 </aside>
@@ -255,6 +183,23 @@
 		background: var(--bg-elevated);
 	}
 
+	/* Filter hint (when not on /discover) */
+	.filter-hint {
+		font-size: 0.7rem;
+		color: var(--text-muted);
+		margin: 0;
+		line-height: 1.5;
+	}
+
+	.discover-link {
+		color: var(--text-accent);
+		text-decoration: none;
+	}
+
+	.discover-link:hover {
+		text-decoration: underline;
+	}
+
 	/* Filter Controls */
 	.filter-group {
 		margin-bottom: var(--space-sm);
@@ -267,8 +212,7 @@
 		margin-bottom: 3px;
 	}
 
-	.tag-input,
-	.filter-select {
+	.tag-input {
 		width: 100%;
 		box-sizing: border-box;
 		background: var(--bg-elevated);
@@ -280,8 +224,7 @@
 		font-family: inherit;
 	}
 
-	.tag-input:focus,
-	.filter-select:focus {
+	.tag-input:focus {
 		outline: none;
 		border-color: var(--text-accent);
 	}
@@ -304,6 +247,18 @@
 		gap: 2px;
 	}
 
+	.tag-chip-inline {
+		display: inline-flex;
+		align-items: center;
+		padding: 2px 6px;
+		background: var(--tag-bg);
+		color: var(--tag-text);
+		border: 1px solid var(--tag-border);
+		border-radius: 999px;
+		font-size: 0.75rem;
+		white-space: nowrap;
+	}
+
 	.tag-remove-btn {
 		background: none;
 		border: none;
@@ -318,62 +273,21 @@
 		color: var(--text-primary);
 	}
 
-	/* Sidebar Results */
-	.sidebar-results {
-		margin-top: var(--space-sm);
-		border-top: 1px solid var(--border-subtle);
-		padding-top: var(--space-xs);
-	}
-
-	.results-label {
+	.clear-btn {
+		background: none;
+		border: 1px solid var(--border-default);
+		border-radius: 3px;
+		color: var(--text-muted);
+		cursor: pointer;
 		font-size: 0.65rem;
-		font-weight: 600;
-		text-transform: uppercase;
-		letter-spacing: 0.08em;
-		color: var(--text-muted);
-		margin: 0 0 var(--space-xs) 0;
-	}
-
-	.result-card {
-		display: flex;
-		flex-direction: column;
-		gap: 1px;
-		padding: 4px 0;
-		text-decoration: none;
-		border-bottom: 1px solid var(--border-subtle);
-		transition: background 0.1s;
-		border-radius: 2px;
-	}
-
-	.result-card:last-child {
-		border-bottom: none;
-	}
-
-	.result-card:hover {
-		background: var(--bg-hover);
-	}
-
-	.result-name {
-		font-size: 0.75rem;
-		color: var(--text-primary);
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	.result-tags {
-		font-size: 0.65rem;
-		color: var(--text-muted);
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	.no-results {
-		font-size: 0.7rem;
-		color: var(--text-muted);
+		padding: 2px 6px;
+		width: 100%;
 		text-align: center;
-		padding: var(--space-sm) 0;
-		font-style: italic;
+		transition: color 0.1s, border-color 0.1s;
+	}
+
+	.clear-btn:hover {
+		color: var(--text-primary);
+		border-color: var(--border-hover);
 	}
 </style>

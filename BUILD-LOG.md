@@ -3019,3 +3019,65 @@ COMM-01 (local identity), COMM-02 (avatar system), COMM-03 (profile page), SOCIA
 
 > **Commit 97eeb3e** (2026-02-22 23:26) — feat(09-06): add Profile nav link + Community Foundation docs
 > Files changed: 3
+
+> **Commit da84483** (2026-02-22 23:27) — docs(09-06): write Phase 9 Community Foundation build log entry
+> Files changed: 1
+
+> **Commit a5d7eb7** (2026-02-22 23:30) — docs(09-06): complete Community Foundation plan — nav link, docs, Phase 9 complete
+> Files changed: 3
+
+> **Commit 730592e** (2026-02-22 23:35) — docs(phase-09): complete phase execution — verification passed
+> Files changed: 1
+
+---
+
+## Hotfix — 2026-02-23 — Discovery Filter Breaks Navigation
+
+### Bug Report
+
+After Phase 9 shipped, a critical regression was identified in the Discover page:
+
+- Clicking tag chips in the Discovery Filter had no effect on the artist results
+- After interacting with the sidebar tag filter, all navigation (header links, sidebar links) became unresponsive
+
+### Root Cause
+
+<!-- dead-end: PaneForge pointer capture suspected but eliminated -->
+Investigation ruled out: PaneForge pointer capture (only active during drag), Phase 9 Rust command registration, collectionsState loading errors, SvelteKit router corruption from goto().
+<!-- /dead-end -->
+
+<!-- decision: Single source of truth — URL owns tag state -->
+**The LeftSidebar's Discovery Filters section was using completely disconnected local `$state` instead of URL-driven state.**
+
+The bug: `addTag()` in LeftSidebar modified a local `selectedTags = $state([])` array and fired `scheduleFetch()` → `fetch('/api/search?...')`. It never called `goto()`. The Discover page reads tags from `url.searchParams` in `+page.ts` — which never changed. So the artist grid never updated.
+
+The navigation freeze: with two desynchronized sources of truth (local sidebar state + URL), clicking TagFilter chips on the main page (which DO call `goto('?tags=...')`) while the sidebar was showing stale state created confusing behavior. The `/api/search` fetch calls also returned 503 in Tauri mode (no D1 DB), adding noise.
+<!-- /decision -->
+
+### Fix
+
+Rewrote `LeftSidebar.svelte` to derive tag state from the URL:
+
+```javascript
+// Before (broken):
+let selectedTags = $state<string[]>([]);   // disconnected from URL
+function addTag(tag) { selectedTags = [...selectedTags, tag]; scheduleFetch(); }
+
+// After (correct):
+let activeTags = $derived(
+    $page.url.searchParams.get('tags')?.split(',').filter(Boolean) ?? []
+);
+function addTag(tag) { applyTags([...activeTags, trimmed]); }
+function applyTags(tags) { goto(`/discover${tags.length ? '?' + params : ''}`); }
+```
+
+The sidebar now:
+- Reads active tags from `$page.url.searchParams` (single source of truth)
+- Writes tag changes via `goto('/discover?tags=...')` (triggers `+page.ts` re-run)
+- Stays synchronized with TagFilter.svelte (both driven by URL)
+- Shows "Go to Discover" hint when not on the discover page
+- No longer fires broken `/api/search` fetches in Tauri mode
+
+### Verification
+
+`npm run check` — 0 errors. `npm run build` — success.
