@@ -14,6 +14,15 @@
 
 	let { data } = $props();
 
+	let tauriMode = $state(false);
+
+	/** Save to Shelf state (Tauri-only) */
+	let savedInCollections = $state<string[]>([]);
+	let showSaveDropdown = $state(false);
+	let newShelfNameArtist = $state('');
+	// collectionsState reference — loaded lazily in onMount Tauri block
+	let shelfCollections = $state<Array<{ id: string; name: string }>>([]);
+
 	let tags = $derived(
 		data.artist.tags
 			? data.artist.tags.split(', ').filter(Boolean)
@@ -61,26 +70,34 @@
 	);
 
 	onMount(() => {
-		// Only generate AI bio when Wikipedia bio is missing and AI is ready
-		if (data.bio) return;
-		if (!isTauri()) return;
-
-		const provider = getAiProvider();
-		if (!provider) return;
+		tauriMode = isTauri();
+		if (!tauriMode) return;
 
 		(async () => {
-			try {
-				const tagsStr = data.artist.tags || '';
-				const country = data.artist.country || '';
-				const result = await provider.complete(
-					PROMPTS.artistSummary(data.artist.name, tagsStr, country),
-					{ temperature: 0.5, maxTokens: 200 }
-				);
-				if (result && result.trim()) {
-					aiBio = result.trim();
+			// Load collections for Save to Shelf dropdown
+			const { loadCollections, collectionsState, isInAnyCollection } = await import('$lib/taste/collections.svelte');
+			if (!collectionsState.isLoaded) await loadCollections();
+			shelfCollections = collectionsState.collections;
+			savedInCollections = await isInAnyCollection('artist', data.artist.mbid);
+
+			// Only generate AI bio when Wikipedia bio is missing and AI is ready
+			if (!data.bio) {
+				const provider = getAiProvider();
+				if (provider) {
+					try {
+						const tagsStr = data.artist.tags || '';
+						const country = data.artist.country || '';
+						const result = await provider.complete(
+							PROMPTS.artistSummary(data.artist.name, tagsStr, country),
+							{ temperature: 0.5, maxTokens: 200 }
+						);
+						if (result && result.trim()) {
+							aiBio = result.trim();
+						}
+					} catch {
+						// AI summary is best-effort — show nothing on failure
+					}
 				}
-			} catch {
-				// AI summary is best-effort — show nothing on failure
 			}
 		})();
 	});
@@ -133,6 +150,57 @@
 			<h1 class="artist-name">{data.artist.name}</h1>
 			<UniquenessScore score={data.uniquenessScore} tagCount={data.uniquenessTagCount} />
 			<FavoriteButton mbid={data.artist.mbid} name={data.artist.name} slug={data.artist.slug} />
+			{#if tauriMode}
+				<div class="save-shelf-wrapper" style="position:relative;">
+					<button
+						class="save-shelf-btn"
+						class:saved={savedInCollections.length > 0}
+						onclick={() => showSaveDropdown = !showSaveDropdown}
+						aria-label="Save to shelf"
+					>
+						{savedInCollections.length > 0 ? '✓ Saved' : '+ Save to Shelf'}
+					</button>
+					{#if showSaveDropdown}
+						<div class="shelf-dropdown">
+							{#each shelfCollections as col (col.id)}
+								<button
+									class="shelf-option"
+									class:in-collection={savedInCollections.includes(col.id)}
+									onclick={async () => {
+										const { addToCollection } = await import('$lib/taste/collections.svelte');
+										await addToCollection(col.id, 'artist', data.artist.mbid, data.artist.name, data.artist.slug);
+										savedInCollections = [...savedInCollections, col.id];
+										showSaveDropdown = false;
+									}}
+								>
+									{col.name} {savedInCollections.includes(col.id) ? '✓' : ''}
+								</button>
+							{/each}
+							<div class="new-shelf-inline">
+								<input
+									class="new-shelf-input-sm"
+									type="text"
+									bind:value={newShelfNameArtist}
+									placeholder="New shelf..."
+									onkeydown={async (e) => {
+										if (e.key === 'Enter' && newShelfNameArtist.trim()) {
+											const { createCollection, addToCollection, collectionsState } = await import('$lib/taste/collections.svelte');
+											const id = await createCollection(newShelfNameArtist.trim());
+											if (id) {
+												await addToCollection(id, 'artist', data.artist.mbid, data.artist.name, data.artist.slug);
+												savedInCollections = [...savedInCollections, id];
+												shelfCollections = collectionsState.collections;
+											}
+											newShelfNameArtist = '';
+											showSaveDropdown = false;
+										}
+									}}
+								/>
+							</div>
+						</div>
+					{/if}
+				</div>
+			{/if}
 		</div>
 
 		{#if headerMeta()}
@@ -506,6 +574,54 @@
 		background: var(--bg-hover);
 		border-color: var(--border-hover);
 		text-decoration: none;
+	}
+
+	/* ── Save to Shelf ─────────────────────────────────── */
+	.save-shelf-wrapper { display: inline-block; }
+	.save-shelf-btn {
+		padding: 4px 10px;
+		font-size: 0.8rem;
+		border: 1px solid var(--border);
+		background: var(--bg-secondary);
+		color: var(--text-primary);
+		border-radius: 4px;
+		cursor: pointer;
+	}
+	.save-shelf-btn.saved { border-color: var(--accent); color: var(--accent); }
+	.shelf-dropdown {
+		position: absolute;
+		top: 100%;
+		left: 0;
+		z-index: 50;
+		background: var(--bg-secondary);
+		border: 1px solid var(--border);
+		border-radius: 4px;
+		min-width: 160px;
+		padding: 4px 0;
+		box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+	}
+	.shelf-option {
+		display: block;
+		width: 100%;
+		text-align: left;
+		padding: 6px 12px;
+		background: none;
+		border: none;
+		color: var(--text-primary);
+		font-size: 0.85rem;
+		cursor: pointer;
+	}
+	.shelf-option:hover { background: var(--bg-tertiary); }
+	.shelf-option.in-collection { color: var(--accent); }
+	.new-shelf-inline { padding: 4px 8px; border-top: 1px solid var(--border); }
+	.new-shelf-input-sm {
+		width: 100%;
+		padding: 4px;
+		background: var(--bg-tertiary);
+		border: 1px solid var(--border);
+		color: var(--text-primary);
+		border-radius: 3px;
+		font-size: 0.8rem;
 	}
 
 	/* ── Responsive ────────────────────────────────────── */
