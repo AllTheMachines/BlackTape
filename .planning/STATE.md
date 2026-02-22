@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Phase 09 in progress. Plans 01+02+03+04+05 complete: taste.db schema + Tauri commands (Plan 01), DiceBear avatar module + AvatarPreview/AvatarEditor + tauri-plugin-oauth (Plan 02), collections reactive state + import modules + CollectionShelf (Plan 03), /profile page + TasteFingerprint D3 constellation (Plan 04), Save to Shelf UI on artist/release pages + Settings Identity/Import/Export (Plan 05).
+**Current focus:** Phase 09 complete. All 6 plans done: taste.db schema + Tauri commands (Plan 01), DiceBear avatar module + AvatarPreview/AvatarEditor + tauri-plugin-oauth (Plan 02), collections reactive state + import modules + CollectionShelf (Plan 03), /profile page + TasteFingerprint D3 constellation (Plan 04), Save to Shelf UI on artist/release pages + Settings Identity/Import/Export (Plan 05), Profile nav link + ARCHITECTURE.md + user-manual.md + BUILD-LOG.md (Plan 06).
 
 ## Current Position
 
-Phase: 09-community-foundation of 15 (Community Foundation — In Progress)
-Current Plan: 09-05 (complete)
-Status: Phase 09 Plans 01+02+03+04+05 complete — taste.db schema (01), DiceBear avatar system (02), collections + imports (03), profile page + TasteFingerprint (04), collections UI + settings expansion (05). 2026-02-22.
-Last activity: 2026-02-22 — 09-05 complete. Save to Shelf buttons on artist page (artist-name-row) + release page (action-rows below BuyOnBar). Settings page expanded: Identity (handle + avatar mode toggle), Import Listening History (Spotify/Last.fm/Apple Music/CSV cards with match_artists_batch), Export (exportAllUserData button). npm run check 0 errors, npm run build exits 0.
+Phase: 09-community-foundation of 15 (Community Foundation — Complete)
+Current Plan: 09-06 (complete)
+Status: Phase 09 ALL 6 plans complete — taste.db schema (01), DiceBear avatar system (02), collections + imports (03), profile page + TasteFingerprint (04), collections UI + settings expansion (05), nav link + docs (06). 2026-02-22.
+Last activity: 2026-02-22 — 09-06 complete. Profile nav link added to Tauri header. ARCHITECTURE.md Community Foundation section. user-manual.md Community Foundation section (Profile, Shelves, Import, Export). BUILD-LOG.md Phase 9 wrap-up entry with 10 key decisions. npm run check 0 errors, npm run build exits 0.
 
-Progress: [█████░░░░░] 5/6 plans complete (Phase 09 In Progress)
+Progress: [██████████] 6/6 plans complete (Phase 09 Complete)
 
 ## Performance Metrics
 
@@ -81,6 +81,7 @@ Progress: [█████░░░░░] 5/6 plans complete (Phase 09 In Progr
 | Phase 09-community-foundation P03 | 4min | 2 tasks | 7 files |
 | Phase 09-community-foundation P04 | 8min | 2 tasks | 2 files |
 | Phase 09-community-foundation P05 | 5min | 2 tasks | 3 files |
+| Phase 09-community-foundation P06 | 4 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -285,6 +286,9 @@ Progress: [█████░░░░░] 5/6 plans complete (Phase 09 In Progr
 - [Phase 09]: shelfCollections local state mirror — avoids dynamic import reference in Svelte template; assigned from collectionsState.collections after load
 - [Phase 09]: parseCsvArtists handles any CSV with Artist column (case-insensitive) — compatible with Last.fm/Spotify data downloads
 - [Phase 09]: match_artists_batch fallback returns clear error string if invoke throws — not a crash, just a status message
+- [Phase 09]: Profile nav link added between Explore and Settings in Tauri header nav block
+- [Phase 09]: ARCHITECTURE.md Community Foundation section documents taste.db extensions, identity system, collections, Taste Fingerprint, import pipelines, and anti-patterns
+- [Phase 09]: user-manual.md Community Foundation section gives users clear instructions for profile, shelves, import, and export
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
@@ -298,6 +302,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-22
-Phase 09 Plan 05 complete. Save to Shelf buttons on artist page (artist-name-row, after FavoriteButton) and release page (action-rows, below BuyOnBar). Both Tauri-only via {#if tauriMode}, dropdown shows shelves with checkmarks, inline new-shelf creation. Settings page: Identity section (handle + avatar mode Generative/Custom toggle), Import Listening History (Spotify PKCE/Last.fm/Apple MusicKit JS/CSV cards, matchAndImport helper, session-only credentials), Your Data section (exportAllUserData button). npm run check 0 errors, npm run build exits 0.
-Stopped at: Completed 09-05-PLAN.md
-Next: Phase 09 Plan 06 — final phase plan
+Phase 09 Plan 06 complete. Profile nav link added to Tauri header (between Explore and Settings, with active class). ARCHITECTURE.md Community Foundation section (identity system, collections, Taste Fingerprint, import pipelines, anti-patterns). user-manual.md Community Foundation section (Profile, Shelves, Import Listening History, Export). BUILD-LOG.md Phase 9 wrap-up with 10 key decisions. npm run check 0 errors, npm run build exits 0. Phase 09 COMPLETE.
+Stopped at: Completed 09-06-PLAN.md
+Next: Phase 10 — Communication Layer
