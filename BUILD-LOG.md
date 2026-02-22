@@ -2846,3 +2846,53 @@ Collections reactive state module + 4 import modules + full data export + Collec
 
 > **Commit 180d27c** (2026-02-22 23:13) — docs(09-03): complete collections + import modules plan
 > Files changed: 5
+
+> **Commit abc4d12** (2026-02-22 23:14) — docs(09-02): complete DiceBear avatar system plan — generative pixel-art avatar with 16x16 editor
+> Files changed: 3
+
+> **Commit 6c894a1** (2026-02-22 23:16) — feat(09-04): build TasteFingerprint component with D3 force constellation + PNG export
+> Files changed: 1
+
+> **Commit cc48e9d** (2026-02-22 23:17) — feat(09-05): add Save to Shelf buttons on artist and release pages
+> Files changed: 2
+
+## Phase 09 Plan 04 — Profile Page + Taste Fingerprint — 2026-02-22
+
+The visual centrepiece of Phase 9. The profile page is where users see themselves the way others might. The Taste Fingerprint is the social object — a unique constellation of their musical taste that can be shared or exported.
+
+### TasteFingerprint Component
+
+Built `src/lib/components/TasteFingerprint.svelte` using the same headless D3 force simulation pattern established in StyleMap.svelte and GenreGraph.svelte:
+
+- Top 15 taste tags become accent-colored nodes (size proportional to weight)
+- Top 10 favorite artists become muted circle nodes
+- Up to 5 collection-saved artists not in favorites are added as smaller nodes (curation signal — the fingerprint reflects both listening behavior AND deliberate curation choices)
+- Nodes initialized in a circle for determinism — same taste data always produces the same constellation
+- `simulation.tick(300)` + `simulation.stop()` (no reactive `on('tick')` wiring)
+- Edges drawn from each artist node to the 2 spatially nearest tag nodes post-simulation
+- PNG export: SVG → canvas (800×800, #0d0d0d background) → base64 → `save_base64_to_file` Tauri command
+
+<!-- decision: Curation signal in fingerprint -->
+Collection-saved artists appear in the Taste Fingerprint alongside listening-derived favorites. This makes the fingerprint reflect both passive listening behavior AND deliberate curation choices — two different kinds of taste signal that together tell a more complete story.
+<!-- /decision -->
+
+### /profile Page
+
+Created `src/routes/profile/+page.svelte` — Tauri-gated (same pattern as Library and Settings). Three sections:
+
+1. **Identity** — AvatarPreview (96px) + handle input (saves on blur, local-only, no account)
+2. **Taste Fingerprint** — Full TasteFingerprint constellation with export button
+3. **Shelves** — Expandable CollectionShelf per collection, inline new-shelf creation
+
+No vanity metrics anywhere on the page. No follower counts, like counts, play counts. The profile is identity + taste + curation only.
+
+**Result:** `npm run check` — 0 errors. `npm run build` — exits 0. Both files pass all plan verification criteria.
+
+> **Commit 6c894a1** (2026-02-22 23:16) — feat(09-04): build TasteFingerprint component with D3 force constellation + PNG export
+> Files changed: 1
+
+> **Commit 4a6a77a** (2026-02-22 23:18) — feat(09-04): create /profile page route
+> Files changed: 1
+
+> **Commit 4e624d6** (2026-02-22 23:20) — feat(09-05): expand Settings page with Identity, Import, and Export sections
+> Files changed: 1

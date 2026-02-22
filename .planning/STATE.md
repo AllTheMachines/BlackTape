@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Phase 09 in progress. Plans 01+02+03 complete: taste.db schema + Tauri commands (Plan 01), DiceBear avatar module + AvatarPreview/AvatarEditor + tauri-plugin-oauth (Plan 02), collections reactive state + import modules + CollectionShelf (Plan 03).
+**Current focus:** Phase 09 in progress. Plans 01+02+03+04 complete: taste.db schema + Tauri commands (Plan 01), DiceBear avatar module + AvatarPreview/AvatarEditor + tauri-plugin-oauth (Plan 02), collections reactive state + import modules + CollectionShelf (Plan 03), /profile page + TasteFingerprint D3 constellation (Plan 04).
 
 ## Current Position
 
 Phase: 09-community-foundation of 15 (Community Foundation — In Progress)
-Current Plan: 09-03 (complete)
-Status: Phase 09 Plans 01+02+03 complete — taste.db schema (01), DiceBear avatar system (02), collections + imports (03). 2026-02-22.
-Last activity: 2026-02-22 — 09-02 complete. @dicebear/core + @dicebear/pixel-art + @fabianlars/tauri-plugin-oauth installed. avatar.ts (generateAvatarSvg, tasteTagsToAvatarSeed, loadAvatarState, saveAvatarMode, avatarState). AvatarPreview.svelte (generative SVG or 16x16 pixel grid). AvatarEditor.svelte (16x16 grid, pencil/eraser/color picker). tauri-plugin-oauth registered in lib.rs. DiceBear v9 namespace import fix (import * as pixelArt). npm run check 0 errors.
+Current Plan: 09-04 (complete)
+Status: Phase 09 Plans 01+02+03+04 complete — taste.db schema (01), DiceBear avatar system (02), collections + imports (03), profile page + TasteFingerprint (04). 2026-02-22.
+Last activity: 2026-02-22 — 09-04 complete. TasteFingerprint.svelte (D3 force constellation, headless tick(300)+stop, deterministic circle init, curation signal from collections, PNG export via save_base64_to_file). /profile page (Tauri-gated, handle + AvatarPreview + AvatarEditor toggle + TasteFingerprint + expandable shelves). npm run check 0 errors, npm run build exits 0.
 
-Progress: [███░░░░░░░] 3/6 plans complete (Phase 09 In Progress)
+Progress: [████░░░░░░] 4/6 plans complete (Phase 09 In Progress)
 
 ## Performance Metrics
 
@@ -79,6 +79,7 @@ Progress: [███░░░░░░░] 3/6 plans complete (Phase 09 In Progr
 | Phase 09-community-foundation P01 | 3 | 2 tasks | 3 files |
 | Phase 09-community-foundation P02 | 10 | 2 tasks | 6 files |
 | Phase 09-community-foundation P03 | 4min | 2 tasks | 7 files |
+| Phase 09-community-foundation P04 | 8min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -277,6 +278,9 @@ Progress: [███░░░░░░░] 3/6 plans complete (Phase 09 In Progr
 - [Phase 09-02]: DiceBear v9 uses namespace import (import * as pixelArt) not named export — createAvatar expects Style<O> = { meta, create, schema }
 - [Phase 09-02]: Avatar seed derivation identical to palette.ts: top-5 taste tags by weight then alphabetical, joined with | — same data, different expression
 - [Phase 09-02]: tauri-plugin-oauth installed in Plan 02 to unblock Plan 03 Spotify import — plugin registration must precede use
+- [Phase 09-04]: Collection-saved artists appear in TasteFingerprint alongside listening-derived favorites — fingerprint reflects both passive listening AND deliberate curation choices (two different taste signals)
+- [Phase 09-04]: TasteFingerprint edges drawn post-simulation by Euclidean distance (2 nearest tag nodes per artist) — avoids per-artist DB lookups, produces natural constellation topology
+- [Phase 09-04]: Profile page has zero vanity metrics — no follower/like/play counts; identity = taste + curation only
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
@@ -290,6 +294,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-22
-Phase 09 Plan 03 complete. collectionsState $state module (collections.svelte.ts). Four import modules: Spotify PKCE OAuth (tauri-plugin-oauth), Last.fm paginated scrobbles, Apple MusicKit JS, CSV Artist column. exportAllUserData() via Promise.all + write_json_to_path. CollectionShelf.svelte item grid with remove button. 0 new TypeScript errors (1 pre-existing avatar.ts error from Plan 02 WIP logged to deferred-items.md).
-Stopped at: Completed 09-03-PLAN.md
-Next: Phase 09 Plan 04 — profile page UI
+Phase 09 Plan 04 complete. TasteFingerprint.svelte (D3 force constellation: top 15 tags + top 10 favorites + up to 5 collection artists, headless tick(300)+stop, deterministic circle init, PNG export). /profile page (Tauri-gated: handle input + AvatarPreview + AvatarEditor toggle + TasteFingerprint + expandable CollectionShelf rows + inline new-shelf creation). npm run check 0 errors, npm run build exits 0.
+Stopped at: Completed 09-04-PLAN.md
+Next: Phase 09 Plan 05 — Save to Shelf buttons + Settings expansion
