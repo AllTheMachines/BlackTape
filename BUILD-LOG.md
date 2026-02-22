@@ -2937,3 +2937,85 @@ All credentials are session-only `$state` — no `set_identity_value` calls for 
 Single "Export All Data" button calls `exportAllUserData()` from `$lib/taste/import/index.ts` — full JSON dump of identity, shelves, items, taste profile, and play history.
 
 **Result:** `npm run check` — 0 errors. `npm run build` — exits 0.
+
+> **Commit 49103aa** (2026-02-22 23:23) — docs(09-05): complete collections UI + settings expansion plan
+
+## Phase 09 — Community Foundation — 2026-02-22
+
+### Overview
+
+Phase 9 builds Mercury's social foundation: a local, pseudonymous identity system with a profile page, avatar, curated shelves, a Taste Fingerprint visualization, and import/export pipelines for listening history. No vanity metrics anywhere. No central server. The data belongs to the user.
+
+This phase extended `taste.db` with three new tables (`user_identity`, `collections`, `collection_items`) and added a `/profile` route, all gated to Tauri only. Phase 10+ will build matching and sharing features on top of this foundation.
+
+### Key Decisions
+
+<!-- decision: Extend taste.db, not a new DB -->
+**taste.db extended** for identity/collections, not a separate DB. One DB file = clean backup story. The user copies one file. If we had split into user.db + taste.db the backup story becomes "copy these three files" — unacceptable for a local-first app.
+<!-- /decision -->
+
+<!-- decision: DiceBear pixel-art for generative avatar -->
+**DiceBear v9 pixel-art style** for generative avatars, seeded from top-5 taste tags. Same derivation as `palette.ts` — alphabetical sort + join with `|` — so the avatar seed is entirely consistent with the theme hue. CC0, no network dependency (SVG generated client-side), deterministic. The avatar changes when your taste changes.
+<!-- /decision -->
+
+<!-- decision: 16x16 pixel grid for custom avatar editor -->
+**16×16 grid** for custom avatar editing. Enough resolution for recognizable faces and symbols without generating impractical storage (just a JSON array of 256 hex values). Stored as `avatar_data` in `user_identity`. Scales fine at any display size via nearest-neighbor CSS.
+<!-- /decision -->
+
+<!-- decision: D3 headless tick(300) for Taste Fingerprint -->
+**Headless `simulation.tick(300) + stop()`** for the Taste Fingerprint constellation — the same pattern used in StyleMap.svelte and GenreGraph.svelte. No `on('tick')` callback, no reactive updates during simulation. Nodes initialized in a circle before simulation so the same taste data always produces the same layout (determinism without extra effort).
+<!-- /decision -->
+
+<!-- decision: tauri-plugin-oauth for Spotify import -->
+**`@fabianlars/tauri-plugin-oauth`** for Spotify PKCE OAuth. Spotify's OAuth only accepts `localhost` redirect URIs — it explicitly rejects custom URI schemes (`mercury://`). The plugin spins up a temporary localhost server, catches the redirect, extracts the code. The alternative (custom URI scheme) is blocked by Spotify on all platforms.
+<!-- /decision -->
+
+<!-- decision: User provides own Spotify Client ID -->
+**User provides their own Spotify Client ID.** Open-source apps cannot ship shared client credentials safely — the client secret would be visible in the source code. The UX friction (register a free dev app) is a one-time setup cost. Documented in the import UI with a direct link to developer.spotify.com.
+<!-- /decision -->
+
+<!-- decision: Session-only OAuth tokens -->
+**OAuth access tokens are session-only** `$state` — never persisted to `taste.db`. Import is a one-shot operation. Tokens expire within an hour. Storing them gains nothing and creates a security surface. If the user wants to re-import next month, they authenticate again — takes 30 seconds.
+<!-- /decision -->
+
+<!-- decision: Save to Shelf as dropdown with inline creation -->
+**Save to Shelf button** on artist and release pages uses a dropdown that lists existing shelves (with checkmarks) plus an inline "New shelf..." text field. No navigation away required. Creating a shelf inline and immediately adding an item is a single interaction — momentum preserved.
+<!-- /decision -->
+
+<!-- decision: Collections are shelves for artists and releases, not tracks -->
+**Shelves hold artists and releases only.** Per the CONTEXT.md hard constraint: no plays, no listening history, no scrobbles in the social layer. Shelves are for deliberate curation, not automated tracking. Tracks aren't curation objects — albums and artists are.
+<!-- /decision -->
+
+<!-- decision: exportAllUserData uses write_json_to_path -->
+**`exportAllUserData()` uses `write_json_to_path` Rust command** (Plan 01's general-purpose file writer). The existing `export_play_history_to_path` command has a different signature (it writes a CSV) — reusing it would require converting the export to CSV format, losing structure. The general-purpose JSON writer was added in Plan 01 specifically to serve this use case.
+<!-- /decision -->
+
+### What Was Built (Plans 01–06)
+
+| Plan | Focus | Key Deliverable |
+|------|-------|----------------|
+| 01 | DB Schema + Rust commands | `user_identity`, `collections`, `collection_items` tables; 10 collection commands; `write_json_to_path`; `match_artists_batch` |
+| 02 | Avatar system | DiceBear generative avatar; 16×16 pixel editor; `AvatarPreview` + `AvatarEditor` components; `tauri-plugin-oauth` installed |
+| 03 | Collections state + imports | `collectionsState.svelte.ts`; `CollectionShelf.svelte`; Spotify/Last.fm/Apple/CSV import modules |
+| 04 | /profile page + Taste Fingerprint | `TasteFingerprint.svelte` (D3 constellation + PNG export); `/profile` route |
+| 05 | Save to Shelf UI + Settings | Save to Shelf on artist/release pages; Settings: Identity, Import, Export sections |
+| 06 | Nav link + docs | Profile link in Tauri header; ARCHITECTURE.md Community Foundation section; user-manual.md Community Foundation section |
+
+### Requirements Satisfied
+
+COMM-01 (local identity), COMM-02 (avatar system), COMM-03 (profile page), SOCIAL-01 (collections/shelves), SOCIAL-02 (import pipelines), SOCIAL-03 (Taste Fingerprint), SOCIAL-04 (data export)
+
+### Deferred to Phase 10+
+
+- Taste matching (find users with similar profiles) — requires Phase 10 sharing infrastructure
+- Full data re-import from export JSON
+- Profile sharing / public export URL
+
+### Build Status
+
+`npm run check` — 0 errors, 6 pre-existing warnings (existing code in crate/kb pages, unrelated to Phase 9).
+`npm run build` — exits 0. Built in 8.74s. Phase 9 ships clean.
+> Files changed: 4
+
+> **Commit 97eeb3e** (2026-02-22 23:26) — feat(09-06): add Profile nav link + Community Foundation docs
+> Files changed: 3
