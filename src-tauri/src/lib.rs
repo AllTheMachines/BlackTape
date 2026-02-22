@@ -4,6 +4,42 @@ mod scanner;
 
 use tauri::Manager;
 
+/// Match a list of artist names against the mercury.db catalog.
+/// Returns a list of MatchResult with MBID and slug if found.
+#[tauri::command]
+fn match_artists_batch(
+    names: Vec<String>,
+    app: tauri::AppHandle,
+) -> Result<Vec<ai::taste_db::MatchResult>, String> {
+    let app_data = app.path().app_data_dir().map_err(|e| e.to_string())?;
+    let db_path = app_data.join("mercury.db");
+    let conn = rusqlite::Connection::open(&db_path)
+        .map_err(|e| format!("Failed to open mercury.db: {}", e))?;
+
+    let mut results = Vec::new();
+    for name in names {
+        let result = conn.query_row(
+            "SELECT mbid, slug FROM artists WHERE LOWER(name) = LOWER(?1) LIMIT 1",
+            rusqlite::params![name],
+            |row| Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?)),
+        );
+        match result {
+            Ok((mbid, slug)) => results.push(ai::taste_db::MatchResult {
+                name,
+                artist_mbid: Some(mbid),
+                artist_slug: Some(slug),
+            }),
+            Err(rusqlite::Error::QueryReturnedNoRows) => results.push(ai::taste_db::MatchResult {
+                name,
+                artist_mbid: None,
+                artist_slug: None,
+            }),
+            Err(e) => return Err(format!("DB query error: {}", e)),
+        }
+    }
+    Ok(results)
+}
+
 #[tauri::command]
 fn check_database(app: tauri::AppHandle) -> Result<serde_json::Value, String> {
     let app_data = app.path().app_data_dir().map_err(|e| e.to_string())?;
@@ -54,6 +90,21 @@ pub fn run() {
             ai::taste_db::clear_play_history,
             ai::taste_db::get_play_count,
             ai::taste_db::export_play_history,
+            ai::taste_db::get_identity_value,
+            ai::taste_db::set_identity_value,
+            ai::taste_db::get_all_identity,
+            ai::taste_db::get_collections,
+            ai::taste_db::create_collection,
+            ai::taste_db::delete_collection,
+            ai::taste_db::rename_collection,
+            ai::taste_db::get_collection_items,
+            ai::taste_db::add_collection_item,
+            ai::taste_db::remove_collection_item,
+            ai::taste_db::is_in_collection,
+            ai::taste_db::get_all_collection_items,
+            ai::taste_db::save_base64_to_file,
+            ai::taste_db::write_json_to_path,
+            match_artists_batch,
         ])
         .plugin(tauri_plugin_sql::Builder::new().build())
         .plugin(tauri_plugin_updater::Builder::new().build())
