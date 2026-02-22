@@ -226,6 +226,8 @@
 	.nav-links {
 		display: flex;
 		align-items: center;
+		flex-wrap: wrap;
+		overflow: hidden;
 	}
 
 	.nav-link {
@@ -234,6 +236,12 @@
 		text-decoration: none;
 		margin-left: var(--space-lg);
 		transition: color 0.15s;
+	}
+
+	@media (max-width: 480px) {
+		.nav-links {
+			display: none;
+		}
 	}
 
 	.nav-link:hover {

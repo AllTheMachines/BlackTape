@@ -141,6 +141,8 @@
 	}
 
 	.release-title-link {
+		display: block;
+		overflow: hidden;
 		text-decoration: none;
 		color: inherit;
 	}

@@ -1,0 +1,224 @@
+#!/usr/bin/env node
+/**
+ * Mercury Test Suite
+ *
+ * Usage:
+ *   node tools/test-suite/run.mjs            — run all tests
+ *   node tools/test-suite/run.mjs --phase 6  — run only Phase 6 tests
+ *   node tools/test-suite/run.mjs --web-only  — skip code checks
+ *   node tools/test-suite/run.mjs --code-only — skip browser tests
+ *   node tools/test-suite/run.mjs --fast      — skip slow visual tests (style-map, etc.)
+ *
+ * Exit codes: 0 = all passed, 1 = failures, 2 = setup error
+ */
+
+import { createRequire } from 'module';
+import { spawn } from 'child_process';
+const require = createRequire(import.meta.url);
+import { ALL_TESTS } from './manifest.mjs';
+import { runWebTests } from './runners/web.mjs';
+
+// ---------------------------------------------------------------------------
+// Args
+// ---------------------------------------------------------------------------
+
+const args = process.argv.slice(2);
+const phaseFilter = args.includes('--phase') ? Number(args[args.indexOf('--phase') + 1]) : null;
+const webOnly = args.includes('--web-only');
+const codeOnly = args.includes('--code-only');
+const fast = args.includes('--fast');
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+const PASS = '✓';
+const FAIL = '✗';
+const SKIP = '○';
+const SEP = '─'.repeat(60);
+
+function log(msg) { process.stdout.write(msg + '\n'); }
+
+function header(title) {
+  log('');
+  log(SEP);
+  log(` ${title}`);
+  log(SEP);
+}
+
+function checkWrangler() {
+  return new Promise((resolve) => {
+    const http = require('http');
+    const req = http.get('http://localhost:8788/', (res) => {
+      resolve(res.statusCode === 200);
+      res.resume();
+    });
+    req.setTimeout(5000, () => { req.destroy(); resolve(false); });
+    req.on('error', () => resolve(false));
+  });
+}
+
+async function runBuildCheck() {
+  return new Promise((resolve) => {
+    const proc = spawn('npm', ['run', 'check'], {
+      cwd: process.cwd(),
+      stdio: ['ignore', 'pipe', 'pipe'],
+      shell: true,
+    });
+    proc.on('close', (code) => resolve(code === 0));
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Main
+// ---------------------------------------------------------------------------
+
+async function main() {
+  log('');
+  log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  log(' Mercury Test Suite');
+  log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+  // Filter tests
+  let tests = ALL_TESTS.filter(t => {
+    if (phaseFilter && t.phase !== phaseFilter && t.phase !== 0) return false;
+    if (webOnly && t.method !== 'web') return false;
+    if (codeOnly && t.method !== 'code') return false;
+    if (fast && ['P6-05', 'P7-01', 'P7-02'].includes(t.id)) return false;
+    return true;
+  });
+
+  const webTests = tests.filter(t => t.method === 'web');
+  const codeTests = tests.filter(t => t.method === 'code');
+  const buildTests = tests.filter(t => t.method === 'build');
+  const skipTests = tests.filter(t => t.method === 'skip');
+
+  log(` Tests: ${webTests.length} web, ${codeTests.length} code, ${skipTests.length} skipped`);
+  if (phaseFilter) log(` Filter: Phase ${phaseFilter} only`);
+  log('');
+
+  const results = [];
+
+  // ---------------------------------------------------------------------------
+  // 1. Code checks (fast, run first)
+  // ---------------------------------------------------------------------------
+
+  if (codeTests.length > 0 && !webOnly) {
+    header('Code Checks');
+    for (const test of codeTests) {
+      let passed = false;
+      let error = null;
+      try {
+        passed = await test.fn();
+      } catch (e) {
+        error = e.message?.split('\n')[0];
+        passed = false;
+      }
+      const icon = passed ? PASS : FAIL;
+      log(` ${icon}  [${test.id}] ${test.desc}`);
+      if (!passed && error) log(`       ${error}`);
+      results.push({ ...test, passed, error });
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // 2. Build check
+  // ---------------------------------------------------------------------------
+
+  if (buildTests.length > 0 && !webOnly) {
+    header('Build Check');
+    for (const test of buildTests) {
+      process.stdout.write(` ◆  [${test.id}] ${test.desc} ... `);
+      const passed = await runBuildCheck();
+      log(passed ? PASS : FAIL);
+      results.push({ ...test, passed, error: passed ? null : 'npm run check failed' });
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // 3. Web tests (Playwright)
+  // ---------------------------------------------------------------------------
+
+  if (webTests.length > 0 && !codeOnly) {
+    header('Web Tests (Playwright)');
+
+    const wranglerUp = await checkWrangler();
+    if (!wranglerUp) {
+      log(' ⚠  Wrangler dev server not running on :8788');
+      log('    Start it with: npx wrangler pages dev .svelte-kit/cloudflare --port 8788');
+      log('    Skipping all web tests.');
+      webTests.forEach(t => results.push({ ...t, passed: null, error: 'Dev server not running' }));
+    } else {
+      log(' ◆  Browser: launching Chromium headless');
+      const webResults = await runWebTests(webTests);
+      for (const r of webResults) {
+        const icon = r.passed ? PASS : FAIL;
+        log(` ${icon}  [${r.id}] ${r.desc}`);
+        if (!r.passed && r.error) log(`       Error: ${r.error}`);
+        results.push(r);
+      }
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // 4. Skipped tests
+  // ---------------------------------------------------------------------------
+
+  if (skipTests.length > 0) {
+    header('Skipped (requires running desktop app)');
+    for (const test of skipTests) {
+      log(` ${SKIP}  [${test.id}] ${test.desc}`);
+      log(`       Reason: ${test.reason}`);
+      results.push({ ...test, passed: null });
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // 5. Summary
+  // ---------------------------------------------------------------------------
+
+  const passed = results.filter(r => r.passed === true);
+  const failed = results.filter(r => r.passed === false);
+  const skipped = results.filter(r => r.passed === null);
+
+  // Group failures by phase
+  const failedByPhase = {};
+  for (const r of failed) {
+    const key = r.phase === 0 ? 'Build' : `Phase ${r.phase}`;
+    if (!failedByPhase[key]) failedByPhase[key] = [];
+    failedByPhase[key].push(r);
+  }
+
+  log('');
+  log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  log(' Summary');
+  log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  log(` ${PASS}  Passed:  ${passed.length}`);
+  log(` ${FAIL}  Failed:  ${failed.length}`);
+  log(` ${SKIP}  Skipped: ${skipped.length} (desktop-only)`);
+  log('');
+
+  if (failed.length > 0) {
+    log(' Failures:');
+    for (const [phase, tests] of Object.entries(failedByPhase)) {
+      log(`   ${phase}:`);
+      for (const t of tests) {
+        log(`     ${FAIL} [${t.id}] ${t.desc}`);
+        if (t.error) log(`           ${t.error}`);
+      }
+    }
+    log('');
+    log(' → Run /gsd:debug to investigate failures');
+    log('');
+    process.exit(1);
+  } else {
+    log(' All tests passed ✓');
+    log('');
+    process.exit(0);
+  }
+}
+
+main().catch(e => {
+  console.error('Test runner error:', e.message);
+  process.exit(2);
+});
