@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Phase 09 in progress. Plan 01 complete: taste.db extended with user_identity/collections/collection_items tables + 14 Tauri commands for identity/collections CRUD + fingerprint/JSON export commands.
+**Current focus:** Phase 09 in progress. Plans 01+03 complete: taste.db schema + Tauri commands (Plan 01), collections reactive state + import modules + CollectionShelf (Plan 03).
 
 ## Current Position
 
 Phase: 09-community-foundation of 15 (Community Foundation — In Progress)
-Current Plan: 09-01 (complete)
-Status: Phase 09 Plan 01 complete — taste.db schema extended, all Rust Tauri commands for identity/collections implemented and registered. cargo check 0 errors. 2026-02-22.
-Last activity: 2026-02-22 — 09-01 complete. user_identity, collections, collection_items tables added to taste.db. 14 new Tauri commands: identity CRUD (3), collections CRUD (4), collection items CRUD (5), save_base64_to_file, write_json_to_path. match_artists_batch in lib.rs (mercury.db lookup). base64 = "0.22" added to Cargo.toml.
+Current Plan: 09-03 (complete)
+Status: Phase 09 Plan 03 complete — collections.svelte.ts, 4 import modules (Spotify/Last.fm/Apple/CSV), exportAllUserData(), CollectionShelf.svelte. npm run check 0 new errors. 2026-02-22.
+Last activity: 2026-02-22 — 09-03 complete. collectionsState $state module. Spotify PKCE OAuth, Last.fm paginated scrobbles, Apple MusicKit JS, CSV Artist column import. exportAllUserData() via write_json_to_path. CollectionShelf grid with remove button.
 
-Progress: [█░░░░░░░░░] 1/6 plans complete (Phase 09 In Progress)
+Progress: [███░░░░░░░] 3/6 plans complete (Phase 09 In Progress)
 
 ## Performance Metrics
 
@@ -77,6 +77,8 @@ Progress: [█░░░░░░░░░] 1/6 plans complete (Phase 09 In Progr
 | Phase 08-underground-aesthetic P03 | 4min | 2 tasks | 3 files |
 | Phase 08-underground-aesthetic P04 | 7min | 2 tasks | 6 files |
 | Phase 09-community-foundation P01 | 3 | 2 tasks | 3 files |
+| Phase 09-community-foundation P02 | 10 | 2 tasks | 6 files |
+| Phase 09-community-foundation P03 | 4min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -268,6 +270,13 @@ Progress: [█░░░░░░░░░] 1/6 plans complete (Phase 09 In Progr
 - [Phase 09-01]: match_artists_batch placed in lib.rs as free function (not taste_db.rs) — mercury.db has no managed Rust state, must open via AppHandle path
 - [Phase 09-01]: write_json_to_path is general-purpose accepting pre-serialized JSON string — does NOT reuse export_play_history_to_path which has a different signature
 - [Phase 09-01]: Collection IDs generated as millisecond timestamp strings — simple, unique, sortable, no external dependency
+- [Phase 09-03]: Spotify PKCE OAuth requires tauri-plugin-oauth localhost server — Spotify does not accept custom URI scheme redirects; user provides own Client ID (open-source UX friction, documented in module)
+- [Phase 09-03]: Last.fm import capped at 50 pages (10k tracks) — users with 100k+ scrobbles use CSV export path instead; prevents runaway import times
+- [Phase 09-03]: Apple Music import requires user-provided MusicKit Developer Token — MusicKit JS loaded lazily (same pattern as Leaflet in Phase 7)
+- [Phase 09-03]: exportAllUserData() uses write_json_to_path (Plan 01's general-purpose command), NOT export_play_history_to_path (different signature)
+- [Phase 09-02]: DiceBear v9 uses namespace import (import * as pixelArt) not named export — createAvatar expects Style<O> = { meta, create, schema }
+- [Phase 09-02]: Avatar seed derivation identical to palette.ts: top-5 taste tags by weight then alphabetical, joined with | — same data, different expression
+- [Phase 09-02]: tauri-plugin-oauth installed in Plan 02 to unblock Plan 03 Spotify import — plugin registration must precede use
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
@@ -281,6 +290,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-22
-Phase 09 Plan 01 complete. taste.db extended with user_identity (key/value), collections, and collection_items tables. 14 Tauri commands registered: get/set/get_all_identity, get/create/delete/rename_collection, get/add/remove collection items, is_in_collection, get_all_collection_items, save_base64_to_file, write_json_to_path. match_artists_batch as lib.rs free function (opens mercury.db via AppHandle). base64 = "0.22" in Cargo.toml. cargo check 0 errors, npm run check 0 errors.
-Stopped at: Completed 09-01-PLAN.md
-Next: Phase 09 Plan 02 — frontend collections state module
+Phase 09 Plan 03 complete. collectionsState $state module (collections.svelte.ts). Four import modules: Spotify PKCE OAuth (tauri-plugin-oauth), Last.fm paginated scrobbles, Apple MusicKit JS, CSV Artist column. exportAllUserData() via Promise.all + write_json_to_path. CollectionShelf.svelte item grid with remove button. 0 new TypeScript errors (1 pre-existing avatar.ts error from Plan 02 WIP logged to deferred-items.md).
+Stopped at: Completed 09-03-PLAN.md
+Next: Phase 09 Plan 04 — profile page UI

@@ -71,16 +71,16 @@
 
 ### Community Foundation (Phase 9)
 
-- [ ] **COMM-01**: Pseudonymous identity system — handles + generative pixel art avatars; no real names, no photos; local-first, no central account
-- [ ] **COMM-02**: Collections / shelves curation — multiple named shelves containing saved artists and releases; artists and release pages show Save to Shelf with inline creation
-- [ ] **COMM-03**: Generative avatar system — pixel art avatar driven by user taste data; in-app editor for manual customization; three layers (generative default, pixel editor, preset selection)
+- [x] **COMM-01**: Pseudonymous identity system — handles + generative pixel art avatars; no real names, no photos; local-first, no central account
+- [x] **COMM-02**: Collections / shelves curation — multiple named shelves containing saved artists and releases; artists and release pages show Save to Shelf with inline creation
+- [x] **COMM-03**: Generative avatar system — pixel art avatar driven by user taste data; in-app editor for manual customization; three layers (generative default, pixel editor, preset selection)
 
 ### Social
 
-- [ ] **SOCIAL-01**: Opt-in user profiles with collections (anonymous browsing by default)
-- [ ] **SOCIAL-02**: Shareable exports — generated artifacts (images, files) from the desktop app
-- [ ] **SOCIAL-03**: User-side tagging — listeners tag, sort, and group their own collections with personal taxonomy
-- [ ] **SOCIAL-04**: Taste Fingerprint — generated visual pattern unique to each user's collection
+- [x] **SOCIAL-01**: Opt-in user profiles with collections (anonymous browsing by default)
+- [x] **SOCIAL-02**: Shareable exports — generated artifacts (images, files) from the desktop app
+- [x] **SOCIAL-03**: User-side tagging — listeners tag, sort, and group their own collections with personal taxonomy
+- [x] **SOCIAL-04**: Taste Fingerprint — generated visual pattern unique to each user's collection
 - [ ] **SOCIAL-05**: Writing — users write reviews, recommendations, scene reports, personal essays inside the app
 - [ ] **SOCIAL-06**: Discussion threads around releases, artists, and scenes
 - [ ] **SOCIAL-07**: Embeddable collections — users can embed their collection on external websites
@@ -181,13 +181,13 @@
 | UX-02 | Phase 8 | Complete — 08-01 (palette.ts + engine.svelte.ts, OKLCH theming) |
 | UX-03 | Phase 8 | Complete |
 | UX-04 | Phase 8 | Complete |
-| COMM-01 | Phase 9 | Pending |
-| COMM-02 | Phase 9 | Pending |
-| COMM-03 | Phase 9 | Pending |
-| SOCIAL-01 | Phase 9 | Pending |
-| SOCIAL-02 | Phase 9 | Pending |
+| COMM-01 | Phase 9 | Complete |
+| COMM-02 | Phase 9 | Complete |
+| COMM-03 | Phase 9 | Complete |
+| SOCIAL-01 | Phase 9 | Complete |
+| SOCIAL-02 | Phase 9 | Complete |
 | SOCIAL-03 | Deferred | Deferred — per-item tagging not in Phase 9 scope; see Deferred table |
-| SOCIAL-04 | Phase 9 | Pending |
+| SOCIAL-04 | Phase 9 | Complete |
 | SOCIAL-05 | Phase 9 | Pending |
 | SOCIAL-06 | Phase 9 | Pending |
 | SOCIAL-07 | Phase 9 | Pending |

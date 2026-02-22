@@ -2765,3 +2765,81 @@ Plus `match_artists_batch` as a free function in lib.rs — opens mercury.db dir
 Added `base64 = "0.22"` to Cargo.toml for fingerprint PNG export.
 
 **Result:** `cargo check` exits 0, zero errors, zero warnings. `npm run check` 0 errors. All 14+ commands wired into invoke_handler.
+
+> **Commit 5927f15** (2026-02-22 23:06) — docs(09-01): complete Rust foundation plan — taste.db identity + collections
+
+> Files changed: 4
+
+---
+
+## Entry 034 — 2026-02-22 — Phase 09 Plan 02: DiceBear Avatar System
+
+### What was built
+
+Installed DiceBear packages and tauri-plugin-oauth, then created the full avatar module and two Svelte components.
+
+**Dependencies installed:**
+- `@dicebear/core@9.3.2` + `@dicebear/pixel-art@9.3.2` — generative pixel-art avatar from taste seed
+- `@fabianlars/tauri-plugin-oauth@2.0.0` (npm) + `tauri-plugin-oauth = "2"` (Cargo.toml) — pre-installed for Spotify PKCE in Plan 03
+- Plugin registered in lib.rs builder chain: `.plugin(tauri_plugin_oauth::init())`
+
+**Files created:**
+
+`src/lib/identity/avatar.ts` — the avatar module:
+- `tasteTagsToAvatarSeed()` — derives a deterministic seed string from top-5 taste tags (alphabetical sort, same pattern as palette.ts)
+- `generateAvatarSvg()` — produces DiceBear pixel-art SVG from a seed string
+- `loadAvatarState()` — loads mode + data from taste.db via invoke, falls back to web-safe defaults
+- `saveAvatarMode()` — persists mode + pixel data to taste.db via invoke
+- `avatarState` — Svelte 5 $state reactive object (mode, svgString, editedPixels, isLoaded)
+
+`src/lib/components/AvatarPreview.svelte` — renders active avatar:
+- `generative` mode: `{@html avatarState.svgString}` inside 128x128 div
+- `edited` mode: 16x16 CSS grid of colored pixel cells from `avatarState.editedPixels`
+- Fallback: "?" placeholder if not loaded
+
+`src/lib/components/AvatarEditor.svelte` — 16x16 pixel art editor:
+- Pencil tool, eraser tool, color picker, clear button
+- Mouse-drag paint via mousedown + mouseenter events
+- Save button calls `saveAvatarMode('edited', pixels)`
+
+**DiceBear v9 API deviation:** The plan specified `import { pixelArt }` but v9 exports `create` (not `pixelArt`). The `Style<O>` interface requires `{ meta, create, schema }`. Fixed with `import * as pixelArt` (namespace import).
+
+**Result:** `cargo check` exits 0. `npm run check` exits 0 (0 errors).
+
+---
+
+## Phase 09 Plan 03 — Collections + Import Modules — 2026-02-22
+
+### What Was Built
+
+Collections reactive state module + 4 import modules + full data export + CollectionShelf display component.
+
+**`src/lib/taste/collections.svelte.ts`** — The curation backbone. `collectionsState` is a `$state` object (requires `.svelte.ts` extension for the rune) with a `collections` array and `isLoaded` flag. Full CRUD: `loadCollections`, `createCollection`, `deleteCollection`, `renameCollection`, `getCollectionItems`, `addToCollection`, `removeFromCollection`, `isInAnyCollection`. All functions wrap Tauri invoke with try/catch — safe to import from web.
+
+**`src/lib/taste/import/`** — Four import modules for bringing existing listening history into Mercury:
+
+- **spotify.ts** — PKCE OAuth via `@fabianlars/tauri-plugin-oauth` (localhost server required, Spotify doesn't accept custom URI schemes). User provides their own Client ID. Returns top 50 artists from medium-term history.
+- **lastfm.ts** — Public API (no OAuth), just username + API key. Paginates at 200 tracks/page, capped at 50 pages (10k tracks) to prevent runaway imports. Aggregates play count by artist, returns top 200 sorted.
+- **apple.ts** — MusicKit JS loaded on demand (same lazy script pattern as Leaflet in Phase 7). User provides their own Developer Token. Returns saved library artists.
+- **csv.ts** — `parseCsvArtists()` accepts any CSV with Artist/Artist Name column. `readFileAsText()` for file input. Zero dependencies — native string processing.
+
+**`src/lib/taste/import/index.ts`** — `exportAllUserData()` collects everything via `Promise.all` (identity + collections + items + taste tags + anchors + favorites + play history) and writes via `invoke('write_json_to_path')`. Web fallback via blob download. Confirmed: uses `write_json_to_path` (Plan 01's general-purpose command), NOT `export_play_history_to_path` (which has a different signature).
+
+**`src/lib/components/CollectionShelf.svelte`** — Item grid with type badge + name + remove button. No follower counts, no like counts, no play counts — per the no-vanity-metrics hard constraint. Route fix: the plan had `'artist'` for both types in the href; corrected to `'release'` for release items.
+
+**Note:** `npm run check` shows 1 pre-existing error in `src/lib/identity/avatar.ts` (from Plan 02 WIP — DiceBear `pixelArt` import name mismatch). This error predates Plan 03. Our new files introduced 0 new errors. Logged to `deferred-items.md`.
+
+> **Commit 553d4b7** — feat(09-03): create collections.svelte.ts reactive state module
+> **Commit e77ffc8** — feat(09-03): create import modules, export function, and CollectionShelf component
+
+> **Commit 553d4b7** (2026-02-22 23:08) — feat(09-03): create collections.svelte.ts reactive state module
+> Files changed: 1
+
+> **Commit 2a3e4b7** (2026-02-22 23:08) — chore(09-02): install DiceBear and tauri-plugin-oauth dependencies
+> Files changed: 5
+
+> **Commit e77ffc8** (2026-02-22 23:11) — feat(09-03): create import modules, export function, and CollectionShelf component
+> Files changed: 6
+
+> **Commit 6def0f1** (2026-02-22 23:11) — feat(09-02): create avatar module and AvatarPreview + AvatarEditor components
+> Files changed: 3
