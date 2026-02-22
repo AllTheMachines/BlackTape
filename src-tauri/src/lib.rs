@@ -111,6 +111,7 @@ pub fn run() {
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_oauth::init())
         .setup(|app| {
             let app_data = app.path().app_data_dir().expect("failed to get app data dir");
             std::fs::create_dir_all(&app_data).ok();

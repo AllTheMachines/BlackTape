@@ -27,3 +27,4 @@ futures-util = "0.3"
 sqlite-vec = "0.1"
 zerocopy = { version = "0.8", features = ["derive"] }
 base64 = "0.22"
+tauri-plugin-oauth = "2"

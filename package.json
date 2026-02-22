@@ -33,6 +33,9 @@
 		"vite": "^7.3.1"
 	},
 	"dependencies": {
+		"@dicebear/core": "^9.3.2",
+		"@dicebear/pixel-art": "^9.3.2",
+		"@fabianlars/tauri-plugin-oauth": "^2.0.0",
 		"@sveltejs/adapter-static": "^3.0.10",
 		"@tauri-apps/api": "^2.10.1",
 		"@tauri-apps/plugin-dialog": "^2.6.0",
