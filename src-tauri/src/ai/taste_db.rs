@@ -1,3 +1,4 @@
+use base64::Engine;
 use rusqlite::{params, Connection};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -56,6 +57,31 @@ pub fn init_taste_db(app_data_dir: &Path) -> Result<Connection, String> {
         );
         CREATE INDEX IF NOT EXISTS idx_play_history_played_at ON play_history(played_at DESC);
         CREATE INDEX IF NOT EXISTS idx_play_history_artist ON play_history(artist_name);
+
+        CREATE TABLE IF NOT EXISTS user_identity (
+            key TEXT PRIMARY KEY,
+            value TEXT NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS collections (
+            id TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            created_at INTEGER NOT NULL,
+            updated_at INTEGER NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS collection_items (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            collection_id TEXT NOT NULL REFERENCES collections(id) ON DELETE CASCADE,
+            item_type TEXT NOT NULL,
+            item_mbid TEXT NOT NULL,
+            item_name TEXT NOT NULL,
+            item_slug TEXT,
+            added_at INTEGER NOT NULL,
+            UNIQUE(collection_id, item_type, item_mbid)
+        );
+        CREATE INDEX IF NOT EXISTS idx_collection_items_collection ON collection_items(collection_id);
+        CREATE INDEX IF NOT EXISTS idx_collection_items_mbid ON collection_items(item_mbid);
         ",
     )
     .map_err(|e| format!("Failed to create taste.db tables: {}", e))?;
@@ -505,4 +531,309 @@ pub fn export_play_history(
     .collect::<Result<Vec<_>, _>>()
     .map_err(|e| format!("Failed to collect for export: {}", e))?;
     serde_json::to_string(&records).map_err(|e| format!("Failed to serialize history: {}", e))
+}
+
+// --- User Identity CRUD ---
+
+/// Get a single identity value by key.
+#[tauri::command]
+pub fn get_identity_value(
+    key: String,
+    state: tauri::State<'_, TasteDbState>,
+) -> Result<Option<String>, String> {
+    let conn = state.0.lock().map_err(|e| format!("Lock error: {}", e))?;
+    let result = conn.query_row(
+        "SELECT value FROM user_identity WHERE key = ?1",
+        params![key],
+        |row| row.get::<_, String>(0),
+    );
+    match result {
+        Ok(value) => Ok(Some(value)),
+        Err(rusqlite::Error::QueryReturnedNoRows) => Ok(None),
+        Err(e) => Err(format!("Failed to get identity '{}': {}", key, e)),
+    }
+}
+
+/// Set (upsert) an identity value.
+#[tauri::command]
+pub fn set_identity_value(
+    key: String,
+    value: String,
+    state: tauri::State<'_, TasteDbState>,
+) -> Result<(), String> {
+    let conn = state.0.lock().map_err(|e| format!("Lock error: {}", e))?;
+    conn.execute(
+        "INSERT INTO user_identity (key, value) VALUES (?1, ?2)
+         ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+        params![key, value],
+    )
+    .map_err(|e| format!("Failed to set identity '{}': {}", key, e))?;
+    Ok(())
+}
+
+/// Get all identity key-value pairs as a HashMap.
+#[tauri::command]
+pub fn get_all_identity(
+    state: tauri::State<'_, TasteDbState>,
+) -> Result<HashMap<String, String>, String> {
+    let conn = state.0.lock().map_err(|e| format!("Lock error: {}", e))?;
+    let mut stmt = conn
+        .prepare("SELECT key, value FROM user_identity")
+        .map_err(|e| format!("Failed to prepare query: {}", e))?;
+    let map = stmt
+        .query_map([], |row| {
+            Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
+        })
+        .map_err(|e| format!("Failed to query identity: {}", e))?
+        .collect::<Result<HashMap<String, String>, _>>()
+        .map_err(|e| format!("Failed to collect identity: {}", e))?;
+    Ok(map)
+}
+
+// --- Collections CRUD ---
+
+#[derive(Debug, Serialize)]
+pub struct Collection {
+    pub id: String,
+    pub name: String,
+    pub created_at: i64,
+    pub updated_at: i64,
+}
+
+#[derive(Debug, Serialize)]
+pub struct CollectionItem {
+    pub id: i64,
+    pub collection_id: String,
+    pub item_type: String,
+    pub item_mbid: String,
+    pub item_name: String,
+    pub item_slug: Option<String>,
+    pub added_at: i64,
+}
+
+fn now_millis() -> i64 {
+    std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_millis() as i64
+}
+
+/// Get all collections ordered by creation time ascending.
+#[tauri::command]
+pub fn get_collections(
+    state: tauri::State<'_, TasteDbState>,
+) -> Result<Vec<Collection>, String> {
+    let conn = state.0.lock().map_err(|e| format!("Lock error: {}", e))?;
+    let mut stmt = conn
+        .prepare("SELECT id, name, created_at, updated_at FROM collections ORDER BY created_at ASC")
+        .map_err(|e| format!("Failed to prepare query: {}", e))?;
+    let collections = stmt
+        .query_map([], |row| {
+            Ok(Collection {
+                id: row.get(0)?,
+                name: row.get(1)?,
+                created_at: row.get(2)?,
+                updated_at: row.get(3)?,
+            })
+        })
+        .map_err(|e| format!("Failed to query collections: {}", e))?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|e| format!("Failed to collect collections: {}", e))?;
+    Ok(collections)
+}
+
+/// Create a new collection. Returns the new collection ID.
+#[tauri::command]
+pub fn create_collection(
+    name: String,
+    state: tauri::State<'_, TasteDbState>,
+) -> Result<String, String> {
+    let conn = state.0.lock().map_err(|e| format!("Lock error: {}", e))?;
+    let now = now_millis();
+    let id = format!("{}", now);
+    conn.execute(
+        "INSERT INTO collections (id, name, created_at, updated_at) VALUES (?1, ?2, ?3, ?4)",
+        params![id, name, now, now],
+    )
+    .map_err(|e| format!("Failed to create collection: {}", e))?;
+    Ok(id)
+}
+
+/// Delete a collection by ID. ON DELETE CASCADE removes all items.
+#[tauri::command]
+pub fn delete_collection(
+    id: String,
+    state: tauri::State<'_, TasteDbState>,
+) -> Result<(), String> {
+    let conn = state.0.lock().map_err(|e| format!("Lock error: {}", e))?;
+    conn.execute("DELETE FROM collections WHERE id = ?1", params![id])
+        .map_err(|e| format!("Failed to delete collection: {}", e))?;
+    Ok(())
+}
+
+/// Rename a collection.
+#[tauri::command]
+pub fn rename_collection(
+    id: String,
+    name: String,
+    state: tauri::State<'_, TasteDbState>,
+) -> Result<(), String> {
+    let conn = state.0.lock().map_err(|e| format!("Lock error: {}", e))?;
+    let now = now_millis();
+    conn.execute(
+        "UPDATE collections SET name = ?2, updated_at = ?3 WHERE id = ?1",
+        params![id, name, now],
+    )
+    .map_err(|e| format!("Failed to rename collection: {}", e))?;
+    Ok(())
+}
+
+// --- Collection Items CRUD ---
+
+/// Get all items in a collection, ordered by most recently added.
+#[tauri::command]
+pub fn get_collection_items(
+    collection_id: String,
+    state: tauri::State<'_, TasteDbState>,
+) -> Result<Vec<CollectionItem>, String> {
+    let conn = state.0.lock().map_err(|e| format!("Lock error: {}", e))?;
+    let mut stmt = conn
+        .prepare("SELECT id, collection_id, item_type, item_mbid, item_name, item_slug, added_at FROM collection_items WHERE collection_id = ?1 ORDER BY added_at DESC")
+        .map_err(|e| format!("Failed to prepare query: {}", e))?;
+    let items = stmt
+        .query_map(params![collection_id], |row| {
+            Ok(CollectionItem {
+                id: row.get(0)?,
+                collection_id: row.get(1)?,
+                item_type: row.get(2)?,
+                item_mbid: row.get(3)?,
+                item_name: row.get(4)?,
+                item_slug: row.get(5)?,
+                added_at: row.get(6)?,
+            })
+        })
+        .map_err(|e| format!("Failed to query collection items: {}", e))?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|e| format!("Failed to collect collection items: {}", e))?;
+    Ok(items)
+}
+
+/// Add an item to a collection. Silently ignores duplicates.
+#[tauri::command]
+pub fn add_collection_item(
+    collection_id: String,
+    item_type: String,
+    item_mbid: String,
+    item_name: String,
+    item_slug: Option<String>,
+    state: tauri::State<'_, TasteDbState>,
+) -> Result<(), String> {
+    let conn = state.0.lock().map_err(|e| format!("Lock error: {}", e))?;
+    let now = now_millis();
+    conn.execute(
+        "INSERT OR IGNORE INTO collection_items (collection_id, item_type, item_mbid, item_name, item_slug, added_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+        params![collection_id, item_type, item_mbid, item_name, item_slug, now],
+    )
+    .map_err(|e| format!("Failed to add collection item: {}", e))?;
+    conn.execute(
+        "UPDATE collections SET updated_at = ?2 WHERE id = ?1",
+        params![collection_id, now],
+    )
+    .map_err(|e| format!("Failed to update collection timestamp: {}", e))?;
+    Ok(())
+}
+
+/// Remove an item from a collection.
+#[tauri::command]
+pub fn remove_collection_item(
+    collection_id: String,
+    item_type: String,
+    item_mbid: String,
+    state: tauri::State<'_, TasteDbState>,
+) -> Result<(), String> {
+    let conn = state.0.lock().map_err(|e| format!("Lock error: {}", e))?;
+    conn.execute(
+        "DELETE FROM collection_items WHERE collection_id = ?1 AND item_type = ?2 AND item_mbid = ?3",
+        params![collection_id, item_type, item_mbid],
+    )
+    .map_err(|e| format!("Failed to remove collection item: {}", e))?;
+    Ok(())
+}
+
+/// Check which collections contain a given item. Returns list of collection IDs.
+#[tauri::command]
+pub fn is_in_collection(
+    item_type: String,
+    item_mbid: String,
+    state: tauri::State<'_, TasteDbState>,
+) -> Result<Vec<String>, String> {
+    let conn = state.0.lock().map_err(|e| format!("Lock error: {}", e))?;
+    let mut stmt = conn
+        .prepare("SELECT collection_id FROM collection_items WHERE item_type = ?1 AND item_mbid = ?2")
+        .map_err(|e| format!("Failed to prepare query: {}", e))?;
+    let ids = stmt
+        .query_map(params![item_type, item_mbid], |row| row.get::<_, String>(0))
+        .map_err(|e| format!("Failed to query collection membership: {}", e))?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|e| format!("Failed to collect collection IDs: {}", e))?;
+    Ok(ids)
+}
+
+/// Get all collection items across all collections, ordered by most recently added.
+/// Used for full JSON export.
+#[tauri::command]
+pub fn get_all_collection_items(
+    state: tauri::State<'_, TasteDbState>,
+) -> Result<Vec<CollectionItem>, String> {
+    let conn = state.0.lock().map_err(|e| format!("Lock error: {}", e))?;
+    let mut stmt = conn
+        .prepare("SELECT id, collection_id, item_type, item_mbid, item_name, item_slug, added_at FROM collection_items ORDER BY added_at DESC")
+        .map_err(|e| format!("Failed to prepare query: {}", e))?;
+    let items = stmt
+        .query_map([], |row| {
+            Ok(CollectionItem {
+                id: row.get(0)?,
+                collection_id: row.get(1)?,
+                item_type: row.get(2)?,
+                item_mbid: row.get(3)?,
+                item_name: row.get(4)?,
+                item_slug: row.get(5)?,
+                added_at: row.get(6)?,
+            })
+        })
+        .map_err(|e| format!("Failed to query all collection items: {}", e))?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|e| format!("Failed to collect all collection items: {}", e))?;
+    Ok(items)
+}
+
+// --- Fingerprint Export ---
+
+/// Save a base64-encoded PNG to an arbitrary file path (for fingerprint export).
+#[tauri::command]
+pub fn save_base64_to_file(path: String, data: String) -> Result<(), String> {
+    let bytes = base64::engine::general_purpose::STANDARD
+        .decode(&data)
+        .map_err(|e| format!("Failed to decode base64: {}", e))?;
+    std::fs::write(&path, bytes).map_err(|e| format!("Failed to write file '{}': {}", path, e))?;
+    Ok(())
+}
+
+// --- General-purpose JSON file write ---
+
+/// Write an arbitrary JSON string to a file path (for full-data export).
+#[tauri::command]
+pub fn write_json_to_path(path: String, json: String) -> Result<(), String> {
+    std::fs::write(&path, json.as_bytes())
+        .map_err(|e| format!("Failed to write JSON to '{}': {}", path, e))?;
+    Ok(())
+}
+
+// --- Batch artist matching ---
+
+#[derive(Debug, Serialize)]
+pub struct MatchResult {
+    pub name: String,
+    pub artist_mbid: Option<String>,
+    pub artist_slug: Option<String>,
 }
