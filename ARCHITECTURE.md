@@ -19,10 +19,11 @@ A comprehensive guide to how Mercury works, how its parts connect, and how data 
 11. [Discovery Engine](#discovery-engine)
 12. [Knowledge Base](#knowledge-base)
 13. [Underground Aesthetic](#underground-aesthetic)
-14. [Build System](#build-system)
-15. [Configuration Reference](#configuration-reference)
-16. [AI Subsystem](#ai-subsystem)
-17. [Module Dependency Map](#module-dependency-map)
+14. [Community Foundation](#community-foundation-phase-9)
+15. [Build System](#build-system)
+16. [Configuration Reference](#configuration-reference)
+17. [AI Subsystem](#ai-subsystem)
+18. [Module Dependency Map](#module-dependency-map)
 
 ---
 
@@ -958,6 +959,60 @@ All changes apply immediately (live preview) and persist to `taste.db` via the e
 
 ---
 
+## Community Foundation (Phase 9)
+
+### Identity System
+
+User identity is pseudonymous and local-first — no central server, no account creation required. Identity is optional and prompted, not required.
+
+**Data store:** `taste.db` (extended with new tables in Phase 9)
+
+**New tables:**
+- `user_identity` — key/value store for handle, avatar_mode, avatar_data, avatar_seed
+- `collections` — named shelves (id, name, created_at, updated_at)
+- `collection_items` — items in shelves (collection_id, item_type artist|release, item_mbid, item_name, item_slug, added_at). UNIQUE constraint prevents duplicates.
+
+**Avatar system:** Three modes stored in `user_identity.avatar_mode`:
+- `generative` — DiceBear pixel-art SVG from taste seed (top 5 tags alphabetically joined, same djb2 approach as taste theming)
+- `edited` — 16×16 pixel grid stored as JSON array in `user_identity.avatar_data`
+- `preset` — reserved for future bundled presets
+
+### Collections (Shelves)
+
+Collections contain artists and releases (not tracks — shelves are for curation, not playback). Artists and releases can be saved from their respective pages via the Save to Shelf dropdown. Items stored with denormalized `item_name` and `item_slug` to avoid per-item DB lookups on collection display.
+
+**Rust commands:** `get_collections`, `create_collection`, `delete_collection`, `rename_collection`, `get_collection_items`, `add_collection_item`, `remove_collection_item`, `is_in_collection`, `get_all_collection_items`
+
+### Taste Fingerprint
+
+A constellation SVG generated from the user's top 15 taste tags and top 10 favorite artists using D3 force simulation (headless tick(300) + stop — same pattern as StyleMap and GenreGraph). Node positions initialized in a circle before simulation for determinism — same taste data always produces the same layout. Exportable as PNG via canvas.toDataURL + save_base64_to_file Tauri command.
+
+### Import Pipelines
+
+Four import sources, all Tauri-only:
+- **Spotify** — PKCE OAuth via `@fabianlars/tauri-plugin-oauth` (localhost redirect server). Returns top 50 artists. User provides their own Spotify Client ID.
+- **Last.fm** — Public API, API key only. Paginates `user.getRecentTracks` at 200/page, caps at 50 pages. Returns artists by play count.
+- **Apple Music** — MusicKit JS (loaded on demand, same lazy pattern as Leaflet). User provides Developer Token (JWT). Returns saved library artists.
+- **CSV** — Client-side parse of any CSV with Artist column. Native string processing.
+
+Import results are matched to Mercury index via `match_artists_batch` Rust command (single IPC round-trip for N artist names). Matched artists are added to a new "Imported from [Platform]" collection.
+
+### Data Export
+
+`exportAllUserData()` collects all user data (identity, collections, items, taste tags, anchors, favorites, play history) via Promise.all and writes to a JSON file via `write_json_to_path` Tauri command (accepts `path: String, json: String`). Full re-import not yet implemented (Phase 10+).
+
+### Anti-Patterns (Community Foundation)
+
+| Anti-Pattern | Correct Approach |
+|---|---|
+| Separate DB for identity/collections | All user data in taste.db — one DB, clean backup story |
+| Central uniqueness enforcement for handles | No central server — handles can collide, that's fine |
+| Animating D3 force simulation | Headless tick(300) + stop — no reactive on('tick') updates |
+| Persisting OAuth access tokens | Session-only in $state — tokens expire, don't store them |
+| Loading MusicKit JS unconditionally | Lazy script injection on import start only |
+
+---
+
 ## Build System
 
 ### Web Build
@@ -1261,4 +1316,4 @@ Tags tracked by source: `library`, `favorite`, `manual`. Recomputation clears co
 
 ---
 
-*Last updated: 2026-02-21 — After Phase 8 Plan 4 (Underground Aesthetic — Settings, Docs) completion.*
+*Last updated: 2026-02-22 — After Phase 9 Plan 6 (Community Foundation — nav link, docs) completion.*

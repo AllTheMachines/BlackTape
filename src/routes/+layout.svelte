@@ -108,6 +108,7 @@
 			<a href="/crate" class="nav-link">Dig</a>
 			<a href="/library" class="nav-link">Library</a>
 			<a href="/explore" class="nav-link">Explore</a>
+			<a href="/profile" class="nav-link" class:active={$page.url.pathname === '/profile'}>Profile</a>
 			<a href="/settings" class="nav-link">Settings</a>
 			<a href="/about" class="nav-link">About</a>
 		</nav>

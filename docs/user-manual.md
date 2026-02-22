@@ -22,8 +22,13 @@ Mercury is a music discovery engine that indexes all music from open databases a
     - [Layout Templates](#layout-templates)
     - [Theme Modes](#theme-modes)
     - [Streaming Preference](#streaming-preference)
-13. [Web vs Desktop](#web-vs-desktop)
-14. [Troubleshooting](#troubleshooting)
+13. [Community Foundation](#community-foundation)
+    - [Your Profile](#your-profile)
+    - [Shelves (Collections)](#shelves-collections)
+    - [Import Listening History](#import-listening-history)
+    - [Export Your Data](#export-your-data)
+14. [Web vs Desktop](#web-vs-desktop)
+15. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -560,6 +565,60 @@ Setting "No preference" restores the default order (Bandcamp → Spotify → Sou
 
 ---
 
+## Community Foundation
+
+*Desktop app only.*
+
+### Your Profile
+
+Your profile is your musical identity inside Mercury. It's optional and local — no account, no sign-up, no central server.
+
+**Access:** Desktop app → Profile (in the top navigation)
+
+**Handle:** A name you choose for yourself. No uniqueness enforcement — Mercury is local-first. Your handle appears on your profile page only.
+
+**Avatar:** Automatically generated from your taste profile (the same tags that color your theme). To customize: Settings → Identity → Edit Avatar. Draw pixel art on a 16×16 grid. Switch back to "Generative" any time.
+
+**Taste Fingerprint:** A constellation visualization of your musical taste — your top tags and favorite artists arranged like a star map of your music brain. Updates automatically as your taste evolves. Export it as a PNG to share.
+
+### Shelves (Collections)
+
+Shelves are named collections of artists and releases — like a real record shelf, not a playlist.
+
+**Create a shelf:** Profile page → "+ New Shelf" or Settings → Collections
+
+**Save to a shelf:** On any artist or release page, click "Save to Shelf" and select a shelf (or create one inline). The button shows "✓ Saved" once an item is on any shelf.
+
+**View a shelf:** Profile page → click a shelf name to expand it. Remove items with the × button.
+
+**Ideas for shelf names:** "Favorites", "Want to explore", "Rainy day", "Stuff from [a friend]", "2024 finds"
+
+### Import Listening History
+
+Bring your existing listening history into Mercury from other services.
+
+**Access:** Settings → Import Listening History
+
+**Spotify:** Requires a Spotify Client ID (register a free app at developer.spotify.com). Mercury imports your top 50 artists from the past 6 months. Your Client ID is never stored.
+
+**Last.fm:** Requires your Last.fm username and an API key (create one free at last.fm/api). Mercury imports your full scrobble history (up to 10,000 tracks). Aggregated by artist play count.
+
+**Apple Music:** Requires an Apple Developer Token (MusicKit key from the Apple Developer portal — requires $99/year Apple Developer membership). Imports your saved library artists. This is an advanced option.
+
+**CSV:** Upload any CSV file with an "Artist" column. Works with Last.fm export CSVs and generic artist lists.
+
+After import, matched artists are added to a new shelf named "Imported from [Platform]".
+
+### Export Your Data
+
+**Access:** Settings → Your Data → Export All Data
+
+Mercury exports everything: your handle, avatar, all shelves and their contents, your taste profile, and your listening history. Saved as a single JSON file.
+
+Your data is yours. Mercury will never hold it hostage.
+
+---
+
 ## Web vs Desktop
 
 | Feature | Web | Desktop |
@@ -585,6 +644,10 @@ Setting "No preference" restores the default order (Bandcamp → Spotify → Sou
 | Panel workspace (Cockpit, Focus, Minimal layouts) | No | Yes |
 | Custom theme (taste-based or manual hue) | No | Yes |
 | Streaming platform preference | No | Yes |
+| Profile (handle, avatar, Taste Fingerprint) | No | Yes |
+| Shelves (save artists and releases) | No | Yes |
+| Import listening history (Spotify, Last.fm, Apple, CSV) | No | Yes |
+| Export all user data | No | Yes |
 | Requires internet for artist pages | Yes | Yes* |
 
 *Artist pages fetch releases and links from MusicBrainz, which requires internet. Search works offline using the local database.
@@ -671,4 +734,4 @@ Local model processing time depends on your hardware. The generation model (Qwen
 
 ---
 
-*Mercury v0.1.0 — Last updated: 2026-02-21 (Phase 8: Underground Aesthetic — workspace layout, taste theming, streaming preference)*
+*Mercury v0.1.0 — Last updated: 2026-02-22 (Phase 9: Community Foundation — profile, shelves, import/export, Taste Fingerprint)*
