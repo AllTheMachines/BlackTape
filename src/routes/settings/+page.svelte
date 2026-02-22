@@ -16,8 +16,171 @@
 	let tauriMode = $state(false);
 	let newTemplateName = $state('');
 
-	onMount(() => {
+	// ─── Identity state ───────────────────────────────────────────────────────────
+	let identityHandle = $state('');
+	let avatarModeLocal = $state<'generative' | 'edited'>('generative');
+
+	// ─── Import state (session-only — never persisted to disk) ───────────────────
+	let spotifyClientId = $state('');
+	let spotifyStatus = $state('');
+
+	let lastfmUsername = $state('');
+	let lastfmApiKey = $state('');
+	let lastfmStatus = $state('');
+
+	let appleDeveloperToken = $state('');
+	let appleStatus = $state('');
+
+	let csvStatus = $state('');
+
+	// ─── Export state ─────────────────────────────────────────────────────────────
+	let exportStatus = $state('');
+
+	async function saveIdentityHandle() {
+		const { invoke } = await import('@tauri-apps/api/core');
+		await invoke('set_identity_value', { key: 'handle', value: identityHandle });
+	}
+
+	async function handleAvatarModeChange(mode: 'generative' | 'edited') {
+		avatarModeLocal = mode;
+		const { saveAvatarMode } = await import('$lib/identity/avatar');
+		await saveAvatarMode(mode);
+	}
+
+	// ─── Import helpers ───────────────────────────────────────────────────────────
+
+	/** Match artist names to Mercury MBIDs via Rust, add to a named collection. */
+	async function matchAndImport(platformName: string, artistNames: string[]): Promise<string> {
+		if (artistNames.length === 0) return 'No artists found.';
+		const { invoke } = await import('@tauri-apps/api/core');
+		const { createCollection, addToCollection } = await import('$lib/taste/collections.svelte');
+
+		type MatchResult = { name: string; mbid: string | null; slug: string | null };
+		let matched: MatchResult[] = [];
+		try {
+			matched = await invoke<MatchResult[]>('match_artists_batch', { names: artistNames });
+		} catch {
+			return 'match_artists_batch not available — import aborted.';
+		}
+
+		const hits = matched.filter((m) => m.mbid !== null);
+		if (hits.length === 0) return `Matched 0 / ${artistNames.length} artists.`;
+
+		const collectionName = `Imported from ${platformName}`;
+		const collectionId = await createCollection(collectionName);
+		if (!collectionId) return 'Could not create collection.';
+
+		for (const hit of hits) {
+			await addToCollection(collectionId, 'artist', hit.mbid!, hit.name, hit.slug ?? undefined);
+		}
+		return `Matched ${hits.length} / ${artistNames.length} artists — saved to "${collectionName}".`;
+	}
+
+	async function handleSpotifyImport() {
+		spotifyStatus = 'Connecting to Spotify...';
+		try {
+			const { importFromSpotify } = await import('$lib/taste/import/spotify');
+			const artists = await importFromSpotify(spotifyClientId.trim());
+			spotifyStatus = 'Matching artists...';
+			spotifyStatus = await matchAndImport('Spotify', artists.map((a) => a.name));
+		} catch (e: unknown) {
+			spotifyStatus = `Error: ${e instanceof Error ? e.message : String(e)}`;
+		}
+	}
+
+	async function handleLastFmImport() {
+		lastfmStatus = 'Fetching scrobbles...';
+		try {
+			const { importFromLastFm } = await import('$lib/taste/import/lastfm');
+			const artists = await importFromLastFm(
+				lastfmUsername.trim(),
+				lastfmApiKey.trim(),
+				(page, total) => {
+					lastfmStatus = `Fetching page ${page} / ${total}...`;
+				}
+			);
+			lastfmStatus = 'Matching artists...';
+			lastfmStatus = await matchAndImport('Last.fm', artists.map((a) => a.name));
+		} catch (e: unknown) {
+			lastfmStatus = `Error: ${e instanceof Error ? e.message : String(e)}`;
+		}
+	}
+
+	async function handleAppleImport() {
+		appleStatus = 'Authorizing with Apple Music...';
+		try {
+			const { importFromAppleMusic } = await import('$lib/taste/import/apple');
+			const artists = await importFromAppleMusic(appleDeveloperToken.trim());
+			appleStatus = 'Matching artists...';
+			appleStatus = await matchAndImport('Apple Music', artists.map((a) => a.name));
+		} catch (e: unknown) {
+			appleStatus = `Error: ${e instanceof Error ? e.message : String(e)}`;
+		}
+	}
+
+	function readFileAsText(file: File): Promise<string> {
+		return new Promise((resolve, reject) => {
+			const reader = new FileReader();
+			reader.onload = (e) => resolve(e.target?.result as string ?? '');
+			reader.onerror = () => reject(new Error('Failed to read file'));
+			reader.readAsText(file);
+		});
+	}
+
+	function parseCsvArtists(csvText: string): string[] {
+		const lines = csvText.split('\n');
+		if (lines.length === 0) return [];
+		const header = lines[0].split(',').map((h) => h.trim().toLowerCase().replace(/"/g, ''));
+		const artistIdx = header.findIndex((h) => h === 'artist');
+		if (artistIdx === -1) return [];
+		const names = new Set<string>();
+		for (let i = 1; i < lines.length; i++) {
+			const cols = lines[i].split(',');
+			const name = cols[artistIdx]?.trim().replace(/"/g, '');
+			if (name) names.add(name);
+		}
+		return [...names];
+	}
+
+	async function handleCsvImport(e: Event) {
+		const input = e.target as HTMLInputElement;
+		const file = input.files?.[0];
+		if (!file) return;
+		csvStatus = 'Reading file...';
+		try {
+			const text = await readFileAsText(file);
+			const names = parseCsvArtists(text);
+			if (names.length === 0) {
+				csvStatus = 'No "Artist" column found in CSV.';
+				return;
+			}
+			csvStatus = `Parsed ${names.length} artists — matching...`;
+			csvStatus = await matchAndImport('CSV', names);
+		} catch (err: unknown) {
+			csvStatus = `Error: ${err instanceof Error ? err.message : String(err)}`;
+		}
+	}
+
+	async function handleExportAll() {
+		exportStatus = 'Exporting...';
+		try {
+			const { exportAllUserData } = await import('$lib/taste/import/index');
+			await exportAllUserData();
+			exportStatus = 'Export complete.';
+		} catch (e: unknown) {
+			exportStatus = `Error: ${e instanceof Error ? e.message : String(e)}`;
+		}
+	}
+
+	onMount(async () => {
 		tauriMode = isTauri();
+		if (tauriMode) {
+			const { invoke } = await import('@tauri-apps/api/core');
+			identityHandle = (await invoke<string | null>('get_identity_value', { key: 'handle' })) ?? '';
+			const { loadAvatarState, avatarState } = await import('$lib/identity/avatar');
+			await loadAvatarState(tasteProfile.tags);
+			avatarModeLocal = (avatarState.mode === 'edited' ? 'edited' : 'generative') as 'generative' | 'edited';
+		}
 	});
 
 	// ─── Theme handlers ──────────────────────────────────────────────────────────
@@ -222,6 +385,176 @@
 					<option value="soundcloud">SoundCloud</option>
 					<option value="youtube">YouTube</option>
 				</select>
+			</div>
+		</div>
+
+		<!-- Identity -->
+		<div class="settings-section">
+			<h2>Identity</h2>
+			<p class="section-desc">
+				Set your handle and choose how your avatar is generated.
+			</p>
+
+			<div class="setting-row">
+				<label for="handle-input" class="setting-label">Handle</label>
+				<input
+					id="handle-input"
+					type="text"
+					class="text-input"
+					bind:value={identityHandle}
+					placeholder="@yourhandle"
+					onblur={saveIdentityHandle}
+					maxlength={40}
+				/>
+			</div>
+
+			<div class="setting-row">
+				<span class="setting-label">Avatar</span>
+				<div class="btn-group">
+					<button
+						class="btn-toggle"
+						class:active={avatarModeLocal === 'generative'}
+						onclick={() => handleAvatarModeChange('generative')}
+					>Generative</button>
+					<button
+						class="btn-toggle"
+						class:active={avatarModeLocal === 'edited'}
+						onclick={() => handleAvatarModeChange('edited')}
+					>Custom</button>
+				</div>
+			</div>
+
+			<div class="setting-row">
+				<a href="/profile" class="profile-link">View your full profile →</a>
+			</div>
+		</div>
+
+		<!-- Import Listening History -->
+		<div class="settings-section">
+			<h2>Import Listening History</h2>
+			<p class="section-desc">
+				Import your top artists from another service to seed your shelves. Credentials are session-only and never saved to disk.
+			</p>
+
+			<!-- Spotify -->
+			<div class="import-card">
+				<div class="import-card-header">
+					<span class="import-platform">Spotify</span>
+				</div>
+				<p class="import-card-desc">Requires a Spotify Client ID from <a href="https://developer.spotify.com" target="_blank" rel="noopener noreferrer">developer.spotify.com</a>. You must add <code>http://localhost</code> as a redirect URI in your app settings.</p>
+				<div class="import-card-fields">
+					<input
+						type="text"
+						class="text-input"
+						bind:value={spotifyClientId}
+						placeholder="Client ID"
+					/>
+				</div>
+				<div class="import-card-actions">
+					<button
+						class="import-btn"
+						onclick={handleSpotifyImport}
+						disabled={!spotifyClientId.trim()}
+					>Import from Spotify</button>
+					{#if spotifyStatus}
+						<span class="import-status">{spotifyStatus}</span>
+					{/if}
+				</div>
+			</div>
+
+			<!-- Last.fm -->
+			<div class="import-card">
+				<div class="import-card-header">
+					<span class="import-platform">Last.fm</span>
+				</div>
+				<p class="import-card-desc">Requires your Last.fm username and an API key (<a href="https://www.last.fm/api/account/create" target="_blank" rel="noopener noreferrer">last.fm/api/account/create</a>).</p>
+				<div class="import-card-fields">
+					<input
+						type="text"
+						class="text-input"
+						bind:value={lastfmUsername}
+						placeholder="Username"
+					/>
+					<input
+						type="text"
+						class="text-input"
+						bind:value={lastfmApiKey}
+						placeholder="API Key"
+					/>
+				</div>
+				<div class="import-card-actions">
+					<button
+						class="import-btn"
+						onclick={handleLastFmImport}
+						disabled={!lastfmUsername.trim() || !lastfmApiKey.trim()}
+					>Import from Last.fm</button>
+					{#if lastfmStatus}
+						<span class="import-status">{lastfmStatus}</span>
+					{/if}
+				</div>
+			</div>
+
+			<!-- Apple Music -->
+			<div class="import-card">
+				<div class="import-card-header">
+					<span class="import-platform">Apple Music</span>
+					<span class="badge-advanced">Advanced</span>
+				</div>
+				<p class="import-card-desc">Requires an Apple Developer Token (MusicKit key). See <a href="https://developer.apple.com/documentation/musickit" target="_blank" rel="noopener noreferrer">Apple MusicKit docs</a> for setup. Loads MusicKit JS on demand.</p>
+				<div class="import-card-fields">
+					<input
+						type="text"
+						class="text-input"
+						bind:value={appleDeveloperToken}
+						placeholder="Developer Token"
+					/>
+				</div>
+				<div class="import-card-actions">
+					<button
+						class="import-btn"
+						onclick={handleAppleImport}
+						disabled={!appleDeveloperToken.trim()}
+					>Import from Apple Music</button>
+					{#if appleStatus}
+						<span class="import-status">{appleStatus}</span>
+					{/if}
+				</div>
+			</div>
+
+			<!-- CSV -->
+			<div class="import-card">
+				<div class="import-card-header">
+					<span class="import-platform">CSV</span>
+				</div>
+				<p class="import-card-desc">Upload any CSV with an <code>Artist</code> column. Works with Last.fm CSV exports, Spotify data downloads, and custom spreadsheets.</p>
+				<div class="import-card-actions">
+					<label class="import-file-label">
+						Choose CSV file
+						<input
+							type="file"
+							accept=".csv"
+							onchange={handleCsvImport}
+							class="import-file-input"
+						/>
+					</label>
+					{#if csvStatus}
+						<span class="import-status">{csvStatus}</span>
+					{/if}
+				</div>
+			</div>
+		</div>
+
+		<!-- Your Data -->
+		<div class="settings-section">
+			<h2>Your Data</h2>
+			<p class="section-desc">
+				Exports your identity, shelves, taste profile, and listening history as a single JSON file. You own your data.
+			</p>
+			<div class="export-row">
+				<button class="export-btn" onclick={handleExportAll}>Export All Data</button>
+				{#if exportStatus}
+					<span class="import-status">{exportStatus}</span>
+				{/if}
 			</div>
 		</div>
 
@@ -536,6 +869,216 @@
 	.save-template-btn:disabled {
 		opacity: 0.4;
 		cursor: not-allowed;
+	}
+
+	/* ─── Text input (shared) ──────────────────────────────────────────── */
+
+	.text-input {
+		background: var(--bg-elevated);
+		color: var(--text-primary);
+		border: 1px solid var(--border-default);
+		padding: var(--space-xs) var(--space-sm);
+		border-radius: var(--input-radius, 4px);
+		font-size: 0.85rem;
+		outline: none;
+		transition: border-color 0.15s;
+		min-width: 200px;
+	}
+
+	.text-input:focus {
+		border-color: var(--border-hover);
+	}
+
+	.text-input::placeholder {
+		color: var(--text-muted);
+	}
+
+	/* ─── Avatar mode toggle ────────────────────────────────────────────── */
+
+	.btn-group {
+		display: flex;
+		gap: 0;
+		border: 1px solid var(--border-default);
+		border-radius: var(--input-radius, 4px);
+		overflow: hidden;
+	}
+
+	.btn-toggle {
+		background: var(--bg-elevated);
+		color: var(--text-secondary);
+		border: none;
+		padding: var(--space-xs) var(--space-sm);
+		font-size: 0.8rem;
+		cursor: pointer;
+		transition: background 0.15s, color 0.15s;
+	}
+
+	.btn-toggle + .btn-toggle {
+		border-left: 1px solid var(--border-default);
+	}
+
+	.btn-toggle.active {
+		background: var(--link-color);
+		color: #fff;
+	}
+
+	/* ─── Profile link ──────────────────────────────────────────────────── */
+
+	.profile-link {
+		font-size: 0.8rem;
+		color: var(--link-color);
+		text-decoration: none;
+	}
+
+	.profile-link:hover {
+		text-decoration: underline;
+	}
+
+	/* ─── Import cards ──────────────────────────────────────────────────── */
+
+	.import-card {
+		background: var(--bg-elevated);
+		border: 1px solid var(--border-subtle);
+		border-radius: var(--card-radius);
+		padding: var(--space-md);
+		margin-top: var(--space-md);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-xs);
+	}
+
+	.import-card-header {
+		display: flex;
+		align-items: center;
+		gap: var(--space-sm);
+	}
+
+	.import-platform {
+		font-size: 0.9rem;
+		font-weight: 600;
+		color: var(--text-primary);
+	}
+
+	.badge-advanced {
+		font-size: 0.65rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		padding: 2px 6px;
+		border-radius: 3px;
+		background: var(--bg-hover);
+		color: var(--text-muted);
+		border: 1px solid var(--border-subtle);
+	}
+
+	.import-card-desc {
+		font-size: 0.78rem;
+		color: var(--text-muted);
+		line-height: 1.5;
+		margin: 0;
+	}
+
+	.import-card-desc a {
+		color: var(--link-color);
+		text-decoration: none;
+	}
+
+	.import-card-desc a:hover {
+		text-decoration: underline;
+	}
+
+	.import-card-desc code {
+		font-size: 0.75rem;
+		background: var(--bg-hover);
+		padding: 1px 4px;
+		border-radius: 3px;
+		color: var(--text-secondary);
+	}
+
+	.import-card-fields {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-xs);
+	}
+
+	.import-card-actions {
+		display: flex;
+		align-items: center;
+		gap: var(--space-sm);
+		flex-wrap: wrap;
+	}
+
+	.import-btn {
+		background: var(--bg-hover);
+		color: var(--text-primary);
+		border: 1px solid var(--border-default);
+		padding: var(--space-xs) var(--space-sm);
+		border-radius: var(--input-radius, 4px);
+		cursor: pointer;
+		font-size: 0.8rem;
+		white-space: nowrap;
+		transition: border-color 0.15s, background 0.15s;
+	}
+
+	.import-btn:hover:not(:disabled) {
+		border-color: var(--border-hover);
+		background: var(--bg-elevated);
+	}
+
+	.import-btn:disabled {
+		opacity: 0.4;
+		cursor: not-allowed;
+	}
+
+	.import-file-label {
+		background: var(--bg-hover);
+		color: var(--text-primary);
+		border: 1px solid var(--border-default);
+		padding: var(--space-xs) var(--space-sm);
+		border-radius: var(--input-radius, 4px);
+		cursor: pointer;
+		font-size: 0.8rem;
+		white-space: nowrap;
+		transition: border-color 0.15s, background 0.15s;
+	}
+
+	.import-file-label:hover {
+		border-color: var(--border-hover);
+		background: var(--bg-elevated);
+	}
+
+	.import-file-input {
+		display: none;
+	}
+
+	.import-status {
+		font-size: 0.78rem;
+		color: var(--text-secondary);
+		font-style: italic;
+	}
+
+	/* ─── Export row ────────────────────────────────────────────────────── */
+
+	.export-row {
+		display: flex;
+		align-items: center;
+		gap: var(--space-sm);
+	}
+
+	.export-btn {
+		background: var(--bg-hover);
+		color: var(--text-primary);
+		border: 1px solid var(--border-default);
+		padding: var(--space-sm) var(--space-md);
+		border-radius: var(--input-radius, 4px);
+		cursor: pointer;
+		font-size: 0.85rem;
+		transition: border-color 0.15s, background 0.15s;
+	}
+
+	.export-btn:hover {
+		border-color: var(--border-hover);
+		background: var(--bg-elevated);
 	}
 
 	/* ─── Streaming preference ─────────────────────────────────────────── */
