@@ -2896,3 +2896,44 @@ No vanity metrics anywhere on the page. No follower counts, like counts, play co
 
 > **Commit 4e624d6** (2026-02-22 23:20) — feat(09-05): expand Settings page with Identity, Import, and Export sections
 > Files changed: 1
+
+> **Commit 1037c45** (2026-02-22 23:20) — docs(09-04): complete profile page + TasteFingerprint plan
+> Files changed: 4
+
+## Phase 09 Plan 05 — Collections UI + Settings Expansion — 2026-02-22
+
+Collections only matter when users can actually save things. Plan 05 wires the Save to Shelf buttons onto the artist and release discovery pages — the primary entry points during music discovery. Settings gets the Identity, Import, and Export sections that make the account meaningful.
+
+### Save to Shelf Buttons
+
+Both artist and release pages now have a "Save to Shelf" button in their header areas, visible only in Tauri context. The button:
+
+- Shows "✓ Saved" with accent border if the item is already in any collection (checked on mount via `isInAnyCollection`)
+- Opens a dropdown listing all user shelves, with a checkmark on shelves that already contain this item
+- Clicking a shelf adds the item immediately via `addToCollection` and closes the dropdown
+- Bottom of dropdown: "New shelf..." input — pressing Enter creates the collection and adds the item inline, no navigation required
+
+The artist page button sits in the `artist-name-row` alongside the FavoriteButton and UniquenessScore. The release page button is in the `action-rows` area below BuyOnBar.
+
+**Implementation note:** `collectionsState.collections` cannot be directly referenced in Svelte template from a dynamic import — solved by adding a `shelfCollections` local `$state` mirror, assigned after load and updated after inline creation.
+
+### Settings: Identity
+
+New section before AiSettings. Handle field saves on blur via `set_identity_value`. Avatar mode toggle (Generative / Custom) calls `saveAvatarMode()`. Link to /profile. Both values loaded from `taste.db` on mount.
+
+### Settings: Import Listening History
+
+Four platform cards:
+
+- **Spotify**: Client ID text field, starts PKCE OAuth flow via `importFromSpotify()`, progress status line
+- **Last.fm**: Username + API key, paginated scrobble fetch via `importFromLastFm()` with per-page status updates
+- **Apple Music**: Developer Token field (Advanced badge), `importFromAppleMusic()` loads MusicKit JS on demand
+- **CSV**: File picker, `parseCsvArtists()` extracts Artist column, same `matchAndImport()` flow
+
+All credentials are session-only `$state` — no `set_identity_value` calls for OAuth tokens or API keys. A shared `matchAndImport()` helper calls `match_artists_batch` Rust command, creates "Imported from [Platform]" collection, adds all matched artists, returns "Matched N / M artists" summary.
+
+### Settings: Your Data
+
+Single "Export All Data" button calls `exportAllUserData()` from `$lib/taste/import/index.ts` — full JSON dump of identity, shelves, items, taste profile, and play history.
+
+**Result:** `npm run check` — 0 errors. `npm run build` — exits 0.

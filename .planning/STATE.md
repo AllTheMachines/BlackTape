@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Phase 09 in progress. Plans 01+02+03+04 complete: taste.db schema + Tauri commands (Plan 01), DiceBear avatar module + AvatarPreview/AvatarEditor + tauri-plugin-oauth (Plan 02), collections reactive state + import modules + CollectionShelf (Plan 03), /profile page + TasteFingerprint D3 constellation (Plan 04).
+**Current focus:** Phase 09 in progress. Plans 01+02+03+04+05 complete: taste.db schema + Tauri commands (Plan 01), DiceBear avatar module + AvatarPreview/AvatarEditor + tauri-plugin-oauth (Plan 02), collections reactive state + import modules + CollectionShelf (Plan 03), /profile page + TasteFingerprint D3 constellation (Plan 04), Save to Shelf UI on artist/release pages + Settings Identity/Import/Export (Plan 05).
 
 ## Current Position
 
 Phase: 09-community-foundation of 15 (Community Foundation — In Progress)
-Current Plan: 09-04 (complete)
-Status: Phase 09 Plans 01+02+03+04 complete — taste.db schema (01), DiceBear avatar system (02), collections + imports (03), profile page + TasteFingerprint (04). 2026-02-22.
-Last activity: 2026-02-22 — 09-04 complete. TasteFingerprint.svelte (D3 force constellation, headless tick(300)+stop, deterministic circle init, curation signal from collections, PNG export via save_base64_to_file). /profile page (Tauri-gated, handle + AvatarPreview + AvatarEditor toggle + TasteFingerprint + expandable shelves). npm run check 0 errors, npm run build exits 0.
+Current Plan: 09-05 (complete)
+Status: Phase 09 Plans 01+02+03+04+05 complete — taste.db schema (01), DiceBear avatar system (02), collections + imports (03), profile page + TasteFingerprint (04), collections UI + settings expansion (05). 2026-02-22.
+Last activity: 2026-02-22 — 09-05 complete. Save to Shelf buttons on artist page (artist-name-row) + release page (action-rows below BuyOnBar). Settings page expanded: Identity (handle + avatar mode toggle), Import Listening History (Spotify/Last.fm/Apple Music/CSV cards with match_artists_batch), Export (exportAllUserData button). npm run check 0 errors, npm run build exits 0.
 
-Progress: [████░░░░░░] 4/6 plans complete (Phase 09 In Progress)
+Progress: [█████░░░░░] 5/6 plans complete (Phase 09 In Progress)
 
 ## Performance Metrics
 
@@ -80,6 +80,7 @@ Progress: [████░░░░░░] 4/6 plans complete (Phase 09 In Progr
 | Phase 09-community-foundation P02 | 10 | 2 tasks | 6 files |
 | Phase 09-community-foundation P03 | 4min | 2 tasks | 7 files |
 | Phase 09-community-foundation P04 | 8min | 2 tasks | 2 files |
+| Phase 09-community-foundation P05 | 5min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -281,6 +282,9 @@ Progress: [████░░░░░░] 4/6 plans complete (Phase 09 In Progr
 - [Phase 09-04]: Collection-saved artists appear in TasteFingerprint alongside listening-derived favorites — fingerprint reflects both passive listening AND deliberate curation choices (two different taste signals)
 - [Phase 09-04]: TasteFingerprint edges drawn post-simulation by Euclidean distance (2 nearest tag nodes per artist) — avoids per-artist DB lookups, produces natural constellation topology
 - [Phase 09-04]: Profile page has zero vanity metrics — no follower/like/play counts; identity = taste + curation only
+- [Phase 09]: shelfCollections local state mirror — avoids dynamic import reference in Svelte template; assigned from collectionsState.collections after load
+- [Phase 09]: parseCsvArtists handles any CSV with Artist column (case-insensitive) — compatible with Last.fm/Spotify data downloads
+- [Phase 09]: match_artists_batch fallback returns clear error string if invoke throws — not a crash, just a status message
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
@@ -294,6 +298,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-22
-Phase 09 Plan 04 complete. TasteFingerprint.svelte (D3 force constellation: top 15 tags + top 10 favorites + up to 5 collection artists, headless tick(300)+stop, deterministic circle init, PNG export). /profile page (Tauri-gated: handle input + AvatarPreview + AvatarEditor toggle + TasteFingerprint + expandable CollectionShelf rows + inline new-shelf creation). npm run check 0 errors, npm run build exits 0.
-Stopped at: Completed 09-04-PLAN.md
-Next: Phase 09 Plan 05 — Save to Shelf buttons + Settings expansion
+Phase 09 Plan 05 complete. Save to Shelf buttons on artist page (artist-name-row, after FavoriteButton) and release page (action-rows, below BuyOnBar). Both Tauri-only via {#if tauriMode}, dropdown shows shelves with checkmarks, inline new-shelf creation. Settings page: Identity section (handle + avatar mode Generative/Custom toggle), Import Listening History (Spotify PKCE/Last.fm/Apple MusicKit JS/CSV cards, matchAndImport helper, session-only credentials), Your Data section (exportAllUserData button). npm run check 0 errors, npm run build exits 0.
+Stopped at: Completed 09-05-PLAN.md
+Next: Phase 09 Plan 06 — final phase plan
