@@ -2843,3 +2843,6 @@ Collections reactive state module + 4 import modules + full data export + Collec
 
 > **Commit 6def0f1** (2026-02-22 23:11) — feat(09-02): create avatar module and AvatarPreview + AvatarEditor components
 > Files changed: 3
+
+> **Commit 180d27c** (2026-02-22 23:13) — docs(09-03): complete collections + import modules plan
+> Files changed: 5
