@@ -3557,3 +3557,45 @@ Archived: `.planning/milestones/v1.0-*` + `.planning/milestones/v1.0-phases/` (1
 <!-- /breakthrough -->
 
 Next: `/gsd:new-milestone` to plan v1.1 (Phases 11–15: Scene Building, Curator Tools, Interoperability, Listening Rooms, Artist Tools).
+
+---
+
+## Entry 048 — 2026-02-23 — Phase 11 Plan 01: Scene Data Layer
+
+Phase 11 starts. Scene building is the big next feature — detecting micro-scenes from taste data and letting users follow them. Before any of that works, the database needs a foundation.
+
+Plan 01 was pure data layer: four new tables added to `taste.db` and eight Tauri commands to read and write them.
+
+**Tables added:**
+- `detected_scenes` — scenes identified by the AI detection engine (slug, name, tags, artist_mbids, listener_count, is_emerging, detected_at)
+- `scene_follows` — which scenes this user follows
+- `scene_suggestions` — artists users suggest for scenes (free-text, so UNIQUE on scene_slug + artist_name, NOT artist_mbid — empty string collides on second attempt)
+- `feature_requests` — upvote-style votes on planned features
+
+**Commands registered:**
+`get_detected_scenes`, `save_detected_scenes` (full replace via transaction), `follow_scene`, `unfollow_scene`, `get_scene_follows`, `suggest_scene_artist`, `get_scene_suggestions`, `upvote_feature_request`
+
+`save_detected_scenes` uses the `unchecked_transaction()` pattern established in Phase 5 for batch writes without double-mutable-borrow on the Mutex.
+
+Cargo build: 0 errors. npm run check: 0 errors. All existing behavior untouched.
+
+> **Commit b4429ee** (2026-02-23 11:30) — docs(milestone): v1.0 MVP shipped — build log entry 047
+> Files changed: 1
+
+> **Commit f8f0bcc** (2026-02-23 11:41) — docs(11): capture phase context
+> Files changed: 1
+
+> **Commit 735902f** (2026-02-23 11:48) — docs(11): research phase scene-building
+> Files changed: 1
+
+> **Commit 47c68b4** (2026-02-23 11:56) — docs(11): create phase plan
+> Files changed: 5
+
+> **Commit d7938f2** (2026-02-23 12:03) — fix(11): revise plans based on checker feedback
+> Files changed: 2
+
+> **Commit 5325c7e** (2026-02-23 12:08) — feat(11-01): add scene tables and commands to taste_db.rs
+> Files changed: 1
+
+> **Commit e487c6a** (2026-02-23 12:09) — feat(11-01): register scene Tauri commands in invoke_handler
+> Files changed: 1

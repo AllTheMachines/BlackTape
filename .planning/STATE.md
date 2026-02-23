@@ -93,6 +93,7 @@ Progress: [██████████] v1.0 SHIPPED
 | Phase 10-communication-layer P09 | 3 | 2 tasks | 1 files |
 | Phase 10.1-communication-hotfixes P01 | 2min | 2 tasks | 4 files |
 | Phase 10.1 P02 | 7 | 2 tasks | 4 files |
+| Phase 11-scene-building P01 | 3 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -325,6 +326,9 @@ Progress: [██████████] v1.0 SHIPPED
 - [Phase 10.1-01]: ConversationList uses lazy {#await import()} pattern matching RoomDirectory/SessionCreator; npub decoded via nip19.decode (nostr-tools), hex validated via regex
 - [Phase 10.1]: No state parameter on export_play_history_to_path — file write only, avoids TasteDbState Mutex double-lock (matches write_json_to_path pattern)
 - [Phase 10.1]: publishTasteProfile uses session-level module flag (tastePublished) and dynamic import for tasteProfile — once-per-session relay publish, no circular deps
+- [Phase 11-scene-building]: scene_suggestions uses UNIQUE(scene_slug, artist_name): free-text artist names have no MBID at suggestion time; empty-string artist_mbid would cause silent INSERT OR IGNORE failures on second attempt
+- [Phase 11-scene-building]: save_detected_scenes does full DELETE + INSERT batch (not merge): detection engine always produces a fresh complete result set, not incremental updates
+- [Phase 11-scene-building]: is_emerging stored as INTEGER 0/1 in SQLite, converted to bool in Rust struct — rusqlite has no native bool column type
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
@@ -338,6 +342,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-23
-Phase 10.1 Plan 01 complete. theme.css: 9 CSS compatibility aliases (4 color + 5 spacing) for Phase 9/10 component visibility (GAP-05). ConversationList.svelte created (214 lines): scrollable DM list, pubkey truncation, unread badge, npub/hex input for new threads. ChatOverlay routing split: 'dms' → ConversationList, 'dm-thread' → ChatPanel (lazy imports). ChatPanel: back button in dm-thread view. npm run check 0 errors.
-Stopped at: Completed 10.1-01-PLAN.md
-Next: Phase 10.1 Plan 02 (taste profile publisher + Nostr export)
+Phase 11 Plan 01 complete. taste_db.rs: 4 new tables (detected_scenes, scene_follows, scene_suggestions, feature_requests) + 8 Tauri commands. lib.rs: all 8 commands registered in invoke_handler. Cargo build 0 errors. npm run check 0 errors.
+Stopped at: Completed 11-01-PLAN.md
+Next: Phase 11 Plan 02 (scene detection engine)
