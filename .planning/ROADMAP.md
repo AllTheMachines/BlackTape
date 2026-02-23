@@ -75,7 +75,13 @@ Plans:
   5. Embeddable collections on external websites
   6. QR codes for any collection or curated list
   7. A music blogger has reason to write again
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 12-01-PLAN.md — Install feed+qrcode deps + 4 RSS/Atom feed endpoints + RssButton component
+- [ ] 12-02-PLAN.md — Embed layout + artist/collection embed routes + embed snippet UI + QR code
+- [ ] 12-03-PLAN.md — Curator attribution: D1 table, /api/curator-feature, artist page display
+- [ ] 12-04-PLAN.md — New & Rising page + /api/rss/new-rising feed + ARCHITECTURE.md + user-manual.md docs
 
 ### Phase 13: Interoperability
 **Goal**: Plug into the open web — federate, don't isolate
