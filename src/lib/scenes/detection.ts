@@ -78,6 +78,10 @@ export async function findTagClusterSeeds(db: DbProvider): Promise<TagPairSeed[]
  *
  * Returns up to 50 clusters, sorted by size descending.
  */
+// Max tags per cluster — prevents all genres merging into one mega-cluster
+// via the "six degrees of separation" effect in music genre graphs
+const MAX_CLUSTER_TAGS = 8;
+
 export function groupTagPairsIntoClusters(seeds: TagPairSeed[]): TagCluster[] {
 	const clusters: Array<{ tags: Set<string> }> = [];
 
@@ -94,18 +98,28 @@ export function groupTagPairsIntoClusters(seeds: TagPairSeed[]): TagCluster[] {
 			// No match — create new cluster
 			clusters.push({ tags: new Set([seed.tag_a, seed.tag_b]) });
 		} else {
-			// Merge all matching clusters + this seed into the first match
+			// Merge into the first matching cluster only if it won't exceed the cap
 			const primary = clusters[matchingIndices[0]];
-			primary.tags.add(seed.tag_a);
-			primary.tags.add(seed.tag_b);
+			const wouldAdd = [seed.tag_a, seed.tag_b].filter((t) => !primary.tags.has(t)).length;
 
-			// Merge any additional matching clusters into primary, then remove them
-			for (let i = matchingIndices.length - 1; i >= 1; i--) {
-				const idx = matchingIndices[i];
-				for (const tag of clusters[idx].tags) {
-					primary.tags.add(tag);
+			if (primary.tags.size + wouldAdd <= MAX_CLUSTER_TAGS) {
+				primary.tags.add(seed.tag_a);
+				primary.tags.add(seed.tag_b);
+
+				// Merge additional matching clusters only if combined size stays within cap
+				for (let i = matchingIndices.length - 1; i >= 1; i--) {
+					const idx = matchingIndices[i];
+					const combined = primary.tags.size + clusters[idx].tags.size;
+					if (combined <= MAX_CLUSTER_TAGS) {
+						for (const tag of clusters[idx].tags) {
+							primary.tags.add(tag);
+						}
+						clusters.splice(idx, 1);
+					}
 				}
-				clusters.splice(idx, 1);
+			} else {
+				// Cluster is full — start a new one for this seed
+				clusters.push({ tags: new Set([seed.tag_a, seed.tag_b]) });
 			}
 		}
 	}
