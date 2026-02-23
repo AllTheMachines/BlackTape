@@ -4196,3 +4196,6 @@ Navigation fix confirmed working in the running app. Radiohead artist page loads
 - `/embed/artist/[slug]`: embed card route exists with layout isolation (`+layout@.svelte`)
 
 Test suite updated: **62/62 code checks passing**. Added 24 new tests covering Phases 10 (Scenes), 11 (Taste Bridge/Chat), and 12 (Curator/Blog Tools) — manifest was stale at Phase 9.
+
+> **Commit 20506c8** (2026-02-23 23:41) — fix(tauri): global __data.json handler prevents navigation crashes
+> Files changed: 1
