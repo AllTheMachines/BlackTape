@@ -5,18 +5,18 @@
 See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Phase 10 in progress. Plan 06 done: 5 room/session UI components (RoomDirectory, RoomCreator, AiGatePrompt, SessionCreator, ModerationQueue).
+**Current focus:** Phase 10 in progress. Plan 07 done: root layout wired with Nostr init + ChatOverlay + nav badge. Artist/discover pages surface scene room links.
 
 ## Current Position
 
 Phase: 10-communication-layer of 15 (Communication Layer — In Progress)
-Current Plan: 10-06 (complete)
-Status: Phase 10 Plan 06 complete — 5 Svelte components in src/lib/components/chat/. RoomDirectory tag filter, AI-gated RoomCreator, AiGatePrompt contextual explainer, SessionCreator with invite code, ModerationQueue with delete/kick/ban/dismiss. 2026-02-23.
-Last activity: 2026-02-23 — 10-06 complete. RoomDirectory $effect reactive tag filter. RoomCreator aiState.enabled gate. AiGatePrompt links to Settings. SessionCreator public/private visibility + invite code. ModerationQueue flaggedMessages resolution. npm run check 0 errors.
-Stopped at: Completed 10-06-PLAN.md
-Next: Phase 10 Plan 07
+Current Plan: 10-07 (complete)
+Status: Phase 10 Plan 07 complete — initNostr() in root layout onMount, ChatOverlay mounted globally, chat nav button with unread badge, scene room links on artist + discover pages. 2026-02-23.
+Last activity: 2026-02-23 — 10-07 complete. Root layout integration: Nostr init, DM subscription, ChatOverlay, chat nav button. Scene room discovery on artist page + discover page. Fixed: $derived cannot be exported from .svelte.ts (totalUnread + activePublicSessions converted to getter functions). npm run check 0 errors, npm run build exits 0.
+Stopped at: Completed 10-07-PLAN.md
+Next: Phase 10 Plan 08 (if exists)
 
-Progress: [██████░░░░] 6/? plans complete (Phase 10 In Progress)
+Progress: [███████░░░] 7/? plans complete (Phase 10 In Progress)
 
 ## Performance Metrics
 
@@ -90,6 +90,7 @@ Progress: [██████░░░░] 6/? plans complete (Phase 10 In Progr
 | Phase 10-communication-layer P04 | 3 | 1 tasks | 2 files |
 | Phase 10-communication-layer P05 | 3min | 2 tasks | 6 files |
 | Phase 10-communication-layer P06 | 3min | 2 tasks | 5 files |
+| Phase 10-communication-layer P07 | 4min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -312,6 +313,9 @@ Progress: [██████░░░░] 6/? plans complete (Phase 10 In Progr
 - [Phase 10-communication-layer]: [Phase 10-05]: Plan template CSS variables mapped to actual theme tokens (--bg-surface/--bg-elevated/--border-default/--link-color/--text-muted)
 - [Phase 10-communication-layer]: Removed unused ndkState import from ModerationQueue — all NDK ops happen inside moderation.ts functions
 - [Phase 10-communication-layer]: AiGatePrompt uses closeChat() on Settings link so overlay closes cleanly when navigating to /settings
+- [Phase 10-07]: initNostr() called unconditionally in root layout onMount — IndexedDB available in all browsers; comms works on web + Tauri equally
+- [Phase 10-07]: totalUnread and activePublicSessions exported as getter functions — Svelte 5 compile-module prohibits exporting $derived from .svelte.ts module files
+- [Phase 10-07]: ChatOverlay RoomDirectory and SessionCreator use {#await import()} lazy loading — avoids circular deps and defers heavy module load until first use
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
@@ -325,6 +329,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-23
-Phase 10 Plan 01 complete. NDK + nostr-tools + idb + unfurl.js installed. keypair.ts: loadOrCreateKeypair() IndexedDB-backed secp256k1 identity. nostr.svelte.ts: ndkState $state singleton + initNostr() 4-relay pool (nos.lol, relay.damus.io, nostr.mom, relay.nostr.band). unfurl.ts: extractMercuryUrls() + fetchUnfurlData(). /api/unfurl POST: origin-based Mercury URL validation + OG metadata fetch. npm run check 0 errors, npm run build exits 0.
-Stopped at: Completed 10-01-PLAN.md
-Next: Phase 10 Plan 02 — DM Inbox / Conversation List
+Phase 10 Plan 07 complete. Root layout: initNostr() + subscribeToIncomingDMs() on mount (unconditional). ChatOverlay mounted globally. Chat nav button with unread badge in both Tauri + web nav. Artist page: scene rooms button for primary tag. Discover page: scene rooms button when tags active. Fixed: $derived exports in notifications.svelte.ts and sessions.svelte.ts changed to getter functions. npm run check 0 errors, npm run build exits 0.
+Stopped at: Completed 10-07-PLAN.md
+Next: Phase 10 Plan 08

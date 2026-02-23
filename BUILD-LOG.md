@@ -3315,3 +3315,62 @@ The plan template imported `ndkState` from `nostr.svelte.ts` in ModerationQueue 
 
 > **Commit b328949** (2026-02-23 02:11) — feat(10-06): add SessionCreator and ModerationQueue components
 > Files changed: 2
+
+> **Commit 0be6962** (2026-02-23 02:13) — docs(10-06): complete room-discovery-creation-moderation-ui plan — SUMMARY, STATE, ROADMAP, BUILD-LOG
+> Files changed: 4
+
+> **Commit f29c0b7** (2026-02-23 02:17) — feat(10-07): wire Nostr init + ChatOverlay into root layout
+> Files changed: 4
+
+> **Commit fb253c5** (2026-02-23 02:18) — feat(10-07): add scene room discovery links on artist and discover pages
+> Files changed: 2
+
+## Entry 044 — 2026-02-23 — Phase 10 Plan 07: Application Integration — Chat System Wired In
+
+### What Was Built
+
+**Plan 10-07:** Connected all Phase 10 communication modules to the live application. Everything built in Plans 01-06 (keypair, NDK, DMs, rooms, sessions, UI components) now initializes on app start and is accessible from every page.
+
+**Root layout integration (`src/routes/+layout.svelte`):**
+- `initNostr()` called unconditionally in `onMount` — runs on both web and Tauri since IndexedDB is available everywhere. Fire-and-forget with `.catch` so layout render is never blocked.
+- `subscribeToIncomingDMs()` chained after `initNostr()` resolves — DM subscription stays alive for the session.
+- Chat nav button added to both Tauri nav and web nav. Shows "Chat" label with unread count badge when messages are pending.
+- `ChatOverlay` mounted at the root level (after `<Player />`) — present on every page, slides in from the right on demand.
+
+**ChatOverlay updated (`src/lib/components/chat/ChatOverlay.svelte`):**
+- Added DMs / Rooms / Parties tab navigation below the header.
+- View routing: `chatState.view === 'rooms'` → lazy-imports RoomDirectory; `'sessions'` → lazy-imports SessionCreator; default → ChatPanel.
+- Dynamic imports prevent circular dependency issues and avoid loading heavy modules until needed.
+
+**Artist page scene rooms (`src/routes/artist/[slug]/+page.svelte`):**
+- "Scene rooms for [primary tag]" button appears under the explore-scene-panel when the artist has tags.
+- Clicking calls `openChat('rooms')` — opens the overlay directly in rooms view.
+
+**Discover page scene rooms (`src/routes/discover/+page.svelte`):**
+- "Scene rooms for this vibe" button appears between the TagFilter and results grid when tags are active.
+- Uses `data.tags.length > 0` check (same data already loaded by server) — no extra `$page` import needed.
+
+### Key Fix: $derived Cannot Be Exported from .svelte.ts Modules
+
+<!-- decision: totalUnread as getter function, not exported $derived -->
+Svelte 5 prohibits exporting `$derived` values from `.svelte.ts` module files — they must be exposed as getter functions instead. Two exports caught this:
+
+1. `notifications.svelte.ts`: `totalUnread` was `export const totalUnread = $derived(...)` → changed to `export function totalUnread() { return ...; }`
+2. `sessions.svelte.ts`: `activePublicSessions` was `export const activePublicSessions = $derived(...)` → changed to `export function activePublicSessions() { return ...; }`
+
+These were already in the codebase (Plans 02 + 05) but only triggered the build error when a component (`+layout.svelte`) actually imported them. `svelte-check` passed because it only validates types — Vite's compile-module plugin does the stricter module-export check at build time.
+
+Both callers in `+layout.svelte` updated to use function call syntax (`totalUnread()`).
+<!-- /decision -->
+
+### Result
+
+Full communication layer is now accessible from the entire application:
+- Every page has the chat nav icon in the header
+- Clicking it opens the overlay with DMs/Rooms/Parties tabs
+- Artist pages surface relevant scene rooms
+- Discover pages surface rooms when filtering by tags
+- `npm run check` 0 errors, `npm run build` exits 0
+
+> **Commit f29c0b7** (2026-02-23) — feat(10-07): wire Nostr init + ChatOverlay into root layout
+> **Commit fb253c5** (2026-02-23) — feat(10-07): add scene room discovery links on artist and discover pages
