@@ -82,6 +82,36 @@ pub fn init_taste_db(app_data_dir: &Path) -> Result<Connection, String> {
         );
         CREATE INDEX IF NOT EXISTS idx_collection_items_collection ON collection_items(collection_id);
         CREATE INDEX IF NOT EXISTS idx_collection_items_mbid ON collection_items(item_mbid);
+
+        CREATE TABLE IF NOT EXISTS detected_scenes (
+            slug TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            tags TEXT NOT NULL,
+            artist_mbids TEXT NOT NULL,
+            listener_count INTEGER NOT NULL DEFAULT 0,
+            is_emerging INTEGER NOT NULL DEFAULT 0,
+            detected_at INTEGER NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS scene_follows (
+            scene_slug TEXT PRIMARY KEY,
+            followed_at INTEGER NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS scene_suggestions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            scene_slug TEXT NOT NULL,
+            artist_mbid TEXT NOT NULL,
+            artist_name TEXT NOT NULL,
+            suggested_at INTEGER NOT NULL,
+            UNIQUE(scene_slug, artist_name)
+        );
+
+        CREATE TABLE IF NOT EXISTS feature_requests (
+            feature_id TEXT PRIMARY KEY,
+            vote_count INTEGER NOT NULL DEFAULT 0,
+            last_voted INTEGER NOT NULL
+        );
         ",
     )
     .map_err(|e| format!("Failed to create taste.db tables: {}", e))?;
@@ -856,4 +886,241 @@ pub struct MatchResult {
     pub name: String,
     pub artist_mbid: Option<String>,
     pub artist_slug: Option<String>,
+}
+
+// --- Scene Detection CRUD ---
+
+/// A row from the detected_scenes table.
+/// tags and artist_mbids are stored as raw JSON strings.
+#[derive(Debug, Serialize, Deserialize)]
+pub struct DetectedSceneRow {
+    pub slug: String,
+    pub name: String,
+    pub tags: String,
+    pub artist_mbids: String,
+    pub listener_count: i64,
+    pub is_emerging: bool,
+    pub detected_at: i64,
+}
+
+/// A row from the scene_suggestions table.
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SceneSuggestionRow {
+    pub artist_mbid: String,
+    pub artist_name: String,
+    pub suggested_at: i64,
+}
+
+/// Get all detected scenes ordered by detection time descending.
+#[tauri::command]
+pub fn get_detected_scenes(
+    state: tauri::State<'_, TasteDbState>,
+) -> Result<Vec<DetectedSceneRow>, String> {
+    let conn = state.0.lock().map_err(|e| format!("Lock error: {}", e))?;
+    let mut stmt = conn
+        .prepare(
+            "SELECT slug, name, tags, artist_mbids, listener_count, is_emerging, detected_at \
+             FROM detected_scenes ORDER BY detected_at DESC",
+        )
+        .map_err(|e| format!("Failed to prepare query: {}", e))?;
+
+    let scenes = stmt
+        .query_map([], |row| {
+            Ok(DetectedSceneRow {
+                slug: row.get(0)?,
+                name: row.get(1)?,
+                tags: row.get(2)?,
+                artist_mbids: row.get(3)?,
+                listener_count: row.get(4)?,
+                is_emerging: row.get::<_, i64>(5)? != 0,
+                detected_at: row.get(6)?,
+            })
+        })
+        .map_err(|e| format!("Failed to query detected scenes: {}", e))?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|e| format!("Failed to collect detected scenes: {}", e))?;
+
+    Ok(scenes)
+}
+
+/// Replace all detected scenes with the provided list (full replace, not merge).
+/// Uses unchecked_transaction() to avoid double mutable borrow on the Mutex connection.
+#[tauri::command]
+pub fn save_detected_scenes(
+    scenes: Vec<DetectedSceneRow>,
+    state: tauri::State<'_, TasteDbState>,
+) -> Result<(), String> {
+    let conn = state.0.lock().map_err(|e| format!("Lock error: {}", e))?;
+    // SAFETY: unchecked_transaction is the established pattern for batch writes
+    // on a Mutex<Connection> (avoids double-mutable borrow).
+    let tx = conn
+        .unchecked_transaction()
+        .map_err(|e| format!("Failed to begin transaction: {}", e))?;
+
+    tx.execute("DELETE FROM detected_scenes", [])
+        .map_err(|e| format!("Failed to clear detected_scenes: {}", e))?;
+
+    for scene in &scenes {
+        tx.execute(
+            "INSERT OR REPLACE INTO detected_scenes \
+             (slug, name, tags, artist_mbids, listener_count, is_emerging, detected_at) \
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
+            rusqlite::params![
+                scene.slug,
+                scene.name,
+                scene.tags,
+                scene.artist_mbids,
+                scene.listener_count,
+                if scene.is_emerging { 1i64 } else { 0i64 },
+                scene.detected_at,
+            ],
+        )
+        .map_err(|e| format!("Failed to insert scene '{}': {}", scene.slug, e))?;
+    }
+
+    tx.commit()
+        .map_err(|e| format!("Failed to commit scene save: {}", e))?;
+
+    Ok(())
+}
+
+/// Follow a scene by slug. Replaces existing follow record (idempotent).
+#[tauri::command]
+pub fn follow_scene(
+    scene_slug: String,
+    state: tauri::State<'_, TasteDbState>,
+) -> Result<(), String> {
+    let conn = state.0.lock().map_err(|e| format!("Lock error: {}", e))?;
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_secs() as i64;
+
+    conn.execute(
+        "INSERT OR REPLACE INTO scene_follows (scene_slug, followed_at) VALUES (?1, ?2)",
+        params![scene_slug, now],
+    )
+    .map_err(|e| format!("Failed to follow scene: {}", e))?;
+
+    Ok(())
+}
+
+/// Unfollow a scene by slug.
+#[tauri::command]
+pub fn unfollow_scene(
+    scene_slug: String,
+    state: tauri::State<'_, TasteDbState>,
+) -> Result<(), String> {
+    let conn = state.0.lock().map_err(|e| format!("Lock error: {}", e))?;
+    conn.execute(
+        "DELETE FROM scene_follows WHERE scene_slug = ?1",
+        params![scene_slug],
+    )
+    .map_err(|e| format!("Failed to unfollow scene: {}", e))?;
+
+    Ok(())
+}
+
+/// Get all followed scene slugs.
+#[tauri::command]
+pub fn get_scene_follows(
+    state: tauri::State<'_, TasteDbState>,
+) -> Result<Vec<String>, String> {
+    let conn = state.0.lock().map_err(|e| format!("Lock error: {}", e))?;
+    let mut stmt = conn
+        .prepare("SELECT scene_slug FROM scene_follows")
+        .map_err(|e| format!("Failed to prepare query: {}", e))?;
+
+    let slugs = stmt
+        .query_map([], |row| row.get::<_, String>(0))
+        .map_err(|e| format!("Failed to query scene follows: {}", e))?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|e| format!("Failed to collect scene follows: {}", e))?;
+
+    Ok(slugs)
+}
+
+/// Suggest an artist for a scene. Silently ignores duplicate (scene_slug, artist_name) pairs.
+/// Uses artist_name as the uniqueness discriminator — artist_mbid may be empty for free-text suggestions.
+#[tauri::command]
+pub fn suggest_scene_artist(
+    scene_slug: String,
+    artist_mbid: String,
+    artist_name: String,
+    state: tauri::State<'_, TasteDbState>,
+) -> Result<(), String> {
+    let conn = state.0.lock().map_err(|e| format!("Lock error: {}", e))?;
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_secs() as i64;
+
+    conn.execute(
+        "INSERT OR IGNORE INTO scene_suggestions \
+         (scene_slug, artist_mbid, artist_name, suggested_at) VALUES (?1, ?2, ?3, ?4)",
+        params![scene_slug, artist_mbid, artist_name, now],
+    )
+    .map_err(|e| format!("Failed to suggest scene artist: {}", e))?;
+
+    Ok(())
+}
+
+/// Get all artist suggestions for a scene, ordered by suggestion time ascending.
+#[tauri::command]
+pub fn get_scene_suggestions(
+    scene_slug: String,
+    state: tauri::State<'_, TasteDbState>,
+) -> Result<Vec<SceneSuggestionRow>, String> {
+    let conn = state.0.lock().map_err(|e| format!("Lock error: {}", e))?;
+    let mut stmt = conn
+        .prepare(
+            "SELECT artist_mbid, artist_name, suggested_at FROM scene_suggestions \
+             WHERE scene_slug = ?1 ORDER BY suggested_at ASC",
+        )
+        .map_err(|e| format!("Failed to prepare query: {}", e))?;
+
+    let suggestions = stmt
+        .query_map(params![scene_slug], |row| {
+            Ok(SceneSuggestionRow {
+                artist_mbid: row.get(0)?,
+                artist_name: row.get(1)?,
+                suggested_at: row.get(2)?,
+            })
+        })
+        .map_err(|e| format!("Failed to query scene suggestions: {}", e))?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|e| format!("Failed to collect scene suggestions: {}", e))?;
+
+    Ok(suggestions)
+}
+
+/// Upvote a feature request. Inserts with vote_count=1 or increments existing count.
+/// Returns the new vote_count.
+#[tauri::command]
+pub fn upvote_feature_request(
+    feature_id: String,
+    state: tauri::State<'_, TasteDbState>,
+) -> Result<i64, String> {
+    let conn = state.0.lock().map_err(|e| format!("Lock error: {}", e))?;
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_secs() as i64;
+
+    conn.execute(
+        "INSERT INTO feature_requests (feature_id, vote_count, last_voted) VALUES (?1, 1, ?2)
+         ON CONFLICT(feature_id) DO UPDATE SET vote_count = vote_count + 1, last_voted = excluded.last_voted",
+        params![feature_id, now],
+    )
+    .map_err(|e| format!("Failed to upvote feature request: {}", e))?;
+
+    let count: i64 = conn
+        .query_row(
+            "SELECT vote_count FROM feature_requests WHERE feature_id = ?1",
+            params![feature_id],
+            |row| row.get(0),
+        )
+        .map_err(|e| format!("Failed to get vote count: {}", e))?;
+
+    Ok(count)
 }
