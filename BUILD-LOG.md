@@ -3947,3 +3947,38 @@ The server-side is ready: endpoint accepts `source=collection`. The Tauri call s
 
 > **Commit c94534e** (2026-02-23 15:59) — feat(12-03): artist page curator credit display and embed card attribution
 > Files changed: 5
+
+> **Commit 39b0c6e** (2026-02-23 16:02) — docs(12-03): complete curator attribution plan — SUMMARY.md + state updates
+> Files changed: 4
+
+## Entry — 2026-02-23 — Phase 12 Plan 04: New & Rising + Phase 12 Close
+
+Phase 12 is complete. The final plan built the public-facing discovery surface for curators and documented the entire curator / blog tools system.
+
+### What was built
+
+**New & Rising page** (`/new-rising`): Two-tab discovery view for music bloggers. "Newly Active" shows artists with begin_year >= currentYear-1, ordered most recent first. "Gaining Traction" uses AVG(1/tag_stats.artist_count) DESC to surface niche artists accumulating unusual tag combinations — the most interesting view for a blogger looking for their next write-up.
+
+**Curator filter** (`/new-rising?curator=handle`): Third tab appears when a curator handle is in the URL, showing all artists that curator has featured on Mercury. Links from the artist page "Discovered by @handle" text navigate here.
+
+**New & Rising API** (`/api/new-rising`): Returns `{ newArtists, gainingTraction, curatorArtists }`. Same query logic as the page server load — both try/catch independently for partial result resilience. Curator artists query is wrapped in try/catch since `curator_features` table may not exist on older DB versions.
+
+**New & Rising RSS feed** (`/api/rss/new-rising`): Gaining-traction niche artists as an RSS/Atom feed using the `feed` package. The most useful subscription for a music blogger — weekly list of artists worth writing about. Format negotiated by `?format=atom` or Accept header.
+
+**Nav link**: "New & Rising" added to the web nav (between Discover and Scenes). Available on web — this is a web-first feature, the niche-rarity signal lives in D1.
+
+**Documentation**: Both `ARCHITECTURE.md` and `docs/user-manual.md` now have full Phase 12 coverage — embed widgets, RSS/Atom feeds, curator attribution, New & Rising, anti-patterns table. These are the authoritative references for every curator feature built this phase.
+
+### Phase 12 complete
+
+All four plans shipped:
+- Plan 01: RSS/Atom feeds for artists, tags, collections, curators + RssButton component
+- Plan 02: Embed widgets at /embed/artist/[slug] and /embed/collection/[id]
+- Plan 03: Curator attribution system (curator_features D1 table, /api/curator-feature, artist page credits)
+- Plan 04: New & Rising public page + API + RSS feed + Phase 12 documentation
+
+> **Commit 2274244** (2026-02-23 16:06) — feat(12-04): New & Rising page, API endpoint, and RSS feed
+> Files changed: 5
+
+> **Commit 91412e3** (2026-02-23 16:08) — docs(12-04): add Curator / Blog Tools section to ARCHITECTURE.md and user-manual.md
+> Files changed: 2

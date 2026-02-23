@@ -39,7 +39,7 @@ Full archive: `.planning/milestones/v1.0-ROADMAP.md`
 ### 📋 v1.1 (Planned)
 
 - [x] **Phase 11: Scene Building** — AI scene detection, label collectives, community-driven creation tools (completed 2026-02-23)
-- [ ] **Phase 12: Curator / Blog Tools** — Embeddable widgets, attribution, RSS, blog revival
+- [x] **Phase 12: Curator / Blog Tools** — Embeddable widgets, attribution, RSS, blog revival (completed 2026-02-23)
 - [ ] **Phase 13: Interoperability** — ActivityPub, Fediverse federation, RSS for everything
 - [ ] **Phase 14: Listening Rooms** — Shared real-time listening with synchronized embeds
 - [ ] **Phase 15: Artist Tools** — Claiming, dashboard, auto-news, self-hosted site generator
@@ -176,7 +176,7 @@ Runs alongside everything else. Not blocking any phase. Rolls out in stages as f
 | 10. Communication Layer | v1.0 | 9/9 | Complete | 2026-02-23 |
 | 10.1. Communication Hotfixes | v1.0 | 2/2 | Complete | 2026-02-23 |
 | 11. Scene Building | 4/4 | Complete    | 2026-02-23 | - |
-| 12. Curator / Blog Tools | 3/4 | In Progress|  | - |
+| 12. Curator / Blog Tools | 4/4 | Complete   | 2026-02-23 | - |
 | 13. Interoperability | v1.1 | 0/TBD | Not started | - |
 | 14. Listening Rooms | v1.1 | 0/TBD | Not started | - |
 | 15. Artist Tools | v1.1 | 0/TBD | Not started | - |

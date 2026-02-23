@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-02-23 after v1.0 milestone)
 ## Current Position
 
 Phase: 12-curator-blog-tools
-Status: In Progress — Plan 03/04 complete (curator attribution system). Plan 04 remaining.
-Last activity: 2026-02-23 — Phase 12 Plan 03 complete. Curator attribution: curator_features D1 table, /api/curator-feature endpoint (MBID + slug lookup, CORS, validation), artist page "Discovered by" curator list, embed card compact attribution line, data-curator attribute in embed snippet.
-Next: Phase 12 Plan 04 (New & Rising page with curator filter)
-Stopped at: Completed 12-03-PLAN.md
+Status: COMPLETE — All 4 plans done. Phase 12 closed.
+Last activity: 2026-02-23 — Phase 12 Plan 04 complete. New & Rising page (/new-rising, /api/new-rising, /api/rss/new-rising), nav link, curator filter via ?curator= param. ARCHITECTURE.md + user-manual.md updated with full Phase 12 Curator / Blog Tools documentation.
+Next: Phase 13 (next planned phase)
+Stopped at: Completed 12-04-PLAN.md
 
-Progress: [██████████] v1.0 SHIPPED — v1.1 Phase 12 In Progress (3/4 plans done)
+Progress: [██████████] v1.0 SHIPPED — v1.1 Phase 12 COMPLETE (4/4 plans done)
 
 ## Performance Metrics
 
@@ -102,6 +102,8 @@ Progress: [██████████] v1.0 SHIPPED — v1.1 Phase 12 In Pro
 | Phase 12 P02 | 8min | 3 tasks | 8 files |
 | Phase 12 P03 | 4min | 2 tasks | 7 files |
 | Phase 12-curator-blog-tools P03 | 4 | 2 tasks | 7 files |
+| Phase 12-curator-blog-tools P04 | 6min | 2 tasks | 7 files |
+| Phase 12-curator-blog-tools P04 | 6min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -355,6 +357,8 @@ Progress: [██████████] v1.0 SHIPPED — v1.1 Phase 12 In Pro
 - [Phase 12-curator-blog-tools]: curator_features UNIQUE(artist_mbid, curator_handle): INSERT OR IGNORE deduplicates without explicit rate limiting
 - [Phase 12-curator-blog-tools]: [Phase 12-03]: Slug path in /api/curator-feature: embed.js only has slug from embed URL, MBID not available client-side
 - [Phase 12-curator-blog-tools]: [Phase 12-03]: Try/catch for all curator_features queries: table may not exist on older DB — zero breaking changes to existing pages
+- [Phase 12]: Web-first pattern for /new-rising (+page.server.ts only, no Tauri universal load) — niche signal requires D1 tag_stats, Tauri shows empty state
+- [Phase 12]: New & Rising RSS feed returns gaining-traction list (not newly active) — niche discovery is the more useful blogger subscription
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
