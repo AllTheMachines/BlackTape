@@ -54,6 +54,54 @@ fn check_database(app: tauri::AppHandle) -> Result<serde_json::Value, String> {
 
 pub fn run() {
     tauri::Builder::default()
+        // Override the built-in tauri:// protocol to intercept missing __data.json requests.
+        // SvelteKit's client router fetches /route/__data.json for every server-load route.
+        // For dynamic paths (e.g. /artist/[slug]) that aren't pre-rendered, Tauri's default
+        // handler falls back to index.html — SvelteKit then crashes on JSON.parse('<DOCTYPE...').
+        // We intercept those requests and return an empty-data JSON that SvelteKit accepts.
+        .register_uri_scheme_protocol("tauri", |ctx, request| {
+            let path = request.uri().path().to_string();
+            let resolver = ctx.app_handle().asset_resolver();
+
+            if let Some(asset) = resolver.get(path.clone()) {
+                // Detect when a __data.json request fell back to index.html (the SPA fallback).
+                // The embedded index.html has mime_type text/html; real __data.json has application/json.
+                if path.ends_with("__data.json") && asset.mime_type.contains("text/html") {
+                    return tauri::http::Response::builder()
+                        .status(200)
+                        .header("Content-Type", "application/json")
+                        .header("Access-Control-Allow-Origin", "*")
+                        .body(br#"{"type":"data","nodes":[null,{"type":"skip"}]}"#.to_vec())
+                        .unwrap();
+                }
+
+                let mut builder = tauri::http::Response::builder()
+                    .status(200)
+                    .header("Content-Type", &asset.mime_type)
+                    .header("Access-Control-Allow-Origin", "*");
+                if let Some(csp) = asset.csp_header {
+                    builder = builder.header("Content-Security-Policy", csp);
+                }
+                builder.body(asset.bytes).unwrap()
+            } else {
+                // File not found (in dev mode, asset_resolver reads from disk without fallbacks).
+                // Still intercept __data.json so dev builds don't crash either.
+                if path.ends_with("__data.json") {
+                    tauri::http::Response::builder()
+                        .status(200)
+                        .header("Content-Type", "application/json")
+                        .header("Access-Control-Allow-Origin", "*")
+                        .body(br#"{"type":"data","nodes":[null,{"type":"skip"}]}"#.to_vec())
+                        .unwrap()
+                } else {
+                    tauri::http::Response::builder()
+                        .status(404)
+                        .header("Access-Control-Allow-Origin", "*")
+                        .body(b"Not Found".to_vec())
+                        .unwrap()
+                }
+            }
+        })
         .invoke_handler(tauri::generate_handler![
             check_database,
             scanner::scan_folder,
@@ -128,11 +176,6 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_oauth::init())
         .setup(|app| {
-            // DEBUG: force DevTools open — remove after search hang is diagnosed
-            if let Some(window) = app.get_webview_window("main") {
-                window.open_devtools();
-            }
-
             let app_data = app.path().app_data_dir().expect("failed to get app data dir");
             std::fs::create_dir_all(&app_data).ok();
             let conn = library::db::init_library_db(&app_data)

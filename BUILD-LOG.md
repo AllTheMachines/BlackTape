@@ -4109,9 +4109,27 @@ Leading hypotheses: slow FTS5 query on large db, Rust panic on blocking thread (
 
 **Diagnostic code added (uncommitted)**: devtools feature re-added, `open_devtools()`, 15s timeout in `TauriProvider.all()`, console.log markers throughout the search path. Need to rebuild and check DevTools console to identify the exact hang point.
 
-<!-- status -->
-Debugging search hang. Diagnostic code ready — need to rebuild (`npm run tauri build -- --no-bundle`) and test. DevTools will show exactly which step hangs. See HANDOFF.md for full diagnostic plan.
-<!-- /status -->
+### Resolved: Search Works — But Clicking Artist Hangs
+
+After the diagnostic code was deployed and the app rebuilt, search worked immediately and correctly. The actual root cause was different from the mutex/FTS5 hypotheses:
+
+**The real root cause:** SvelteKit's client-side router fetches `__data.json` for every route with a server load. For routes not pre-rendered (dynamic paths like `/artist/[slug]`, `/discover`, etc.), Tauri's default asset handler falls back to serving `index.html`. SvelteKit then tried `JSON.parse('<DOCTYPE html>...')` → crash. The search was hanging because the `__data.json` crash happened before `invoke()` was ever called.
+
+### Fix Applied (2 parts):
+
+**Part 1 — Search route (already committed in `112521d`):**
+Added `export const prerender = import.meta.env.VITE_TAURI === '1'` + early return to `src/routes/search/+page.server.ts`. This generated `build/search/__data.json` with `"uses":{}`, which SvelteKit cached without refetching on `?q=` changes.
+
+**Part 2 — All other routes (this session):**
+The artist page and all other dynamic routes (`/artist/[slug]`, `/discover`, `/kb/genre/[slug]`, etc.) couldn't be pre-rendered with specific slugs. The fix was at the Tauri level: **override the built-in `tauri://` protocol handler** in `lib.rs`.
+
+The Tauri source showed `get_asset()` always falls back to `index.html` for missing files. By registering a custom `tauri://` handler with `.register_uri_scheme_protocol("tauri", ...)`, we intercept the fallback:
+- Path ends with `__data.json` AND asset mime_type is `text/html` (the index.html fallback) → return `{"type":"data","nodes":[null,{"type":"skip"}]}` (tells SvelteKit: no server data, use universal `+page.ts` load)
+- Otherwise → serve the asset normally with CSP header preserved
+
+This is a global fix that covers every dynamic route automatically, with no per-route changes needed.
+
+**Diagnostic code cleaned up:** removed `devtools` feature from `Cargo.toml`, removed `open_devtools()`, reverted `TauriProvider.all()` to simple `invoke()`, removed console.log markers from `+page.ts`.
 
 > **Commit b360e1b** (2026-02-23 21:35) — wip: auto-save
 > Files changed: 6
@@ -4129,4 +4147,7 @@ Debugging search hang. Diagnostic code ready — need to rebuild (`npm run tauri
 > Files changed: 3
 
 > **Commit a4eaee6** (2026-02-23 22:04) — wip: auto-save
+> Files changed: 1
+
+> **Commit d16e6b9** (2026-02-23 22:16) — auto-save: 1 files @ 22:16
 > Files changed: 1
