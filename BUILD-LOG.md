@@ -3918,3 +3918,32 @@ The embed.js ping fires to `/api/curator-feature?slug=&curator=` (slug-based loo
 
 > **Commit d61ce59** (2026-02-23 15:50) — feat(12-02): add GET /embed.js route — script-tag embed bootstrap
 > Files changed: 1
+
+> **Commit ffc2301** (2026-02-23 15:53) — docs(12-02): complete embed widget system plan — SUMMARY.md + state updates
+> Files changed: 4
+
+## Entry — 2026-02-23 — Phase 12 Plan 03: Curator Attribution System
+
+The full attribution loop: blogger embeds artist card with `data-curator="myblog"`, embed.js fires a ping to `/api/curator-feature`, Mercury records it in the `curator_features` D1 table, and the artist page shows "Discovered by @myblog" with a link to the curator's collection.
+
+### What was built
+
+**curator_features table DDL** (`pipeline/lib/schema.sql`): New table with `UNIQUE(artist_mbid, curator_handle)` constraint for natural deduplication. `INSERT OR IGNORE` means the same curator+artist pair is only stored once — no rate limiting logic needed, the constraint handles it. Includes `source` column (`'embed'` or `'collection'`) for future collection-add attribution, and `featured_at` (Unix timestamp) for chronological ordering.
+
+**Attribution recording endpoint** (`/api/curator-feature`): Fire-and-forget GET endpoint with full input validation. Accepts both `artist` (MBID) and `slug` parameters — slug is needed because embed.js only has the slug from the embed URL. Validates curator handle against `/^[\w\-.]{1,50}$/` to prevent XSS/injection. CORS header `Access-Control-Allow-Origin: *` because embed.js calls this cross-origin from blogger sites. Returns 200 even on DB errors — never breaks a blogger's page load.
+
+**Artist page "Discovered by" section**: Renders a subtle, small attribution row beneath the bio when curator_features data exists. Try/catch in the server load means the page is completely unaffected if the table doesn't exist on older DB versions. Links go to `/new-rising?curator=[handle]` — Plan 04 will implement the curator filter on that page.
+
+**Embed card attribution**: The `/embed/artist/[slug]` card also queries curator_features and renders a compact "Discovered by @handle" line (10px, opacity 0.65) below the listen link. Attribution shown in both places per CONTEXT.md locked decision.
+
+**data-curator in embed snippet**: `generateEmbedSnippets()` now accepts an optional `curatorHandle` parameter. When provided and in script-tag mode, the snippet includes `data-curator="handle"`. On the artist page, a small "Your blog handle (optional)" input field populates this when generating script-tag snippets. The chain: blogger enters handle → copies snippet → pastes to blog → embed.js reads data-curator → pings /api/curator-feature → attribution recorded → shows on Mercury artist page.
+
+### Collection-add attribution (partial implementation)
+
+The server-side is ready: endpoint accepts `source=collection`. The Tauri call site is documented with a code comment in schema.sql for when Tauri collection management UI is built. Full wiring is deferred to Phase 12+ collection work.
+
+> **Commit 25cbd7c** (2026-02-23 15:56) — feat(12-03): curator_features table DDL and attribution recording endpoint
+> Files changed: 2
+
+> **Commit c94534e** (2026-02-23 15:59) — feat(12-03): artist page curator credit display and embed card attribution
+> Files changed: 5

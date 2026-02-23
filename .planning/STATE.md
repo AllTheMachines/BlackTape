@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-02-23 after v1.0 milestone)
 ## Current Position
 
 Phase: 12-curator-blog-tools
-Status: In Progress — Plan 02/04 complete (embed widgets). Plans 03-04 remaining.
-Last activity: 2026-02-23 — Phase 12 Plan 02 complete. Embed widget system: /embed/* routes (isolated from root layout), artist card embed, collection embed placeholder, embed snippet utility, QR utility, artist page embed UI, GET /embed.js bootstrap script.
-Next: Phase 12 Plan 03 (curator-feature API — accepts slug param per embed.js attribution design)
-Stopped at: Completed 12-02-PLAN.md
+Status: In Progress — Plan 03/04 complete (curator attribution system). Plan 04 remaining.
+Last activity: 2026-02-23 — Phase 12 Plan 03 complete. Curator attribution: curator_features D1 table, /api/curator-feature endpoint (MBID + slug lookup, CORS, validation), artist page "Discovered by" curator list, embed card compact attribution line, data-curator attribute in embed snippet.
+Next: Phase 12 Plan 04 (New & Rising page with curator filter)
+Stopped at: Completed 12-03-PLAN.md
 
-Progress: [██████████] v1.0 SHIPPED — v1.1 Phase 12 In Progress (2/4 plans done)
+Progress: [██████████] v1.0 SHIPPED — v1.1 Phase 12 In Progress (3/4 plans done)
 
 ## Performance Metrics
 
@@ -100,6 +100,8 @@ Progress: [██████████] v1.0 SHIPPED — v1.1 Phase 12 In Pro
 | Phase 11-scene-building P04 | 7 | 2 tasks | 7 files |
 | Phase 12-curator-blog-tools P01 | 8 | 2 tasks | 8 files |
 | Phase 12 P02 | 8min | 3 tasks | 8 files |
+| Phase 12 P03 | 4min | 2 tasks | 7 files |
+| Phase 12-curator-blog-tools P03 | 4 | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -350,6 +352,9 @@ Progress: [██████████] v1.0 SHIPPED — v1.1 Phase 12 In Pro
 - [Phase 12]: +layout@.svelte breaks SvelteKit layout chain — embed routes get no Mercury chrome (nav/player/chat)
 - [Phase 12]: embed.js attribution ping uses slug param (/api/curator-feature?slug=&curator=) — Plan 03 must accept slug as alternative to MBID
 - [Phase 12]: D1 has no bio column — embed artist card uses top-4 tags joined with ' · ' as bio descriptor (no live API call)
+- [Phase 12-curator-blog-tools]: curator_features UNIQUE(artist_mbid, curator_handle): INSERT OR IGNORE deduplicates without explicit rate limiting
+- [Phase 12-curator-blog-tools]: [Phase 12-03]: Slug path in /api/curator-feature: embed.js only has slug from embed URL, MBID not available client-side
+- [Phase 12-curator-blog-tools]: [Phase 12-03]: Try/catch for all curator_features queries: table may not exist on older DB — zero breaking changes to existing pages
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
@@ -363,6 +368,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-23
-Phase 12 Plan 01 complete. RSS/Atom feed endpoints for artist (/api/rss/artist/[slug]), tag (/api/rss/tag/[tag]), collection (/api/rss/collection/[id]), and curator (/api/rss/curator/[handle]). RssButton component on artist page (name row) and discover page (single-tag filter). feed@5.2.0 + qrcode@1.5.4 installed. npm run check 0 errors, npm run build success. All 4 endpoints return valid XML with correct Content-Type headers.
-Stopped at: Completed 12-01-PLAN.md
-Next: Phase 12 Plan 02 (embed widgets with QR codes)
+Phase 12 Plan 03 complete. Curator attribution system: curator_features D1 table DDL (UNIQUE constraint for dedup), /api/curator-feature endpoint (MBID + slug lookup, handle validation, CORS, source=collection), artist page "Discovered by @handle" list, embed card compact attribution line, generateEmbedSnippets updated with optional curatorHandle param for data-curator attribute. npm run check 0 errors, npm run build success.
+Stopped at: Completed 12-03-PLAN.md
+Next: Phase 12 Plan 04 (New & Rising page with curator filter)
