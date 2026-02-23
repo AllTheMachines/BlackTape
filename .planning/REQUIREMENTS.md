@@ -97,41 +97,39 @@ Prevents future regressions from being committed or shipped.
 
 ## Traceability
 
-*Filled by roadmapper after phase structure is defined.*
-
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INFRA-01 | TBD | Pending |
-| INFRA-02 | TBD | Pending |
-| INFRA-03 | TBD | Pending |
-| INFRA-04 | TBD | Pending |
-| API-01 | TBD | Pending |
-| API-02 | TBD | Pending |
-| API-03 | TBD | Pending |
-| API-04 | TBD | Pending |
-| WEB-01 | TBD | Pending |
-| WEB-02 | TBD | Pending |
-| WEB-03 | TBD | Pending |
-| FLOW-01 | TBD | Pending |
-| FLOW-02 | TBD | Pending |
-| FLOW-03 | TBD | Pending |
-| FLOW-04 | TBD | Pending |
-| RUST-01 | TBD | Pending |
-| RUST-02 | TBD | Pending |
-| RUST-03 | TBD | Pending |
-| UX-01 | TBD | Pending |
-| UX-02 | TBD | Pending |
-| UX-03 | TBD | Pending |
-| UX-04 | TBD | Pending |
-| PROC-01 | TBD | Pending |
-| PROC-02 | TBD | Pending |
-| PROC-03 | TBD | Pending |
+| INFRA-01 | Phase 13 | Pending |
+| INFRA-02 | Phase 13 | Pending |
+| INFRA-03 | Phase 13 | Pending |
+| INFRA-04 | Phase 13 | Pending |
+| WEB-01 | Phase 13 | Pending |
+| WEB-02 | Phase 13 | Pending |
+| WEB-03 | Phase 13 | Pending |
+| UX-01 | Phase 13 | Pending |
+| UX-02 | Phase 13 | Pending |
+| UX-03 | Phase 13 | Pending |
+| UX-04 | Phase 13 | Pending |
+| PROC-02 | Phase 13 | Pending |
+| API-01 | Phase 14 | Pending |
+| API-02 | Phase 14 | Pending |
+| API-03 | Phase 14 | Pending |
+| API-04 | Phase 14 | Pending |
+| FLOW-01 | Phase 15 | Pending |
+| FLOW-02 | Phase 15 | Pending |
+| FLOW-03 | Phase 15 | Pending |
+| FLOW-04 | Phase 15 | Pending |
+| RUST-01 | Phase 15 | Pending |
+| RUST-02 | Phase 15 | Pending |
+| RUST-03 | Phase 15 | Pending |
+| PROC-01 | Phase 15 | Pending |
+| PROC-03 | Phase 15 | Pending |
 
 **Coverage:**
 - v1.2 requirements: 25 total
-- Mapped to phases: 0 (pending roadmap)
-- Unmapped: 25 ⚠️
+- Mapped to phases: 25
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-02-23*
-*Last updated: 2026-02-23 — initial definition*
+*Last updated: 2026-02-23 — traceability filled after roadmap creation*
