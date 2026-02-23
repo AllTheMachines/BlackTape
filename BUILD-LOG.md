@@ -3237,3 +3237,50 @@ NDK's `NDKKind` enum only includes named kinds (40/42 for channels, etc.). The e
 
 `npm run check` exits 0, zero TypeScript errors.
 > Files changed: 3
+
+> **Commit ffb7fdc** (2026-02-23 02:02) — docs: BUILD-LOG entry 041 — Phase 10 Plan 04 ephemeral sessions
+> Files changed: 1
+
+> **Commit 9f394ef** (2026-02-23 02:06) — feat(10-05): add ChatOverlay drawer, MessageList, UnfurlCard
+> Files changed: 3
+
+> **Commit b420395** (2026-02-23 02:06) — feat(10-05): add TasteBridgeHeader, ChatPanel, MessageInput
+> Files changed: 3
+
+## Entry 042 — 2026-02-23 — Phase 10 Plan 05: Chat UI Components
+
+### What Was Built
+
+**Plan 10-05:** The chat UI — 6 Svelte components that form the visible surface of all three communication layers (DMs, scene rooms, listening parties). This is the layer users actually interact with.
+
+Six new components in `src/lib/components/chat/`:
+
+**`ChatOverlay.svelte`** — Fixed right-side drawer (CSS `position: fixed; right: -380px` sliding to `right: 0`). Critical architectural decision: uses CSS transition, NOT `dialog.showModal()`. The `showModal()` trap would create an inert backdrop blocking page content — completely breaking the "chat while browsing" requirement. The overlay slides in, overlaps the right edge, but the main content stays fully interactive underneath. Toggle wired to `chatState.open` from `notifications.svelte.ts`.
+
+**`MessageList.svelte`** — Scrollable message history. Receives a generic `messages` prop typed to `{ id, senderPubkey, content, createdAt }` — compatible with `DmMessage`, `RoomMessage`, and `SessionMessage` from all three comms modules. Handles own-message alignment (right-aligned), relative timestamps (just now / Nm ago / Nh ago / Nd ago), and auto-scrolls to bottom on new messages via `$effect` + `tick()`. Empty state: "No messages yet."
+
+**`UnfurlCard.svelte`** — Inline Mercury link preview. Rendered below the input when URLs are detected. Shows cover art (44×44px), title, description, and a small "mercury" badge in the link color. Clicking navigates to the URL. Used both in the input area (while composing) and can be embedded in message history in future plans.
+
+**`MessageInput.svelte`** — The composer. Three concurrent concerns:
+1. **URL detection**: `extractMercuryUrls()` runs on every keystroke via 800ms debounce — paste a Mercury artist/release/KB URL and an `UnfurlCard` preview appears after 800ms without slowing down typing
+2. **Slow mode**: when a room has slow mode enabled, the send button shows a countdown timer (`Ns`) until the next message is allowed — send button disabled until timer hits 0
+3. **Send routing**: `onSend` prop receives the message; routing is in ChatPanel
+
+**`TasteBridgeHeader.svelte`** — Pinned AI context for DM threads. Calls `getTasteBridge(peerPubkey)` on mount (Phase 10 Plan 02 AI module). Shows a collapsible panel with the musical bridge explanation and 2-3 conversation starters. Collapses gracefully after reading. Silent failure when bridge.error is set — no error message in the DM header. Shows loading text while the AI generates the response.
+
+**`ChatPanel.svelte`** — The unified view layer. Routes between DM threads, scene rooms, and listening party sessions using `chatState.view`. Derives the active message list and slow mode seconds from the appropriate state module. Shows `TasteBridgeHeader` only in `dm-thread` view, wired to `chatState.activeConversationPubkey`. The placeholder "Select a conversation, room, or listening party." shows when no thread is active.
+
+### Key Decision: CSS variables from actual theme
+
+The plan's template code used placeholder CSS variables (`--bg-secondary`, `--accent`, etc.) that don't exist in this project's `theme.css`. Mapped these to the actual Mercury design tokens:
+- `--bg-secondary` / `--bg-tertiary` → `--bg-surface` / `--bg-elevated`
+- `--border` → `--border-default`
+- `--accent` → `--link-color` (the OKLCH blue used for interactive elements throughout)
+- `--text-tertiary` → `--text-muted`
+- `--accent-dim` → `color-mix(in oklch, var(--link-color) 20%, transparent)`
+
+### Key Decision: `$derived(() => ...)` as callable derived
+
+`activeMessages` and `slowMode` in ChatPanel use the `$derived(() => fn)` pattern — producing a callable derived rather than a plain value. This is valid Svelte 5: calling `activeMessages()` in the template re-evaluates the function reactively. Used when the derived value involves conditional lookups against reactive Maps (the `roomsState.messages` Map) — plain `$derived` would also work, but the function form reads cleanly.
+
+`npm run check` exits 0, zero TypeScript errors across all 6 components.
