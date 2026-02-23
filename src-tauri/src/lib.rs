@@ -106,6 +106,14 @@ pub fn run() {
             ai::taste_db::write_json_to_path,
             ai::taste_db::export_play_history_to_path,
             match_artists_batch,
+            ai::taste_db::get_detected_scenes,
+            ai::taste_db::save_detected_scenes,
+            ai::taste_db::follow_scene,
+            ai::taste_db::unfollow_scene,
+            ai::taste_db::get_scene_follows,
+            ai::taste_db::suggest_scene_artist,
+            ai::taste_db::get_scene_suggestions,
+            ai::taste_db::upvote_feature_request,
         ])
         .plugin(tauri_plugin_sql::Builder::new().build())
         .plugin(tauri_plugin_updater::Builder::new().build())
