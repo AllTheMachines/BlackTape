@@ -29,7 +29,7 @@ Phase 8 is the turning point — where Mercury stops being a tool and starts bei
 - [x] **Phase 07.3: Requirements & Verification Cleanup** (INSERTED) — REQUIREMENTS.md updates, Phase 04 VERIFICATION.md, platform! guards, schema docs (completed 2026-02-21)
 - [x] **Phase 8: Underground Aesthetic** — Dense playful UI, taste-based theming, panels/controls, templates, game-like feel (completed 2026-02-21)
 - [x] **Phase 9: Community Foundation** — Identity system, taste matching, collections, taste fingerprint, import/export (completed 2026-02-22)
-- [ ] **Phase 10: Communication Layer** — Encrypted DMs + scene rooms + ephemeral sessions, hybrid moderation
+- [x] **Phase 10: Communication Layer** — Encrypted DMs + scene rooms + ephemeral sessions, hybrid moderation (completed 2026-02-23)
 - [ ] **Phase 11: Scene Building** — AI scene detection, label collectives, community-driven creation tools
 - [ ] **Phase 12: Curator / Blog Tools** — Embeddable widgets, attribution, RSS, blog revival
 - [ ] **Phase 13: Interoperability** — ActivityPub, Fediverse federation, RSS for everything
@@ -392,7 +392,7 @@ Plans:
 | 07.3. Requirements & Verification Cleanup | 3/3 | Complete    | 2026-02-21 |
 | 8. Underground Aesthetic | 4/4 | Complete   | 2026-02-21 |
 | 9. Community Foundation | 6/6 | Complete   | 2026-02-22 |
-| 10. Communication Layer | 7/8 | In Progress|  |
+| 10. Communication Layer | 8/8 | Complete   | 2026-02-23 |
 | 11. Scene Building | 0/TBD | Not started | - |
 | 12. Curator / Blog Tools | 0/TBD | Not started | - |
 | 13. Interoperability | 0/TBD | Not started | - |
