@@ -3710,3 +3710,122 @@ npm run check: 0 errors (7 pre-existing warnings). npm run build: success. Test 
 
 > **Commit 1cf5a11** (2026-02-23 12:31) — feat(11-04): nav link, web API route, and documentation
 > Files changed: 4
+
+> **Commit f938fed** (2026-02-23 12:34) — docs(11-04): complete scene interactions plan
+> Files changed: 4
+
+> **Commit 83cd4e0** (2026-02-23 13:12) — fix(scenes): relax niche filter threshold for full MusicBrainz dataset
+> Files changed: 1
+
+> **Commit 47e2a97** (2026-02-23 13:18) — fix(scenes): cap cluster size to prevent genre mega-cluster collapse
+> Files changed: 1
+
+> **Commit 44e036f** (2026-02-23 13:56) — fix(scenes): disable SSR on scene routes for reliable isTauri() detection
+> Files changed: 2
+
+> **Commit b4f493d** (2026-02-23 14:02) — fix(scenes): move detection to onMount, remove ssr=false
+> Files changed: 3
+
+> **Commit e2c927b** (2026-02-23 14:13) — fix(scenes): handle missing genres table in isNovelTagCombination
+> Files changed: 1
+
+> **Commit 85d2658** (2026-02-23 14:15) — fix(scenes): filter out scenes with no listener overlap
+> Files changed: 1
+
+> **Commit ad4c4c7** (2026-02-23 14:21) — docs(phase-11): complete phase execution
+> Files changed: 1
+
+## Entry 051 — 2026-02-23 — Phase 11: Scene Building Complete + UAT Debugging
+
+### What Got Built (Plan 04)
+
+Phase 11 closed with interactions, nav, the web API route, and documentation.
+
+**`src/lib/comms/scenes.svelte.ts`** — Scene interactions module. `followScene` writes to taste.db via Tauri invoke, optionally broadcasts NIP-51 kind 30001 to Nostr. `unfollowScene` cleans up both. `suggestArtist` stores free-text suggestions (no MBID required — discovery is fuzzy). `upvoteFeatureRequest` persists votes in taste.db on Tauri, localStorage on web. `sceneFollowState` singleton tracks follow state reactively.
+
+**Feature request CTA** — The `/scenes` page now has a vote button at the bottom: "Request collaborative playlists". After voting, shows "(N interested)" using the upvote count from taste.db. State persists in localStorage on web too.
+
+**`/api/scenes` GET** — Public web endpoint returning proto-scenes from tag_cooccurrence. Niche filter + minimum shared artists. Graceful `{ scenes: [] }` if tables missing.
+
+**Nav link** — "Scenes" added to the header after Style Map. Not Tauri-gated — it's visible on web too, shows the empty state message when no detection has run.
+
+**Documentation** — ARCHITECTURE.md and docs/user-manual.md updated with the full Scene Building section: detection algorithm, anti-rich-get-richer display, data model, interactions, routes, and anti-patterns.
+
+---
+
+### The Hard Part: Live UAT Debugging
+
+Verifier passed 15/15 must-haves headlessly. Then Steve opened the actual app.
+
+**"No scenes detected yet."**
+
+Six bugs, found in sequence — each fix revealing the next problem underneath.
+
+<!-- dead-end: artist_count < 200 niche filter too strict -->
+**Bug 1: tag_cooccurrence table missing from live DB**
+
+The pipeline database is a 10K artist dev subset. The live mercury.db in AppData had artists, artist_tags, and FTS — nothing else. Detection needs tag_stats and tag_cooccurrence to work. Built a Node.js script using better-sqlite3 from the pipeline's node_modules, ran it directly against the 2.8M artist live DB. Populated 57,905 tags into tag_stats and 2,359 edges into tag_cooccurrence. Took a few minutes.
+<!-- /dead-end -->
+
+<!-- dead-end: all 38 surviving pairs are garbage tags -->
+**Bug 2: artist_count < 200 niche filter too strict**
+
+With the tables populated, detection ran — but only returned 38 pairs, all garbage: `nazi`, `rac`, `racist`, `twats`. The filter was calibrated for a tiny dataset. For 2.8M artists, `drone` has 978 artists, `dark ambient` has 874, `idm` has 628 — all excluded by the `< 200` threshold. Fixed: raised to `< 5000`. Now the real niche genres surface. Added a BLOCKED_TAGS set to permanently exclude the troll/garbage tags by name.
+<!-- /dead-end -->
+
+<!-- dead-end: all seeds merging into one mega-cluster -->
+**Bug 3: Tag mega-cluster collapse**
+
+With the filter fixed, all 196 seeds merged into a single cluster of 100+ tags. The six-degrees-of-separation problem: `ambient → drone → dark ambient → noise → industrial → metal → rock` — everything connects to everything via some shared path. The union-find merge has no stopping condition, so it collapses every genre into one blob. Fixed: added `MAX_CLUSTER_TAGS = 8` cap. When a cluster is full, new seeds start fresh clusters rather than extending the existing one.
+<!-- /dead-end -->
+
+<!-- dead-end: isTauri() unreliable during SSR -->
+**Bug 4: SSR running isTauri() on server**
+
+After the algorithm fixes, `/scenes` started returning a 500 Internal Error. The `+page.ts` load function called `isTauri()` during SSR — a DOM-check that returns false on the server — but then tried to continue with Tauri DB calls based on that false result. First attempt: add `ssr = false` to the page. That caused its own SvelteKit error (conflict with `+page.server.ts`). Real fix: move all detection out of `+page.ts` entirely, into `onMount` in the component. The load function becomes a passthrough. `onMount` never runs on the server.
+<!-- /dead-end -->
+
+<!-- dead-end: genres table missing causing silent catch -->
+**Bug 5: genres table missing causing silent crash**
+
+Detection ran but returned nothing. Added debug logging — `isNovelTagCombination()` was throwing `SQLiteError: no such table: genres` on every cluster. The `detectScenes()` catch block swallowed the error and returned `[]`. Fixed: wrapped `isNovelTagCombination()` in its own try/catch, returning `true` (treat as novel) on any error. Then copied 2,905 genre rows from the pipeline DB into live mercury.db so the function has actual data.
+<!-- /dead-end -->
+
+<!-- dead-end: no listener overlap filter -->
+**Bug 6: No listener overlap filter**
+
+Detection ran, clusters formed, artists populated — but scenes for k-pop, country, and heavy metal were surfacing. Steve has never listened to any of these. The `listenerCount` field was being computed correctly (0 for all of them), but `detectScenes()` never checked it. The feature design assumes scenes are personalized — only showing what overlaps with your taste. Fixed: added `if (listenerCount === 0) continue` after the listener overlap check.
+<!-- /dead-end -->
+
+<!-- breakthrough: scenes working — dark ambient, IDM, drone showing up -->
+After all six fixes: three scenes showed up. Dark ambient. IDM. Drone. Exactly what the detection should surface for someone who favorites ambient/drone/IDM artists in a 2.8M artist database.
+<!-- /breakthrough -->
+
+### The Architecture Lessons
+
+**Live DB ≠ Pipeline DB.** The pipeline runs on a 10K subset for dev speed. The live AppData DB has 2.8M artists. Filter thresholds, table presence, and data characteristics are completely different. Always validate detection against the actual production data.
+
+**Niche filter calibration is dataset-dependent.** `< 200 artists` was correct for a 10K dataset. For 2.8M artists, the right threshold is `< 5000`. The calibration has to match the scale.
+
+**Union-find without caps is a trap.** Music genre graphs are densely connected. Without a cluster size cap, every genre collapses into one mega-cluster via indirect connections. 8 tags per cluster keeps scenes focused and distinct.
+
+**SSR breaks taste assumptions.** `isTauri()` returns false on the server. Any load function that branches on it will run the wrong branch during SSR. The fix: all Tauri-specific logic goes in `onMount`. Never in load functions.
+
+**`detectScenes()` catch block was too aggressive.** Catching all errors and returning `[]` made it impossible to diagnose which step was failing. Internal try/catch per step, with the outer catch as last resort only.
+
+### GitHub Issues Filed
+
+- **Issue #1** — Library artist click shows only albums (not full artist page)
+- **Issue #2** — Library filter/tag bar non-functional
+
+Both are post-v1.0 scope. Not regressions — the library browser has always been minimal.
+
+### Key DB State for Next Session
+
+`tag_stats`, `tag_cooccurrence`, and `genres` now live in the AppData `mercury.db`. The pipeline DB is still the 10K dev subset — don't confuse them. If the AppData DB ever gets rebuilt from scratch, these three tables need to be repopulated from the pipeline output before scenes will work.
+
+### Phase 11 Final State
+
+All 4 plans executed and verified. 15/15 verifier must-haves passing. 5 live bugs found and fixed during UAT. Scenes working in the running Tauri app.
+
+v1.0 milestone fully shipped.

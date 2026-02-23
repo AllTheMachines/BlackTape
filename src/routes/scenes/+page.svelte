@@ -39,6 +39,15 @@
 		isDetecting = false;
 	});
 
+	async function handleReload() {
+		if (!isTauri() || isDetecting) return;
+		const { loadScenes, scenesState } = await import('$lib/scenes');
+		isDetecting = true;
+		await loadScenes(true); // forceDetect = true
+		partitioned = scenesState.partitioned;
+		isDetecting = false;
+	}
+
 	async function handleVote() {
 		if (hasVoted) return;
 		const newCount = await upvoteFeatureRequest(FEATURE_ID);
@@ -96,6 +105,13 @@
 			</div>
 		</section>
 	{/if}
+
+	<!-- Reload button -->
+	<div class="scenes-reload">
+		<button class="reload-btn" onclick={handleReload} disabled={isDetecting}>
+			{isDetecting ? 'Detecting…' : 'Reload Scenes'}
+		</button>
+	</div>
 
 	<!-- Feature request CTA — always visible, regardless of whether scenes exist -->
 	<div class="scenes-cta">
@@ -183,6 +199,33 @@
 		.scene-grid {
 			grid-template-columns: 1fr;
 		}
+	}
+
+	.scenes-reload {
+		margin-top: var(--space-xl);
+		padding-top: var(--space-md);
+		border-top: 1px solid var(--border-subtle);
+	}
+
+	.reload-btn {
+		padding: 6px 14px;
+		font-size: 0.8rem;
+		background: transparent;
+		border: 1px solid var(--border-subtle);
+		border-radius: 999px;
+		color: var(--text-muted);
+		cursor: pointer;
+		transition: color 0.15s, border-color 0.15s;
+	}
+
+	.reload-btn:hover:not(:disabled) {
+		color: var(--text-accent);
+		border-color: var(--text-accent);
+	}
+
+	.reload-btn:disabled {
+		opacity: 0.5;
+		cursor: default;
 	}
 
 	/* Feature request CTA */
