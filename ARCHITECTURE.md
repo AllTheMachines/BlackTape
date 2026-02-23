@@ -20,10 +20,11 @@ A comprehensive guide to how Mercury works, how its parts connect, and how data 
 12. [Knowledge Base](#knowledge-base)
 13. [Underground Aesthetic](#underground-aesthetic)
 14. [Community Foundation](#community-foundation-phase-9)
-15. [Build System](#build-system)
-16. [Configuration Reference](#configuration-reference)
-17. [AI Subsystem](#ai-subsystem)
-18. [Module Dependency Map](#module-dependency-map)
+15. [Communication Layer](#communication-layer-phase-10)
+16. [Build System](#build-system)
+17. [Configuration Reference](#configuration-reference)
+18. [AI Subsystem](#ai-subsystem)
+19. [Module Dependency Map](#module-dependency-map)
 
 ---
 
@@ -1013,6 +1014,89 @@ Import results are matched to Mercury index via `match_artists_batch` Rust comma
 
 ---
 
+## Communication Layer (Phase 10)
+
+Mercury's communication layer is built on the Nostr protocol — a decentralized, open messaging protocol with zero server cost. Users communicate through WebSocket relays operated by the open Nostr community. Mercury ships with a curated relay list; no Mercury-operated infrastructure is required.
+
+### Protocol: Nostr via NDK
+
+**Why Nostr:** The only protocol that satisfies all three communication layers (encrypted DMs, persistent scene rooms, ephemeral sessions) with zero server cost. Mercury rooms are scoped to the global Nostr network via the `['t', 'mercury']` tag convention.
+
+| Layer | Nostr NIP | Kind | Storage |
+|-------|-----------|------|---------|
+| Encrypted DMs | NIP-17 (gift-wrap) | kind:1059 | Relay-stored, E2E encrypted |
+| Scene Rooms | NIP-28 | kind:40/41/42/43/44 | Relay-stored, client-moderated |
+| Listening Parties | NIP-01 ephemeral + NIP-40 | kind:20001/20002 | NOT stored by relays |
+
+### Module Structure
+
+```
+src/lib/comms/
+├── index.ts                # Public API re-exports
+├── keypair.ts              # Nostr keypair generation + IndexedDB persistence
+├── nostr.svelte.ts         # NDK singleton, relay pool, ndkState ($state)
+├── dms.svelte.ts           # NIP-17 encrypted DM send/receive
+├── rooms.svelte.ts         # NIP-28 scene rooms CRUD + real-time messages
+├── sessions.svelte.ts      # Ephemeral listening party sessions
+├── moderation.ts           # AI safety filter, flag/kick/ban/slow mode
+├── notifications.svelte.ts # Chat overlay state + unread badge counts
+└── unfurl.ts               # Mercury URL detection + unfurl fetch util
+
+src/lib/components/chat/
+├── ChatOverlay.svelte       # Root drawer (fixed-right, CSS transition, not dialog modal)
+├── ChatPanel.svelte         # Unified DM + room message panel
+├── MessageList.svelte       # Scrollable message history
+├── MessageInput.svelte      # Composer with URL detection + slow mode
+├── UnfurlCard.svelte        # Inline Mercury link preview
+├── RoomDirectory.svelte     # Scene room browse/search/join
+├── RoomCreator.svelte       # Room creation form (AI gate check)
+├── AiGatePrompt.svelte      # Friendly AI configuration prompt
+├── SessionCreator.svelte    # Listening party creation
+└── ModerationQueue.svelte   # Room owner flag review panel
+
+src/routes/api/
+└── unfurl/+server.ts        # POST — server-side OG metadata fetch for Mercury URLs
+```
+
+### Identity
+
+Each Mercury user generates a Nostr keypair (secp256k1) on first communication init. The keypair is stored as raw Uint8Array in IndexedDB (not localStorage — better isolation). The user's Mercury handle (from Phase 9 profile) becomes their Nostr display name. The keypair is permanent — it IS the user's communication identity.
+
+### AI Gate for Room Creation
+
+Configuring an AI model is required to CREATE a room (not to join or participate). This ensures every room has AI moderation coverage from day one. The gate check:
+1. Read `aiState.enabled` before showing the room creation form
+2. If not enabled: render `AiGatePrompt.svelte` — explains the requirement and links to Settings
+3. If enabled: run `checkRoomNameSafety(name)` before publishing the room to Nostr
+
+The AI moderation check uses the user's configured provider (same provider used for taste features). For OpenAI API users: calls the free `/v1/moderations` endpoint. For local model users: falls back to a keyword-pattern filter (moderation is best-effort in this case).
+
+### Ephemeral Sessions — Zero Persistence Guarantee
+
+Listening party sessions use Nostr kinds 20001/20002 (ephemeral range — relays MUST NOT store). Architectural guarantee: `sessions.svelte.ts` contains ZERO Tauri `invoke()` calls. Session data lives only in Svelte `$state` for the overlay's lifetime. `endSession()` sets both `mySession` and `joinedSession` to `null` — complete wipe.
+
+### Mercury Room Scoping
+
+All Mercury scene rooms include `['t', 'mercury']` as a required tag at creation. Room discovery queries always filter `#t: ['mercury']` to avoid seeing rooms from other Nostr applications. Genre taxonomy tags are added alongside the mercury scope tag.
+
+### Anti-Patterns
+
+| Don't | Do Instead | Why |
+|-------|-----------|-----|
+| `localStorage` for keypair | IndexedDB (`idb` package) | localStorage is readable by any same-origin JS |
+| NIP-04 (`kind: 4`) for DMs | NIP-17 gift-wrap via NDK standalone `giftWrap` | NIP-04 leaks conversation graph (who you talk to) |
+| `dialog.showModal()` for chat | CSS fixed-right drawer | `showModal()` creates inert backdrop blocking page interaction |
+| Store session messages to taste.db | Leave in $state only | Ephemeral sessions must have zero persistence |
+| `polling` for new messages | NDK `ndk.subscribe()` | Nostr uses WebSocket — subscriptions deliver events in real time |
+| Omit `['t', 'mercury']` tag | Always include it on room create | Without it, Mercury rooms are indistinguishable from global Nostr rooms |
+| Show error on missing AI for room creation | `AiGatePrompt.svelte` | Users need to understand WHY and HOW to configure AI |
+
+### Relay Strategy
+
+Mercury ships with a hardcoded relay list of 4–5 well-known public relays. NDK's outbox model selects the optimal relay per operation. No Mercury-operated relay is required. If relay spam becomes a problem, the `['t', 'mercury']` scoping convention provides a filter layer; a Mercury-specific relay can be added later without protocol changes.
+
+---
+
 ## Build System
 
 ### Web Build
@@ -1316,4 +1400,4 @@ Tags tracked by source: `library`, `favorite`, `manual`. Recomputation clears co
 
 ---
 
-*Last updated: 2026-02-22 — After Phase 9 Plan 6 (Community Foundation — nav link, docs) completion.*
+*Last updated: 2026-02-23 — After Phase 10 Plan 8 (Communication Layer — Nostr protocol, DMs, scene rooms, listening parties) completion.*
