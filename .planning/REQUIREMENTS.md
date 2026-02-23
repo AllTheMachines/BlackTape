@@ -1,7 +1,7 @@
 # Requirements: Mercury
 
 **Defined:** 2026-02-15
-**Updated:** 2026-02-23 — Phase 10: COMM-04/05/06 added for Phase 10 communication layer; INTEROP-01/02 traceability corrected to Phase 13
+**Updated:** 2026-02-23 — Phase 10.1 gap closure: COMM-04 reset to Pending (DM UI gap); Phase 10.1 traceability added
 **Core Value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
 
 ## v1 Requirements
@@ -77,7 +77,7 @@
 
 ### Communication Layer (Phase 10)
 
-- [x] **COMM-04**: Private DM system — encrypted 1:1 messaging between Mercury users using Nostr NIP-17 gift-wrap
+- [ ] **COMM-04**: Private DM system — encrypted 1:1 messaging between Mercury users using Nostr NIP-17 gift-wrap
 - [x] **COMM-05**: Scene rooms — persistent group chat organized by tag taxonomy, with AI-gated creation and owner moderation tools
 - [x] **COMM-06**: Ephemeral listening party sessions — zero-persistence shared listening moments tied to specific music
 
@@ -190,7 +190,7 @@
 | COMM-01 | Phase 9 | Complete |
 | COMM-02 | Phase 9 | Complete |
 | COMM-03 | Phase 9 | Complete |
-| COMM-04 | Phase 10 | Complete |
+| COMM-04 | Phase 10 / Phase 10.1 | Pending |
 | COMM-05 | Phase 10 | Complete |
 | COMM-06 | Phase 10 | Complete |
 | SOCIAL-01 | Phase 9 | Complete |

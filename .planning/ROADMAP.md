@@ -30,6 +30,7 @@ Phase 8 is the turning point — where Mercury stops being a tool and starts bei
 - [x] **Phase 8: Underground Aesthetic** — Dense playful UI, taste-based theming, panels/controls, templates, game-like feel (completed 2026-02-21)
 - [x] **Phase 9: Community Foundation** — Identity system, taste matching, collections, taste fingerprint, import/export (completed 2026-02-22)
 - [x] **Phase 10: Communication Layer** — Encrypted DMs + scene rooms + ephemeral sessions, hybrid moderation (completed 2026-02-23)
+- [ ] **Phase 10.1: Communication Hotfixes** (INSERTED) — CSS variable aliases, DM conversation list UI, kind:30078 taste publishing, export_play_history_to_path Rust command
 - [ ] **Phase 11: Scene Building** — AI scene detection, label collectives, community-driven creation tools
 - [ ] **Phase 12: Curator / Blog Tools** — Embeddable widgets, attribution, RSS, blog revival
 - [ ] **Phase 13: Interoperability** — ActivityPub, Fediverse federation, RSS for everything
@@ -307,6 +308,23 @@ Plans:
 - [ ] 10-07-PLAN.md — Root layout integration: Nostr init + ChatOverlay mount + nav badge + artist/discover room links
 - [ ] 10-08-PLAN.md — ARCHITECTURE.md + user-manual.md + BUILD-LOG.md + final build verification
 
+### Phase 10.1: Communication Hotfixes (INSERTED)
+**Goal**: Close the 4 integration gaps found in the v1.0 re-audit: CSS variable mismatches breaking all community UI, missing DM conversation list (COMM-04), taste profile never published to Nostr, and export_play_history_to_path Rust command unimplemented.
+**Depends on**: Phase 10
+**Gap Closure**: Closes GAP-05, GAP-06, GAP-07, GAP-08 from v1.0 audit
+**Requirements**: COMM-04
+**Success Criteria**:
+  1. 4 CSS variable aliases added to theme.css — all Phase 9/10 buttons and borders visible
+  2. ConversationList.svelte component renders dmState.conversations in ChatOverlay DMs tab
+  3. Clicking a conversation sets chatState.view = 'dm-thread' and chatState.activeConversationPubkey
+  4. New DM pubkey input present in DMs tab
+  5. kind:30078 taste event published from Profile page (AI taste bridge has peer context)
+  6. export_play_history_to_path Rust command implemented + registered in generate_handler! macro
+  7. COMM-04 fully satisfied — encrypted DMs readable and initiatable from UI
+**Plans**: 1 plan
+Plans:
+- [ ] 10.1-01-PLAN.md — CSS aliases + ConversationList component + kind:30078 publishing + export_play_history_to_path
+
 ### Phase 11: Scene Building
 **Goal**: The community has identity (Phase 9) and communication (Phase 10). Now scenes emerge. AI detects emerging patterns in collective listening. Label collectives form organically. Mercury provides the space — people decide what happens in it. Creation tools are added only if the community asks for them.
 **Depends on**: Phase 10 (communication), Phase 5 (AI for scene detection)
@@ -393,6 +411,7 @@ Plans:
 | 8. Underground Aesthetic | 4/4 | Complete   | 2026-02-21 |
 | 9. Community Foundation | 6/6 | Complete   | 2026-02-22 |
 | 10. Communication Layer | 9/9 | Complete    | 2026-02-23 |
+| 10.1. Communication Hotfixes | 0/1 | Not started | - |
 | 11. Scene Building | 0/TBD | Not started | - |
 | 12. Curator / Blog Tools | 0/TBD | Not started | - |
 | 13. Interoperability | 0/TBD | Not started | - |
