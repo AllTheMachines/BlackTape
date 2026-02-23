@@ -12,6 +12,16 @@
 	let { currentTemplateId, allTemplates, onTemplateChange }: Props = $props();
 
 	let searchQuery = $state('');
+	let navInput = $state('');
+
+	function handleNav(e: Event) {
+		e.preventDefault();
+		const val = navInput.trim();
+		if (!val) return;
+		const path = val.startsWith('/') ? val : '/' + val;
+		goto(path);
+		navInput = '';
+	}
 
 	// Split templates into built-ins and user templates for optgroup rendering
 	const builtinIds = ['cockpit', 'focus', 'minimal'];
@@ -67,9 +77,18 @@
 		</form>
 	</div>
 
-	<!-- Center Group: Reserved -->
+	<!-- Center Group: Address bar -->
 	<div class="bar-group bar-center">
-		<!-- Reserved for future controls -->
+		<form class="nav-form" onsubmit={handleNav}>
+			<input
+				class="nav-input"
+				type="text"
+				placeholder="/artist/radiohead"
+				bind:value={navInput}
+				autocomplete="off"
+				spellcheck="false"
+			/>
+		</form>
 	</div>
 
 	<!-- Right Group: Layout switcher + Theme indicator -->
@@ -144,6 +163,34 @@
 
 	.bar-center {
 		flex: 1;
+		justify-content: center;
+	}
+
+	.nav-form {
+		width: 100%;
+		max-width: 400px;
+	}
+
+	.nav-input {
+		width: 100%;
+		background: var(--bg-elevated);
+		border: 1px solid var(--border-default);
+		border-radius: 4px;
+		color: var(--text-primary);
+		font-size: 0.75rem;
+		font-family: inherit;
+		padding: 2px 8px;
+		height: 22px;
+		outline: none;
+		box-sizing: border-box;
+	}
+
+	.nav-input::placeholder {
+		color: var(--text-muted);
+	}
+
+	.nav-input:focus {
+		border-color: var(--text-accent);
 	}
 
 	.bar-right {
