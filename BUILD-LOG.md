@@ -4115,3 +4115,6 @@ Debugging search hang. Diagnostic code ready — need to rebuild (`npm run tauri
 
 > **Commit b360e1b** (2026-02-23 21:35) — wip: auto-save
 > Files changed: 6
+
+> **Commit 1e4cae4** (2026-02-23 21:43) — wip: auto-save
+> Files changed: 1
