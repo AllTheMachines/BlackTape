@@ -1,6 +1,10 @@
 import type { PageLoad } from './$types';
 import { isTauri } from '$lib/platform';
 
+// Scene detection runs in the Tauri client — disable SSR so the load function
+// only runs where isTauri() is reliable (client-side, not the Vite SSR server).
+export const ssr = false;
+
 export const load: PageLoad = async ({ data }) => {
 	if (!isTauri()) {
 		// Web: use server-computed scenes (currently empty, see +page.server.ts)
