@@ -39,18 +39,24 @@ export const load: PageLoad = async ({ url, data }) => {
 	// Everything inside try/catch — an unhandled error here would crash the
 	// page (no +error.svelte), unmounting the layout and killing audio playback.
 	try {
+		console.log('[search] load start, q=', q, 'mode=', mode);
 		const { getProvider } = await import('$lib/db/provider');
 		const { searchArtists, searchByTag } = await import('$lib/db/queries');
 
+		console.log('[search] getProvider...');
 		const provider = await getProvider();
+		console.log('[search] searchArtists/searchByTag...');
 		const results =
 			mode === 'tag' ? await searchByTag(provider, q) : await searchArtists(provider, q);
+		console.log('[search] results:', results.length);
 
 		// Also search local library tracks
 		let localTracks: LocalTrack[] = [];
 		try {
+			console.log('[search] getLibraryTracks...');
 			const { getLibraryTracks } = await import('$lib/library/scanner');
 			const allTracks = await getLibraryTracks();
+			console.log('[search] getLibraryTracks done:', allTracks.length);
 			const lowerQ = q.toLowerCase();
 			localTracks = allTracks.filter(
 				(t) =>

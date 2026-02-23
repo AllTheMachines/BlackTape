@@ -25,7 +25,17 @@ export class TauriProvider implements DbProvider {
 
 	async all<T>(sql: string, ...params: unknown[]): Promise<T[]> {
 		const { invoke } = await import('@tauri-apps/api/core');
-		return invoke<T[]>('query_mercury_db', { sql, params });
+		// DEBUG: timeout + logging to diagnose hang
+		const shortSql = sql.trim().slice(0, 80).replace(/\s+/g, ' ');
+		console.log('[TauriProvider] invoke query_mercury_db:', shortSql, params);
+		const result = await Promise.race([
+			invoke<T[]>('query_mercury_db', { sql, params }),
+			new Promise<never>((_, reject) =>
+				setTimeout(() => reject(new Error(`query_mercury_db timed out (15s): ${shortSql}`)), 15000)
+			)
+		]);
+		console.log('[TauriProvider] invoke done, rows:', (result as unknown[]).length);
+		return result;
 	}
 
 	async get<T>(sql: string, ...params: unknown[]): Promise<T | null> {

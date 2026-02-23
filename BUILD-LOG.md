@@ -4076,3 +4076,39 @@ The handoff planned 4 specific Rust commands (search_artists, search_by_tag, etc
 
 > **Commit dfdb102** (2026-02-23 21:02) — wip: auto-save
 > Files changed: 1
+
+> **Commit 0baa980** (2026-02-23 21:16) — auto-save: 1 files @ 21:16
+> Files changed: 1
+
+---
+
+## Entry — 2026-02-23 — Production Build JS Fix + Search Hang Investigation
+
+### Resolved: JS Never Executing in Production WebView2
+
+After the rusqlite fix (`bed7835`), the production exe launched but JavaScript never ran in WebView2.
+Title polling showed the page title staying "Mercury" (Tauri config default) — `document.title` assignments never executed.
+
+Root cause: **corrupted build artifacts from concurrent cargo builds** (two cargo instances racing over `target/`). `cargo clean` + single fresh `npm run tauri build` fixed it.
+
+Diagnosed via `devtools` feature flag — forced DevTools open in release build (`window.open_devtools()` in setup), confirmed JS executing but seeing 503s from AI health checks (llama-server models not present, expected).
+
+**Cleanup commit `348ec32`**: removed `devtools` feature, removed `open_devtools()`, removed debug code from `+page.svelte`.
+
+### Ongoing: Search Hangs Indefinitely
+
+After confirming JS executes and the home page loads, search still never completes. Typing "Radiohead" → loading bar spins forever. The `load` function in `src/routes/search/+page.ts` never returns.
+
+Traced the full call chain:
+- `searchArtists(provider, q)` → `invoke('query_mercury_db', { sql, params })` — FTS5 search against 2.6M artist db
+- `getLibraryTracks()` → `invoke('get_library_tracks')` — library.db lookup
+
+Neither `check_database` (no State) nor `get_all_ai_settings` (TasteDbState) hang. The hang is specific to `MercuryDbState` commands. Ruled out mutex deadlock between the 4 State types (they're independent).
+
+Leading hypotheses: slow FTS5 query on large db, Rust panic on blocking thread (no IPC response sent), or sqlite-vec auto-extension interfering (though mercury.db opened before the auto-extension is registered).
+
+**Diagnostic code added (uncommitted)**: devtools feature re-added, `open_devtools()`, 15s timeout in `TauriProvider.all()`, console.log markers throughout the search path. Need to rebuild and check DevTools console to identify the exact hang point.
+
+<!-- status -->
+Debugging search hang. Diagnostic code ready — need to rebuild (`npm run tauri build -- --no-bundle`) and test. DevTools will show exactly which step hangs. See HANDOFF.md for full diagnostic plan.
+<!-- /status -->

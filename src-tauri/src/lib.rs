@@ -128,6 +128,11 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_oauth::init())
         .setup(|app| {
+            // DEBUG: force DevTools open — remove after search hang is diagnosed
+            if let Some(window) = app.get_webview_window("main") {
+                window.open_devtools();
+            }
+
             let app_data = app.path().app_data_dir().expect("failed to get app data dir");
             std::fs::create_dir_all(&app_data).ok();
             let conn = library::db::init_library_db(&app_data)
