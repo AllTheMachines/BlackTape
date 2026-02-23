@@ -95,6 +95,7 @@ Progress: [██████████] v1.0 SHIPPED
 | Phase 10.1 P02 | 7 | 2 tasks | 4 files |
 | Phase 11-scene-building P01 | 3 | 2 tasks | 2 files |
 | Phase 11-scene-building P02 | 3 | 2 tasks | 5 files |
+| Phase 11-scene-building P03 | 4min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -332,6 +333,10 @@ Progress: [██████████] v1.0 SHIPPED
 - [Phase 11-scene-building]: is_emerging stored as INTEGER 0/1 in SQLite, converted to bool in Rust struct — rusqlite has no native bool column type
 - [Phase 11-scene-building]: Two-tier partition with Fisher-Yates shuffle (active/emerging) — anti-rich-get-richer by design; niche filter (< 200 artists per tag) excludes mainstream genres from scene candidates
 - [Phase 11-scene-building]: isNovelTagCombination() checks genres KB table — tag combos not in any known genre are classified as emerging scenes (the most interesting discoveries)
+- [Phase 11-03]: Top Tracks section gates both h2 and list on {#if data.topTracks.length > 0} — no empty heading ever renders (locked decision)
+- [Phase 11-03]: svelte:head outside {#if} with ternary for nullable scene title — Svelte compile-time restriction
+- [Phase 11-03]: Feature-request CTA links to /scenes?feature=collaborative-playlists — Plan 04 intercepts this param to count feature votes
+- [Phase 11-03]: isDetecting reactive binding via onMount dynamic import of scenesState — avoids .svelte.ts static import in non-Tauri contexts
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
@@ -345,7 +350,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-23
-Phase 11 Plan 02 complete. src/lib/scenes/ module created with 4 files (types.ts, detection.ts, state.svelte.ts, index.ts). sceneDescription prompt added to PROMPTS. npm run check 0 errors.
-Stopped at: Completed 11-02-PLAN.md
-Next: Phase 11 Plan 03 (scene UI)
-Next: Phase 11 Plan 02 (scene detection engine)
+Phase 11 Plan 03 complete. Scene UI routes created: /scenes (directory, two-tier anti-rich-get-richer grid) and /scenes/[slug] (detail: artists, top tracks, listener count, tags, AI description slot). SceneCard.svelte component. npm run check 0 errors, npm run build success.
+Stopped at: Completed 11-03-PLAN.md
+Next: Phase 11 Plan 04 (scene community features — feature requests, suggestions)

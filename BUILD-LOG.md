@@ -3637,3 +3637,45 @@ The anti-rich-get-richer design is the key insight here. Popular genres won't do
 All Tauri IPC calls use the `getInvoke()` dynamic import pattern, consistent with the rest of the codebase. Web context gets empty arrays everywhere — zero breakage on web build.
 
 npm run check: 0 errors, 0 new warnings.
+
+> **Commit e821681** (2026-02-23 12:15) — feat(11-02): scenes state module, barrel export, and AI scene description prompt
+> Files changed: 4
+
+> **Commit 4d09e60** (2026-02-23 12:17) — docs(11-02): complete scene detection engine plan
+> Files changed: 3
+
+> **Commit 8f90afe** (2026-02-23 12:19) — feat(11-03): scene directory route — listing page with two-tier display
+> Files changed: 4
+
+> **Commit e4ae979** (2026-02-23 12:21) — feat(11-03): scene detail route — artists, top tracks, listener count, AI description
+> Files changed: 3
+
+## Entry 050 — 2026-02-23 — Phase 11 Plan 03: Scenes UI Routes
+
+### What Got Built
+
+The user-facing output of Phase 11 — two routes that surface the detection algorithm as an actual browseable interface.
+
+**`/scenes` directory page** — Two-tier anti-rich-get-richer grid. Active scenes in one section, emerging scenes in another. Both tiers arrive pre-shuffled from `partitionScenes()` in the detection engine, so no scene ever dominates by virtue of appearing first. Empty state shows a helpful message (never crashes). Feature-request CTA at the bottom links to `/scenes?feature=collaborative-playlists` for Plan 04's request counter.
+
+**`/scenes/[slug]` detail page** — Five display blocks per the locked decision (CONTEXT.md):
+1. Header: scene name + listener count badge + emerging chip
+2. Tags: all cluster tags as chips, each linking to `/discover?tags=[tag]`
+3. Artists in this scene: list of artist links with country
+4. Top Tracks: ordered list (up to 10), grouped across up to 5 artists to prevent one artist dominating. Block omitted entirely when empty — no empty heading.
+5. AI description slot: `effectiveBio` pattern — null by default, filled async via `PROMPTS.sceneDescription` in `onMount` (Tauri + AI enabled only). Not-found state renders gracefully on both web and Tauri.
+
+**`SceneCard.svelte`** — Reusable card component. Scene name (h3), top 3 tags as subtitle, listener count badge, emerging badge in `--accent` color. Uses CSS custom properties from theme.css throughout.
+
+### Universal Load Pattern
+
+Both routes use the established universal load pattern:
+- `+page.server.ts` returns minimal server data (empty arrays for web — detection is Tauri-only)
+- `+page.ts` branches on `isTauri()`: web = passthrough, Tauri = `loadScenes()` + DB queries
+- Dynamic imports isolate all Tauri/scene deps from web bundle
+
+### Technical Notes
+
+The `svelte:head` requirement (must be outside `{#if}`) is satisfied in both pages — ternary for title when `data.scene` might be null. The recordings query wraps in try/catch: the `recordings` table exists in mercury.db but we degrade gracefully if missing.
+
+npm run check: 0 errors (7 pre-existing warnings, unchanged). npm run build: success (Cloudflare adapter).
