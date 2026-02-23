@@ -21,10 +21,11 @@ A comprehensive guide to how Mercury works, how its parts connect, and how data 
 13. [Underground Aesthetic](#underground-aesthetic)
 14. [Community Foundation](#community-foundation-phase-9)
 15. [Communication Layer](#communication-layer-phase-10)
-16. [Build System](#build-system)
-17. [Configuration Reference](#configuration-reference)
-18. [AI Subsystem](#ai-subsystem)
-19. [Module Dependency Map](#module-dependency-map)
+16. [Scene Building](#scene-building)
+17. [Build System](#build-system)
+18. [Configuration Reference](#configuration-reference)
+19. [AI Subsystem](#ai-subsystem)
+20. [Module Dependency Map](#module-dependency-map)
 
 ---
 
@@ -1094,6 +1095,64 @@ All Mercury scene rooms include `['t', 'mercury']` as a required tag at creation
 ### Relay Strategy
 
 Mercury ships with a hardcoded relay list of 4–5 well-known public relays. NDK's outbox model selects the optimal relay per operation. No Mercury-operated relay is required. If relay spam becomes a problem, the `['t', 'mercury']` scoping convention provides a filter layer; a Mercury-specific relay can be added later without protocol changes.
+
+---
+
+## Scene Building
+
+### Overview
+
+Scenes are music micro-communities detected automatically from collective listening data. They emerge from the intersection of niche tag clusters and listener overlap — not editorial curation, not user creation. A scene exists when the same people collect the same niche artists.
+
+### Detection Algorithm
+
+Scene detection runs client-side in the Tauri desktop app using existing infrastructure:
+
+1. **Pass 1 — Tag cluster seeds**: Query `tag_cooccurrence` for niche tag pairs (artist_count < 200 per tag, shared_artists >= 5). Returns up to 200 seed pairs.
+2. **Pass 2 — Cluster grouping**: Merge overlapping tag pairs into clusters (union-find). Tags sharing one or more members form the same cluster.
+3. **Pass 3 — Artist lookup**: For each cluster, fetch artists tagged with all (up to 3) cluster tags from `artists` + `artist_tags`.
+4. **Pass 4 — Listener validation**: Check how many scene artists appear in the user's `favorite_artists` (taste.db). Minimum 2 favorites = scene is validated.
+5. **Pass 5 — Novelty**: Check if any scene tag matches a `genres.mb_tag` in the Knowledge Base. No match = `is_emerging = true`.
+
+Detection runs once per session start. Results cached in `detected_scenes` (taste.db). Re-runs when triggered by new favorites or manual refresh.
+
+### Anti-Rich-Get-Richer Display
+
+Scenes directory splits into two tiers displayed in random order (Fisher-Yates shuffle):
+- **Emerging**: `is_emerging = true` OR `listener_count <= 2` — novel, less established
+- **Active**: not emerging AND `listener_count > 2` — established micro-communities
+
+Scenes are NEVER sorted by listener count. This prevents popular scenes from always dominating the directory (the rich-get-richer trap).
+
+### Data Model
+
+**taste.db tables** (user-local):
+- `detected_scenes` — cached detection results (slug, name, tags JSON, artist_mbids JSON, listener_count, is_emerging, detected_at)
+- `scene_follows` — scenes the user follows (slug, followed_at)
+- `scene_suggestions` — artist suggestions submitted by user (scene_slug, artist_mbid, artist_name)
+- `feature_requests` — vote counts for deferred creation tools (feature_id, vote_count, last_voted)
+
+### Interactions
+
+- **Follow a scene**: Writes to `scene_follows` (taste.db) + publishes NIP-51 kind 30001 list to Nostr relays with `d='mercury-scenes'`. Local state is authoritative; Nostr is optional social layer.
+- **Suggest an artist**: Queued in `scene_suggestions`. Appears on scene page as "community suggested." Feeds into next detection run as weighted input.
+- **Feature request vote**: Upvotes a deferred creation tool idea. Stored in `feature_requests` (Tauri) or localStorage (web).
+
+### Routes
+
+- `/scenes` — Scene directory with two-tier display
+- `/scenes/[slug]` — Scene detail: artists, listener count, tags, async AI description
+- `/api/scenes` — Web API: proto-scenes from `tag_cooccurrence` (D1 snapshot for web browsing without taste profile)
+
+### Anti-Patterns
+
+| Anti-Pattern | Why Avoided |
+|---|---|
+| Sort scenes by listener_count | Rich-get-richer — niche scenes become invisible |
+| Detect scenes on every page load | Expensive multi-join queries; cache in taste.db instead |
+| Tag co-occurrence only (no listener validation) | Tag overlap without shared listeners is coincidence, not scene |
+| Block page render on AI description | AI generation takes 2-10s; async slot pattern used (effectiveBio model) |
+| Web path running client-side detection | taste.db is Tauri-only; web gets tag_cooccurrence snapshot from D1 |
 
 ---
 

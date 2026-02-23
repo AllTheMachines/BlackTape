@@ -32,8 +32,15 @@ Mercury is a music discovery engine that indexes all music from open databases a
     - [Scene Rooms](#scene-rooms)
     - [Listening Parties (Ephemeral Sessions)](#listening-parties-ephemeral-sessions)
     - [Privacy Notes](#privacy-notes)
-15. [Web vs Desktop](#web-vs-desktop)
-16. [Troubleshooting](#troubleshooting)
+15. [Scenes](#scenes)
+    - [Browsing Scenes](#browsing-scenes)
+    - [Scene Pages](#scene-pages)
+    - [Following a Scene](#following-a-scene)
+    - [Suggesting an Artist](#suggesting-an-artist)
+    - [Requesting Creation Tools](#requesting-creation-tools)
+    - [How Detection Works](#how-detection-works)
+16. [Web vs Desktop](#web-vs-desktop)
+17. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -695,6 +702,46 @@ Mercury's existing AI configuration (from Settings → AI Settings) powers commu
 
 ---
 
+## Scenes
+
+Scenes are music micro-communities that Mercury discovers automatically from your listening and collection data. A scene forms when the same niche artists keep appearing together — both in tag data and in what people actually collect.
+
+### Browsing Scenes
+
+Go to **Scenes** in the navigation to see all detected scenes, divided into two sections:
+- **Active Scenes** — established micro-communities with multiple connected listeners
+- **Emerging** — novel tag combinations appearing for the first time, possibly before anyone else has noticed them
+
+Scenes are displayed in random order within each section — popular scenes don't automatically dominate.
+
+### Scene Pages
+
+Each scene page shows:
+- The artists Mercury detected as part of the scene
+- How many of your favorites are in this scene
+- The tags that define the scene
+- A one-sentence AI-generated description (Tauri desktop, when AI is enabled)
+
+### Following a Scene
+
+Click **Follow Scene** on any scene detail page to follow it. Following a scene:
+- Saves your follow to your local taste profile
+- Publishes the follow to the Nostr network (if connected) so it's part of your public taste signal
+
+### Suggesting an Artist
+
+If you know an artist who belongs in a scene but Mercury hasn't detected them, use the **Suggest an artist** box at the bottom of any scene page. Suggestions are queued and feed into the next detection run.
+
+### Requesting Creation Tools
+
+If you'd like features like collaborative playlists or shared collections, use the **Request** button at the bottom of the Scenes page. This helps prioritise what gets built next.
+
+### How Detection Works
+
+Mercury uses your favorites and the tag co-occurrence map to detect scenes automatically each time you open the app. No configuration needed — scenes emerge as your collection grows.
+
+---
+
 ## Web vs Desktop
 
 | Feature | Web | Desktop |
@@ -725,6 +772,8 @@ Mercury's existing AI configuration (from Settings → AI Settings) powers commu
 | Import listening history (Spotify, Last.fm, Apple, CSV) | No | Yes |
 | Export all user data | No | Yes |
 | Communication (DMs, scene rooms, listening parties) | Yes | Yes |
+| Scenes directory (browse proto-scenes) | Yes | Yes |
+| Scenes — follow, suggest, AI detection | No | Yes |
 | Requires internet for artist pages | Yes | Yes* |
 
 *Artist pages fetch releases and links from MusicBrainz, which requires internet. Search works offline using the local database.
@@ -811,4 +860,4 @@ Local model processing time depends on your hardware. The generation model (Qwen
 
 ---
 
-*Mercury v0.1.0 — Last updated: 2026-02-23 (Phase 10: Communication Layer — DMs, scene rooms, listening parties, Nostr protocol)*
+*Mercury v0.1.0 — Last updated: 2026-02-23 (Phase 11: Scene Building — auto-detected music micro-communities, follow, suggest, feature requests)*
