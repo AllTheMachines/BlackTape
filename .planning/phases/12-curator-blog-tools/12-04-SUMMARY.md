@@ -110,6 +110,19 @@ Phase 12 complete. All four plans shipped:
 
 Phase 13 can reference the curator system freely — curator_features table documented, /new-rising?curator= URL pattern established.
 
+## Self-Check: PASSED
+
+- src/routes/new-rising/+page.svelte: FOUND
+- src/routes/new-rising/+page.server.ts: FOUND
+- src/routes/api/new-rising/+server.ts: FOUND
+- src/routes/api/rss/new-rising/+server.ts: FOUND
+- ARCHITECTURE.md contains "Curator / Blog Tools": FOUND
+- docs/user-manual.md contains "Curator Tools": FOUND
+- Commit 2274244: FOUND (feat - Task 1)
+- Commit 91412e3: FOUND (docs - Task 2)
+- npm run check: 0 errors
+- npm run build: success
+
 ---
 *Phase: 12-curator-blog-tools*
 *Completed: 2026-02-23*

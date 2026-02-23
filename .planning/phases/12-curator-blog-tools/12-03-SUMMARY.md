@@ -119,6 +119,15 @@ None - no external service configuration required.
 - /new-rising?curator=[handle] links are in place — Plan 04 needs to implement the curator filter query on that page
 - Tauri collection-add trigger: API endpoint ready, Tauri call site documented with code comment for future implementation
 
+## Self-Check: PASSED
+
+- FOUND: `src/routes/api/curator-feature/+server.ts`
+- FOUND: `pipeline/lib/schema.sql` (curator_features DDL appended)
+- FOUND: `.planning/phases/12-curator-blog-tools/12-03-SUMMARY.md`
+- FOUND: commit `25cbd7c` (Task 1)
+- FOUND: commit `c94534e` (Task 2)
+- FOUND: commit `39b0c6e` (docs/state)
+
 ---
 *Phase: 12-curator-blog-tools*
 *Completed: 2026-02-23*

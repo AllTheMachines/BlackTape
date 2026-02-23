@@ -3982,3 +3982,9 @@ All four plans shipped:
 
 > **Commit 91412e3** (2026-02-23 16:08) — docs(12-04): add Curator / Blog Tools section to ARCHITECTURE.md and user-manual.md
 > Files changed: 2
+
+> **Commit 53b5f78** (2026-02-23 16:10) — docs(12-04): complete New & Rising plan — SUMMARY.md + state updates
+> Files changed: 4
+
+> **Commit b6876c9** (2026-02-23 17:21) — fix(12): embed routes skip root layout chrome via isEmbed guard
+> Files changed: 1
