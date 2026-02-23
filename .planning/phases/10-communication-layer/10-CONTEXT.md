@@ -47,7 +47,6 @@ Add messaging infrastructure so users who found each other in Phase 9 can actual
 - **AI moderation bot**: room owner's AI actively monitors their room for harmful content
 - **AI taste translation**: when two users connect via DM, AI explains WHY their tastes overlap — what's the musical bridge
 - **AI matchmaking context**: suggests conversation starters based on taste overlap/divergence
-- **AI bots as room participants**: users can invite AI bots into rooms (e.g., a DJ bot that suggests tracks based on room's taste profile)
 
 ### Claude's Discretion
 - Communication infrastructure protocol (Matrix vs Nostr vs P2P vs relay) — deferred to research, pick based on zero-server-cost constraint and ecosystem maturity at build time
@@ -71,7 +70,7 @@ Add messaging infrastructure so users who found each other in Phase 9 can actual
 <deferred>
 ## Deferred Ideas
 
-- None surfaced — discussion stayed within Phase 10 scope
+- **AI bots as room participants** — users inviting AI bots (e.g., a DJ bot that suggests tracks based on the room's taste profile) into scene rooms. Deferred from Phase 10 to Phase 11 (Scene Building). Rationale: implementing a Nostr keypair operated by the local AI requires its own identity lifecycle, UX patterns for bot presence, and interaction design that goes beyond the communication layer's scope. This is a Phase 11 scene-building feature, not a prerequisite for DMs, rooms, or sessions. The ROADMAP Phase 10 success criteria (items 1-8) do not include AI bots. Revisit during Phase 11 planning.
 
 </deferred>
 
