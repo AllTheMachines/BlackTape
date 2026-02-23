@@ -13,6 +13,8 @@
 	import { getAiProvider } from '$lib/ai/engine';
 	import { PROMPTS } from '$lib/ai/prompts';
 	import { openChat, chatState } from '$lib/comms/notifications.svelte.js';
+	import { generateEmbedSnippets } from '$lib/curator/embed-snippet';
+	import { page } from '$app/stores';
 
 	let { data } = $props();
 
@@ -140,6 +142,29 @@
 	function openRoomsForArtist() {
 		chatState.view = 'rooms';
 		openChat('rooms');
+	}
+
+	/** Embed widget UI state. */
+	let showEmbed = $state(false);
+	let embedMode = $state<'iframe' | 'script'>('iframe');
+	let qrSvg = $state<string | null>(null);
+	let showQr = $state(false);
+
+	/** Embed URL derived from current page origin + artist slug. */
+	let embedUrl = $derived(`${$page.url.origin}/embed/artist/${data.artist.slug}`);
+
+	/** Iframe and script-tag snippets for copy-paste. */
+	let snippets = $derived(generateEmbedSnippets(embedUrl, data.artist.name));
+
+	/** Generate QR code on demand (client-side only, lazy import). */
+	async function handleQrClick() {
+		if (!showQr) {
+			const { generateQrSvg } = await import('$lib/curator/qr');
+			qrSvg = await generateQrSvg(embedUrl);
+			showQr = true;
+		} else {
+			showQr = false;
+		}
 	}
 </script>
 
@@ -337,6 +362,50 @@
 		artistTags={data.artist.tags || ''}
 		artistMbid={data.artist.mbid}
 	/>
+
+	<!-- Embed Widget UI -->
+	<section class="embed-section">
+		<button class="embed-toggle" onclick={() => (showEmbed = !showEmbed)}>
+			{showEmbed ? 'Hide embed' : '&lt;/&gt; Embed this artist'}
+		</button>
+
+		{#if showEmbed}
+			<div class="embed-panel">
+				<div class="embed-mode-row">
+					<button
+						class="mode-btn"
+						class:active={embedMode === 'iframe'}
+						onclick={() => (embedMode = 'iframe')}
+					>iframe</button>
+					<button
+						class="mode-btn"
+						class:active={embedMode === 'script'}
+						onclick={() => (embedMode = 'script')}
+					>script tag</button>
+				</div>
+
+				<pre class="embed-code"><code>{embedMode === 'iframe' ? snippets.iframe : snippets.scriptTag}</code></pre>
+
+				<div class="embed-actions">
+					<button
+						class="embed-action-btn"
+						onclick={() => {
+							navigator.clipboard.writeText(embedMode === 'iframe' ? snippets.iframe : snippets.scriptTag);
+						}}
+					>Copy</button>
+					<button class="embed-action-btn" onclick={handleQrClick}>
+						{showQr ? 'Hide QR' : 'QR Code'}
+					</button>
+				</div>
+
+				{#if showQr && qrSvg}
+					<div class="qr-wrapper">
+						{@html qrSvg}
+					</div>
+				{/if}
+			</div>
+		{/if}
+	</section>
 </div>
 
 <style>
@@ -658,6 +727,108 @@
 		color: var(--text-primary);
 		border-radius: 3px;
 		font-size: 0.8rem;
+	}
+
+	/* ── Embed Widget ──────────────────────────────────── */
+	.embed-section {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-sm);
+	}
+
+	.embed-toggle {
+		align-self: flex-start;
+		background: none;
+		border: 1px solid var(--border-default);
+		border-radius: 6px;
+		padding: 6px 12px;
+		cursor: pointer;
+		color: var(--text-muted);
+		font-size: 0.8rem;
+		font-family: monospace;
+		transition: border-color 0.15s, color 0.15s;
+	}
+
+	.embed-toggle:hover {
+		border-color: var(--text-accent);
+		color: var(--text-primary);
+	}
+
+	.embed-panel {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-sm);
+		padding: var(--space-md);
+		background: var(--bg-elevated);
+		border: 1px solid var(--border-subtle);
+		border-radius: var(--card-radius);
+	}
+
+	.embed-mode-row {
+		display: flex;
+		gap: var(--space-xs);
+	}
+
+	.mode-btn {
+		padding: 4px 10px;
+		border: 1px solid var(--border-default);
+		border-radius: 4px;
+		background: none;
+		color: var(--text-muted);
+		font-size: 0.8rem;
+		cursor: pointer;
+		transition: background 0.15s, border-color 0.15s, color 0.15s;
+	}
+
+	.mode-btn.active {
+		background: var(--bg-hover);
+		border-color: var(--link-color);
+		color: var(--text-primary);
+	}
+
+	.embed-code {
+		background: var(--bg-surface, var(--bg-primary));
+		border: 1px solid var(--border-subtle);
+		border-radius: 4px;
+		padding: var(--space-sm);
+		font-size: 0.75rem;
+		font-family: monospace;
+		color: var(--text-secondary);
+		overflow-x: auto;
+		white-space: pre;
+		margin: 0;
+	}
+
+	.embed-actions {
+		display: flex;
+		gap: var(--space-xs);
+	}
+
+	.embed-action-btn {
+		padding: 4px 10px;
+		border: 1px solid var(--border-default);
+		border-radius: 4px;
+		background: none;
+		color: var(--text-muted);
+		font-size: 0.8rem;
+		cursor: pointer;
+		transition: background 0.15s, border-color 0.15s, color 0.15s;
+	}
+
+	.embed-action-btn:hover {
+		background: var(--bg-hover);
+		border-color: var(--border-hover);
+		color: var(--text-primary);
+	}
+
+	.qr-wrapper {
+		max-width: 150px;
+	}
+
+	.qr-wrapper :global(svg) {
+		width: 100%;
+		height: auto;
+		display: block;
 	}
 
 	/* ── Responsive ────────────────────────────────────── */
