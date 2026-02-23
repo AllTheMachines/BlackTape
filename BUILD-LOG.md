@@ -3505,3 +3505,55 @@ ConversationList uses the same `{#await import('./ConversationList.svelte')}` pa
 <!-- /decision -->
 
 `npm run check` — 0 errors (6 pre-existing warnings in unrelated files, unchanged).
+
+> **Commit cac1efe** (2026-02-23 10:34) — docs(10.1-01): complete CSS aliases + DM conversation list plan — SUMMARY, STATE, ROADMAP
+> Files changed: 5
+
+> **Commit 34cdac4** (2026-02-23 10:36) — feat(10.1-02): add export_play_history_to_path Rust command (GAP-08)
+> Files changed: 2
+
+> **Commit b010669** (2026-02-23 10:38) — docs(10.1-02): complete taste publish + export command plan — SUMMARY, STATE, ROADMAP
+> Files changed: 3
+
+> **Commit 4ac6a50** (2026-02-23 10:42) — docs(phase-10.1): complete phase execution
+> Files changed: 2
+
+> **Commit f32a0c0** (2026-02-23 11:12) — docs(audit): v1.0 final milestone audit — 41/41 requirements satisfied, tech_debt status
+> Files changed: 1
+
+> **Commit 538152c** (2026-02-23 11:22) — chore: complete v1.0 milestone
+> Files changed: 9
+
+> **Commit c811f07** (2026-02-23 11:23) — chore: archive v1.0 phase directories to milestones/v1.0-phases/
+> Files changed: 376
+
+---
+
+## Entry 047 — 2026-02-23 — v1.0 MVP Shipped
+
+<!-- breakthrough -->
+Nine days. 299 commits. 15 phases. 71 plans. 456 files. ~24,100 lines of code. v1.0 is done.
+
+What shipped:
+
+- **Data pipeline** — 2.8M artists from MusicBrainz into SQLite + FTS5, instant search
+- **Web gateway** — Search engine on Cloudflare Pages + D1, mobile responsive
+- **Desktop app** — Tauri 2.0, local SQLite, offline-first, torrent distribution, NSIS installer
+- **Local music player** — Folder scan, lofty metadata, playback, queue, unified with discovery
+- **Client-side AI** — Qwen2.5 3B + Nomic Embed, NL queries, taste profiling with 30-day decay
+- **Playback → taste signal** — Playing local files feeds AI recommendations automatically
+- **Tag discovery engine** — Niche-first composite ranking, crate digging, D3 style map, uniqueness scores
+- **Knowledge base** — Wikidata genre graph (D3 force), Leaflet scene maps, time machine, liner notes
+- **Release pages** — 5-platform buy links (Bandcamp, Amazon, Apple, Beatport, Discogs) with affiliate coding
+- **Underground aesthetic** — OKLCH taste-based theming, PaneForge cockpit panel layouts, streaming preference
+- **Community foundation** — Pseudonymous identity, DiceBear pixel avatars, collections, D3 taste fingerprint, multi-source import
+- **Communication layer** — Nostr NIP-17 encrypted DMs, NIP-28 scene rooms, ephemeral listening parties
+
+Three milestone audits. Eight gaps found, eight gaps closed. Final audit: 41/41 requirements satisfied. No code blockers.
+
+Git tag: v1.0. Pushed to remote.
+
+Archived: `.planning/milestones/v1.0-*` + `.planning/milestones/v1.0-phases/` (15 phase directories)
+<!-- /breakthrough -->
+
+Next: `/gsd:new-milestone` to plan v1.1 (Phases 11–15: Scene Building, Curator Tools, Interoperability, Listening Rooms, Artist Tools).
