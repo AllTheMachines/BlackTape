@@ -153,6 +153,7 @@
 		<nav class="nav-links">
 			<a href="/discover" class="nav-link">Discover</a>
 			<a href="/style-map" class="nav-link">Style Map</a>
+			<a href="/new-rising" class="nav-link" class:active={$page.url.pathname.startsWith('/new-rising')}>New & Rising</a>
 			<a href="/scenes" class="nav-link" class:active={$page.url.pathname.startsWith('/scenes')}>Scenes</a>
 			<a href="/kb" class="nav-link" class:active={$page.url.pathname.startsWith('/kb')}>Knowledge Base</a>
 			<a href="/time-machine" class="nav-link" class:active={$page.url.pathname.startsWith('/time-machine')}>Time Machine</a>
