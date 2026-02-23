@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Phase 09 complete. All 6 plans done: taste.db schema + Tauri commands (Plan 01), DiceBear avatar module + AvatarPreview/AvatarEditor + tauri-plugin-oauth (Plan 02), collections reactive state + import modules + CollectionShelf (Plan 03), /profile page + TasteFingerprint D3 constellation (Plan 04), Save to Shelf UI on artist/release pages + Settings Identity/Import/Export (Plan 05), Profile nav link + ARCHITECTURE.md + user-manual.md + BUILD-LOG.md (Plan 06).
+**Current focus:** Phase 10 in progress. Plan 01 done: NDK singleton + keypair IndexedDB identity + /api/unfurl link preview endpoint.
 
 ## Current Position
 
-Phase: 09-community-foundation of 15 (Community Foundation — Complete)
-Current Plan: 09-06 (complete)
-Status: Phase 09 ALL 6 plans complete — taste.db schema (01), DiceBear avatar system (02), collections + imports (03), profile page + TasteFingerprint (04), collections UI + settings expansion (05), nav link + docs (06). 2026-02-22.
-Last activity: 2026-02-22 — 09-06 complete. Profile nav link added to Tauri header. ARCHITECTURE.md Community Foundation section. user-manual.md Community Foundation section (Profile, Shelves, Import, Export). BUILD-LOG.md Phase 9 wrap-up entry with 10 key decisions. npm run check 0 errors, npm run build exits 0.
+Phase: 10-communication-layer of 15 (Communication Layer — In Progress)
+Current Plan: 10-01 (complete)
+Status: Phase 10 Plan 01 complete — Nostr infrastructure (keypair.ts, nostr.svelte.ts, index.ts) + Mercury link unfurl (unfurl.ts, /api/unfurl). 2026-02-23.
+Last activity: 2026-02-23 — 10-01 complete. loadOrCreateKeypair() with IndexedDB persistence. ndkState reactive singleton + initNostr() 4-relay pool. extractMercuryUrls() + fetchUnfurlData(). /api/unfurl POST with origin-based validation. npm run check 0 errors, npm run build exits 0.
 
-Progress: [██████████] 6/6 plans complete (Phase 09 Complete)
+Progress: [█░░░░░░░░░] 1/? plans complete (Phase 10 In Progress)
 
 ## Performance Metrics
 
@@ -82,6 +82,7 @@ Progress: [██████████] 6/6 plans complete (Phase 09 Complete
 | Phase 09-community-foundation P04 | 8min | 2 tasks | 2 files |
 | Phase 09-community-foundation P05 | 5min | 2 tasks | 3 files |
 | Phase 09-community-foundation P06 | 4 | 2 tasks | 4 files |
+| Phase 10-communication-layer P01 | 3min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -289,6 +290,10 @@ Progress: [██████████] 6/6 plans complete (Phase 09 Complete
 - [Phase 09]: Profile nav link added between Explore and Settings in Tauri header nav block
 - [Phase 09]: ARCHITECTURE.md Community Foundation section documents taste.db extensions, identity system, collections, Taste Fingerprint, import pipelines, and anti-patterns
 - [Phase 09]: user-manual.md Community Foundation section gives users clear instructions for profile, shelves, import, and export
+- [Phase 10-01]: Nostr uses secp256k1 (not WebCrypto curve) — store raw Uint8Array in IndexedDB, not CryptoKey
+- [Phase 10-01]: NDKPrivateKeySigner via dynamic import inside initNostr() — consistent with Tauri isolation pattern; idempotent guard on ndkState.connected
+- [Phase 10-01]: Origin-based URL validation in /api/unfurl using request.url.origin — avoids PUBLIC_SITE_URL static env var not defined in project; works across all environments
+- [Phase 10-01]: unfurl.js is server-only — imported only in +server.ts routes, never in client lib/ modules; fetchUnfurlData is intentionally undebounced (callers apply 800ms debounce)
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
@@ -301,7 +306,7 @@ None
 
 ## Session Continuity
 
-Last session: 2026-02-22
-Phase 09 Plan 06 complete. Profile nav link added to Tauri header (between Explore and Settings, with active class). ARCHITECTURE.md Community Foundation section (identity system, collections, Taste Fingerprint, import pipelines, anti-patterns). user-manual.md Community Foundation section (Profile, Shelves, Import Listening History, Export). BUILD-LOG.md Phase 9 wrap-up with 10 key decisions. npm run check 0 errors, npm run build exits 0. Phase 09 COMPLETE.
-Stopped at: Completed 09-06-PLAN.md
-Next: Phase 10 — Communication Layer
+Last session: 2026-02-23
+Phase 10 Plan 01 complete. NDK + nostr-tools + idb + unfurl.js installed. keypair.ts: loadOrCreateKeypair() IndexedDB-backed secp256k1 identity. nostr.svelte.ts: ndkState $state singleton + initNostr() 4-relay pool (nos.lol, relay.damus.io, nostr.mom, relay.nostr.band). unfurl.ts: extractMercuryUrls() + fetchUnfurlData(). /api/unfurl POST: origin-based Mercury URL validation + OG metadata fetch. npm run check 0 errors, npm run build exits 0.
+Stopped at: Completed 10-01-PLAN.md
+Next: Phase 10 Plan 02 — DM Inbox / Conversation List

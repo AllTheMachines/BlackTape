@@ -3081,3 +3081,47 @@ The sidebar now:
 ### Verification
 
 `npm run check` — 0 errors. `npm run build` — success.
+
+> **Commit 4677c9d** (2026-02-23 00:04) — fix: connect LeftSidebar discovery filter to URL state
+> Files changed: 3
+
+> **Commit 6a8ade8** (2026-02-23 00:31) — feat: add automated test suite + fix mobile layout bugs
+> Files changed: 8
+
+> **Commit 8a4af55** (2026-02-23 01:03) — docs(10): capture phase context
+> Files changed: 1
+
+> **Commit 6a4023a** (2026-02-23 01:12) — docs(10): research communication layer
+> Files changed: 1
+
+> **Commit 0fda48d** (2026-02-23 01:26) — docs(10): create phase plan
+> Files changed: 9
+
+> **Commit 4f30189** (2026-02-23 01:33) — fix(10): revise plans based on checker feedback
+> Files changed: 3
+
+## Entry — 2026-02-23 — Phase 10 Plan 01: Nostr Infrastructure + Link Unfurl
+
+### What Was Built
+
+The communication layer foundation. Every subsequent plan in Phase 10 depends on this.
+
+**Nostr identity layer:**
+- `src/lib/comms/keypair.ts` — `loadOrCreateKeypair()` generates secp256k1 Nostr keys on first run and persists them as raw `Uint8Array` in IndexedDB. Same identity every session. Key point: Nostr uses secp256k1, which WebCrypto's SubtleCrypto does NOT support — so we store the raw bytes, not a CryptoKey.
+- `src/lib/comms/nostr.svelte.ts` — `ndkState` reactive singleton ($state runes) + `initNostr()` which connects to 4 public relays: nos.lol, relay.damus.io, nostr.mom, relay.nostr.band. NDKPrivateKeySigner loaded via dynamic import (consistent with Tauri isolation pattern). `initNostr()` is idempotent — early-return guard on `ndkState.connected`.
+
+**Mercury link unfurl system:**
+- `src/lib/comms/unfurl.ts` — `extractMercuryUrls()` uses regex to find /artist/, /release/, /kb/ URLs in message text. `fetchUnfurlData()` POSTs to `/api/unfurl` and returns an `UnfurlCard`. Not debounced here — callers apply their own 800ms debounce before invoking.
+- `src/routes/api/unfurl/+server.ts` — server-side POST handler. Validates that the URL belongs to the same origin as the request (derived from `new URL(request.url).origin`). Calls `unfurl.js` to fetch OG metadata. Returns `{ title, description, image, url }` with `Cache-Control: max-age=3600`. Graceful degradation: unfurl failure returns `{ url }` with 200 — link still shows in chat without preview.
+
+### Key Decisions
+
+**secp256k1 as raw Uint8Array, not CryptoKey.** WebCrypto's SubtleCrypto doesn't support secp256k1 — it's not in the approved curve list. Storing a raw Uint8Array in IndexedDB works perfectly (structured clone handles typed arrays natively). The CryptoKey non-extractable pattern was explicitly rejected.
+
+**Origin-based URL validation instead of PUBLIC_SITE_URL env var.** The plan spec said to import `PUBLIC_SITE_URL` from `$env/static/public`. Problem: that env var isn't defined in this project (CF Pages runtime vars go in `$env/dynamic/private`, not static). Fixed by deriving the site origin from `new URL(request.url).origin` — functionally equivalent security guarantee (only Mercury-origin URLs processed), works across local dev, CF Pages preview, and production without any config.
+
+> **Commit 8e517fc** (2026-02-23 01:38) — feat(10-01): install Nostr deps + build keypair and NDK singleton
+> Files changed: 5
+
+> **Commit c358563** (2026-02-23 01:40) — feat(10-01): Mercury URL detection + /api/unfurl server route
+> Files changed: 5
