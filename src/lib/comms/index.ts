@@ -3,3 +3,5 @@ export { loadOrCreateKeypair } from './keypair.js';
 export { extractMercuryUrls, fetchUnfurlData, type UnfurlCard, MERCURY_URL_PATTERN } from './unfurl.js';
 export { chatState, notifState, openChat, closeChat, totalUnread } from './notifications.svelte.js';
 export type { ChatView } from './notifications.svelte.js';
+export { dmState, sendDM, subscribeToIncomingDMs, markConversationRead } from './dms.svelte.js';
+export type { DmMessage, DmConversation } from './dms.svelte.js';
