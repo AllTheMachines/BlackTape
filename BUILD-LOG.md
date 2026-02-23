@@ -3374,3 +3374,59 @@ Full communication layer is now accessible from the entire application:
 
 > **Commit f29c0b7** (2026-02-23) — feat(10-07): wire Nostr init + ChatOverlay into root layout
 > **Commit fb253c5** (2026-02-23) — feat(10-07): add scene room discovery links on artist and discover pages
+
+> **Commit 9d1fc82** (2026-02-23 02:20) — docs(10-07): complete application-integration plan — SUMMARY, STATE, ROADMAP, BUILD-LOG
+> Files changed: 4
+
+> **Commit af0d691** (2026-02-23 02:22) — docs(10-08): add Communication Layer section to ARCHITECTURE.md
+> Files changed: 1
+
+## Entry 045 — 2026-02-23 — Phase 10: Communication Layer Complete
+
+### What Was Built
+
+Phase 10 ships Mercury's full communication infrastructure using the Nostr protocol. Eight plans across the phase, from foundation to application integration.
+
+**Plans 10-01 through 10-07 delivered:**
+- Nostr keypair generation + IndexedDB persistence (`keypair.ts`)
+- NDK singleton + relay pool + connection state (`nostr.svelte.ts`)
+- NIP-17 gift-wrap encrypted DMs (`dms.svelte.ts`)
+- NIP-28 scene rooms — create, join, send, subscribe (`rooms.svelte.ts`)
+- Ephemeral listening party sessions — zero persistence guarantee (`sessions.svelte.ts`)
+- AI-powered room moderation — name safety check, flag/kick/ban/slow mode (`moderation.ts`)
+- Full chat UI — overlay drawer, message panel, room directory, session creator (`src/lib/components/chat/`)
+- Unfurl endpoint for Mercury link previews in messages (`/api/unfurl/+server.ts`)
+- Root layout integration: `initNostr()` on mount, `ChatOverlay` globally mounted, chat nav button with unread badge
+- Artist page + Discover page scene room discovery links
+
+**Plan 10-08 (this plan):** ARCHITECTURE.md + user-manual.md + BUILD-LOG.md documentation. Final `npm run check` + `npm run build` verification.
+
+### Phase 10: 10 Key Decisions
+
+<!-- decision: Phase 10 architectural decisions -->
+
+1. **Nostr over Matrix/P2P/relay** — Only protocol that satisfies all three layers (DMs, persistent rooms, ephemeral sessions) with zero server cost. Community-operated WebSocket relays; no Mercury infrastructure required.
+
+2. **NIP-17 gift-wrap for DMs (not NIP-04)** — NIP-17 hides conversation graph from relays; NIP-04 (deprecated) leaks who you're talking to even with encrypted content. NDK's standalone `giftWrap`/`giftUnwrap` functions handle the NIP-59 seal/wrap complexity.
+
+3. **CSS fixed-right drawer (not dialog.showModal())** — `showModal()` creates an inert backdrop blocking page interaction. Drawer pattern lets users browse Mercury while chatting.
+
+4. **AI gate on room creation only** — Requiring AI to CREATE ensures every room has moderation coverage from day one. Joining and participating require no AI. `AiGatePrompt.svelte` explains this clearly with a Settings link — no cryptic errors.
+
+5. **`['t', 'mercury']` scoping tag** — All Mercury rooms include this tag. Room directory queries filter `#t: ['mercury']` to avoid surfacing rooms from other Nostr apps.
+
+6. **IndexedDB for keypair (not localStorage)** — Nostr private keys are secp256k1 bytes (not WebCrypto-compatible), so non-extractable CryptoKey isn't possible. IndexedDB provides better isolation than localStorage.
+
+7. **Zero invoke() in sessions.svelte.ts** — Ephemeral listening party sessions must never persist. Architectural constraint: `sessions.svelte.ts` contains zero Tauri invoke calls. `endSession()` nulls all state.
+
+8. **800ms debounce on unfurl URL detection** — Prevents calling `/api/unfurl` on every keystroke while typing a URL. Cached by URL in session memory after first fetch.
+
+9. **Moderation is client-side (NIP-28, not NIP-29)** — NIP-29 requires special relay infrastructure with enforcement. NIP-28 kind:43/44 is client-enforced moderation that works on any public relay.
+
+10. **initNostr() outside isTauri() guard** — DMs and rooms work on web too. Only listening parties (tied to local player) are Tauri-specific. IndexedDB is available in all modern browsers.
+
+<!-- /decision -->
+
+### Phase 10 Complete
+
+`npm run check` — 0 errors. `npm run build` — exits 0. Communication layer is production-ready.

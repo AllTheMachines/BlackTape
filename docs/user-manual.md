@@ -27,8 +27,13 @@ Mercury is a music discovery engine that indexes all music from open databases a
     - [Shelves (Collections)](#shelves-collections)
     - [Import Listening History](#import-listening-history)
     - [Export Your Data](#export-your-data)
-14. [Web vs Desktop](#web-vs-desktop)
-15. [Troubleshooting](#troubleshooting)
+14. [Communication](#communication)
+    - [Direct Messages (DMs)](#direct-messages-dms)
+    - [Scene Rooms](#scene-rooms)
+    - [Listening Parties (Ephemeral Sessions)](#listening-parties-ephemeral-sessions)
+    - [Privacy Notes](#privacy-notes)
+15. [Web vs Desktop](#web-vs-desktop)
+16. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -619,6 +624,77 @@ Your data is yours. Mercury will never hold it hostage.
 
 ---
 
+## Communication
+
+Mercury's communication layer lets you talk with other users through encrypted messages, scene-based group rooms, and ephemeral listening parties. All communication uses the Nostr protocol — a decentralized network with no central server.
+
+### Getting Started
+
+When you first open the chat overlay (click the Chat icon in the navigation), Mercury generates a Nostr identity for you automatically. This identity is stored locally — it's yours and it's permanent.
+
+### Direct Messages (DMs)
+
+DMs are encrypted end-to-end using the NIP-17 gift-wrap protocol. Even the relay servers that carry your messages cannot read their contents or see who you're talking to.
+
+**To send a DM:**
+1. Click Chat in the navigation bar to open the chat overlay
+2. In the DMs tab, type or paste a user's Nostr public key (npub...)
+3. Type your message and press Enter or click the send button
+
+**Mercury link previews:** When you paste a Mercury artist, release, or genre URL in a message, it automatically unfurls into a mini card showing the cover art and name — after an 800ms pause to avoid triggering on partial typing.
+
+### Scene Rooms
+
+Scene rooms are persistent group chats organized by Mercury's tag taxonomy — the same tags used to discover artists. Rooms are discoverable through:
+- The **Rooms** tab in the chat overlay (browse all Mercury rooms, filter by tag)
+- The **Scene rooms for [tag]** button on artist pages
+- The **Rooms for this vibe** button on the Discover page when tags are active
+
+**Joining a room:** Find a room in the directory and click it to join. Messages arrive in real time via Nostr WebSocket subscriptions.
+
+**Creating a room:** Requires an AI model configured in Settings (this ensures every room has moderation coverage from day one). The room creation form requires a name and at least one tag. Your room name passes an AI content safety check before being published.
+
+**Inactive rooms** that have received no messages in 30 days are automatically archived — they stay searchable but don't appear in the active directory.
+
+#### Room Moderation
+
+If you created a room, you have access to moderation tools:
+- **Delete messages:** Remove a message from the room (NIP-28 kind:43 — clients that respect this won't show the message)
+- **Kick:** Remove a user from the room (kind:44)
+- **Ban:** Kick and prevent return (client-enforced)
+- **Slow mode:** Limit how often users can send messages (30s / 2min / 5min / 15min options)
+- **Co-moderators:** Appoint trusted members to share moderation duties
+
+**Flagging messages:** Any participant can flag a message — you won't see anything change, but the room owner receives a notification in their Moderation Queue. Flagging is silent and private.
+
+### Listening Parties (Ephemeral Sessions)
+
+A listening party is a live, shared moment tied to specific music. The core use case: "I'm playing this album right now — come listen with me."
+
+**Starting a party:**
+- On any artist or release page: click **"Start a listening party"**
+- In the chat overlay: click the **Parties** tab, then **+ New Party**
+
+Choose **Public** (visible in the active sessions feed and discoverable) or **Private** (invite-only — you receive a code to share).
+
+**When a party ends:** Everything is gone. Messages, participants, context — completely deleted. No recordings, no tracklist, no receipts. This is by design.
+
+### AI in Communication
+
+Mercury's existing AI configuration (from Settings → AI Settings) powers communication features:
+- **Room moderation:** Your AI model monitors your rooms for harmful content
+- **Taste translation:** When you connect with someone via DM, AI explains the musical bridge between your tastes
+- **Matchmaking context:** AI suggests conversation starters based on your overlapping discoveries
+
+### Privacy Notes
+
+- Nostr keypairs are stored in your browser's IndexedDB, not in any Mercury database
+- DMs use NIP-17 gift-wrap — relay servers see only encrypted blobs, not sender/recipient relationships
+- Ephemeral session messages never touch your local database
+- Scene room messages are publicly visible on the Nostr network to anyone subscribing to those event kinds
+
+---
+
 ## Web vs Desktop
 
 | Feature | Web | Desktop |
@@ -648,6 +724,7 @@ Your data is yours. Mercury will never hold it hostage.
 | Shelves (save artists and releases) | No | Yes |
 | Import listening history (Spotify, Last.fm, Apple, CSV) | No | Yes |
 | Export all user data | No | Yes |
+| Communication (DMs, scene rooms, listening parties) | Yes | Yes |
 | Requires internet for artist pages | Yes | Yes* |
 
 *Artist pages fetch releases and links from MusicBrainz, which requires internet. Search works offline using the local database.
@@ -734,4 +811,4 @@ Local model processing time depends on your hardware. The generation model (Qwen
 
 ---
 
-*Mercury v0.1.0 — Last updated: 2026-02-22 (Phase 9: Community Foundation — profile, shelves, import/export, Taste Fingerprint)*
+*Mercury v0.1.0 — Last updated: 2026-02-23 (Phase 10: Communication Layer — DMs, scene rooms, listening parties, Nostr protocol)*
