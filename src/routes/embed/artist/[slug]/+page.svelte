@@ -55,6 +55,20 @@
 			>
 				Listen on Mercury →
 			</a>
+
+			{#if data.curators && data.curators.length > 0}
+				<p class="embed-curators">
+					Discovered by
+					{#each data.curators as c, i}
+						<a
+							href="{data.siteUrl}/new-rising?curator={encodeURIComponent(c.curator_handle)}"
+							target="_blank"
+							rel="noopener"
+							class="embed-curator-handle"
+						>@{c.curator_handle}</a>{#if i < data.curators.length - 1}, {/if}
+					{/each}
+				</p>
+			{/if}
 		</div>
 
 		<span class="powered-by">
@@ -173,6 +187,23 @@
 	}
 
 	.listen-link:hover {
+		text-decoration: underline;
+	}
+
+	.embed-curators {
+		font-size: 10px;
+		color: var(--card-text-muted);
+		opacity: 0.65;
+		margin: 4px 0 0 0;
+		line-height: 1.3;
+	}
+
+	.embed-curator-handle {
+		color: var(--link-color);
+		text-decoration: none;
+	}
+
+	.embed-curator-handle:hover {
 		text-decoration: underline;
 	}
 

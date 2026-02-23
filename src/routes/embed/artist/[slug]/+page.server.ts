@@ -8,7 +8,14 @@ export const load: PageServerLoad = async ({ params, platform, url }) => {
 
 	// Guard: no D1 database available (e.g., during local dev without wrangler)
 	if (!platform?.env?.DB) {
-		return { artist: null, tags: [] as string[], coverArt: '', bio: null, siteUrl: '' };
+		return {
+			artist: null,
+			tags: [] as string[],
+			coverArt: '',
+			bio: null,
+			siteUrl: '',
+			curators: [] as Array<{ curator_handle: string }>
+		};
 	}
 
 	const provider = new D1Provider(platform.env.DB);
@@ -30,11 +37,23 @@ export const load: PageServerLoad = async ({ params, platform, url }) => {
 	// as a one-line artist summary without requiring a separate API call.
 	const bio: string | null = tags.length > 0 ? tags.slice(0, 4).join(' · ') : null;
 
+	// Load curator attribution for embed card — try/catch fallback for graceful degradation
+	let curators: Array<{ curator_handle: string }> = [];
+	try {
+		curators = await provider.all<{ curator_handle: string }>(
+			`SELECT curator_handle FROM curator_features WHERE artist_mbid = ? ORDER BY featured_at ASC LIMIT 5`,
+			artist.mbid
+		);
+	} catch {
+		// curator_features table may not exist on older DB versions — degrade gracefully
+	}
+
 	return {
 		artist,
 		tags,
 		coverArt,
 		bio,
-		siteUrl: url.origin
+		siteUrl: url.origin,
+		curators
 	};
 };

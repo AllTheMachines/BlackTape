@@ -149,12 +149,20 @@
 	let embedMode = $state<'iframe' | 'script'>('iframe');
 	let qrSvg = $state<string | null>(null);
 	let showQr = $state(false);
+	/** Optional curator handle for data-curator attribution in script-tag snippet. */
+	let curatorHandle = $state('');
 
 	/** Embed URL derived from current page origin + artist slug. */
 	let embedUrl = $derived(`${$page.url.origin}/embed/artist/${data.artist.slug}`);
 
-	/** Iframe and script-tag snippets for copy-paste. */
-	let snippets = $derived(generateEmbedSnippets(embedUrl, data.artist.name));
+	/** Iframe and script-tag snippets for copy-paste. Passes curator handle when in script mode. */
+	let snippets = $derived(
+		generateEmbedSnippets(
+			embedUrl,
+			data.artist.name,
+			embedMode === 'script' && curatorHandle.trim() ? curatorHandle.trim() : undefined
+		)
+	);
 
 	/** Generate QR code on demand (client-side only, lazy import). */
 	async function handleQrClick() {
@@ -282,6 +290,18 @@
 				{/if}
 			</div>
 		{/if}
+
+		{#if data.curators && data.curators.length > 0}
+			<div class="discovered-by">
+				<span class="discovered-label">Discovered by</span>
+				{#each data.curators as curator}
+					<a
+						href="/new-rising?curator={encodeURIComponent(curator.curator_handle)}"
+						class="curator-handle-link"
+					>@{curator.curator_handle}</a>
+				{/each}
+			</div>
+		{/if}
 	</header>
 
 	<!-- Listen On -->
@@ -384,7 +404,24 @@
 					>script tag</button>
 				</div>
 
-				<pre class="embed-code"><code>{embedMode === 'iframe' ? snippets.iframe : snippets.scriptTag}</code></pre>
+				{#if embedMode === 'script'}
+				<div class="embed-curator-row">
+					<label for="curator-handle" class="embed-curator-label">Your blog handle (optional)</label>
+					<input
+						id="curator-handle"
+						type="text"
+						class="embed-curator-input"
+						bind:value={curatorHandle}
+						placeholder="e.g. myblog"
+						maxlength="50"
+					/>
+					{#if curatorHandle.trim()}
+						<span class="embed-curator-hint">data-curator will appear in snippet</span>
+					{/if}
+				</div>
+			{/if}
+
+			<pre class="embed-code"><code>{embedMode === 'iframe' ? snippets.iframe : snippets.scriptTag}</code></pre>
 
 				<div class="embed-actions">
 					<button
@@ -729,6 +766,37 @@
 		font-size: 0.8rem;
 	}
 
+	/* ── Discovered By ────────────────────────────────── */
+	.discovered-by {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: var(--space-xs);
+		margin-top: var(--space-xs);
+		font-size: 0.8rem;
+	}
+
+	.discovered-label {
+		color: var(--text-muted);
+		font-style: italic;
+	}
+
+	.curator-handle-link {
+		color: var(--text-muted);
+		text-decoration: none;
+		border: 1px solid var(--border-subtle);
+		border-radius: 999px;
+		padding: 1px 8px;
+		font-size: 0.78rem;
+		transition: color 0.15s, border-color 0.15s;
+	}
+
+	.curator-handle-link:hover {
+		color: var(--text-accent);
+		border-color: var(--text-muted);
+		text-decoration: none;
+	}
+
 	/* ── Embed Widget ──────────────────────────────────── */
 	.embed-section {
 		display: flex;
@@ -819,6 +887,35 @@
 		background: var(--bg-hover);
 		border-color: var(--border-hover);
 		color: var(--text-primary);
+	}
+
+	.embed-curator-row {
+		display: flex;
+		align-items: center;
+		gap: var(--space-sm);
+		flex-wrap: wrap;
+	}
+
+	.embed-curator-label {
+		font-size: 0.78rem;
+		color: var(--text-muted);
+		white-space: nowrap;
+	}
+
+	.embed-curator-input {
+		padding: 3px 8px;
+		border: 1px solid var(--border-default);
+		border-radius: 4px;
+		background: var(--bg-surface, var(--bg-primary));
+		color: var(--text-primary);
+		font-size: 0.78rem;
+		width: 150px;
+	}
+
+	.embed-curator-hint {
+		font-size: 0.7rem;
+		color: var(--text-muted);
+		font-style: italic;
 	}
 
 	.qr-wrapper {

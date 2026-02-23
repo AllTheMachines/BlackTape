@@ -1,6 +1,10 @@
 /**
  * Generates iframe and script-tag embed snippets for Mercury artist/collection embeds.
  * Used on artist page and collection page to give bloggers copy-paste code.
+ *
+ * When `curatorHandle` is provided (script-tag mode only), the snippet includes
+ * a `data-curator` attribute. embed.js reads this attribute on the blogger's site
+ * and fires a GET to /api/curator-feature?slug=[slug]&curator=[handle] to record attribution.
  */
 
 export interface EmbedSnippets {
@@ -8,8 +12,18 @@ export interface EmbedSnippets {
 	scriptTag: string;
 }
 
-export function generateEmbedSnippets(embedUrl: string, title: string): EmbedSnippets {
+export function generateEmbedSnippets(
+	embedUrl: string,
+	title: string,
+	curatorHandle?: string
+): EmbedSnippets {
 	const escaped = title.replace(/"/g, '&quot;');
+
+	// data-curator attribute — included in script-tag snippet only when handle is provided
+	const curatorAttr = curatorHandle
+		? `\n  data-curator="${curatorHandle.replace(/"/g, '&quot;')}"`
+		: '';
+
 	const iframe = `<iframe
   src="${embedUrl}"
   width="400"
@@ -22,7 +36,7 @@ export function generateEmbedSnippets(embedUrl: string, title: string): EmbedSni
 
 	const scriptTag = `<div id="mercury-embed"
   data-src="${embedUrl}"
-  data-title="${escaped}"
+  data-title="${escaped}"${curatorAttr}
 ></div>
 <script src="${embedUrl.split('/embed/')[0]}/embed.js" async><\/script>`;
 

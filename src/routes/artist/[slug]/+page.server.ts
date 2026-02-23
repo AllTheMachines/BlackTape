@@ -29,7 +29,8 @@ export const load: PageServerLoad = async ({ params, platform, fetch }) => {
 			releases: [] as ReleaseGroup[],
 			bio: null as string | null,
 			uniquenessScore: null as number | null,
-			uniquenessTagCount: 0
+			uniquenessTagCount: 0,
+			curators: [] as Array<{ curator_handle: string; featured_at: number }>
 		};
 	}
 
@@ -77,6 +78,22 @@ export const load: PageServerLoad = async ({ params, platform, fetch }) => {
 		bio = await fetchWikipediaBio(links.wikipedia[0]);
 	}
 
+	// Load curator attribution — additive, page renders without it if it fails
+	let curators: Array<{ curator_handle: string; featured_at: number }> = [];
+	try {
+		curators = await provider.all<{ curator_handle: string; featured_at: number }>(
+			`SELECT curator_handle, MIN(featured_at) as featured_at
+       FROM curator_features
+       WHERE artist_mbid = ?
+       GROUP BY curator_handle
+       ORDER BY featured_at ASC
+       LIMIT 10`,
+			artist.mbid
+		);
+	} catch {
+		// Table may not exist on older DB versions — degrade gracefully with empty array
+	}
+
 	return {
 		artist,
 		links,
@@ -84,6 +101,7 @@ export const load: PageServerLoad = async ({ params, platform, fetch }) => {
 		releases,
 		bio,
 		uniquenessScore: uniquenessData?.uniqueness_score ?? null,
-		uniquenessTagCount: uniquenessData?.tag_count ?? 0
+		uniquenessTagCount: uniquenessData?.tag_count ?? 0,
+		curators
 	};
 };
