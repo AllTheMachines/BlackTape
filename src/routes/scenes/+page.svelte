@@ -3,19 +3,52 @@
 	import { isTauri } from '$lib/platform';
 	import type { PageData } from './$types';
 	import { PROJECT_NAME } from '$lib/config';
+	import { upvoteFeatureRequest } from '$lib/comms/scenes.svelte.js';
 
 	let { data }: { data: PageData } = $props();
 
 	// Reactive reference to Tauri detection state (only used in Tauri context)
 	let isDetecting = $state(false);
 
+	// Feature request vote state
+	const FEATURE_ID = 'collaborative-playlists';
+	const VOTED_KEY = `feature_voted_${FEATURE_ID}`;
+
+	// Check if already voted (localStorage, works on both web and Tauri)
+	let hasVoted = $state(false);
+	let voteCount = $state(0);
+
 	import { onMount } from 'svelte';
 	onMount(async () => {
+		// Check prior vote from localStorage
+		try {
+			const stored = localStorage.getItem(VOTED_KEY);
+			if (stored) {
+				hasVoted = true;
+				voteCount = parseInt(stored, 10);
+			}
+		} catch {
+			// localStorage unavailable — ignore
+		}
+
 		if (!isTauri()) return;
 		// Subscribe to detection state reactively
 		const { scenesState } = await import('$lib/scenes');
 		isDetecting = scenesState.isDetecting;
 	});
+
+	async function handleVote() {
+		if (hasVoted) return;
+		const newCount = await upvoteFeatureRequest(FEATURE_ID);
+		voteCount = newCount;
+		hasVoted = true;
+		// Persist vote flag in localStorage (web and Tauri)
+		try {
+			localStorage.setItem(VOTED_KEY, String(newCount));
+		} catch {
+			// ignore
+		}
+	}
 
 	const hasActive = $derived(data.partitioned.active.length > 0);
 	const hasEmerging = $derived(data.partitioned.emerging.length > 0);
@@ -65,10 +98,22 @@
 		</section>
 	{/if}
 
+	<!-- Feature request CTA — always visible, regardless of whether scenes exist -->
 	<div class="scenes-cta">
-		<a href="/scenes?feature=collaborative-playlists" class="cta-link">
-			Request collaborative playlists &rarr;
-		</a>
+		<p class="cta-label">Want more creation tools?</p>
+		{#if hasVoted}
+			<span class="vote-confirmed">
+				{#if voteCount > 0}
+					({voteCount} interested)
+				{:else}
+					Voted!
+				{/if}
+			</span>
+		{:else}
+			<button class="cta-btn" onclick={handleVote}>
+				Request collaborative playlists
+			</button>
+		{/if}
 	</div>
 </div>
 
@@ -141,19 +186,42 @@
 		}
 	}
 
+	/* Feature request CTA */
 	.scenes-cta {
 		margin-top: var(--space-xl);
 		padding-top: var(--space-md);
 		border-top: 1px solid var(--border-subtle);
+		display: flex;
+		align-items: center;
+		gap: var(--space-md);
+		flex-wrap: wrap;
 	}
 
-	.cta-link {
+	.cta-label {
 		font-size: 0.85rem;
 		color: var(--text-muted);
-		text-decoration: none;
+		margin: 0;
 	}
 
-	.cta-link:hover {
+	.cta-btn {
+		padding: 5px 12px;
+		font-size: 0.8rem;
+		background: transparent;
+		border: 1px solid var(--border-subtle);
+		border-radius: 999px;
+		color: var(--text-muted);
+		cursor: pointer;
+		transition: color 0.15s, border-color 0.15s;
+	}
+
+	.cta-btn:hover {
 		color: var(--text-accent);
+		border-color: var(--text-accent);
+	}
+
+	.vote-confirmed {
+		font-size: 0.8rem;
+		color: var(--text-muted);
+		font-style: italic;
 	}
 </style>

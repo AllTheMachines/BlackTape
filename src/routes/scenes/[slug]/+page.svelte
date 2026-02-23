@@ -3,6 +3,7 @@
 	import { isTauri } from '$lib/platform';
 	import type { PageData } from './$types';
 	import { PROJECT_NAME } from '$lib/config';
+	import { followScene, unfollowScene, sceneFollowState, loadSceneFollows } from '$lib/comms/scenes.svelte.js';
 
 	let { data }: { data: PageData } = $props();
 
@@ -10,10 +11,38 @@
 	let aiDescription = $state<string | null>(null);
 	let aiLoading = $state(false);
 
+	// Follow state — derived from reactive sceneFollowState
+	let isFollowed = $derived(
+		data.scene ? sceneFollowState.followedSlugs.has(data.scene.slug) : false
+	);
+	let followPending = $state(false);
+
+	// Artist suggestion form
+	let suggestionInput = $state('');
+	let suggestionSubmitted = $state(false);
+
+	// Community suggestions (Tauri only, best-effort)
+	let communitySuggestions = $state<string[]>([]);
+
 	onMount(async () => {
 		if (!isTauri() || !data.scene) return;
+
+		// Load follow state
+		await loadSceneFollows();
+
+		// Load community suggestions — best-effort, fail silently
 		try {
-			// Check AI is enabled before attempting
+			const { invoke } = await import('@tauri-apps/api/core');
+			const suggestions = await invoke<Array<{ artist_name: string }>>('get_scene_suggestions', {
+				sceneSlug: data.scene.slug
+			});
+			communitySuggestions = suggestions.map((s) => s.artist_name);
+		} catch {
+			// best-effort — no suggestions, no problem
+		}
+
+		// AI description — attempt after follow state is loaded
+		try {
 			const { aiState } = await import('$lib/ai/state.svelte');
 			if (!aiState.enabled) return;
 
@@ -32,6 +61,27 @@
 			aiLoading = false;
 		}
 	});
+
+	async function handleFollowToggle() {
+		if (!data.scene || followPending) return;
+		followPending = true;
+		try {
+			if (isFollowed) {
+				await unfollowScene(data.scene.slug);
+			} else {
+				await followScene(data.scene.slug);
+			}
+		} finally {
+			followPending = false;
+		}
+	}
+
+	async function handleSuggestion() {
+		if (!data.scene || !suggestionInput.trim()) return;
+		const { suggestArtist } = await import('$lib/comms/scenes.svelte.js');
+		await suggestArtist(data.scene.slug, '', suggestionInput.trim());
+		suggestionSubmitted = true;
+	}
 </script>
 
 <svelte:head>
@@ -48,7 +98,26 @@
 		<!-- 1. Header block -->
 		<div class="scene-header">
 			<span class="scene-type-label">scene</span>
-			<h1 class="scene-name">{data.scene.name}</h1>
+			<div class="scene-title-row">
+				<h1 class="scene-name">{data.scene.name}</h1>
+				{#if isTauri()}
+					<button
+						class="follow-btn"
+						class:following={isFollowed}
+						disabled={followPending}
+						onclick={handleFollowToggle}
+						aria-label={isFollowed ? 'Unfollow this scene' : 'Follow this scene'}
+					>
+						{#if followPending}
+							...
+						{:else if isFollowed}
+							Unfollow Scene
+						{:else}
+							Follow Scene
+						{/if}
+					</button>
+				{/if}
+			</div>
 			<div class="scene-meta">
 				{#if data.scene.listenerCount > 0}
 					<span class="listener-badge">
@@ -99,6 +168,18 @@
 			{/if}
 		</section>
 
+		<!-- Community suggested artists — Tauri only, best-effort -->
+		{#if communitySuggestions.length > 0}
+			<section class="scene-section community-section">
+				<h2>Community suggested</h2>
+				<ul class="community-list">
+					{#each communitySuggestions as name}
+						<li class="community-item"><em>{name}</em></li>
+					{/each}
+				</ul>
+			</section>
+		{/if}
+
 		<!-- 4. Top Tracks block — omitted entirely when empty (locked decision: CONTEXT.md line 18) -->
 		{#if data.topTracks.length > 0}
 			<section class="scene-section">
@@ -112,6 +193,30 @@
 						</li>
 					{/each}
 				</ol>
+			</section>
+		{/if}
+
+		<!-- 5. Artist suggestion form — Tauri only -->
+		{#if isTauri()}
+			<section class="scene-section suggest-section">
+				<h2>Suggest an artist</h2>
+				{#if suggestionSubmitted}
+					<p class="suggestion-thanks">Thanks — this helps improve scene detection.</p>
+				{:else}
+					<p class="suggest-desc">Know an artist that belongs here? Let us know.</p>
+					<form class="suggest-form" onsubmit={(e) => { e.preventDefault(); handleSuggestion(); }}>
+						<input
+							class="suggest-input"
+							type="text"
+							placeholder="Artist name"
+							bind:value={suggestionInput}
+							aria-label="Artist name to suggest"
+						/>
+						<button class="suggest-btn" type="submit" disabled={!suggestionInput.trim()}>
+							Suggest
+						</button>
+					</form>
+				{/if}
 			</section>
 		{/if}
 
@@ -157,11 +262,51 @@
 		margin-bottom: var(--space-xs);
 	}
 
+	.scene-title-row {
+		display: flex;
+		align-items: center;
+		gap: var(--space-md);
+		flex-wrap: wrap;
+		margin-bottom: var(--space-sm);
+	}
+
 	.scene-name {
 		font-size: 2rem;
 		font-weight: 700;
-		margin: 0 0 var(--space-sm);
+		margin: 0;
 		color: var(--text-primary);
+	}
+
+	.follow-btn {
+		padding: 6px 14px;
+		font-size: 0.8rem;
+		border-radius: 999px;
+		border: 1px solid var(--border-default, var(--border-subtle));
+		background: transparent;
+		color: var(--text-secondary);
+		cursor: pointer;
+		transition: background 0.15s, color 0.15s, border-color 0.15s;
+		white-space: nowrap;
+	}
+
+	.follow-btn:hover:not(:disabled) {
+		background: var(--bg-elevated);
+		color: var(--text-primary);
+	}
+
+	.follow-btn.following {
+		background: var(--text-accent);
+		color: var(--bg-surface);
+		border-color: var(--text-accent);
+	}
+
+	.follow-btn.following:hover:not(:disabled) {
+		opacity: 0.85;
+	}
+
+	.follow-btn:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
 	}
 
 	.scene-meta {
@@ -291,6 +436,25 @@
 		color: var(--text-muted);
 	}
 
+	/* Community suggestions — muted/italic styling */
+	.community-section h2 {
+		color: var(--text-muted);
+	}
+
+	.community-list {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-xs);
+	}
+
+	.community-item {
+		font-size: 0.9rem;
+		color: var(--text-muted);
+	}
+
 	.tracks-list {
 		padding: 0 0 0 var(--space-lg);
 		margin: 0;
@@ -323,6 +487,70 @@
 
 	.track-artist:hover {
 		text-decoration: underline;
+	}
+
+	/* Suggestion form */
+	.suggest-section h2 {
+		color: var(--text-secondary);
+	}
+
+	.suggest-desc {
+		font-size: 0.85rem;
+		color: var(--text-muted);
+		margin: 0 0 var(--space-sm);
+	}
+
+	.suggest-form {
+		display: flex;
+		gap: var(--space-sm);
+		align-items: center;
+		flex-wrap: wrap;
+	}
+
+	.suggest-input {
+		flex: 1;
+		min-width: 200px;
+		padding: 6px 10px;
+		font-size: 0.875rem;
+		background: var(--bg-elevated);
+		border: 1px solid var(--border-subtle);
+		border-radius: 6px;
+		color: var(--text-primary);
+		outline: none;
+		transition: border-color 0.15s;
+	}
+
+	.suggest-input:focus {
+		border-color: var(--border-default, var(--text-muted));
+	}
+
+	.suggest-btn {
+		padding: 6px 14px;
+		font-size: 0.8rem;
+		background: var(--bg-elevated);
+		border: 1px solid var(--border-subtle);
+		border-radius: 6px;
+		color: var(--text-secondary);
+		cursor: pointer;
+		transition: background 0.15s, color 0.15s;
+		white-space: nowrap;
+	}
+
+	.suggest-btn:hover:not(:disabled) {
+		background: var(--bg-surface);
+		color: var(--text-primary);
+	}
+
+	.suggest-btn:disabled {
+		opacity: 0.4;
+		cursor: not-allowed;
+	}
+
+	.suggestion-thanks {
+		font-size: 0.875rem;
+		color: var(--text-muted);
+		font-style: italic;
+		margin: 0;
 	}
 
 	.back-link {
