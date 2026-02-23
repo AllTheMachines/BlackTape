@@ -195,13 +195,17 @@ export async function isNovelTagCombination(
 	const topTags = tags.slice(0, 3);
 	if (topTags.length === 0) return true;
 
-	const placeholders = topTags.map(() => '?').join(', ');
-	const result = await db.get<{ cnt: number }>(
-		`SELECT COUNT(*) as cnt FROM genres WHERE mb_tag IN (${placeholders})`,
-		...topTags
-	);
-
-	return (result?.cnt ?? 0) === 0;
+	try {
+		const placeholders = topTags.map(() => '?').join(', ');
+		const result = await db.get<{ cnt: number }>(
+			`SELECT COUNT(*) as cnt FROM genres WHERE mb_tag IN (${placeholders})`,
+			...topTags
+		);
+		return (result?.cnt ?? 0) === 0;
+	} catch {
+		// genres table may not exist — treat all scenes as novel/emerging
+		return true;
+	}
 }
 
 /**
