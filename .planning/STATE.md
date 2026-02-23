@@ -9,12 +9,13 @@ See: .planning/PROJECT.md (updated 2026-02-23 after v1.0 milestone)
 
 ## Current Position
 
-Phase: v1.0 complete — archived to .planning/milestones/
-Status: Milestone archived 2026-02-23. All 41 requirements satisfied. Git tag v1.0 created.
-Last activity: 2026-02-23 — v1.0 milestone complete. ROADMAP.md reorganized. REQUIREMENTS.md archived. PROJECT.md evolved. 15 phases, 71 plans shipped.
-Next: /gsd:new-milestone to plan v1.1
+Phase: 12-curator-blog-tools
+Status: In Progress — Plan 01/04 complete (RSS feeds). Plans 02-04 remaining.
+Last activity: 2026-02-23 — Phase 12 Plan 01 complete. RSS/Atom feeds for artist, tag, collection, curator. RssButton component. feed@5.2.0 + qrcode@1.5.4 installed.
+Next: Phase 12 Plan 02 (embed widgets with QR codes)
+Stopped at: Completed 12-01-PLAN.md
 
-Progress: [██████████] v1.0 SHIPPED
+Progress: [██████████] v1.0 SHIPPED — v1.1 Phase 12 In Progress (1/4 plans done)
 
 ## Performance Metrics
 
@@ -97,6 +98,7 @@ Progress: [██████████] v1.0 SHIPPED
 | Phase 11-scene-building P02 | 3 | 2 tasks | 5 files |
 | Phase 11-scene-building P03 | 4min | 2 tasks | 7 files |
 | Phase 11-scene-building P04 | 7 | 2 tasks | 7 files |
+| Phase 12-curator-blog-tools P01 | 8 | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -341,6 +343,9 @@ Progress: [██████████] v1.0 SHIPPED
 - [Phase 11-scene-building]: Scenes nav link not Tauri-gated — web directory works via proto-scenes from tag_cooccurrence so link is always useful on both platforms
 - [Phase 11-scene-building]: NIP-51 fetch-before-publish: fetch existing kind 30001 list before merging new slug to avoid overwriting prior follows
 - [Phase 11-scene-building]: upvoteFeatureRequest dual path: taste.db on Tauri, localStorage on web — same return type, transparent to callers
+- [Phase 12-curator-blog-tools]: [Phase 12-01]: Cover art embedded in content:encoded HTML not as enclosure — feed package Item.image generates broken MIME type from URL string
+- [Phase 12-curator-blog-tools]: [Phase 12-01]: Graceful empty feeds for collection (desktop-only) and curator (table not yet created) — returns valid RSS with descriptive message, not 404/500
+- [Phase 12-curator-blog-tools]: [Phase 12-01]: RssButton placed in artist name row and inline with scene-rooms button on discover page (single-tag filter only)
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
@@ -354,6 +359,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-23
-Phase 11 Plan 04 complete. Phase 11 (Scene Building) COMPLETE. scenes.svelte.ts interaction module (followScene/unfollowScene/suggestArtist/upvoteFeatureRequest), scene detail page follow button + artist suggestion form, /scenes vote CTA, Scenes nav link on both platforms, /api/scenes web endpoint, ARCHITECTURE.md Scene Building section, docs/user-manual.md Scenes section. npm run check 0 errors, npm run build success, 38/38 tests passed.
-Stopped at: Completed 11-04-PLAN.md
-Next: Phase 12 (next milestone phase)
+Phase 12 Plan 01 complete. RSS/Atom feed endpoints for artist (/api/rss/artist/[slug]), tag (/api/rss/tag/[tag]), collection (/api/rss/collection/[id]), and curator (/api/rss/curator/[handle]). RssButton component on artist page (name row) and discover page (single-tag filter). feed@5.2.0 + qrcode@1.5.4 installed. npm run check 0 errors, npm run build success. All 4 endpoints return valid XML with correct Content-Type headers.
+Stopped at: Completed 12-01-PLAN.md
+Next: Phase 12 Plan 02 (embed widgets with QR codes)

@@ -176,7 +176,7 @@ Runs alongside everything else. Not blocking any phase. Rolls out in stages as f
 | 10. Communication Layer | v1.0 | 9/9 | Complete | 2026-02-23 |
 | 10.1. Communication Hotfixes | v1.0 | 2/2 | Complete | 2026-02-23 |
 | 11. Scene Building | 4/4 | Complete    | 2026-02-23 | - |
-| 12. Curator / Blog Tools | v1.1 | 0/TBD | Not started | - |
+| 12. Curator / Blog Tools | 1/4 | In Progress|  | - |
 | 13. Interoperability | v1.1 | 0/TBD | Not started | - |
 | 14. Listening Rooms | v1.1 | 0/TBD | Not started | - |
 | 15. Artist Tools | v1.1 | 0/TBD | Not started | - |

@@ -3829,3 +3829,54 @@ Both are post-v1.0 scope. Not regressions — the library browser has always bee
 All 4 plans executed and verified. 15/15 verifier must-haves passing. 5 live bugs found and fixed during UAT. Scenes working in the running Tauri app.
 
 v1.0 milestone fully shipped.
+
+> **Commit 0504777** (2026-02-23 14:25) — docs(11): session-end build log entry + reload scenes button
+> Files changed: 3
+
+> **Commit 88e8af1** (2026-02-23 14:34) — docs(audit): v1.1 Phase 11 milestone audit — tech_debt, 2/2 requirements
+> Files changed: 2
+
+> **Commit b2267a3** (2026-02-23 14:53) — docs(12): capture phase context
+> Files changed: 1
+
+> **Commit a959de2** (2026-02-23 15:01) — docs(12): research curator-blog-tools phase
+> Files changed: 1
+
+> **Commit 45ab072** (2026-02-23 15:09) — docs(12): create phase plan
+> Files changed: 5
+
+> **Commit 1ac2466** (2026-02-23 15:15) — fix(12): revise plans based on checker feedback
+> Files changed: 3
+
+> **Commit 9aab559** (2026-02-23 15:20) — fix(12): revise plans based on checker feedback
+> Files changed: 3
+
+## Entry 060 — 2026-02-23 — Phase 12 Plan 01: RSS Feeds for Curator Blog Tools
+
+### What Was Built
+
+Phase 12 starts. The first feature for music bloggers: RSS/Atom feeds for every artist page, tag, and curator.
+
+**Four feed endpoint types:**
+- `/api/rss/artist/[slug]` — Artist state snapshot with cover art in content:encoded
+- `/api/rss/tag/[tag]` — Up to 50 artists with that tag, ordered by tag vote count
+- `/api/rss/collection/[id]` — Empty feed with desktop-only explanation (graceful, not an error)
+- `/api/rss/curator/[handle]` — Featured artists list, empty gracefully if curator_features table missing
+
+**Format negotiation:** `?format=atom` param or `Accept: application/atom+xml` header returns Atom 1.0; default is RSS 2.0.
+
+**RssButton component:** RSS orange icon (#f26522) placed on artist pages (name row) and discover page (when single tag selected).
+
+### Technical Decisions
+
+**Cover art in content:encoded.** The `feed` package's Item.image field generates a broken enclosure element with the wrong MIME type (strips the domain from URL when deriving type). Fixed by embedding cover art as an `<img>` in HTML inside `content:encoded` — which is what RSS readers actually display anyway.
+
+**Graceful empty feeds.** Collections are desktop-only (taste.db); curator_features table is created in Plan 03. Both return valid RSS with zero items and clear descriptions rather than 404 or 500. Feed readers that have already subscribed won't break during phased rollout.
+
+**feed package version.** Installed as feed@5.2.0 (latest, TypeScript-native). Plan specified 4.x but 5.x has the same API with better TypeScript support.
+
+> **Commit 4da3fa7** (2026-02-23 15:33) — chore(12-01): install feed + qrcode dependencies
+> Files changed: 2
+
+> **Commit a8fe49f** (2026-02-23 15:39) — feat(12-01): implement four RSS/Atom feed endpoints + RssButton component
+> Files changed: 7
