@@ -22,10 +22,11 @@ A comprehensive guide to how Mercury works, how its parts connect, and how data 
 14. [Community Foundation](#community-foundation-phase-9)
 15. [Communication Layer](#communication-layer-phase-10)
 16. [Scene Building](#scene-building)
-17. [Build System](#build-system)
-18. [Configuration Reference](#configuration-reference)
-19. [AI Subsystem](#ai-subsystem)
-20. [Module Dependency Map](#module-dependency-map)
+17. [Curator / Blog Tools](#curator--blog-tools)
+18. [Build System](#build-system)
+19. [Configuration Reference](#configuration-reference)
+20. [AI Subsystem](#ai-subsystem)
+21. [Module Dependency Map](#module-dependency-map)
 
 ---
 
@@ -1156,6 +1157,67 @@ Scenes are NEVER sorted by listener count. This prevents popular scenes from alw
 
 ---
 
+## Curator / Blog Tools
+
+Phase 12 adds surfaces for music bloggers and curators — embeddable widgets, RSS feeds, attribution tracking, and a public New & Rising discovery page.
+
+### Embed Widgets
+
+Dedicated routes at `/embed/artist/[slug]` and `/embed/collection/[id]` serve minimal artist/collection cards with their own layout (`/embed/+layout.svelte` — replaces root layout via `+layout@.svelte`, no Mercury nav/player/chat). Dark/light mode auto-detected via `window.matchMedia('(prefers-color-scheme: dark)')` inside the iframe context.
+
+Embed snippet generation: `src/lib/curator/embed-snippet.ts` — `generateEmbedSnippets(embedUrl, title, curatorHandle?)` returns both an `<iframe>` snippet and a `<script>` + `<div data-src>` snippet. The artist page (`/artist/[slug]`) shows a copy-paste embed UI with format toggle and QR code generation.
+
+QR code generation: `src/lib/curator/qr.ts` — `generateQrSvg(url, dark?)` wraps the `qrcode` npm package, returns SVG string for inline rendering via `{@html}`. Client-side only (dynamic import).
+
+### RSS/Atom Feeds
+
+All feed types served as `+server.ts` routes returning `application/rss+xml` or `application/atom+xml`. Format negotiated by `?format=atom` URL param or `Accept` header. Uses the `feed` npm package (not hand-rolled XML — handles character escaping for artist names with `&`, `<`, quotes).
+
+| Feed | Route | Items |
+|------|-------|-------|
+| Artist | `/api/rss/artist/[slug]` | Single item: current artist profile state |
+| Tag | `/api/rss/tag/[tag]` | Artists tagged with this tag (top 50 by count) |
+| Collection | `/api/rss/collection/[id]` | Empty on web (collections are Tauri-only) |
+| Curator | `/api/rss/curator/[handle]` | Artists featured by this curator |
+| New & Rising | `/api/rss/new-rising` | Gaining-traction niche artists |
+
+Artist and tag RSS feeds are informational snapshots (not event-driven) — artist profiles don't have change history. The value is "subscribe to this niche tag" for discovery.
+
+RssButton component: `src/lib/components/RssButton.svelte` — renders the standard RSS orange icon as an anchor. Placed on artist pages, discover page, and New & Rising page.
+
+### Curator Attribution
+
+D1 table: `curator_features (id, artist_mbid, curator_handle, featured_at, source)` with `UNIQUE(artist_mbid, curator_handle)` to deduplicate.
+
+Attribution trigger: when a blogger includes `data-curator="[handle]"` in the script-tag embed snippet, `embed.js` fires a GET to `/api/curator-feature?artist=[mbid]&curator=[handle]`. Input validation: handle must match `/^[\w\-\.]{1,50}$/`, MBID must match UUID format. Returns 200 regardless of outcome (fire-and-forget).
+
+Display: artist page `+page.server.ts` queries curator_features (wrapped in try/catch — table may not exist on older DB versions). Renders as "Discovered by @handle" list linking to `/new-rising?curator=[handle]`.
+
+### New & Rising Page
+
+Public page at `/new-rising` — no auth required, web and Tauri.
+
+Two views:
+- **Newly Active**: `WHERE begin_year >= (currentYear - 1) AND ended = 0` — proxy for "recently active" (no `added_at` column in artists table). Ordered by begin_year DESC.
+- **Gaining Traction**: same recency filter, ordered by average tag rarity (`AVG(1.0 / NULLIF(tag_stats.artist_count, 0))`) — surfaces niche artists accumulating unique tag combinations.
+
+Curator filter: `/new-rising?curator=[handle]` shows a third tab with artists featured by that curator (from curator_features table).
+
+RSS feed at `/api/rss/new-rising` serves the Gaining Traction list — the most useful subscription for a blogger who wants to discover artists worth writing about.
+
+### Anti-Patterns (Curator / Blog Tools)
+
+| Anti-Pattern | Why Wrong | Correct Approach |
+|-------------|-----------|-----------------|
+| Hand-rolled RSS XML | Artist names with `&`, `<`, `'` break feed parsers | Always use `feed` npm package |
+| Root layout in /embed/* routes | Mercury nav/player/chat break the iframe card | `/embed/+layout.svelte` via `+layout@.svelte` breaks out of root layout |
+| `prefers-color-scheme` via postMessage | Unnecessary — iframe reads OS preference directly | `window.matchMedia` inside the embed page |
+| `prerender = true` on RSS routes | Stale feeds baked at build time | Dynamic routes only — D1 queried on each request |
+| Blocking artist page on curator attribution | Attribution load failure breaks core page | try/catch with empty array fallback |
+| Using `MBID` from embed URL client-side | embed.js only knows the slug from the URL path | `/api/curator-feature` accepts `slug` as alternative to MBID for lookups |
+
+---
+
 ## Build System
 
 ### Web Build
@@ -1459,4 +1521,4 @@ Tags tracked by source: `library`, `favorite`, `manual`. Recomputation clears co
 
 ---
 
-*Last updated: 2026-02-23 — After Phase 10 Plan 8 (Communication Layer — Nostr protocol, DMs, scene rooms, listening parties) completion.*
+*Last updated: 2026-02-23 — After Phase 12 Plan 4 (Curator / Blog Tools — embed widgets, RSS feeds, curator attribution, New & Rising page) completion.*

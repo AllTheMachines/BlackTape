@@ -39,8 +39,14 @@ Mercury is a music discovery engine that indexes all music from open databases a
     - [Suggesting an Artist](#suggesting-an-artist)
     - [Requesting Creation Tools](#requesting-creation-tools)
     - [How Detection Works](#how-detection-works)
-16. [Web vs Desktop](#web-vs-desktop)
-17. [Troubleshooting](#troubleshooting)
+16. [Curator Tools](#curator-tools)
+    - [Embedding Artist Cards](#embedding-artist-cards)
+    - [Collection Embeds](#collection-embeds)
+    - [RSS Feeds](#rss-feeds)
+    - [New & Rising](#new--rising)
+    - [Curator Attribution](#curator-attribution)
+17. [Web vs Desktop](#web-vs-desktop)
+18. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -742,6 +748,60 @@ Mercury uses your favorites and the tag co-occurrence map to detect scenes autom
 
 ---
 
+## Curator Tools
+
+Mercury gives music bloggers and curators tools to share discoveries and get credit for them.
+
+### Embedding Artist Cards
+
+Every artist page has an **Embed** button. Click it to get:
+- **iframe snippet** — paste directly into any HTML editor or CMS
+- **Script-tag snippet** — for blogs where iframes are restricted
+
+Both snippets automatically adapt to your blog's dark or light mode.
+
+To get attribution credit when you embed an artist, enter your blog handle in the "Your handle" field before copying the script-tag snippet. When readers load your page, Mercury records you as a curator for that artist.
+
+**QR Code**: Click "QR Code" to generate a QR code for the embed URL — useful for print materials or event flyers.
+
+### Collection Embeds
+
+Collection embeds (`/embed/collection/[id]`) are available in the desktop app when sharing a public collection. The web version shows a placeholder directing visitors to download Mercury.
+
+### RSS Feeds
+
+Subscribe to any artist, tag, or curator in your RSS reader:
+
+| What | RSS URL |
+|------|---------|
+| Artist updates | `/api/rss/artist/[slug]` |
+| Tag discovery | `/api/rss/tag/[tag-name]` |
+| Curator's picks | `/api/rss/curator/[handle]` |
+| New & Rising | `/api/rss/new-rising` |
+
+Append `?format=atom` to any feed URL for Atom format. Most feed readers accept both — try the default RSS first.
+
+Look for the RSS icon (orange signal arcs) on artist pages, the Discover page, and the New & Rising page.
+
+### New & Rising
+
+The **New & Rising** page (link in the navigation) surfaces artists that Mercury doesn't see discussed elsewhere yet:
+
+- **Newly Active** — artists with recent activity dates
+- **Gaining Traction** — niche artists accumulating unusual tag combinations (the most interesting view for finding artists worth writing about)
+
+Use New & Rising as your weekly "what should I write about next" list. Subscribe to the RSS feed to get updates in your feed reader.
+
+### Curator Attribution
+
+When you embed an artist on your site (using the script-tag snippet with your handle), Mercury records you as a curator for that artist. Your handle then appears on the artist's Mercury page as "Discovered by @[yourhandle]".
+
+All curators who have featured an artist are credited — not just the first. Embedding the same artist on multiple posts still only records once per curator.
+
+Click your handle on any artist page to see all artists you've featured on Mercury (`/new-rising?curator=[yourhandle]`).
+
+---
+
 ## Web vs Desktop
 
 | Feature | Web | Desktop |
@@ -774,6 +834,10 @@ Mercury uses your favorites and the tag co-occurrence map to detect scenes autom
 | Communication (DMs, scene rooms, listening parties) | Yes | Yes |
 | Scenes directory (browse proto-scenes) | Yes | Yes |
 | Scenes — follow, suggest, AI detection | No | Yes |
+| New & Rising page | Yes | Yes |
+| Embed artist cards (copy snippet) | Yes | Yes |
+| RSS feeds (artist, tag, curator, new & rising) | Yes | Yes |
+| Curator attribution tracking | Yes | Yes |
 | Requires internet for artist pages | Yes | Yes* |
 
 *Artist pages fetch releases and links from MusicBrainz, which requires internet. Search works offline using the local database.
