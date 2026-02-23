@@ -7,3 +7,19 @@ export { dmState, sendDM, subscribeToIncomingDMs, markConversationRead } from '.
 export type { DmMessage, DmConversation } from './dms.svelte.js';
 export { getTasteBridge, tasteBridgeState } from './ai-taste-bridge.js';
 export type { TasteBridgeResult } from './ai-taste-bridge.js';
+export {
+	checkRoomNameSafety,
+	flagMessage,
+	deleteRoomMessage,
+	kickUser,
+	banUser,
+	setSlowMode,
+	appointModerator,
+	isRoomArchived,
+	flaggedMessages,
+	bannedUsers,
+	slowModeState,
+	roomModerators,
+	SLOW_MODE_OPTIONS,
+	ARCHIVE_THRESHOLD_MS
+} from './moderation.js';
