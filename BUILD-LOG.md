@@ -4178,3 +4178,9 @@ This is a global fix that covers every dynamic route automatically, with no per-
 
 > **Commit 9f5d0a6** (2026-02-23 23:24) — wip: auto-save
 > Files changed: 2
+
+> **Commit e92b8f2** (2026-02-23 23:36) — wip: auto-save
+> Files changed: 1
+
+> **Commit b829763** (2026-02-23 23:40) — fix(artist): embed button renders HTML entities literally in Svelte expressions
+> Files changed: 1
