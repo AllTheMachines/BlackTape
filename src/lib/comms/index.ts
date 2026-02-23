@@ -5,3 +5,5 @@ export { chatState, notifState, openChat, closeChat, totalUnread } from './notif
 export type { ChatView } from './notifications.svelte.js';
 export { dmState, sendDM, subscribeToIncomingDMs, markConversationRead } from './dms.svelte.js';
 export type { DmMessage, DmConversation } from './dms.svelte.js';
+export { getTasteBridge, tasteBridgeState } from './ai-taste-bridge.js';
+export type { TasteBridgeResult } from './ai-taste-bridge.js';
