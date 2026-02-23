@@ -3125,3 +3125,45 @@ The communication layer foundation. Every subsequent plan in Phase 10 depends on
 
 > **Commit c358563** (2026-02-23 01:40) — feat(10-01): Mercury URL detection + /api/unfurl server route
 > Files changed: 5
+
+> **Commit a9e589a** (2026-02-23 01:43) — docs(10-01): complete Nostr infrastructure + link unfurl plan
+> Files changed: 4
+
+> **Commit be0fdc2** (2026-02-23 01:45) — feat(10-02): add chat overlay state + unread badge counts
+> Files changed: 2
+
+> **Commit e8ac04b** (2026-02-23 01:46) — feat(10-02): NIP-17 encrypted DM send/receive via NDK gift-wrap
+> Files changed: 2
+
+---
+
+## Entry 039 — 2026-02-23 — Phase 10 Plan 02: DM System + AI Taste Bridge
+
+### What Was Built
+
+**Plan 10-02:** NIP-17 encrypted DMs, chat overlay state, and AI taste bridge.
+
+Three new modules in `src/lib/comms/`:
+
+**`notifications.svelte.ts`** — Chat overlay open/close state and unread badge counts. `chatState` tracks open, view (dms/rooms/sessions/dm-thread/room-view/session-view), and active conversation/room/session IDs. `notifState` holds dmUnread + roomUnread counts. `totalUnread` is a `$derived` from both. No circular deps — dm/rooms modules update notifState directly.
+
+**`dms.svelte.ts`** — NIP-17 gift-wrap encrypted DMs. `sendDM()` creates a kind:14 inner event (PrivateDirectMessage), seals it (kind:13), and wraps it (kind:1059 GiftWrap) using NDK 3.x's `giftWrap()` helper. `subscribeToIncomingDMs()` subscribes to kind:1059 events addressed to our pubkey and decrypts with `giftUnwrap()`. Unread counts flow into `notifState.dmUnread`. NIP-04 (kind:4) never touched.
+
+**`ai-taste-bridge.ts`** — Musical context for DM conversations. When a thread opens, `getTasteBridge(peerPubkey)` fetches the peer's kind:30078 Mercury taste profile from Nostr, builds a prompt with both taste profiles, and calls the user's AI provider via `getAiProvider().complete()`. Returns a bridge explanation ("Your tastes converge around post-punk atmosphere...") plus 3 conversation starters. Cached per session by pubkey. Graceful fallback when AI not configured.
+
+### Key Decision: NDKDMConversation doesn't exist in NDK 3.x
+
+The plan referenced `NDKDMConversation.sendMessage()` as if it were an NDK API. It isn't — that class doesn't exist in NDK 3.0.0. The actual API is `giftWrap()` and `giftUnwrap()` as standalone async functions. Auto-fixed by reading NDK's actual exports and implementing against the real API. Same functional outcome: full NIP-17 gift-wrap encryption.
+
+### Key Decision: AiProvider.complete() not raw fetch
+
+The plan's `ai-taste-bridge.ts` attempted to access `provider.baseUrl`, `provider.apiKey`, `provider.model` directly — but those are private fields on `RemoteAiProvider`. The `AiProvider` interface only exposes `complete()`, `embed()`, and `isReady()`. Fixed by using `provider.complete(prompt, { temperature, maxTokens })` which works identically for both local llama-server and remote API providers.
+
+### Key Decision: tasteProfile.tags (not tasteState.topTags)
+
+The plan referenced `tasteState.topTags` from `$lib/ai/state.svelte.js` — that field doesn't exist. The actual reactive taste state is `tasteProfile.tags` from `$lib/taste/profile.svelte.ts` (an array of `{ tag, weight, source }` objects). Auto-fixed by importing the correct module and sorting/mapping tags by weight.
+
+All three modules: `npm run check` exits 0, no TypeScript errors.
+
+> **Commit 5d482ab** (2026-02-23 01:48) — feat(10-02): AI taste bridge — musical context for DM conversations
+> Files changed: 2

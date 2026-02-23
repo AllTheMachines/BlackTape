@@ -5,16 +5,18 @@
 See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Phase 10 in progress. Plan 01 done: NDK singleton + keypair IndexedDB identity + /api/unfurl link preview endpoint.
+**Current focus:** Phase 10 in progress. Plan 02 done: NIP-17 encrypted DMs + chat overlay state + AI taste bridge.
 
 ## Current Position
 
 Phase: 10-communication-layer of 15 (Communication Layer — In Progress)
-Current Plan: 10-01 (complete)
-Status: Phase 10 Plan 01 complete — Nostr infrastructure (keypair.ts, nostr.svelte.ts, index.ts) + Mercury link unfurl (unfurl.ts, /api/unfurl). 2026-02-23.
-Last activity: 2026-02-23 — 10-01 complete. loadOrCreateKeypair() with IndexedDB persistence. ndkState reactive singleton + initNostr() 4-relay pool. extractMercuryUrls() + fetchUnfurlData(). /api/unfurl POST with origin-based validation. npm run check 0 errors, npm run build exits 0.
+Current Plan: 10-02 (complete)
+Status: Phase 10 Plan 02 complete — notifications.svelte.ts (chatState/notifState), dms.svelte.ts (NIP-17 gift-wrap), ai-taste-bridge.ts (musical context + conversation starters). 2026-02-23.
+Last activity: 2026-02-23 — 10-02 complete. chatState/notifState/totalUnread reactive overlay state. sendDM() via giftWrap(), subscribeToIncomingDMs() via giftUnwrap(). getTasteBridge() fetches peer kind:30078 profile + calls AiProvider.complete(). npm run check 0 errors.
+Stopped at: Completed 10-02-PLAN.md
+Next: Phase 10 Plan 03
 
-Progress: [█░░░░░░░░░] 1/? plans complete (Phase 10 In Progress)
+Progress: [██░░░░░░░░] 2/? plans complete (Phase 10 In Progress)
 
 ## Performance Metrics
 
@@ -83,6 +85,7 @@ Progress: [█░░░░░░░░░] 1/? plans complete (Phase 10 In Progr
 | Phase 09-community-foundation P05 | 5min | 2 tasks | 3 files |
 | Phase 09-community-foundation P06 | 4 | 2 tasks | 4 files |
 | Phase 10-communication-layer P01 | 3min | 2 tasks | 7 files |
+| Phase 10-communication-layer P02 | 4 | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -294,6 +297,9 @@ Progress: [█░░░░░░░░░] 1/? plans complete (Phase 10 In Progr
 - [Phase 10-01]: NDKPrivateKeySigner via dynamic import inside initNostr() — consistent with Tauri isolation pattern; idempotent guard on ndkState.connected
 - [Phase 10-01]: Origin-based URL validation in /api/unfurl using request.url.origin — avoids PUBLIC_SITE_URL static env var not defined in project; works across all environments
 - [Phase 10-01]: unfurl.js is server-only — imported only in +server.ts routes, never in client lib/ modules; fetchUnfurlData is intentionally undebounced (callers apply 800ms debounce)
+- [Phase 10-communication-layer]: NDK 3.x uses standalone giftWrap/giftUnwrap functions — NDKDMConversation class referenced in plan does not exist; real API produces identical NIP-17 outcome
+- [Phase 10-communication-layer]: AiProvider.complete() is the correct interface method for taste bridge — raw fetch with private fields incorrect; works with both local llama-server and remote API
+- [Phase 10-communication-layer]: notifications.svelte.ts has no imports from dms/rooms — circular dep prevention: dm/rooms write notifState.dmUnread directly
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
