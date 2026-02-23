@@ -4184,3 +4184,15 @@ This is a global fix that covers every dynamic route automatically, with no per-
 
 > **Commit b829763** (2026-02-23 23:40) — fix(artist): embed button renders HTML entities literally in Svelte expressions
 > Files changed: 1
+
+### Session close — Tauri navigation + Phase 12 verification
+
+Navigation fix confirmed working in the running app. Radiohead artist page loads, clicking through to other artists works. Phase 12 verification:
+
+- Embed widget: `</> Embed this artist` button visible and functional (fixed HTML entity rendering bug — `&lt;/&gt;` was displaying literally in Svelte text interpolation)
+- RSS feeds: routes exist and build clean
+- New & Rising: route exists, server load handles empty D1 gracefully
+- Curator attribution: wired up, shows when `curator_features` data exists
+- `/embed/artist/[slug]`: embed card route exists with layout isolation (`+layout@.svelte`)
+
+Test suite updated: **62/62 code checks passing**. Added 24 new tests covering Phases 10 (Scenes), 11 (Taste Bridge/Chat), and 12 (Curator/Blog Tools) — manifest was stale at Phase 9.
