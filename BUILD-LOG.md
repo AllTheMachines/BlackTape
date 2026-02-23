@@ -3430,3 +3430,78 @@ Phase 10 ships Mercury's full communication infrastructure using the Nostr proto
 ### Phase 10 Complete
 
 `npm run check` — 0 errors. `npm run build` — exits 0. Communication layer is production-ready.
+
+> **Commit f276a7b** (2026-02-23 02:25) — docs(10-08): add Communication section to user-manual.md + Phase 10 BUILD-LOG entry
+> Files changed: 2
+
+> **Commit 66eb6b7** (2026-02-23 02:26) — docs(10-08): complete Phase 10 documentation plan — SUMMARY, STATE, ROADMAP
+> Files changed: 3
+
+> **Commit cf276fd** (2026-02-23 09:06) — docs(10-09): create gap closure plan for REQUIREMENTS.md traceability
+> Files changed: 1
+
+> **Commit 7bba14c** (2026-02-23 09:09) — docs(10-09): add COMM-04/05/06 definitions to REQUIREMENTS.md Communication section
+> Files changed: 1
+
+> **Commit 1eca35f** (2026-02-23 09:10) — docs(10-09): update traceability — COMM-04/05/06 rows + INTEROP-01/02 phase fix
+> Files changed: 1
+
+> **Commit bed0500** (2026-02-23 09:11) — docs(10-09): complete requirements gap closure plan — SUMMARY, STATE, ROADMAP
+> Files changed: 3
+
+> **Commit 9a04e4e** (2026-02-23 09:14) — docs(phase-10): complete phase execution — 20/20 verification passed
+> Files changed: 2
+
+> **Commit 86dc551** (2026-02-23 09:32) — docs(audit): v1.0 milestone re-audit — 42/43 requirements satisfied, 2 integration gaps found
+> Files changed: 1
+
+> **Commit 24ff48c** (2026-02-23 09:41) — docs(roadmap): add Phase 10.1 gap closure — Communication Hotfixes
+> Files changed: 2
+
+> **Commit 2cba91b** (2026-02-23 10:09) — docs(10.1): capture phase context
+> Files changed: 1
+
+> **Commit c06ae7e** (2026-02-23 10:15) — docs(10.1): research phase — CSS aliases, DM conversation list, taste publish, Rust export command
+> Files changed: 1
+
+> **Commit ca9844b** (2026-02-23 10:23) — docs(10.1): create phase plan — 2 plans for gap closure
+> Files changed: 3
+
+> **Commit 8acc26f** (2026-02-23 10:29) — feat(10.1-01): add CSS compatibility aliases for Phase 9/10 components (GAP-05)
+> Files changed: 1
+
+> **Commit cf040f3** (2026-02-23 10:30) — feat(10.1-02): taste profile publisher and profile page updates (GAP-07)
+> Files changed: 2
+
+> **Commit 3726293** (2026-02-23 10:31) — feat(10.1-01): add DM conversation list and chat routing (GAP-06)
+> Files changed: 3
+
+## Entry 046 — 2026-02-23 — Phase 10.1: GAP-05 + GAP-06 Closed
+
+### What Was Built
+
+Phase 10.1 Plan 01 closes two post-audit gaps found during the v1.0 milestone review.
+
+**GAP-05 — CSS variable mismatches (theme.css):**
+Phase 9 and 10 components were authored against naming conventions that didn't match theme.css. Buttons, borders, and spacing sections were invisible or collapsed to zero. Added 9 compatibility aliases to `:root`: 4 color aliases (`--bg-primary`, `--bg-tertiary`, `--border`, `--accent`) and 5 spacing aliases (`--spacing-xs` through `--spacing-xl`). Alias-only — no existing variable renamed.
+
+**GAP-06 — Missing DM conversation list (COMM-04 closure):**
+The NIP-17 DM backend was complete but users had no way to see or start conversations. The DMs tab in ChatOverlay showed nothing. Three changes:
+
+1. **`ConversationList.svelte`** — New component (214 lines). Shows `dmState.conversations` as a scrollable list with pubkey truncation (first 8 + last 4 hex chars), last message preview (50 char truncated), and unread badge. Fixed bottom input accepts npub1... or 64-char hex pubkey to start a new thread. Invalid input shows inline error; valid input routes directly to the DM thread.
+
+2. **`ChatOverlay.svelte`** — Split the catch-all `{:else}` branch into `{:else if chatState.view === 'dms'}` (lazy-loads ConversationList) and `{:else}` (lazy-loads ChatPanel for dm-thread). Matches the existing lazy import pattern from RoomDirectory/SessionCreator.
+
+3. **`ChatPanel.svelte`** — Added a "← Conversations" back button visible only when `chatState.view === 'dm-thread'`. Minimal muted-link style, no layout disruption.
+
+### Decisions
+
+<!-- decision: Phase 10.1-01 alias-only approach for CSS fixes -->
+CSS aliases added as alias-only — no renaming of canonical variables. Phase 9/10 components authored against `--spacing-*` and `--bg-primary` etc. already exist and work once the aliases are live. Renaming would have required touching 10+ component files and risked regressions.
+<!-- /decision -->
+
+<!-- decision: Lazy import pattern for ConversationList in ChatOverlay -->
+ConversationList uses the same `{#await import('./ConversationList.svelte')}` pattern as RoomDirectory and SessionCreator. Static import would require removing the `ChatPanel` static import (which was how the original catch-all worked). Lazy imports are consistent, defer load until first use, and avoid any circular dep risk.
+<!-- /decision -->
+
+`npm run check` — 0 errors (6 pre-existing warnings in unrelated files, unchanged).

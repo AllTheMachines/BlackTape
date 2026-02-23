@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-15)
 
 ## Current Position
 
-Phase: 10-communication-layer of 15 (Communication Layer — Complete)
-Current Plan: 10-09 (complete)
-Status: Phase 10 Plan 09 complete — REQUIREMENTS.md backfilled with COMM-04/05/06 definitions and traceability; INTEROP-01/02 corrected to Phase 13; coverage counter updated to 70 total. 2026-02-23.
-Last activity: 2026-02-23 — 10-09 complete. REQUIREMENTS.md: added Communication Layer (Phase 10) section with COMM-04/05/06 definitions + traceability rows (Phase 10, Complete); corrected INTEROP-01/02 phase assignment from Phase 10 to Phase 13; updated coverage counter 67→70.
-Stopped at: Completed 10-09-PLAN.md
-Next: Phase 11 (if planned)
+Phase: 10.1-communication-hotfixes of 15 (Communication Hotfixes — In Progress)
+Current Plan: 10.1-01 (complete)
+Status: Phase 10.1 Plan 01 complete — CSS aliases (GAP-05) and DM conversation list (GAP-06/COMM-04) closed. 2026-02-23.
+Last activity: 2026-02-23 — 10.1-01 complete. theme.css: 9 compatibility aliases. ConversationList.svelte created. ChatOverlay routing split. ChatPanel back navigation added. npm run check 0 errors.
+Stopped at: Completed 10.1-01-PLAN.md
+Next: Phase 10.1 Plan 02 (taste profile publisher + Nostr export)
 
 Progress: [█████████░] 9/9 plans complete (Phase 10 Complete)
 
@@ -93,6 +93,7 @@ Progress: [█████████░] 9/9 plans complete (Phase 10 Complete
 | Phase 10-communication-layer P07 | 4min | 2 tasks | 6 files |
 | Phase 10-communication-layer P08 | 4min | 2 tasks | 3 files |
 | Phase 10-communication-layer P09 | 3 | 2 tasks | 1 files |
+| Phase 10.1-communication-hotfixes P01 | 2min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -321,6 +322,8 @@ Progress: [█████████░] 9/9 plans complete (Phase 10 Complete
 - [Phase 10-08]: Communication Layer section placed after Community Foundation in ARCHITECTURE.md — natural phase ordering; anti-patterns documented as table
 - [Phase 10-communication-layer]: COMM-04/05/06 backfilled as documentation debt — functional code was complete in Phase 10, requirements tracking was not updated during execution
 - [Phase 10-09]: INTEROP-01/02 reassigned to Phase 13 — ActivityPub federation is distinct from Nostr-based Phase 10 communication layer
+- [Phase 10.1-01]: CSS aliases are alias-only (--bg-primary, --bg-tertiary, --border, --accent, --spacing-xs through --spacing-xl) — no canonical variables renamed; one-file fix for Phase 9/10 component visibility
+- [Phase 10.1-01]: ConversationList uses lazy {#await import()} pattern matching RoomDirectory/SessionCreator; npub decoded via nip19.decode (nostr-tools), hex validated via regex
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
@@ -334,6 +337,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-23
-Phase 10 Plan 07 complete. Root layout: initNostr() + subscribeToIncomingDMs() on mount (unconditional). ChatOverlay mounted globally. Chat nav button with unread badge in both Tauri + web nav. Artist page: scene rooms button for primary tag. Discover page: scene rooms button when tags active. Fixed: $derived exports in notifications.svelte.ts and sessions.svelte.ts changed to getter functions. npm run check 0 errors, npm run build exits 0.
-Stopped at: Completed 10-07-PLAN.md
-Next: Phase 10 Plan 08
+Phase 10.1 Plan 01 complete. theme.css: 9 CSS compatibility aliases (4 color + 5 spacing) for Phase 9/10 component visibility (GAP-05). ConversationList.svelte created (214 lines): scrollable DM list, pubkey truncation, unread badge, npub/hex input for new threads. ChatOverlay routing split: 'dms' → ConversationList, 'dm-thread' → ChatPanel (lazy imports). ChatPanel: back button in dm-thread view. npm run check 0 errors.
+Stopped at: Completed 10.1-01-PLAN.md
+Next: Phase 10.1 Plan 02 (taste profile publisher + Nostr export)

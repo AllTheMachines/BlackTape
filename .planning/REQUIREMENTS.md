@@ -77,7 +77,7 @@
 
 ### Communication Layer (Phase 10)
 
-- [ ] **COMM-04**: Private DM system — encrypted 1:1 messaging between Mercury users using Nostr NIP-17 gift-wrap
+- [x] **COMM-04**: Private DM system — encrypted 1:1 messaging between Mercury users using Nostr NIP-17 gift-wrap
 - [x] **COMM-05**: Scene rooms — persistent group chat organized by tag taxonomy, with AI-gated creation and owner moderation tools
 - [x] **COMM-06**: Ephemeral listening party sessions — zero-persistence shared listening moments tied to specific music
 
@@ -190,7 +190,7 @@
 | COMM-01 | Phase 9 | Complete |
 | COMM-02 | Phase 9 | Complete |
 | COMM-03 | Phase 9 | Complete |
-| COMM-04 | Phase 10 / Phase 10.1 | Pending |
+| COMM-04 | Phase 10 / Phase 10.1 | Complete |
 | COMM-05 | Phase 10 | Complete |
 | COMM-06 | Phase 10 | Complete |
 | SOCIAL-01 | Phase 9 | Complete |
