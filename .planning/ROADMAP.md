@@ -47,15 +47,21 @@ Full archive: `.planning/milestones/v1.0-ROADMAP.md`
 ## Phase Details (v1.1)
 
 ### Phase 11: Scene Building
-**Goal**: The community has identity (Phase 9) and communication (Phase 10). Now scenes emerge. AI detects emerging patterns in collective listening. Label collectives form organically. Mercury provides the space — people decide what happens in it. Creation tools are added only if the community asks for them.
+**Goal**: AI detects emerging scenes from collective listening + tag patterns. Scenes surface in a dedicated directory with anti-rich-get-richer tiering. Users can follow scenes and suggest artists. No creation tools ship this phase — scenes emerge automatically.
 **Depends on**: Phase 10 (communication), Phase 5 (AI for scene detection)
 **Requirements**: COMM-07, COMM-08
 **Success Criteria**:
   1. AI scene awareness — detects emerging scenes from collective listening patterns
-  2. Label collectives — group identity within Mercury (shared name, shared roster, collective taste profile)
-  3. Community-requested creation tools — collaborative playlists, shared collections, label pages. Shipped only when people ask.
+  2. Label collectives — skipped (deferred: too vague without organic community)
+  3. Community-requested creation tools — feature request vote counter ships; actual tools come later
   4. The underground is alive — scenes exist in Mercury that exist nowhere else
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 11-01-PLAN.md — taste.db schema (4 scene tables) + 8 Tauri commands
+- [ ] 11-02-PLAN.md — scene detection algorithm module + AI description prompt
+- [ ] 11-03-PLAN.md — /scenes directory and /scenes/[slug] detail routes
+- [ ] 11-04-PLAN.md — follow/suggest/feature-request interactions + nav + web API + docs
 
 ### Phase 12: Curator / Blog Tools
 **Goal**: Bring music blogs back to life. Give bloggers tools and an audience.
@@ -163,7 +169,7 @@ Runs alongside everything else. Not blocking any phase. Rolls out in stages as f
 | 9. Community Foundation | v1.0 | 6/6 | Complete | 2026-02-22 |
 | 10. Communication Layer | v1.0 | 9/9 | Complete | 2026-02-23 |
 | 10.1. Communication Hotfixes | v1.0 | 2/2 | Complete | 2026-02-23 |
-| 11. Scene Building | v1.1 | 0/TBD | Not started | - |
+| 11. Scene Building | v1.1 | 0/4 | Planning | - |
 | 12. Curator / Blog Tools | v1.1 | 0/TBD | Not started | - |
 | 13. Interoperability | v1.1 | 0/TBD | Not started | - |
 | 14. Listening Rooms | v1.1 | 0/TBD | Not started | - |
