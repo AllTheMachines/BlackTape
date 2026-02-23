@@ -829,6 +829,26 @@ pub fn write_json_to_path(path: String, json: String) -> Result<(), String> {
     Ok(())
 }
 
+#[derive(Debug, Serialize)]
+pub struct ExportResult {
+    pub path: String,
+    pub count: usize,
+}
+
+/// Write serialized play history JSON to a specific path.
+/// Returns path + record count for UI feedback.
+/// Called by exportPlayHistory() in history.ts after the save dialog.
+/// No state parameter — this is a file write only, not a DB query.
+#[tauri::command]
+pub fn export_play_history_to_path(path: String, json: String) -> Result<ExportResult, String> {
+    let count = serde_json::from_str::<Vec<serde_json::Value>>(&json)
+        .map(|v| v.len())
+        .unwrap_or(0);
+    std::fs::write(&path, json.as_bytes())
+        .map_err(|e| format!("Failed to write history to '{}': {}", path, e))?;
+    Ok(ExportResult { path, count })
+}
+
 // --- Batch artist matching ---
 
 #[derive(Debug, Serialize)]

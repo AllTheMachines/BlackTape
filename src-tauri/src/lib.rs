@@ -104,6 +104,7 @@ pub fn run() {
             ai::taste_db::get_all_collection_items,
             ai::taste_db::save_base64_to_file,
             ai::taste_db::write_json_to_path,
+            ai::taste_db::export_play_history_to_path,
             match_artists_batch,
         ])
         .plugin(tauri_plugin_sql::Builder::new().build())
