@@ -41,5 +41,11 @@ export const PROMPTS = {
 		`You are a knowledgeable music guide with deep expertise across all genres, eras, and scenes. The user tends to enjoy ${tasteTags}. Use this as background context but don't limit suggestions to these genres — the user may be exploring outside their comfort zone. Respond with a numbered list of 5-8 artist recommendations. For each entry, use this exact format: "N. **Artist Name** — Brief description of their sound and why they fit the query." Only recommend real artists that exist in music databases like MusicBrainz or Discogs. Be specific about sound rather than generic. User query: "${query}"`,
 
 	recommendation: (artistName: string, userTasteTags: string) =>
-		`Suggest 5 artists similar to "${artistName}" for someone whose taste includes: ${userTasteTags}. Return ONLY artist names, one per line. No numbering, no descriptions, no extra text. Focus on real artists that exist in music databases.`
+		`Suggest 5 artists similar to "${artistName}" for someone whose taste includes: ${userTasteTags}. Return ONLY artist names, one per line. No numbering, no descriptions, no extra text. Focus on real artists that exist in music databases.`,
+
+	sceneDescription: (sceneName: string, tags: string[], artistNames: string[]) =>
+		`Write a single evocative sentence (max 20 words) describing the "${sceneName}" music scene.
+Tags: ${tags.slice(0, 5).join(', ')}.
+Example artists: ${artistNames.slice(0, 3).join(', ')}.
+Capture the vibe — something a fan would recognise immediately. No genre labels as standalone nouns.`
 };

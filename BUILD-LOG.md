@@ -3599,3 +3599,41 @@ Cargo build: 0 errors. npm run check: 0 errors. All existing behavior untouched.
 
 > **Commit e487c6a** (2026-02-23 12:09) — feat(11-01): register scene Tauri commands in invoke_handler
 > Files changed: 1
+
+> **Commit 2f174ae** (2026-02-23 12:11) — docs(11-01): complete scene data layer plan
+> Files changed: 4
+
+> **Commit 6f4afbc** (2026-02-23 12:13) — feat(11-02): create scenes types and detection algorithm
+> Files changed: 2
+
+## Entry 049 — 2026-02-23 — Phase 11 Plan 02: Scene Detection Engine
+
+### What Got Built
+
+Scene detection TypeScript module — the core intelligence that turns tag co-occurrence data + listener favorites into typed `DetectedScene` objects.
+
+**`src/lib/scenes/types.ts`** — Four interfaces: `DetectedScene`, `SceneArtist`, `SceneSuggestion`, `PartitionedScenes`. The two-tier partition (active/emerging) is baked into the type system.
+
+**`src/lib/scenes/detection.ts`** — Full detection algorithm:
+- `findTagClusterSeeds()` — queries `tag_cooccurrence` with niche filters (both tags < 200 artists, >= 5 shared artists). Surfaces real micro-scenes, not mainstream blobs.
+- `groupTagPairsIntoClusters()` — iterative union-find merge. Two pairs belong in the same cluster if they share a tag. Caps at 50 clusters.
+- `getClusterArtists()` — dynamic JOINs for 1/2/3 tag combinations. Gets artists that have ALL cluster tags.
+- `isNovelTagCombination()` — checks KB genres table. Tag combos not in any known genre = emerging.
+- `validateListenerOverlap()` — Tauri-only. Compares scene artists against user's `get_favorite_artists`. Count is the "listenerCount" on each scene.
+- `detectScenes()` — main entry point. Runs the full pipeline, caches to taste.db via `save_detected_scenes` invoke.
+- `partitionScenes()` — two-tier split: emerging (isEmerging OR listenerCount <= 2) vs active (established scenes). Both shuffled with Fisher-Yates to prevent order lock-in.
+- `loadCachedScenes()` — reads back from taste.db cache, parses JSON array fields.
+
+**`src/lib/scenes/state.svelte.ts`** — Svelte 5 `$state` reactive store. `loadScenes(forceDetect?)` tries cache first, falls back to full detection. Idempotent guard prevents concurrent runs.
+
+**`src/lib/scenes/index.ts`** — Barrel re-export. Consumers import everything from `$lib/scenes`.
+
+**`src/lib/ai/prompts.ts`** — `sceneDescription` added to PROMPTS object: single evocative sentence (max 20 words), vibe-first, no genre labels as standalone nouns.
+
+### Design Notes
+
+The anti-rich-get-richer design is the key insight here. Popular genres won't dominate the scene list because the niche filter (`< 200 artists per tag`) excludes them entirely. The Fisher-Yates shuffle on both tiers prevents the same scenes from always appearing first. The `isEmerging` flag surfaces tag combinations that haven't solidified into named KB genres yet — these are the most interesting discoveries.
+
+All Tauri IPC calls use the `getInvoke()` dynamic import pattern, consistent with the rest of the codebase. Web context gets empty arrays everywhere — zero breakage on web build.
+
+npm run check: 0 errors, 0 new warnings.
