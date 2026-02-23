@@ -5,18 +5,18 @@
 See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Phase 10 in progress. Plan 05 done: 6 chat UI components (ChatOverlay drawer, ChatPanel unified view, MessageList, MessageInput with unfurl, UnfurlCard, TasteBridgeHeader AI DM header).
+**Current focus:** Phase 10 in progress. Plan 06 done: 5 room/session UI components (RoomDirectory, RoomCreator, AiGatePrompt, SessionCreator, ModerationQueue).
 
 ## Current Position
 
 Phase: 10-communication-layer of 15 (Communication Layer — In Progress)
-Current Plan: 10-05 (complete)
-Status: Phase 10 Plan 05 complete — 6 Svelte components in src/lib/components/chat/. CSS slide drawer, unified DM+room+session panel, 800ms URL debounce unfurl, slow mode, AI taste bridge header. 2026-02-23.
-Last activity: 2026-02-23 — 10-05 complete. ChatOverlay CSS right-offset drawer. ChatPanel routes sendDM/sendRoomMessage/sendPartyMessage. MessageInput 800ms debounce + UnfurlCard previews. TasteBridgeHeader getTasteBridge on mount. npm run check 0 errors.
-Stopped at: Completed 10-05-PLAN.md
-Next: Phase 10 Plan 06
+Current Plan: 10-06 (complete)
+Status: Phase 10 Plan 06 complete — 5 Svelte components in src/lib/components/chat/. RoomDirectory tag filter, AI-gated RoomCreator, AiGatePrompt contextual explainer, SessionCreator with invite code, ModerationQueue with delete/kick/ban/dismiss. 2026-02-23.
+Last activity: 2026-02-23 — 10-06 complete. RoomDirectory $effect reactive tag filter. RoomCreator aiState.enabled gate. AiGatePrompt links to Settings. SessionCreator public/private visibility + invite code. ModerationQueue flaggedMessages resolution. npm run check 0 errors.
+Stopped at: Completed 10-06-PLAN.md
+Next: Phase 10 Plan 07
 
-Progress: [█████░░░░░] 5/? plans complete (Phase 10 In Progress)
+Progress: [██████░░░░] 6/? plans complete (Phase 10 In Progress)
 
 ## Performance Metrics
 
@@ -89,6 +89,7 @@ Progress: [█████░░░░░] 5/? plans complete (Phase 10 In Progr
 | Phase 10 P03 | 4 | 2 tasks | 3 files |
 | Phase 10-communication-layer P04 | 3 | 1 tasks | 2 files |
 | Phase 10-communication-layer P05 | 3min | 2 tasks | 6 files |
+| Phase 10-communication-layer P06 | 3min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -309,6 +310,8 @@ Progress: [█████░░░░░] 5/? plans complete (Phase 10 In Progr
 - [Phase 10-communication-layer]: NDKKind enum doesn't include ephemeral kinds 20001/20002 — double cast (as unknown as NDKKind[]) required when numeric literal types don't overlap with enum members
 - [Phase 10-communication-layer]: CSS slide drawer over dialog.showModal() — modal inert backdrop blocks page browsing, breaking chat-while-browsing requirement
 - [Phase 10-communication-layer]: [Phase 10-05]: Plan template CSS variables mapped to actual theme tokens (--bg-surface/--bg-elevated/--border-default/--link-color/--text-muted)
+- [Phase 10-communication-layer]: Removed unused ndkState import from ModerationQueue — all NDK ops happen inside moderation.ts functions
+- [Phase 10-communication-layer]: AiGatePrompt uses closeChat() on Settings link so overlay closes cleanly when navigating to /settings
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)

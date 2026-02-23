@@ -3284,3 +3284,34 @@ The plan's template code used placeholder CSS variables (`--bg-secondary`, `--ac
 `activeMessages` and `slowMode` in ChatPanel use the `$derived(() => fn)` pattern — producing a callable derived rather than a plain value. This is valid Svelte 5: calling `activeMessages()` in the template re-evaluates the function reactively. Used when the derived value involves conditional lookups against reactive Maps (the `roomsState.messages` Map) — plain `$derived` would also work, but the function form reads cleanly.
 
 `npm run check` exits 0, zero TypeScript errors across all 6 components.
+
+> **Commit 95c3aa2** (2026-02-23 02:08) — docs(10-05): complete chat-ui plan — SUMMARY, STATE, ROADMAP, BUILD-LOG
+> Files changed: 4
+
+## Entry 043 — 2026-02-23 — Phase 10 Plan 06: Room Discovery, Creation, and Moderation UI
+
+### What Was Built
+
+**Plan 10-06:** The room/session entry point UI — five components that complete the user-facing surface for COMM-05 (scene rooms) and COMM-06 (listening parties). These are the components users interact with to find rooms, create them, manage content, and start parties.
+
+**`AiGatePrompt.svelte`** — Friendly explainer shown when a user tries to create a room without an AI model configured. Rather than a cryptic error, this shows an encouraging explanation: "Every scene room needs an AI moderator to help keep the space safe." Links directly to Settings via `/settings` with `closeChat()` so the overlay closes cleanly when navigating away. The AI gate requirement comes from Plan 03 — room creation is gated by `aiState.enabled` check in RoomCreator.
+
+**`RoomCreator.svelte`** — Room creation form with dual validation: UI-level (name + at least one tag required, button disabled) and submit-level (guard before calling `createRoom()`). AI gate: the entire form is conditionally rendered — if `aiState.enabled` is false, only `AiGatePrompt` shows. Tags are managed as an array with add/remove: input normalizes whitespace to hyphens before adding. After successful creation, navigates to `room-view` in the chat overlay with the new room's channel ID.
+
+**`RoomDirectory.svelte`** — Browse all active Mercury scene rooms (NIP-28 kind:40 filtered by `['t', 'mercury']`). Filter by tag via a text input — the `$effect` re-calls `loadRooms(filterTag)` reactively on every keystroke. "New Room" button toggles `RoomCreator` inline (dynamic import to avoid loading AI/NDK until needed). Each room card shows name, up to 3 tags, and truncated description. Clicking joins the room via `subscribeToRoom()` and navigates the overlay to `room-view`.
+
+**`SessionCreator.svelte`** — Listening party creation entry point. Artist name is required; release name is optional. Visibility toggle: public (announced on Nostr, discoverable) vs private (invite code only). After creation, the invite code is retrieved from `sessionsState.mySession.inviteCode` — only shown for private sessions. `prefillArtist` and `prefillRelease` props allow context from artist/release pages to flow in (Plan 07 will wire these up). Navigates to `session-view` on success.
+
+**`ModerationQueue.svelte`** — Room owner moderation tool. Reads flagged message IDs from `flaggedMessages` Map (Plan 03's moderation module), resolves full message objects from `roomsState.messages`, and renders each with four actions: Delete (publishes kind:43 hide event), Kick (publishes kind:44 mute event), Ban (client-side Set + kick), Dismiss (removes from flagged set without action). Empty state: "No flagged messages."
+
+### Key Decision: Removed unused `ndkState` import in ModerationQueue
+
+The plan template imported `ndkState` from `nostr.svelte.ts` in ModerationQueue but the component never uses it in its logic or template — all NDK operations happen inside the `deleteRoomMessage`/`kickUser`/`banUser` functions in `moderation.ts`. Removed the import to keep the component clean.
+
+`npm run check` exits 0 across all 5 components. Zero TypeScript errors.
+
+> **Commit a6283bb** (2026-02-23 02:10) — feat(10-06): add RoomDirectory, RoomCreator, AiGatePrompt components
+> Files changed: 3
+
+> **Commit b328949** (2026-02-23 02:11) — feat(10-06): add SessionCreator and ModerationQueue components
+> Files changed: 2
