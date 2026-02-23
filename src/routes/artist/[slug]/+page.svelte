@@ -386,7 +386,7 @@
 	<!-- Embed Widget UI -->
 	<section class="embed-section">
 		<button class="embed-toggle" onclick={() => (showEmbed = !showEmbed)}>
-			{showEmbed ? 'Hide embed' : '&lt;/&gt; Embed this artist'}
+			{showEmbed ? 'Hide embed' : '</> Embed this artist'}
 		</button>
 
 		{#if showEmbed}
