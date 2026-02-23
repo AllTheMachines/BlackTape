@@ -284,6 +284,9 @@ export async function detectScenes(): Promise<DetectedScene[]> {
 			// Check listener overlap (how many of user's favorites are in this scene)
 			const listenerCount = await validateListenerOverlap(artists.map((a) => a.mbid));
 
+			// Skip scenes with no connection to the user's taste
+			if (listenerCount === 0) continue;
+
 			// Check if this is a novel tag combination (not in KB genres)
 			const emerging = await isNovelTagCombination(cluster.tags, db);
 
