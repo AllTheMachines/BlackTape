@@ -4028,3 +4028,6 @@ The handoff planned 4 specific Rust commands (search_artists, search_by_tag, etc
 
 > **Commit bed7835** (2026-02-23 18:42) — fix(tauri): bypass tauri-plugin-sql with generic rusqlite command
 > Files changed: 4
+
+> **Commit cae72e1** (2026-02-23 19:46) — auto-save: 13 files @ 19:46
+> Files changed: 35

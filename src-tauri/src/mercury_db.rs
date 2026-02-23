@@ -110,15 +110,8 @@ pub fn query_mercury_db(
     params: Vec<serde_json::Value>,
     state: tauri::State<'_, MercuryDbState>,
 ) -> Result<Vec<serde_json::Value>, String> {
-    eprintln!("[mercury_db] query called, {} params, sql: {}", params.len(), &sql[..sql.len().min(60)]);
-    let guard = state.0.lock().map_err(|e| {
-        eprintln!("[mercury_db] lock error: {}", e);
-        format!("Lock error: {}", e)
-    })?;
-    let conn = guard.as_ref().ok_or_else(|| {
-        eprintln!("[mercury_db] mercury.db not available (state is None)");
-        "mercury.db not available".to_string()
-    })?;
+    let guard = state.0.lock().map_err(|e| format!("Lock error: {}", e))?;
+    let conn = guard.as_ref().ok_or_else(|| "mercury.db not available".to_string())?;
 
     let mut stmt = conn.prepare(&sql).map_err(|e| e.to_string())?;
     let col_count = stmt.column_count();
