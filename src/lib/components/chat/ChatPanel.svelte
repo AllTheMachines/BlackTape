@@ -59,6 +59,9 @@
 </script>
 
 <div class="chat-panel">
+	{#if chatState.view === 'dm-thread'}
+		<button class="back-btn" onclick={() => chatState.view = 'dms'}>← Conversations</button>
+	{/if}
 	{#if showInput || activeMessages().length > 0}
 		<!-- AI taste bridge pinned header — DM threads only (ROADMAP criteria 6+7) -->
 		{#if showTasteBridge && chatState.activeConversationPubkey}
@@ -93,5 +96,21 @@
 		color: var(--text-secondary);
 		font-size: 0.875rem;
 		text-align: center;
+	}
+	.back-btn {
+		flex-shrink: 0;
+		background: none;
+		border: none;
+		border-bottom: 1px solid var(--border-subtle);
+		color: var(--text-muted);
+		font-size: 0.75rem;
+		padding: 8px 16px;
+		cursor: pointer;
+		text-align: left;
+		width: 100%;
+		transition: color 0.15s;
+	}
+	.back-btn:hover {
+		color: var(--text-primary);
 	}
 </style>

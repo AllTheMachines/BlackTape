@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { chatState, closeChat } from '$lib/comms/notifications.svelte.js';
-	import ChatPanel from './ChatPanel.svelte';
 </script>
 
 <aside
@@ -42,8 +41,19 @@
 			{#await import('./SessionCreator.svelte') then { default: SessionCreator }}
 				<SessionCreator />
 			{/await}
+		{:else if chatState.view === 'dms'}
+			{#await import('./ConversationList.svelte') then { default: ConversationList }}
+				<ConversationList />
+			{:catch}
+				<p>Loading…</p>
+			{/await}
 		{:else}
-			<ChatPanel />
+			<!-- dm-thread: ChatPanel handles it -->
+			{#await import('./ChatPanel.svelte') then { default: ChatPanel }}
+				<ChatPanel />
+			{:catch}
+				<p>Loading…</p>
+			{/await}
 		{/if}
 	</div>
 </aside>
