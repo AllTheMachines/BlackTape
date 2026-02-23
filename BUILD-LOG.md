@@ -4112,3 +4112,6 @@ Leading hypotheses: slow FTS5 query on large db, Rust panic on blocking thread (
 <!-- status -->
 Debugging search hang. Diagnostic code ready — need to rebuild (`npm run tauri build -- --no-bundle`) and test. DevTools will show exactly which step hangs. See HANDOFF.md for full diagnostic plan.
 <!-- /status -->
+
+> **Commit b360e1b** (2026-02-23 21:35) — wip: auto-save
+> Files changed: 6
