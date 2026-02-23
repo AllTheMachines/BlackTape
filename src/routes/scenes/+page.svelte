@@ -4,21 +4,21 @@
 	import type { PageData } from './$types';
 	import { PROJECT_NAME } from '$lib/config';
 	import { upvoteFeatureRequest } from '$lib/comms/scenes.svelte.js';
+	import { onMount } from 'svelte';
+	import type { PartitionedScenes } from '$lib/scenes';
 
 	let { data }: { data: PageData } = $props();
 
-	// Reactive reference to Tauri detection state (only used in Tauri context)
+	// Detection state — driven by scenesState in Tauri, empty on web
 	let isDetecting = $state(false);
+	let partitioned = $state<PartitionedScenes>({ active: [], emerging: [] });
 
 	// Feature request vote state
 	const FEATURE_ID = 'collaborative-playlists';
 	const VOTED_KEY = `feature_voted_${FEATURE_ID}`;
-
-	// Check if already voted (localStorage, works on both web and Tauri)
 	let hasVoted = $state(false);
 	let voteCount = $state(0);
 
-	import { onMount } from 'svelte';
 	onMount(async () => {
 		// Check prior vote from localStorage
 		try {
@@ -27,14 +27,16 @@
 				hasVoted = true;
 				voteCount = parseInt(stored, 10);
 			}
-		} catch {
-			// localStorage unavailable — ignore
-		}
+		} catch { /* ignore */ }
 
 		if (!isTauri()) return;
-		// Subscribe to detection state reactively
-		const { scenesState } = await import('$lib/scenes');
-		isDetecting = scenesState.isDetecting;
+
+		// Run detection and update local state when complete
+		const { loadScenes, scenesState } = await import('$lib/scenes');
+		isDetecting = true;
+		await loadScenes();
+		partitioned = scenesState.partitioned;
+		isDetecting = false;
 	});
 
 	async function handleVote() {
@@ -42,16 +44,13 @@
 		const newCount = await upvoteFeatureRequest(FEATURE_ID);
 		voteCount = newCount;
 		hasVoted = true;
-		// Persist vote flag in localStorage (web and Tauri)
 		try {
 			localStorage.setItem(VOTED_KEY, String(newCount));
-		} catch {
-			// ignore
-		}
+		} catch { /* ignore */ }
 	}
 
-	const hasActive = $derived(data.partitioned.active.length > 0);
-	const hasEmerging = $derived(data.partitioned.emerging.length > 0);
+	const hasActive = $derived(partitioned.active.length > 0);
+	const hasEmerging = $derived(partitioned.emerging.length > 0);
 	const isEmpty = $derived(!hasActive && !hasEmerging);
 </script>
 
@@ -79,7 +78,7 @@
 		<section class="scenes-section">
 			<h2>Active Scenes</h2>
 			<div class="scene-grid">
-				{#each data.partitioned.active as scene}
+				{#each partitioned.active as scene}
 					<SceneCard {scene} href="/scenes/{scene.slug}" />
 				{/each}
 			</div>
@@ -91,7 +90,7 @@
 			<h2>Emerging</h2>
 			<p class="section-desc">New combinations appearing for the first time</p>
 			<div class="scene-grid">
-				{#each data.partitioned.emerging as scene}
+				{#each partitioned.emerging as scene}
 					<SceneCard {scene} href="/scenes/{scene.slug}" />
 				{/each}
 			</div>

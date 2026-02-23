@@ -2,8 +2,6 @@ import type { PageLoad } from './$types';
 import { isTauri } from '$lib/platform';
 import type { DetectedScene, SceneArtist } from '$lib/scenes';
 
-export const ssr = false;
-
 export const load: PageLoad = async ({ params, data }) => {
 	if (!isTauri()) {
 		return { scene: data.scene, artists: data.artists, topTracks: data.topTracks };
