@@ -3679,3 +3679,34 @@ Both routes use the established universal load pattern:
 The `svelte:head` requirement (must be outside `{#if}`) is satisfied in both pages — ternary for title when `data.scene` might be null. The recordings query wraps in try/catch: the `recordings` table exists in mercury.db but we degrade gracefully if missing.
 
 npm run check: 0 errors (7 pre-existing warnings, unchanged). npm run build: success (Cloudflare adapter).
+
+> **Commit 930b59c** (2026-02-23 12:23) — docs(11-03): complete scenes UI routes plan
+> Files changed: 4
+
+---
+
+### 2026-02-23 — Phase 11 Plan 04: Scene Interactions + Nav + API + Docs
+
+Phase 11 is complete. Plans 01-03 built the detection engine and UI routes. Plan 04 makes scenes interactive.
+
+**What got built:**
+
+**`src/lib/comms/scenes.svelte.ts`** — New interaction module alongside `nostr.svelte.ts` and `rooms.svelte.ts`. Exports followScene (taste.db primary + NIP-51 kind 30001 optional), unfollowScene, suggestArtist (free-text, no MBID required), upvoteFeatureRequest (taste.db on Tauri, localStorage on web), and sceneFollowState reactive singleton.
+
+**`/scenes/[slug]` updates** — Follow/Unfollow button in the scene header (Tauri-gated). Artist suggestion form at bottom (Tauri-gated). Community suggested artists subsection (best-effort, fail silently). All wired to scenes.svelte.ts.
+
+**`/scenes` updates** — Feature request vote CTA replaces the old static link. Button triggers upvoteFeatureRequest, updates voteCount, persists in localStorage, shows "(N interested)" after voting. Always visible at bottom of page.
+
+**`/api/scenes` GET** — Web endpoint returning proto-scenes from tag_cooccurrence. Niche filter (< 200 artists per tag) + minimum 5 shared artists. Graceful { scenes: [] } if table missing.
+
+**Nav link** — "Scenes" added to both web and Tauri header nav, after Style Map. Not Tauri-gated. Uses class:active on /scenes prefix.
+
+**ARCHITECTURE.md + docs/user-manual.md** — Scene Building section documents detection algorithm, anti-rich-get-richer display, data model, interactions, routes, and anti-patterns. User manual documents browsing, following, suggesting, feature requests.
+
+npm run check: 0 errors (7 pre-existing warnings). npm run build: success. Test suite: 38/38 code-only passed.
+
+> **Commit 3dc4930** (2026-02-23 12:27) — feat(11-04): scene interactions — follow, suggest, feature request vote
+> Files changed: 3
+
+> **Commit 1cf5a11** (2026-02-23 12:31) — feat(11-04): nav link, web API route, and documentation
+> Files changed: 4

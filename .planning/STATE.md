@@ -96,6 +96,7 @@ Progress: [██████████] v1.0 SHIPPED
 | Phase 11-scene-building P01 | 3 | 2 tasks | 2 files |
 | Phase 11-scene-building P02 | 3 | 2 tasks | 5 files |
 | Phase 11-scene-building P03 | 4min | 2 tasks | 7 files |
+| Phase 11-scene-building P04 | 7 | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -337,6 +338,9 @@ Progress: [██████████] v1.0 SHIPPED
 - [Phase 11-03]: svelte:head outside {#if} with ternary for nullable scene title — Svelte compile-time restriction
 - [Phase 11-03]: Feature-request CTA links to /scenes?feature=collaborative-playlists — Plan 04 intercepts this param to count feature votes
 - [Phase 11-03]: isDetecting reactive binding via onMount dynamic import of scenesState — avoids .svelte.ts static import in non-Tauri contexts
+- [Phase 11-scene-building]: Scenes nav link not Tauri-gated — web directory works via proto-scenes from tag_cooccurrence so link is always useful on both platforms
+- [Phase 11-scene-building]: NIP-51 fetch-before-publish: fetch existing kind 30001 list before merging new slug to avoid overwriting prior follows
+- [Phase 11-scene-building]: upvoteFeatureRequest dual path: taste.db on Tauri, localStorage on web — same return type, transparent to callers
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
@@ -350,6 +354,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-23
-Phase 11 Plan 03 complete. Scene UI routes created: /scenes (directory, two-tier anti-rich-get-richer grid) and /scenes/[slug] (detail: artists, top tracks, listener count, tags, AI description slot). SceneCard.svelte component. npm run check 0 errors, npm run build success.
-Stopped at: Completed 11-03-PLAN.md
-Next: Phase 11 Plan 04 (scene community features — feature requests, suggestions)
+Phase 11 Plan 04 complete. Phase 11 (Scene Building) COMPLETE. scenes.svelte.ts interaction module (followScene/unfollowScene/suggestArtist/upvoteFeatureRequest), scene detail page follow button + artist suggestion form, /scenes vote CTA, Scenes nav link on both platforms, /api/scenes web endpoint, ARCHITECTURE.md Scene Building section, docs/user-manual.md Scenes section. npm run check 0 errors, npm run build success, 38/38 tests passed.
+Stopped at: Completed 11-04-PLAN.md
+Next: Phase 12 (next milestone phase)
