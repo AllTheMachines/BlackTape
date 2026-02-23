@@ -61,6 +61,19 @@
 	--player-border: oklch(0.11 0 0);
 	--progress-color: oklch(0.72 0.08 220);
 	--progress-bg: oklch(0.15 0 0);
+
+	/* Compatibility aliases — Phase 9/10 components use these naming conventions */
+	--bg-primary: var(--bg-base);
+	--bg-tertiary: var(--bg-elevated);
+	--border: var(--border-default);
+	--accent: var(--link-color);
+
+	/* Spacing aliases — Phase 9 components use --spacing-* convention */
+	--spacing-xs: var(--space-xs);
+	--spacing-sm: var(--space-sm);
+	--spacing-md: var(--space-md);
+	--spacing-lg: var(--space-lg);
+	--spacing-xl: var(--space-xl);
 }
 
 /* Base resets */
