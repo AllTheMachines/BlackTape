@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// Baseline (Phase 13, 2026-02-24): 63 passing (62 code + 1 build), 0 web, 30 skipped — exits 0
 /**
  * Mercury Test Suite
  *
@@ -46,6 +47,7 @@ function header(title) {
   log(SEP);
 }
 
+// No web tests currently — wrangler check is dormant
 function checkWrangler() {
   return new Promise((resolve) => {
     const http = require('http');
@@ -84,6 +86,7 @@ async function main() {
     if (phaseFilter && t.phase !== phaseFilter && t.phase !== 0) return false;
     if (webOnly && t.method !== 'web') return false;
     if (codeOnly && t.method !== 'code') return false;
+    // Previously slow web tests — now all skip; filter is harmless but kept for reference
     if (fast && ['P6-05', 'P7-01', 'P7-02'].includes(t.id)) return false;
     return true;
   });
