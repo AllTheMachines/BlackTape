@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:all-the-machines.com)",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_take_screenshot",
+      "WebSearch",
+      "Bash(test:*)",
+      "Bash(npm run check:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(npm run build:*)",
+      "Bash(curl:*)",
+      "Bash(node -e:*)"
+    ]
+  }
+}

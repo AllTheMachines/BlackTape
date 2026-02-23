@@ -4025,3 +4025,6 @@ The handoff planned 4 specific Rust commands (search_artists, search_by_tag, etc
 - `src/lib/db/tauri-provider.ts` — removed `Database.load()`, now calls `invoke('query_mercury_db')`
 
 `cargo check` clean. `npm run check` clean (0 errors). Ready to build and test.
+
+> **Commit bed7835** (2026-02-23 18:42) — fix(tauri): bypass tauri-plugin-sql with generic rusqlite command
+> Files changed: 4
