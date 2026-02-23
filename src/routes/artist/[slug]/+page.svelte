@@ -11,6 +11,7 @@
 	import { streamingPref } from '$lib/theme/preferences.svelte';
 	import { getAiProvider } from '$lib/ai/engine';
 	import { PROMPTS } from '$lib/ai/prompts';
+	import { openChat, chatState } from '$lib/comms/notifications.svelte.js';
 
 	let { data } = $props();
 
@@ -133,6 +134,12 @@
 	let hasAnyLinks = $derived(
 		LINK_CATEGORY_ORDER.some(cat => data.categorizedLinks[cat].length > 0)
 	);
+
+	/** Open the chat overlay in rooms view for this artist's primary tag. */
+	function openRoomsForArtist() {
+		chatState.view = 'rooms';
+		openChat('rooms');
+	}
 </script>
 
 <svelte:head>
@@ -229,6 +236,13 @@
 					Explore {tags[0]} scene →
 				</a>
 			</div>
+
+			<!-- Scene Rooms discovery link -->
+			<section class="scene-rooms-hint">
+				<button onclick={openRoomsForArtist} class="rooms-link">
+					Scene rooms for {tags[0]} &rarr;
+				</button>
+			</section>
 		{/if}
 
 		{#if effectiveBio}
@@ -402,6 +416,26 @@
 	.explore-scene-link:hover {
 		color: var(--text-accent);
 		text-decoration: none;
+	}
+
+	.scene-rooms-hint {
+		margin: 4px 0;
+	}
+
+	.rooms-link {
+		background: none;
+		border: 1px solid var(--border-default);
+		border-radius: 6px;
+		padding: 6px 12px;
+		cursor: pointer;
+		color: var(--text-muted);
+		font-size: 0.8rem;
+		transition: border-color 0.15s, color 0.15s;
+	}
+
+	.rooms-link:hover {
+		border-color: var(--text-accent);
+		color: var(--text-primary);
 	}
 
 	.bio {

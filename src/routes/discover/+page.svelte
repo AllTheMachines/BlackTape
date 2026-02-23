@@ -3,6 +3,7 @@
 	import TagFilter from '$lib/components/TagFilter.svelte';
 	import type { PageData } from './$types';
 	import { PROJECT_NAME } from '$lib/config';
+	import { openChat, chatState } from '$lib/comms/notifications.svelte.js';
 
 	let { data }: { data: PageData } = $props();
 </script>
@@ -24,6 +25,16 @@
 	</div>
 
 	<TagFilter tags={data.popularTags} activeTags={data.tags} />
+
+	{#if data.tags.length > 0}
+		<button
+			onclick={() => { chatState.view = 'rooms'; openChat('rooms'); }}
+			class="discover-rooms-btn"
+			title="Find scene rooms for these tags"
+		>
+			Scene rooms for this vibe &rarr;
+		</button>
+	{/if}
 
 	<section class="results">
 		{#if data.artists.length === 0}
@@ -60,6 +71,23 @@
 		font-size: 0.875rem;
 		color: var(--text-muted);
 		margin: 0;
+	}
+
+	.discover-rooms-btn {
+		background: none;
+		border: 1px solid var(--border-default);
+		border-radius: 6px;
+		padding: 5px 10px;
+		cursor: pointer;
+		color: var(--text-muted);
+		font-size: 0.75rem;
+		margin-top: var(--space-md);
+		transition: border-color 0.15s, color 0.15s;
+	}
+
+	.discover-rooms-btn:hover {
+		border-color: var(--text-accent);
+		color: var(--text-accent);
 	}
 
 	.results {
