@@ -100,16 +100,22 @@ Plans:
 ## Phase Details (v1.2)
 
 ### Phase 13: Foundation Fixes
-**Goal**: The test suite can be trusted as a gate — silent crashes are detected, false-green exits are eliminated, flaky timing is removed, and coverage gaps from shipped phases are filled.
+**Goal**: The test suite can be trusted as a gate — silent crashes are detected, flaky D3 timing is eliminated, and the Tauri desktop gets an animated navigation progress indicator.
 **Depends on**: Nothing (first v1.2 phase — repairs existing infrastructure)
-**Requirements**: INFRA-01, INFRA-02, INFRA-03, INFRA-04, WEB-01, WEB-02, WEB-03, UX-01, UX-02, UX-03, UX-04, PROC-02
+**Requirements**: INFRA-01, INFRA-03, INFRA-04, UX-01, UX-02, UX-03, UX-04, PROC-02
+**Note**: WEB-01, WEB-02, WEB-03, INFRA-02 are out of scope — Mercury is Tauri-desktop-only; web/Playwright/wrangler infrastructure is being removed.
 **Success Criteria**:
-  1. A test that loads a page with a JavaScript console.error fires a visible failure — silent JS crashes can no longer pass the suite undetected
-  2. Running the test suite when wrangler is not running exits with code 1 and prints the exact command to start it — no false-green from a missing environment
-  3. D3 animation tests complete without hardcoded sleep delays — the `data-ready` attribute signals completion, making them deterministic on any machine speed
-  4. The `/scenes` and `/new-rising` pages each have a Playwright web test that verifies the page loads and renders content — zero-coverage pages from Phases 11–12 are covered
-  5. Every navigation event on both web and Tauri desktop shows an animated top-bar progress indicator that clears on completion — loading states are visually and programmatically distinguishable from frozen states
-**Plans**: TBD
+  1. The web.mjs runner captures console.error and pageerror events per test — silent JS crashes can no longer pass undetected
+  2. All 23 Playwright web tests removed from manifest; `--code-only` suite exits 0 — PROC-02 gate established
+  3. D3 animation components signal completion via `data-ready` attribute — no more hardcoded waitForTimeout delays
+  4. New Phase 13 manifest checks use fileContains/fileExists not CSS class selectors — test-stable assertions
+  5. Tauri desktop shows an animated NProgress-style top-bar progress indicator on every navigation and data load; bar always animated (never frozen), clears automatically on completion
+**Plans**: 3 plans
+
+Plans:
+- [ ] 13-01-PLAN.md — Remove web tests from manifest + fix console.error capture in web runner (PROC-02 baseline)
+- [ ] 13-02-PLAN.md — Add data-ready signals to D3 components + Phase 13 manifest code checks (INFRA-03, INFRA-04)
+- [ ] 13-03-PLAN.md — Tauri navigation progress bar: nav-progress.svelte.ts + layout integration (UX-01–UX-04)
 
 ### Phase 14: API Contract Layer
 **Goal**: Every JSON API endpoint and RSS feed is proven to return the correct shape, status codes, and headers — independent of any browser or UI layer.
@@ -201,6 +207,6 @@ Runs alongside everything else. Not blocking any phase. Rolls out in stages as f
 | 10.1. Communication Hotfixes | v1.0 | 2/2 | Complete | 2026-02-23 |
 | 11. Scene Building | v1.1 | 4/4 | Complete | 2026-02-23 |
 | 12. Curator / Blog Tools | v1.1 | 4/4 | Complete | 2026-02-23 |
-| 13. Foundation Fixes | v1.2 | 0/TBD | Not started | - |
+| 13. Foundation Fixes | v1.2 | 0/3 | Not started | - |
 | 14. API Contract Layer | v1.2 | 0/TBD | Not started | - |
 | 15. Navigation Flows + Rust Unit Tests | v1.2 | 0/TBD | Not started | - |
