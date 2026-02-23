@@ -613,6 +613,171 @@ export const PHASE_9 = [
 ];
 
 // ---------------------------------------------------------------------------
+// Phase 10 — Scenes
+// ---------------------------------------------------------------------------
+
+export const PHASE_10 = [
+  {
+    id: 'P10-01', phase: 10, area: 'Scenes',
+    desc: 'SceneCard.svelte component exists',
+    method: 'code',
+    fn: fileExists('src/lib/components/SceneCard.svelte'),
+  },
+  {
+    id: 'P10-02', phase: 10, area: 'Scenes',
+    desc: '/scenes route exists',
+    method: 'code',
+    fn: fileExists('src/routes/scenes/+page.svelte'),
+  },
+  {
+    id: 'P10-03', phase: 10, area: 'Scenes',
+    desc: '/scenes/[slug] detail route exists',
+    method: 'code',
+    fn: fileExists('src/routes/scenes/[slug]/+page.svelte'),
+  },
+  {
+    id: 'P10-04', phase: 10, area: 'Scenes',
+    desc: 'Scene detection engine exists',
+    method: 'code',
+    fn: fileExists('src/lib/scenes/detection.ts'),
+  },
+  {
+    id: 'P10-05', phase: 10, area: 'Scenes',
+    desc: 'Scenes nav link in layout',
+    method: 'code',
+    fn: fileContains('src/routes/+layout.svelte', '/scenes'),
+  },
+  {
+    id: 'P10-06', phase: 10, area: 'Scenes',
+    desc: 'Scene follow/unfollow Rust commands registered',
+    method: 'code',
+    fn: fileContains('src-tauri/src/lib.rs', 'follow_scene'),
+  },
+];
+
+// ---------------------------------------------------------------------------
+// Phase 11 — Taste Bridge (AI Chat)
+// ---------------------------------------------------------------------------
+
+export const PHASE_11 = [
+  {
+    id: 'P11-01', phase: 11, area: 'Chat',
+    desc: 'ChatOverlay.svelte component exists',
+    method: 'code',
+    fn: fileExists('src/lib/components/chat/ChatOverlay.svelte'),
+  },
+  {
+    id: 'P11-02', phase: 11, area: 'Chat',
+    desc: 'ChatPanel.svelte exists',
+    method: 'code',
+    fn: fileExists('src/lib/components/chat/ChatPanel.svelte'),
+  },
+  {
+    id: 'P11-03', phase: 11, area: 'Chat',
+    desc: 'UnfurlCard.svelte exists (link preview)',
+    method: 'code',
+    fn: fileExists('src/lib/components/chat/UnfurlCard.svelte'),
+  },
+  {
+    id: 'P11-04', phase: 11, area: 'Chat',
+    desc: '/api/unfurl endpoint exists',
+    method: 'code',
+    fn: fileExists('src/routes/api/unfurl/+server.ts'),
+  },
+  {
+    id: 'P11-05', phase: 11, area: 'Chat',
+    desc: 'Chat nav button in layout',
+    method: 'code',
+    fn: fileContains('src/routes/+layout.svelte', 'Chat'),
+  },
+  {
+    id: 'P11-06', phase: 11, area: 'Chat',
+    desc: 'notifications.svelte.ts chat state module exists',
+    method: 'code',
+    fn: fileExists('src/lib/comms/notifications.svelte.ts'),
+  },
+];
+
+// ---------------------------------------------------------------------------
+// Phase 12 — Curator / Blog Tools
+// ---------------------------------------------------------------------------
+
+export const PHASE_12 = [
+  {
+    id: 'P12-01', phase: 12, area: 'RSS',
+    desc: 'RSS artist feed route exists',
+    method: 'code',
+    fn: fileExists('src/routes/api/rss/artist/[slug]/+server.ts'),
+  },
+  {
+    id: 'P12-02', phase: 12, area: 'RSS',
+    desc: 'RSS tag feed route exists',
+    method: 'code',
+    fn: fileExists('src/routes/api/rss/tag/[tag]/+server.ts'),
+  },
+  {
+    id: 'P12-03', phase: 12, area: 'RSS',
+    desc: 'RSS new-rising feed route exists',
+    method: 'code',
+    fn: fileExists('src/routes/api/rss/new-rising/+server.ts'),
+  },
+  {
+    id: 'P12-04', phase: 12, area: 'RSS',
+    desc: 'RssButton.svelte component exists',
+    method: 'code',
+    fn: fileExists('src/lib/components/RssButton.svelte'),
+  },
+  {
+    id: 'P12-05', phase: 12, area: 'Embed',
+    desc: '/embed/artist/[slug] route exists',
+    method: 'code',
+    fn: fileExists('src/routes/embed/artist/[slug]/+page.svelte'),
+  },
+  {
+    id: 'P12-06', phase: 12, area: 'Embed',
+    desc: 'Embed layout uses reset syntax (@)',
+    method: 'code',
+    fn: fileExists('src/routes/embed/+layout@.svelte'),
+  },
+  {
+    id: 'P12-07', phase: 12, area: 'Embed',
+    desc: 'embed.js bootstrap script route exists',
+    method: 'code',
+    fn: fileExists('src/routes/embed.js/+server.ts'),
+  },
+  {
+    id: 'P12-08', phase: 12, area: 'Embed',
+    desc: 'generateEmbedSnippets utility exists',
+    method: 'code',
+    fn: fileContains('src/lib/curator/embed-snippet.ts', 'generateEmbedSnippets'),
+  },
+  {
+    id: 'P12-09', phase: 12, area: 'Embed',
+    desc: 'Artist page has embed widget UI',
+    method: 'code',
+    fn: fileContains('src/routes/artist/[slug]/+page.svelte', 'embed-toggle'),
+  },
+  {
+    id: 'P12-10', phase: 12, area: 'Curator',
+    desc: '/api/curator-feature attribution endpoint exists',
+    method: 'code',
+    fn: fileExists('src/routes/api/curator-feature/+server.ts'),
+  },
+  {
+    id: 'P12-11', phase: 12, area: 'New & Rising',
+    desc: '/new-rising page route exists',
+    method: 'code',
+    fn: fileExists('src/routes/new-rising/+page.svelte'),
+  },
+  {
+    id: 'P12-12', phase: 12, area: 'New & Rising',
+    desc: '/api/new-rising endpoint exists',
+    method: 'code',
+    fn: fileExists('src/routes/api/new-rising/+server.ts'),
+  },
+];
+
+// ---------------------------------------------------------------------------
 // Build check — always runs last
 // ---------------------------------------------------------------------------
 
@@ -637,5 +802,8 @@ export const ALL_TESTS = [
   ...PHASE_7,
   ...PHASE_8,
   ...PHASE_9,
+  ...PHASE_10,
+  ...PHASE_11,
+  ...PHASE_12,
   ...BUILD,
 ];
