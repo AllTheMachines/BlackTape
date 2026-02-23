@@ -5,18 +5,18 @@
 See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Phase 10 complete. All 8 plans shipped: Nostr keypair + NDK, DMs (NIP-17), rooms (NIP-28), ephemeral sessions, moderation, chat UI, root layout integration, documentation.
+**Current focus:** Phase 10 complete. All 9 plans shipped: Nostr keypair + NDK, DMs (NIP-17), rooms (NIP-28), ephemeral sessions, moderation, chat UI, root layout integration, documentation, requirements gap closure.
 
 ## Current Position
 
 Phase: 10-communication-layer of 15 (Communication Layer — Complete)
-Current Plan: 10-08 (complete)
-Status: Phase 10 Plan 08 complete — ARCHITECTURE.md Communication Layer section, user-manual.md Communication guide, BUILD-LOG.md Phase 10 wrap-up. npm run check 0 errors, npm run build exits 0. Phase 10 fully shipped. 2026-02-23.
-Last activity: 2026-02-23 — 10-08 complete. ARCHITECTURE.md: Nostr protocol docs, module structure, identity model, AI gate, ephemeral sessions, room scoping, anti-patterns. user-manual.md: DMs, scene rooms, listening parties, privacy notes. BUILD-LOG.md: Phase 10 wrap-up with 10 key decisions. npm run check 0 errors, npm run build exits 0.
-Stopped at: Completed 10-08-PLAN.md
+Current Plan: 10-09 (complete)
+Status: Phase 10 Plan 09 complete — REQUIREMENTS.md backfilled with COMM-04/05/06 definitions and traceability; INTEROP-01/02 corrected to Phase 13; coverage counter updated to 70 total. 2026-02-23.
+Last activity: 2026-02-23 — 10-09 complete. REQUIREMENTS.md: added Communication Layer (Phase 10) section with COMM-04/05/06 definitions + traceability rows (Phase 10, Complete); corrected INTEROP-01/02 phase assignment from Phase 10 to Phase 13; updated coverage counter 67→70.
+Stopped at: Completed 10-09-PLAN.md
 Next: Phase 11 (if planned)
 
-Progress: [████████░░] 8/8 plans complete (Phase 10 Complete)
+Progress: [█████████░] 9/9 plans complete (Phase 10 Complete)
 
 ## Performance Metrics
 
@@ -92,6 +92,7 @@ Progress: [████████░░] 8/8 plans complete (Phase 10 Complete
 | Phase 10-communication-layer P06 | 3min | 2 tasks | 5 files |
 | Phase 10-communication-layer P07 | 4min | 2 tasks | 6 files |
 | Phase 10-communication-layer P08 | 4min | 2 tasks | 3 files |
+| Phase 10-communication-layer P09 | 3 | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -318,6 +319,8 @@ Progress: [████████░░] 8/8 plans complete (Phase 10 Complete
 - [Phase 10-07]: totalUnread and activePublicSessions exported as getter functions — Svelte 5 compile-module prohibits exporting $derived from .svelte.ts module files
 - [Phase 10-07]: ChatOverlay RoomDirectory and SessionCreator use {#await import()} lazy loading — avoids circular deps and defers heavy module load until first use
 - [Phase 10-08]: Communication Layer section placed after Community Foundation in ARCHITECTURE.md — natural phase ordering; anti-patterns documented as table
+- [Phase 10-communication-layer]: COMM-04/05/06 backfilled as documentation debt — functional code was complete in Phase 10, requirements tracking was not updated during execution
+- [Phase 10-09]: INTEROP-01/02 reassigned to Phase 13 — ActivityPub federation is distinct from Nostr-based Phase 10 communication layer
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
