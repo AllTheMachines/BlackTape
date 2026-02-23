@@ -38,6 +38,8 @@
 		"@dicebear/core": "^9.3.2",
 		"@dicebear/pixel-art": "^9.3.2",
 		"@fabianlars/tauri-plugin-oauth": "^2.0.0",
+		"@nostr-dev-kit/ndk": "^3.0.0",
+		"@nostr-dev-kit/ndk-svelte": "^2.4.48",
 		"@sveltejs/adapter-static": "^3.0.10",
 		"@tauri-apps/api": "^2.10.1",
 		"@tauri-apps/plugin-dialog": "^2.6.0",
@@ -46,7 +48,9 @@
 		"@tauri-apps/plugin-sql": "^2.3.2",
 		"@tauri-apps/plugin-updater": "^2.10.0",
 		"d3-force": "^3.0.0",
+		"idb": "^8.0.3",
 		"leaflet": "^1.9.4",
+		"nostr-tools": "^2.23.1",
 		"paneforge": "^1.0.2"
 	}
 }
