@@ -1,79 +1,56 @@
-# Work Handoff - 2026-02-23 (Tauri Navigation Fix)
+# Work Handoff — 2026-02-23 (Phase 12 Verified, Nav Fix Committed)
 
-## Current Task
-Fix all Tauri navigation hangs — not just search, but all routes (artist pages, discover, kb, etc.)
+## Current State — Clean
+
+Everything is committed and working. No outstanding work in progress.
 
 ## What Was Done This Session
 
-### Root Cause (Fully Understood)
-SvelteKit's client-side router fetches `__data.json` for every route with a `+page.server.ts`.
-For dynamic paths (e.g. `/artist/[slug]`) that aren't pre-rendered, Tauri's `get_asset()` falls
-back to serving `index.html`. SvelteKit then crashes on `JSON.parse('<DOCTYPE html...')`.
+### 1. Tauri Navigation Fix — Committed
+`fix(tauri): global __data.json handler prevents navigation crashes`
 
-### Fixes Applied (all committed in this session)
+Root cause: SvelteKit's client router fetches `__data.json` for every server-load route.
+Dynamic paths (e.g. `/artist/[slug]`) aren't pre-rendered — Tauri's asset handler fell
+back to `index.html`, causing `JSON.parse('<DOCTYPE html...')` crash.
 
-**Fix 1 — `src/routes/search/+page.server.ts`** (from previous session, already committed):
-- Pre-renders `build/search/__data.json` with `uses:{}` via Tauri-conditional prerender
+Fix: Custom `tauri://` protocol handler in `src-tauri/src/lib.rs` intercepts these
+fallback requests and returns `{"type":"data","nodes":[null,{"type":"skip"}]}` — tells
+SvelteKit to skip server data and use `+page.ts` universal load instead.
 
-**Fix 2 — `src-tauri/src/lib.rs`** (this session):
-- Registered custom `tauri://` protocol handler via `.register_uri_scheme_protocol("tauri", ...)`
-- Intercepts `__data.json` requests that fell back to `index.html` (detected by mime_type = text/html)
-- Returns `{"type":"data","nodes":[null,{"type":"skip"}]}` — tells SvelteKit: no server data, use `+page.ts`
-- All other requests served normally with CSP headers preserved
+Also required `"custom-protocol"` in Cargo.toml tauri features so `cfg(dev)=false` and
+the webview uses `tauri://localhost` (not `devUrl`) in release builds.
 
-**Fix 3 — Cargo.toml** (this session):
-- Added `"custom-protocol"` to tauri features
-- Without this, `cfg(dev) = true` and Tauri points webview at `devUrl` (localhost:5173) instead of `tauri://localhost`
-- With `"custom-protocol"`: `cfg(dev) = false`, webview uses `tauri://localhost`, our handler is invoked
+### 2. Phase 12 Verified — All Good
+Checked all Phase 12 features in the running Tauri app:
+- ✅ Embed widget button visible (`</> Embed this artist`)
+- ✅ RSS feed routes exist and build clean
+- ✅ New & Rising page exists
+- ✅ Curator attribution wired up
+- ✅ `/embed/artist/[slug]` embed card route with layout isolation
 
-**Diagnostic code cleaned up:**
-- Removed `devtools` feature from Cargo.toml (had been there from debugging)
-- Removed `open_devtools()` from lib.rs
-- Reverted `TauriProvider.all()` to simple `invoke()` (removed timeout/console.logs)
-- Removed console.log markers from `search/+page.ts`
+### 3. Embed Button HTML Entity Bug — Fixed
+`&lt;/&gt;` inside a Svelte `{...}` expression renders as literal text, not HTML.
+Changed to literal `</>` characters. Simple one-liner fix.
 
-## Current State — BUILD NOT YET COMPLETE
+### 4. Test Suite Updated — 62/62 Passing
+Added 24 new tests covering Phases 10, 11, 12 to `tools/test-suite/manifest.mjs`.
+Was stale at Phase 9 (38 tests). Now at 62 code checks, all passing.
 
-The rebuild with `custom-protocol` added failed because `mercury.exe` is still running (locking the file).
+## Repository State
 
-### To Complete:
-1. **Close Mercury app** (if open)
-2. **Kill llama-server if running** (locks DLLs in target/release/)
-3. **Run**: `cd D:/Projects/Mercury/src-tauri && cargo build --release`
-   - Should take ~1-2 min (only lib.rs changed)
-4. **Test**: Launch `src-tauri/target/release/mercury.exe`
-   - Search for "Radiohead" → should work ✓
-   - Click on Radiohead artist → should load (previously hung) ✓
-   - Navigate to another artist → should also work ✓
+- Branch: `main`
+- All changes committed
+- `npm run check`: 0 errors, 8 pre-existing warnings
+- `npm run build`: clean
+- `cargo build --release`: clean (Tauri binary up to date)
+- Test suite: 62/62 code checks ✓
 
-## Key Files Changed (uncommitted)
-```
-src-tauri/Cargo.toml           — added "custom-protocol" to tauri features
-src-tauri/src/lib.rs           — added custom tauri:// protocol handler
-src/lib/db/tauri-provider.ts   — cleaned up (reverted to simple invoke)
-src/routes/search/+page.ts     — cleaned up (removed console.logs)
-BUILD-LOG.md                   — session notes
-```
+## What's Next
 
-## If Build Fails Again (llama DLL lock error)
-The build script tries to update `target/release/llama-server.exe` but it may be locked:
-```bash
-rm -f "D:/Projects/Mercury/src-tauri/target/release/llama-server.exe"
-# Then rebuild
-```
-
-## After Testing — Commit Message
-```
-fix(tauri): global __data.json handler prevents navigation crashes
-
-Override tauri:// protocol to intercept missing __data.json requests.
-SvelteKit fetches /__data.json for every server-load route. Dynamic paths
-(e.g. /artist/[slug]) aren't pre-rendered — Tauri fell back to index.html,
-causing JSON.parse crashes. Custom handler returns skip-node JSON instead.
-
-Also adds custom-protocol feature so cfg(dev)=false and webview uses
-tauri://localhost correctly in cargo build --release.
-```
+Phase 12 is fully verified. Likely next steps (check PROJECT.md / roadmap):
+- Phase 13 or next milestone work
+- Or further Tauri polish (e.g. embed section hidden in Tauri since `tauri://localhost`
+  URLs are not valid web embed URLs — cosmetic issue, not a blocker)
 
 ## Resume Command
 After `/clear`, run `/resume` to continue.
