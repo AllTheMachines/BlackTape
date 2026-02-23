@@ -23,3 +23,5 @@ export {
 	SLOW_MODE_OPTIONS,
 	ARCHIVE_THRESHOLD_MS
 } from './moderation.js';
+export { roomsState, createRoom, loadRooms, subscribeToRoom, sendRoomMessage } from './rooms.svelte.js';
+export type { SceneRoom, RoomMessage } from './rooms.svelte.js';
