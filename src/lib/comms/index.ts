@@ -25,3 +25,13 @@ export {
 } from './moderation.js';
 export { roomsState, createRoom, loadRooms, subscribeToRoom, sendRoomMessage } from './rooms.svelte.js';
 export type { SceneRoom, RoomMessage } from './rooms.svelte.js';
+export {
+	sessionsState,
+	activePublicSessions,
+	createSession,
+	joinSession,
+	sendPartyMessage,
+	endSession,
+	loadPublicSessions
+} from './sessions.svelte.js';
+export type { ListeningSession, SessionMessage, SessionVisibility } from './sessions.svelte.js';
