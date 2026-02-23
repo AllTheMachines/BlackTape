@@ -70,3 +70,16 @@ CREATE INDEX IF NOT EXISTS idx_genre_slug ON genres(slug);
 CREATE INDEX IF NOT EXISTS idx_genre_mb_tag ON genres(mb_tag);
 CREATE INDEX IF NOT EXISTS idx_genre_rel_from ON genre_relationships(from_id);
 CREATE INDEX IF NOT EXISTS idx_genre_rel_to ON genre_relationships(to_id);
+
+-- Phase 12: Curator attribution — tracks which bloggers first featured each artist
+-- collection-add trigger: Tauri client calls /api/curator-feature?slug=[slug]&curator=[handle]&source=collection on artist add to public collection
+CREATE TABLE IF NOT EXISTS curator_features (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  artist_mbid TEXT NOT NULL,
+  curator_handle TEXT NOT NULL,
+  featured_at INTEGER NOT NULL,
+  source TEXT NOT NULL DEFAULT 'embed',
+  UNIQUE(artist_mbid, curator_handle)
+);
+CREATE INDEX IF NOT EXISTS idx_cf_artist ON curator_features(artist_mbid);
+CREATE INDEX IF NOT EXISTS idx_cf_curator ON curator_features(curator_handle);
