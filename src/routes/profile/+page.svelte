@@ -4,6 +4,9 @@
 	import { tasteProfile } from '$lib/taste/profile.svelte';
 	import { collectionsState, loadCollections, createCollection } from '$lib/taste/collections.svelte';
 	import { loadAvatarState, avatarState, saveAvatarMode } from '$lib/identity/avatar';
+	import { ndkState } from '$lib/comms/nostr.svelte.js';
+	import { publishTasteProfile } from '$lib/comms/taste-publish.js';
+	import { exportPlayHistory } from '$lib/taste/history.js';
 	import AvatarPreview from '$lib/components/AvatarPreview.svelte';
 	import AvatarEditor from '$lib/components/AvatarEditor.svelte';
 	import TasteFingerprint from '$lib/components/TasteFingerprint.svelte';
@@ -15,6 +18,8 @@
 	let expandedCollectionId = $state<string | null>(null);
 	let newShelfName = $state('');
 	let showNewShelf = $state(false);
+	let nostrStatus = $state<'idle' | 'publishing' | 'published'>('idle');
+	let exportStatus = $state('');
 
 	onMount(async () => {
 		tauriMode = isTauri();
@@ -24,6 +29,14 @@
 		handle = (await invoke<string | null>('get_identity_value', { key: 'handle' })) ?? '';
 		await loadAvatarState(tasteProfile.tags);
 		if (!collectionsState.isLoaded) await loadCollections();
+
+		// Taste profile publishing — auto-publish if Nostr connected; silent skip if not
+		nostrStatus = 'publishing';
+		publishTasteProfile().then((result) => {
+			nostrStatus = result === 'published' ? 'published' : 'idle';
+		}).catch(() => {
+			nostrStatus = 'idle'; // fail silently
+		});
 	});
 
 	async function saveHandle() {
@@ -46,6 +59,17 @@
 
 	function handleAvatarSaved(_pixels: string[]) {
 		showAvatarEditor = false;
+	}
+
+	async function handleExport() {
+		exportStatus = 'Exporting…';
+		try {
+			await exportPlayHistory();
+			exportStatus = 'Exported.';
+		} catch (e) {
+			exportStatus = 'Export failed.';
+		}
+		setTimeout(() => { exportStatus = ''; }, 3000);
 	}
 </script>
 
@@ -105,11 +129,32 @@
 			</section>
 		{/if}
 
+		<!-- Nostr Section -->
+		{#if ndkState.pubkey}
+			<section class="nostr-section-block">
+				<div class="nostr-section">
+					<span class="nostr-label">Nostr</span>
+					<span class="nostr-pubkey">{ndkState.pubkey.slice(0, 8)}…{ndkState.pubkey.slice(-4)}</span>
+					{#if nostrStatus === 'publishing'}
+						<span class="nostr-status">Publishing…</span>
+					{:else if nostrStatus === 'published'}
+						<span class="nostr-status published">Published</span>
+					{/if}
+				</div>
+			</section>
+		{/if}
+
 		<!-- Taste Fingerprint Section -->
 		<section class="fingerprint-section">
 			<h2 class="section-title">Taste Fingerprint</h2>
 			<p class="section-desc">A unique constellation of your musical taste. Export it to share.</p>
 			<TasteFingerprint />
+			<div class="export-row">
+				<button class="export-btn" onclick={handleExport}>Export Play History</button>
+				{#if exportStatus}
+					<span class="export-status">{exportStatus}</span>
+				{/if}
+			</div>
 		</section>
 
 		<!-- Collections Section -->
@@ -261,4 +306,14 @@
 	.tab-btn { padding: 4px 12px; border: 1px solid var(--border); background: var(--bg-secondary); color: var(--text-primary); cursor: pointer; border-radius: 4px; font-size: 0.8rem; }
 	.tab-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 	.editor-section { border: 1px solid var(--border); border-radius: 6px; padding: var(--spacing-md); }
+	.nostr-section-block { padding: var(--spacing-xs) 0; }
+	.nostr-section { display: flex; align-items: center; gap: var(--spacing-sm); font-size: 0.78rem; color: var(--text-muted); }
+	.nostr-label { text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.7rem; opacity: 0.7; }
+	.nostr-pubkey { font-family: monospace; opacity: 0.8; }
+	.nostr-status { font-size: 0.72rem; opacity: 0.8; }
+	.nostr-status.published { color: var(--accent); opacity: 1; }
+	.export-row { display: flex; align-items: center; gap: var(--spacing-sm); margin-top: var(--spacing-sm); }
+	.export-btn { padding: 4px 10px; font-size: 0.8rem; border-radius: 4px; cursor: pointer; border: 1px solid var(--border); background: var(--bg-secondary); color: var(--text-primary); }
+	.export-btn:hover { background: var(--bg-tertiary); }
+	.export-status { font-size: 0.78rem; color: var(--text-muted); }
 </style>
