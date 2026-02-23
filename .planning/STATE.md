@@ -2,19 +2,19 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-02-23 after v1.0 milestone)
+See: .planning/PROJECT.md (updated 2026-02-23 after v1.2 milestone start)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** v1.0 MVP shipped. Planning next milestone (v1.1 — Phases 11–15).
+**Current focus:** v1.2 Zero-Click Confidence — test automation milestone. Phases 13–15.
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: Not started (roadmap defined, ready for Phase 13 planning)
 Plan: —
-Status: Defining requirements for v1.2 (Zero-Click Confidence)
-Last activity: 2026-02-23 — Milestone v1.2 started. Previous: Phase 12 complete (v1.1 Phases 13–15 deferred).
+Status: v1.2 roadmap created. Ready to plan Phase 13 (Foundation Fixes).
+Last activity: 2026-02-23 — v1.2 roadmap written. Previous: Phase 12 complete (v1.1 Phases 13–15 deferred to v1.3).
 
-Progress: [░░░░░░░░░░] v1.2 — 0 phases complete
+Progress: [░░░░░░░░░░] v1.2 — 0/3 phases complete
 
 ## Performance Metrics
 
@@ -358,9 +358,15 @@ Progress: [░░░░░░░░░░] v1.2 — 0 phases complete
 - [Phase 12-curator-blog-tools]: [Phase 12-03]: Try/catch for all curator_features queries: table may not exist on older DB — zero breaking changes to existing pages
 - [Phase 12]: Web-first pattern for /new-rising (+page.server.ts only, no Tauri universal load) — niche signal requires D1 tag_stats, Tauri shows empty state
 - [Phase 12]: New & Rising RSS feed returns gaining-traction list (not newly active) — niche discovery is the more useful blogger subscription
+- [v1.2 roadmap]: Phase 13 reuses the number from the deferred v1.1 Interoperability phase — old Phase 13 moved to v1.3
+- [v1.2 roadmap]: PROC-02 (full suite green before any new phase) mapped to Phase 13 — it enables the gate as part of infrastructure repair; cannot gate itself
+- [v1.2 roadmap]: console allowlist starts empty — entries added consciously after first run against full suite, never pre-populated
+- [v1.2 roadmap]: Navigation flows depend on Phase 13 (console capture) and Phase 14 (API layer verified) — both must precede Phase 15 to avoid false-positive flow failures
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
+- v1.1 Phases 13–15 (Interoperability, Listening Rooms, Artist Tools) deferred to v1.3 — test infrastructure prioritized first
+- v1.2 phases 13–15 reassigned: Foundation Fixes → API Contract Layer → Navigation Flows + Rust Unit Tests
 
 ### Pending Todos
 None
@@ -371,6 +377,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-23
-Phase 12 Plan 03 complete. Curator attribution system: curator_features D1 table DDL (UNIQUE constraint for dedup), /api/curator-feature endpoint (MBID + slug lookup, handle validation, CORS, source=collection), artist page "Discovered by @handle" list, embed card compact attribution line, generateEmbedSnippets updated with optional curatorHandle param for data-curator attribute. npm run check 0 errors, npm run build success.
-Stopped at: Completed 12-03-PLAN.md
-Next: Phase 12 Plan 04 (New & Rising page with curator filter)
+v1.2 roadmap created. 3 phases defined (13–15), 25 requirements mapped, 100% coverage. ROADMAP.md, STATE.md, REQUIREMENTS.md traceability section all written.
+Stopped at: Roadmap complete
+Next: `/gsd:plan-phase 13` — Phase 13: Foundation Fixes

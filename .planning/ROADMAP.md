@@ -9,7 +9,8 @@ Build order: data pipeline → web gateway → desktop app → local player → 
 ## Milestones
 
 - ✅ **v1.0 MVP** — Phases 1–10.1 (shipped 2026-02-23)
-- 📋 **v1.1** — Phases 11–15 + Phase 0 (planned)
+- ✅ **v1.1** — Phases 11–12 complete; Phases 13–15 deferred to v1.3
+- 📋 **v1.2** — Phases 13–15 (Zero-Click Confidence — test automation)
 
 ## Phases
 
@@ -36,13 +37,24 @@ Full archive: `.planning/milestones/v1.0-ROADMAP.md`
 
 </details>
 
-### 📋 v1.1 (Planned)
+<details>
+<summary>✅ v1.1 Scene Building + Curator Tools — Phases 11–12 COMPLETE (13–15 deferred to v1.3)</summary>
 
-- [x] **Phase 11: Scene Building** — AI scene detection, label collectives, community-driven creation tools (completed 2026-02-23)
-- [x] **Phase 12: Curator / Blog Tools** — Embeddable widgets, attribution, RSS, blog revival (completed 2026-02-23)
-- [ ] **Phase 13: Interoperability** — ActivityPub, Fediverse federation, RSS for everything
-- [ ] **Phase 14: Listening Rooms** — Shared real-time listening with synchronized embeds
-- [ ] **Phase 15: Artist Tools** — Claiming, dashboard, auto-news, self-hosted site generator
+- [x] **Phase 11: Scene Building** — AI scene detection, label collectives, community-driven creation tools (completed 2026-02-23)
+- [x] **Phase 12: Curator / Blog Tools** — Embeddable widgets, attribution, RSS, blog revival (completed 2026-02-23)
+- [ ] **Phase 13: Interoperability** — [DEFERRED to v1.3] ActivityPub, Fediverse federation, RSS for everything
+- [ ] **Phase 14: Listening Rooms** — [DEFERRED to v1.3] Shared real-time listening with synchronized embeds
+- [ ] **Phase 15: Artist Tools** — [DEFERRED to v1.3] Claiming, dashboard, auto-news, self-hosted site generator
+
+</details>
+
+### 📋 v1.2 — Zero-Click Confidence
+
+- [ ] **Phase 13: Foundation Fixes** — Repair active defects in test infrastructure; add console capture, fix false-green exit codes, eliminate flaky timing, add coverage gaps from Phases 11–12
+- [ ] **Phase 14: API Contract Layer** — Prove every endpoint returns the right shape, independent of the UI layer
+- [ ] **Phase 15: Navigation Flows + Rust Unit Tests** — Multi-step user journeys tested end-to-end; Rust logic verified in isolation; pre-commit gate and phase test template locked in
+
+---
 
 ## Phase Details (v1.1)
 
@@ -58,10 +70,10 @@ Full archive: `.planning/milestones/v1.0-ROADMAP.md`
 **Plans**: 4 plans
 
 Plans:
-- [ ] 11-01-PLAN.md — taste.db schema (4 scene tables) + 8 Tauri commands
-- [ ] 11-02-PLAN.md — scene detection algorithm module + AI description prompt
-- [ ] 11-03-PLAN.md — /scenes directory and /scenes/[slug] detail routes
-- [ ] 11-04-PLAN.md — follow/suggest/feature-request interactions + nav + web API + docs
+- [x] 11-01-PLAN.md — taste.db schema (4 scene tables) + 8 Tauri commands
+- [x] 11-02-PLAN.md — scene detection algorithm module + AI description prompt
+- [x] 11-03-PLAN.md — /scenes directory and /scenes/[slug] detail routes
+- [x] 11-04-PLAN.md — follow/suggest/feature-request interactions + nav + web API + docs
 
 ### Phase 12: Curator / Blog Tools
 **Goal**: Bring music blogs back to life. Give bloggers tools and an audience.
@@ -78,42 +90,51 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 12-01-PLAN.md — Install feed+qrcode deps + 4 RSS/Atom feed endpoints + RssButton component
-- [ ] 12-02-PLAN.md — Embed layout + artist/collection embed routes + embed snippet UI + QR code
-- [ ] 12-03-PLAN.md — Curator attribution: D1 table, /api/curator-feature, artist page display
-- [ ] 12-04-PLAN.md — New & Rising page + /api/rss/new-rising feed + ARCHITECTURE.md + user-manual.md docs
+- [x] 12-01-PLAN.md — Install feed+qrcode deps + 4 RSS/Atom feed endpoints + RssButton component
+- [x] 12-02-PLAN.md — Embed layout + artist/collection embed routes + embed snippet UI + QR code
+- [x] 12-03-PLAN.md — Curator attribution: D1 table, /api/curator-feature, artist page display
+- [x] 12-04-PLAN.md — New & Rising page + /api/rss/new-rising feed + ARCHITECTURE.md + user-manual.md docs
 
-### Phase 13: Interoperability
-**Goal**: Plug into the open web — federate, don't isolate
-**Depends on**: Phase 9 (community foundation)
-**Requirements**: INTEROP-01, INTEROP-02
+---
+
+## Phase Details (v1.2)
+
+### Phase 13: Foundation Fixes
+**Goal**: The test suite can be trusted as a gate — silent crashes are detected, false-green exits are eliminated, flaky timing is removed, and coverage gaps from shipped phases are filled.
+**Depends on**: Nothing (first v1.2 phase — repairs existing infrastructure)
+**Requirements**: INFRA-01, INFRA-02, INFRA-03, INFRA-04, WEB-01, WEB-02, WEB-03, UX-01, UX-02, UX-03, UX-04, PROC-02
 **Success Criteria**:
-  1. Profiles followable from Mastodon and the Fediverse via ActivityPub
-  2. Artist updates federate across the open web
-  3. No need to create an account on Mercury to follow someone
+  1. A test that loads a page with a JavaScript console.error fires a visible failure — silent JS crashes can no longer pass the suite undetected
+  2. Running the test suite when wrangler is not running exits with code 1 and prints the exact command to start it — no false-green from a missing environment
+  3. D3 animation tests complete without hardcoded sleep delays — the `data-ready` attribute signals completion, making them deterministic on any machine speed
+  4. The `/scenes` and `/new-rising` pages each have a Playwright web test that verifies the page loads and renders content — zero-coverage pages from Phases 11–12 are covered
+  5. Every navigation event on both web and Tauri desktop shows an animated top-bar progress indicator that clears on completion — loading states are visually and programmatically distinguishable from frozen states
 **Plans**: TBD
 
-### Phase 14: Listening Rooms
-**Goal**: Communal discovery — shared real-time listening like sitting with friends playing records
-**Depends on**: Phase 10 (communication layer)
-**Requirements**: LISTEN-01, LISTEN-02
+### Phase 14: API Contract Layer
+**Goal**: Every JSON API endpoint and RSS feed is proven to return the correct shape, status codes, and headers — independent of any browser or UI layer.
+**Depends on**: Phase 13 (infrastructure clean — api runner runs against wrangler :8788, inherits fixed exit-code behavior)
+**Requirements**: API-01, API-02, API-03, API-04
 **Success Criteria**:
-  1. Create a room, invite people, play music together through synchronized embeds
-  2. Room queue: anyone can add to the queue
-  3. Chat alongside the music — reactions, conversation, discovery in real time
-  4. No video. No screen sharing. Just music and people.
+  1. Running `node tools/test-suite/run.mjs --phase 14` tests all JSON API endpoints with fetch-based assertions and fails explicitly on shape drift — no endpoint can silently change its response structure
+  2. Invalid params, missing required fields, and out-of-range values all return structured error responses with correct HTTP status codes — crashes and unhandled rejections are caught
+  3. RSS feed endpoints return a response with `Content-Type: application/rss+xml` or `application/atom+xml` and valid XML structure — feed readers will not silently break
+  4. The `/api/unfurl` POST endpoint has a contract test verifying it accepts a URL body and returns the expected shape — the only POST endpoint no longer has zero coverage
 **Plans**: TBD
 
-### Phase 15: Artist Tools
-**Goal**: Give artists control without requiring them to do anything — zero-effort by default, full control if claimed
-**Depends on**: Phase 9 (community foundation)
-**Requirements**: ARTIST-01, ARTIST-02, ARTIST-03, ARTIST-04
+### Phase 15: Navigation Flows + Rust Unit Tests
+**Goal**: Multi-step user journeys are tested end-to-end with console error capture active; Rust logic is verified in isolation without compiling the full Tauri binary; a pre-commit gate and mandatory test-plan template prevent future regressions from shipping.
+**Depends on**: Phase 13 (console capture active — flow test failures are visible), Phase 14 (API layer verified — flow failures are not data-layer bugs)
+**Requirements**: FLOW-01, FLOW-02, FLOW-03, FLOW-04, RUST-01, RUST-02, RUST-03, PROC-01, PROC-03
 **Success Criteria**:
-  1. Artist claiming with verification ("this profile is me")
-  2. Claimed artists get a news dashboard — control tags, description, featured tracks
-  3. Auto-pulled news from artist social media (zero-effort tier, works before claiming)
-  4. Static site generator for self-hosted artist pages — publishes to free hosting, feeds data back to the index
+  1. The full search → artist → second artist journey runs headlessly with no console.error at any step — navigation state corruption is caught automatically
+  2. Artist page → tag click → tag discovery page flow runs headlessly and confirms results render — the core discovery mechanic is end-to-end verified
+  3. 404 routes render the error page and empty search renders the empty state UI — error paths are tested, not just the happy path
+  4. `cargo test` in `src-tauri/` passes with unit tests for FTS5 query sanitization, the `__data.json` protocol handler, and scanner metadata parsing — Rust logic is verified in isolation without a full binary compile
+  5. Every commit runs `--code-only` tests automatically via pre-commit hook and exits non-zero on failure — regressions cannot be committed silently
 **Plans**: TBD
+
+---
 
 ## Parallel Track: Phase 0 (Sustainability)
 
@@ -150,6 +171,9 @@ Runs alongside everything else. Not blocking any phase. Rolls out in stages as f
 
 | Feature | Why Deferred | Revisit When |
 |---------|-------------|-------------|
+| Interoperability (ActivityPub, Fediverse) | Test infrastructure takes priority in v1.2; complex protocol work needs a clean foundation | v1.3 |
+| Listening Rooms (shared real-time playback) | Test infrastructure takes priority in v1.2 | v1.3 |
+| Artist Tools (claiming, dashboard, site generator) | Test infrastructure takes priority in v1.2 | v1.3 |
 | Cross-platform playlist sync | Platform ToS risks, fragile APIs | Core product is solid, legal clarity exists |
 | Remote streaming (phone ← home) | NAT traversal, relay servers, infrastructure complexity | Desktop + player mature, users ask for it |
 | Database diff-based updates | Full replacement is simpler; diff sizes unknown until MusicBrainz weekly dump testing | Full replacement feels too large for users |
@@ -175,8 +199,8 @@ Runs alongside everything else. Not blocking any phase. Rolls out in stages as f
 | 9. Community Foundation | v1.0 | 6/6 | Complete | 2026-02-22 |
 | 10. Communication Layer | v1.0 | 9/9 | Complete | 2026-02-23 |
 | 10.1. Communication Hotfixes | v1.0 | 2/2 | Complete | 2026-02-23 |
-| 11. Scene Building | 4/4 | Complete    | 2026-02-23 | - |
-| 12. Curator / Blog Tools | 4/4 | Complete    | 2026-02-23 | - |
-| 13. Interoperability | v1.1 | 0/TBD | Not started | - |
-| 14. Listening Rooms | v1.1 | 0/TBD | Not started | - |
-| 15. Artist Tools | v1.1 | 0/TBD | Not started | - |
+| 11. Scene Building | v1.1 | 4/4 | Complete | 2026-02-23 |
+| 12. Curator / Blog Tools | v1.1 | 4/4 | Complete | 2026-02-23 |
+| 13. Foundation Fixes | v1.2 | 0/TBD | Not started | - |
+| 14. API Contract Layer | v1.2 | 0/TBD | Not started | - |
+| 15. Navigation Flows + Rust Unit Tests | v1.2 | 0/TBD | Not started | - |
