@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-15)
 ## Current Position
 
 Phase: 10.1-communication-hotfixes of 15 (Communication Hotfixes — In Progress)
-Current Plan: 10.1-01 (complete)
-Status: Phase 10.1 Plan 01 complete — CSS aliases (GAP-05) and DM conversation list (GAP-06/COMM-04) closed. 2026-02-23.
-Last activity: 2026-02-23 — 10.1-01 complete. theme.css: 9 compatibility aliases. ConversationList.svelte created. ChatOverlay routing split. ChatPanel back navigation added. npm run check 0 errors.
-Stopped at: Completed 10.1-01-PLAN.md
-Next: Phase 10.1 Plan 02 (taste profile publisher + Nostr export)
+Current Plan: 10.1-02 (complete)
+Status: Phase 10.1 Plan 02 complete — GAP-07 (taste profile never published to Nostr) and GAP-08 (export_play_history_to_path unimplemented) closed. 2026-02-23.
+Last activity: 2026-02-23 — 10.1-02 complete. taste-publish.ts: publishTasteProfile() kind:30078 with session flag. Profile page: Nostr section + export button. taste_db.rs: export_play_history_to_path command. lib.rs: registered in generate_handler!. npm run check 0 errors, cargo check success.
+Stopped at: Completed 10.1-02-PLAN.md
+Next: Phase 10.1 Plan 03 (if planned)
 
 Progress: [█████████░] 9/9 plans complete (Phase 10 Complete)
 
@@ -94,6 +94,7 @@ Progress: [█████████░] 9/9 plans complete (Phase 10 Complete
 | Phase 10-communication-layer P08 | 4min | 2 tasks | 3 files |
 | Phase 10-communication-layer P09 | 3 | 2 tasks | 1 files |
 | Phase 10.1-communication-hotfixes P01 | 2min | 2 tasks | 4 files |
+| Phase 10.1 P02 | 7 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -324,6 +325,8 @@ Progress: [█████████░] 9/9 plans complete (Phase 10 Complete
 - [Phase 10-09]: INTEROP-01/02 reassigned to Phase 13 — ActivityPub federation is distinct from Nostr-based Phase 10 communication layer
 - [Phase 10.1-01]: CSS aliases are alias-only (--bg-primary, --bg-tertiary, --border, --accent, --spacing-xs through --spacing-xl) — no canonical variables renamed; one-file fix for Phase 9/10 component visibility
 - [Phase 10.1-01]: ConversationList uses lazy {#await import()} pattern matching RoomDirectory/SessionCreator; npub decoded via nip19.decode (nostr-tools), hex validated via regex
+- [Phase 10.1]: No state parameter on export_play_history_to_path — file write only, avoids TasteDbState Mutex double-lock (matches write_json_to_path pattern)
+- [Phase 10.1]: publishTasteProfile uses session-level module flag (tastePublished) and dynamic import for tasteProfile — once-per-session relay publish, no circular deps
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
