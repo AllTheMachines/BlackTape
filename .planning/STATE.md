@@ -5,18 +5,18 @@
 See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Phase 10 in progress. Plan 03 done: NIP-28 scene rooms + AI moderation module.
+**Current focus:** Phase 10 in progress. Plan 04 done: ephemeral listening party sessions (Nostr kind:20001/20002, zero persistence).
 
 ## Current Position
 
 Phase: 10-communication-layer of 15 (Communication Layer — In Progress)
-Current Plan: 10-03 (complete)
-Status: Phase 10 Plan 03 complete — moderation.ts (AI safety filter + flag/delete/kick/ban/slow mode/co-mod), rooms.svelte.ts (NIP-28 kind:40/42 scene rooms with Mercury scope tag). 2026-02-23.
-Last activity: 2026-02-23 — 10-03 complete. checkRoomNameSafety() OpenAI /v1/moderations + keyword fallback. createRoom() kind:40 with ['t','mercury'] scope. loadRooms() filterTag support. subscribeToRoom() with ban enforcement + cleanup fn. npm run check 0 errors.
-Stopped at: Completed 10-03-PLAN.md
-Next: Phase 10 Plan 04
+Current Plan: 10-04 (complete)
+Status: Phase 10 Plan 04 complete — sessions.svelte.ts (ephemeral listening parties using Nostr kinds 20001/20002, NIP-40 expiration, zero Tauri invoke, endSession() full state wipe). 2026-02-23.
+Last activity: 2026-02-23 — 10-04 complete. createSession() kind:20002 announcement for public sessions. sendPartyMessage() kind:20001 ephemeral messages. endSession() nulls mySession + joinedSession. loadPublicSessions() discovery feed. npm run check 0 errors.
+Stopped at: Completed 10-04-PLAN.md
+Next: Phase 10 Plan 05
 
-Progress: [███░░░░░░░] 3/? plans complete (Phase 10 In Progress)
+Progress: [████░░░░░░] 4/? plans complete (Phase 10 In Progress)
 
 ## Performance Metrics
 
@@ -87,6 +87,7 @@ Progress: [███░░░░░░░] 3/? plans complete (Phase 10 In Progr
 | Phase 10-communication-layer P01 | 3min | 2 tasks | 7 files |
 | Phase 10-communication-layer P02 | 4 | 3 tasks | 4 files |
 | Phase 10 P03 | 4 | 2 tasks | 3 files |
+| Phase 10-communication-layer P04 | 3 | 1 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -304,6 +305,7 @@ Progress: [███░░░░░░░] 3/? plans complete (Phase 10 In Progr
 - [Phase 10]: [Phase 10-03]: Mercury scope tag ['t', 'mercury'] on kind:40 channels prevents rooms appearing in generic Nostr clients — namespace isolation is critical
 - [Phase 10]: [Phase 10-03]: AI content safety filter for room names uses /v1/moderations endpoint (free) with keyword fallback — fails open when AI not configured so UX is never silently blocked
 - [Phase 10]: [Phase 10-03]: Ban is client-enforced (Nostr has no protocol-level ban) — bannedUsers Map<channelId, Set<pubkey>> filters messages in subscribeToRoom() event handler
+- [Phase 10-communication-layer]: NDKKind enum doesn't include ephemeral kinds 20001/20002 — double cast (as unknown as NDKKind[]) required when numeric literal types don't overlap with enum members
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
