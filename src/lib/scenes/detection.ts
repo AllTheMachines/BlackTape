@@ -45,18 +45,28 @@ async function getInvoke() {
  * Only returns pairs where both tags have < 200 artists (niche filter)
  * and at least 5 shared artists (signal filter).
  */
+// Tags to exclude — MusicBrainz troll/garbage data that pollutes niche detection
+const BLOCKED_TAGS = new Set([
+	'rac', 'nazi', 'racist', 'twats', 'fail', 'rock against communism',
+	'special purpose', 'special purpose artist'
+]);
+
 export async function findTagClusterSeeds(db: DbProvider): Promise<TagPairSeed[]> {
-	return db.all<TagPairSeed>(
+	// Threshold of 5000 artists is calibrated for the full 2.8M artist MusicBrainz dataset.
+	// This captures niche tags (ambient ~3800, drone ~980, idm ~630, dark ambient ~870)
+	// while excluding mega-popular genres (electronic ~10K, rock, pop).
+	const rows = await db.all<TagPairSeed>(
 		`SELECT tc.tag_a, tc.tag_b, tc.shared_artists
 		 FROM tag_cooccurrence tc
 		 JOIN tag_stats ts_a ON ts_a.tag = tc.tag_a
 		 JOIN tag_stats ts_b ON ts_b.tag = tc.tag_b
-		 WHERE ts_a.artist_count < 200
-		   AND ts_b.artist_count < 200
+		 WHERE ts_a.artist_count < 5000
+		   AND ts_b.artist_count < 5000
 		   AND tc.shared_artists >= 5
 		 ORDER BY tc.shared_artists DESC
 		 LIMIT 200`
 	);
+	return rows.filter((r) => !BLOCKED_TAGS.has(r.tag_a) && !BLOCKED_TAGS.has(r.tag_b));
 }
 
 /**
