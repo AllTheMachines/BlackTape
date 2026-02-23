@@ -5,18 +5,18 @@
 See: .planning/PROJECT.md (updated 2026-02-15)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Phase 10 in progress. Plan 02 done: NIP-17 encrypted DMs + chat overlay state + AI taste bridge.
+**Current focus:** Phase 10 in progress. Plan 03 done: NIP-28 scene rooms + AI moderation module.
 
 ## Current Position
 
 Phase: 10-communication-layer of 15 (Communication Layer — In Progress)
-Current Plan: 10-02 (complete)
-Status: Phase 10 Plan 02 complete — notifications.svelte.ts (chatState/notifState), dms.svelte.ts (NIP-17 gift-wrap), ai-taste-bridge.ts (musical context + conversation starters). 2026-02-23.
-Last activity: 2026-02-23 — 10-02 complete. chatState/notifState/totalUnread reactive overlay state. sendDM() via giftWrap(), subscribeToIncomingDMs() via giftUnwrap(). getTasteBridge() fetches peer kind:30078 profile + calls AiProvider.complete(). npm run check 0 errors.
-Stopped at: Completed 10-02-PLAN.md
-Next: Phase 10 Plan 03
+Current Plan: 10-03 (complete)
+Status: Phase 10 Plan 03 complete — moderation.ts (AI safety filter + flag/delete/kick/ban/slow mode/co-mod), rooms.svelte.ts (NIP-28 kind:40/42 scene rooms with Mercury scope tag). 2026-02-23.
+Last activity: 2026-02-23 — 10-03 complete. checkRoomNameSafety() OpenAI /v1/moderations + keyword fallback. createRoom() kind:40 with ['t','mercury'] scope. loadRooms() filterTag support. subscribeToRoom() with ban enforcement + cleanup fn. npm run check 0 errors.
+Stopped at: Completed 10-03-PLAN.md
+Next: Phase 10 Plan 04
 
-Progress: [██░░░░░░░░] 2/? plans complete (Phase 10 In Progress)
+Progress: [███░░░░░░░] 3/? plans complete (Phase 10 In Progress)
 
 ## Performance Metrics
 
@@ -86,6 +86,7 @@ Progress: [██░░░░░░░░] 2/? plans complete (Phase 10 In Progr
 | Phase 09-community-foundation P06 | 4 | 2 tasks | 4 files |
 | Phase 10-communication-layer P01 | 3min | 2 tasks | 7 files |
 | Phase 10-communication-layer P02 | 4 | 3 tasks | 4 files |
+| Phase 10 P03 | 4 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -300,6 +301,9 @@ Progress: [██░░░░░░░░] 2/? plans complete (Phase 10 In Progr
 - [Phase 10-communication-layer]: NDK 3.x uses standalone giftWrap/giftUnwrap functions — NDKDMConversation class referenced in plan does not exist; real API produces identical NIP-17 outcome
 - [Phase 10-communication-layer]: AiProvider.complete() is the correct interface method for taste bridge — raw fetch with private fields incorrect; works with both local llama-server and remote API
 - [Phase 10-communication-layer]: notifications.svelte.ts has no imports from dms/rooms — circular dep prevention: dm/rooms write notifState.dmUnread directly
+- [Phase 10]: [Phase 10-03]: Mercury scope tag ['t', 'mercury'] on kind:40 channels prevents rooms appearing in generic Nostr clients — namespace isolation is critical
+- [Phase 10]: [Phase 10-03]: AI content safety filter for room names uses /v1/moderations endpoint (free) with keyword fallback — fails open when AI not configured so UX is never silently blocked
+- [Phase 10]: [Phase 10-03]: Ban is client-enforced (Nostr has no protocol-level ban) — bannedUsers Map<channelId, Set<pubkey>> filters messages in subscribeToRoom() event handler
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)

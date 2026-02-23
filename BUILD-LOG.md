@@ -3167,3 +3167,36 @@ All three modules: `npm run check` exits 0, no TypeScript errors.
 
 > **Commit 5d482ab** (2026-02-23 01:48) — feat(10-02): AI taste bridge — musical context for DM conversations
 > Files changed: 2
+
+> **Commit c5c40e2** (2026-02-23 01:50) — docs(10-02): complete DM system + AI taste bridge plan
+> Files changed: 4
+
+---
+
+## Entry 040 — 2026-02-23 — Phase 10 Plan 03: NIP-28 Scene Rooms + Moderation
+
+### What Was Built
+
+**Plan 10-03:** NIP-28 scene room system (COMM-05) and the room moderation module.
+
+Two new modules in `src/lib/comms/`:
+
+**`moderation.ts`** — AI-gated content safety filter and room owner moderation tools. `checkRoomNameSafety()` tries the OpenAI `/v1/moderations` endpoint (free for API-key users) then falls back to a keyword pattern scan. Room management: `flagMessage()` (silent flag for owner ModerationQueue), `deleteRoomMessage()` (kind:43 hide event), `kickUser()` (kind:44 mute event), `banUser()` (client-enforced + kick), `setSlowMode()` (4 configurable intervals: 30s/2min/5min/15min), `appointModerator()` (client-side co-mod tracking). `isRoomArchived()` detects 30-day inactivity. All moderation state (`flaggedMessages`, `bannedUsers`, `slowModeState`, `roomModerators`) is reactive via `$state`.
+
+**`rooms.svelte.ts`** — NIP-28 scene rooms with Mercury namespace scoping. The critical design: every Mercury room carries `['t', 'mercury']` as its first tag — this scopes rooms to Mercury's namespace, preventing them from showing up in generic Nostr clients. `createRoom()` gates creation through the AI safety filter then publishes kind:40 with Mercury scope tag + genre taxonomy tags. `loadRooms()` filters by `#t: ['mercury']` and optionally a genre tag, excludes archived rooms (30-day threshold). `subscribeToRoom()` opens a kind:42 subscription with client-side ban enforcement, returns a cleanup function. `sendRoomMessage()` publishes kind:42 with NIP-28 root reference tag, adds optimistic local update.
+
+### Key Decision: getAiProvider() is synchronous
+
+The plan's pseudocode showed `await getAiProvider()` but the function in `$lib/ai/engine.ts` returns `AiProvider | null` synchronously. The moderation module uses `getAiProvider()` without await, matching the established pattern from `ai-taste-bridge.ts`. Awaiting a non-Promise is a no-op in JS but was corrected for clarity.
+
+### Key Decision: response.json() requires explicit type cast
+
+TypeScript strict mode treats `response.json()` as returning `unknown`. Added explicit cast `as { results?: Array<{ flagged?: boolean }> }` for the OpenAI moderations response — same pattern established in prior phases for MusicBrainz/MB API responses.
+
+`npm run check` exits 0, no TypeScript errors.
+
+> **Commit f396c68** (2026-02-23 01:52) — feat(10-03): add AI moderation module for scene room safety
+> Files changed: 2
+
+> **Commit 55239ef** (2026-02-23 01:54) — feat(10-03): implement NIP-28 scene rooms state module
+> Files changed: 2
