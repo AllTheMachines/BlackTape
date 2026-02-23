@@ -3,13 +3,13 @@
  *
  * Rules:
  *   - Add tests here after every phase. Never remove.
- *   - method 'web'  → Playwright browser test against localhost:8788
+ *   - method 'web'  → reserved for future use — currently all converted to skip (Tauri-desktop-only)
  *   - method 'code' → File existence / grep check (no browser needed)
- *   - method 'skip' → Cannot be automated (audio, OS dialogs, file pickers)
+ *   - method 'skip' → Cannot be automated (audio, OS dialogs, file pickers, web-only checks)
  *
  * Test object shape:
  *   { id, phase, area, desc, method }
- *   + web:  { url, fn: async (page) => boolean }
+ *   + web:  { url, fn: async (page) => boolean }  [reserved, none currently active]
  *   + code: { fn: () => boolean }
  *   + skip: { reason: string }
  */
@@ -24,129 +24,68 @@ export const PHASE_2 = [
   {
     id: 'P2-01', phase: 2, area: 'Homepage',
     desc: 'Homepage loads and shows search bar',
-    method: 'web', url: '/',
-    fn: async (page) => {
-      await page.waitForSelector('input[type="search"], input[placeholder*="search" i], .search-bar input, input[name="q"]', { timeout: 8000 });
-      return true;
-    },
+    method: 'skip',
+    reason: 'Web version removed — Mercury is Tauri-desktop-only',
   },
   {
     id: 'P2-02', phase: 2, area: 'Search',
     desc: 'Searching "aphex twin" returns artist results',
-    method: 'web', url: '/search?q=aphex+twin',
-    fn: async (page) => {
-      await page.waitForSelector('.artist-card, [data-artist], .card', { timeout: 8000 });
-      const cards = await page.locator('.artist-card, [data-artist], .card').count();
-      return cards > 0;
-    },
+    method: 'skip',
+    reason: 'Web version removed — Mercury is Tauri-desktop-only',
   },
   {
     id: 'P2-03', phase: 2, area: 'Search',
     desc: 'Search results show artist name and tags',
-    method: 'web', url: '/search?q=radiohead',
-    fn: async (page) => {
-      await page.waitForSelector('.artist-card, .card', { timeout: 8000 });
-      const text = await page.textContent('body');
-      return text.toLowerCase().includes('radiohead');
-    },
+    method: 'skip',
+    reason: 'Web version removed — Mercury is Tauri-desktop-only',
   },
   {
     id: 'P2-04', phase: 2, area: 'Artist page',
     desc: 'Clicking artist card navigates to /artist/... page',
-    method: 'web', url: '/search?q=aphex+twin',
-    fn: async (page) => {
-      await page.waitForSelector('a[href*="/artist/"]', { timeout: 8000 });
-      const href = await page.locator('a[href*="/artist/"]').first().getAttribute('href');
-      return typeof href === 'string' && href.includes('/artist/');
-    },
+    method: 'skip',
+    reason: 'Web version removed — Mercury is Tauri-desktop-only',
   },
   {
     id: 'P2-05', phase: 2, area: 'Artist page',
     desc: 'Artist page loads and shows name, tags, country',
-    method: 'web', url: '/artist/aphex-twin',
-    fn: async (page) => {
-      // Use domcontentloaded — artist page fetches bio/links async, networkidle is too slow
-      await page.waitForSelector('h1, .artist-name, [class*="artist"]', { timeout: 12000 });
-      const text = await page.textContent('body');
-      return text.toLowerCase().includes('aphex twin');
-    },
+    method: 'skip',
+    reason: 'Web version removed — Mercury is Tauri-desktop-only',
   },
   {
     id: 'P2-06', phase: 2, area: 'Artist page',
     desc: 'Artist page shows tags',
-    method: 'web', url: '/artist/aphex-twin',
-    fn: async (page) => {
-      await page.waitForSelector('.tag, .tag-chip, [class*="tag"]', { timeout: 8000 });
-      const count = await page.locator('.tag, .tag-chip, [class*="tag"]').count();
-      return count > 0;
-    },
+    method: 'skip',
+    reason: 'Web version removed — Mercury is Tauri-desktop-only',
   },
   {
     id: 'P2-07', phase: 2, area: 'Artist page',
     desc: 'Artist page shows external links section',
-    method: 'web', url: '/artist/aphex-twin',
-    fn: async (page) => {
-      await page.waitForLoadState('networkidle');
-      // Links section may render async
-      await page.waitForTimeout(2000);
-      const hasLinks = await page.locator('a[href*="bandcamp"], a[href*="spotify"], a[href*="youtube"], .links, [class*="link"]').count();
-      return hasLinks > 0;
-    },
+    method: 'skip',
+    reason: 'Web version removed — Mercury is Tauri-desktop-only',
   },
   {
     id: 'P2-08', phase: 2, area: 'Navigation',
     desc: 'Clicking a tag on artist page navigates to /discover',
-    method: 'web', url: '/artist/aphex-twin',
-    fn: async (page) => {
-      await page.waitForSelector('.tag, .tag-chip, [class*="tag"]', { timeout: 8000 });
-      const tagLink = page.locator('a[href*="/discover"]').first();
-      const count = await tagLink.count();
-      return count > 0;
-    },
+    method: 'skip',
+    reason: 'Web version removed — Mercury is Tauri-desktop-only',
   },
   {
     id: 'P2-09', phase: 2, area: 'Mobile',
     desc: 'Homepage is responsive at 375px (mobile)',
-    method: 'web', url: '/',
-    fn: async (page) => {
-      await page.setViewportSize({ width: 375, height: 667 });
-      await page.waitForLoadState('domcontentloaded');
-      // Check main content doesn't overflow (nav is hidden on mobile via CSS — that's fine)
-      const overflow = await page.evaluate(() => {
-        const main = document.querySelector('main, .main-content, [class*="search"]');
-        if (!main) return 0;
-        return main.scrollWidth;
-      });
-      return overflow <= 400;
-    },
+    method: 'skip',
+    reason: 'Web version removed — Mercury is Tauri-desktop-only',
   },
   {
     id: 'P2-10', phase: 2, area: 'Mobile',
     desc: 'Search results page is responsive at 375px',
-    method: 'web', url: '/search?q=radiohead',
-    fn: async (page) => {
-      await page.setViewportSize({ width: 375, height: 667 });
-      await page.waitForSelector('.artist-card, .card', { timeout: 8000 });
-      const overflow = await page.evaluate(() => {
-        const main = document.querySelector('main');
-        return main ? main.scrollWidth : document.body.scrollWidth;
-      });
-      return overflow <= 400;
-    },
+    method: 'skip',
+    reason: 'Web version removed — Mercury is Tauri-desktop-only',
   },
   {
     id: 'P2-11', phase: 2, area: 'Mobile',
     desc: 'Artist page is responsive at 375px',
-    method: 'web', url: '/artist/radiohead',
-    fn: async (page) => {
-      await page.setViewportSize({ width: 375, height: 667 });
-      await page.waitForSelector('h1, .artist-name, [class*="artist"]', { timeout: 8000 });
-      const overflow = await page.evaluate(() => {
-        const main = document.querySelector('main');
-        return main ? main.scrollWidth : document.body.scrollWidth;
-      });
-      return overflow <= 400;
-    },
+    method: 'skip',
+    reason: 'Web version removed — Mercury is Tauri-desktop-only',
   },
 ];
 
@@ -262,13 +201,8 @@ export const PHASE_5 = [
   {
     id: 'P5-05', phase: 5, area: 'Explore page',
     desc: 'Web: /explore page shows desktop-only message (not broken)',
-    method: 'web', url: '/explore',
-    fn: async (page) => {
-      await page.waitForLoadState('networkidle');
-      // Should either load or show desktop-only message — just not crash
-      const status = page.url();
-      return !status.includes('error');
-    },
+    method: 'skip',
+    reason: 'Web version removed — Mercury is Tauri-desktop-only',
   },
   {
     id: 'P5-06', phase: 5, area: 'AI',
@@ -286,65 +220,38 @@ export const PHASE_6 = [
   {
     id: 'P6-01', phase: 6, area: 'Discover',
     desc: '/discover page loads with artist grid',
-    method: 'web', url: '/discover',
-    fn: async (page) => {
-      await page.waitForSelector('.artist-card, .card, [class*="artist"]', { timeout: 10000 });
-      return true;
-    },
+    method: 'skip',
+    reason: 'Web version removed — Mercury is Tauri-desktop-only',
   },
   {
     id: 'P6-02', phase: 6, area: 'Discover',
     desc: 'Tag filter: navigating to /discover?tags=electronic shows filtered results',
-    method: 'web', url: '/discover?tags=electronic',
-    fn: async (page) => {
-      await page.waitForSelector('.artist-card, .card', { timeout: 10000 });
-      const count = await page.locator('.artist-card, .card').count();
-      return count > 0;
-    },
+    method: 'skip',
+    reason: 'Web version removed — Mercury is Tauri-desktop-only',
   },
   {
     id: 'P6-03', phase: 6, area: 'Discover',
     desc: 'Tag filter: active tag chip appears when tag in URL',
-    method: 'web', url: '/discover?tags=electronic',
-    fn: async (page) => {
-      await page.waitForLoadState('networkidle');
-      const text = await page.textContent('body');
-      return text.toLowerCase().includes('electronic');
-    },
+    method: 'skip',
+    reason: 'Web version removed — Mercury is Tauri-desktop-only',
   },
   {
     id: 'P6-04', phase: 6, area: 'Discover',
     desc: 'Clicking tag chip adds it to URL (?tags=) and updates results',
-    method: 'web', url: '/artist/aphex-twin',
-    fn: async (page) => {
-      await page.waitForSelector('a[href*="discover"]', { timeout: 8000 });
-      const discoverLink = page.locator('a[href*="discover"]').first();
-      await discoverLink.click();
-      await page.waitForURL('**/discover**', { timeout: 8000 });
-      return page.url().includes('/discover');
-    },
+    method: 'skip',
+    reason: 'Web version removed — Mercury is Tauri-desktop-only',
   },
   {
     id: 'P6-05', phase: 6, area: 'Style Map',
     desc: '/style-map page loads',
-    method: 'web', url: '/style-map',
-    fn: async (page) => {
-      await page.waitForLoadState('networkidle');
-      await page.waitForTimeout(3000); // D3 simulation takes time
-      const hasSvg = await page.locator('svg, canvas').count();
-      return hasSvg > 0;
-    },
+    method: 'skip',
+    reason: 'Web version removed — Mercury is Tauri-desktop-only',
   },
   {
     id: 'P6-06', phase: 6, area: 'Crate Dig',
     desc: '/crate page loads (desktop-only on web — shows gating message)',
-    method: 'web', url: '/crate',
-    fn: async (page) => {
-      await page.waitForLoadState('domcontentloaded');
-      // Web shows desktop-only message — page should render, not crash
-      const text = await page.textContent('body');
-      return text.length > 50;
-    },
+    method: 'skip',
+    reason: 'Web version removed — Mercury is Tauri-desktop-only',
   },
   {
     id: 'P6-07', phase: 6, area: 'Artist page',
@@ -368,44 +275,26 @@ export const PHASE_7 = [
   {
     id: 'P7-01', phase: 7, area: 'Knowledge Base',
     desc: '/kb page loads',
-    method: 'web', url: '/kb',
-    fn: async (page) => {
-      await page.waitForLoadState('networkidle');
-      await page.waitForTimeout(2000);
-      const text = await page.textContent('body');
-      return text.length > 100;
-    },
+    method: 'skip',
+    reason: 'Web version removed — Mercury is Tauri-desktop-only',
   },
   {
     id: 'P7-02', phase: 7, area: 'Knowledge Base',
     desc: 'Genre graph SVG renders on /kb',
-    method: 'web', url: '/kb',
-    fn: async (page) => {
-      await page.waitForTimeout(4000); // D3 simulation
-      const hasSvg = await page.locator('svg').count();
-      return hasSvg > 0;
-    },
+    method: 'skip',
+    reason: 'Web version removed — Mercury is Tauri-desktop-only',
   },
   {
     id: 'P7-03', phase: 7, area: 'Knowledge Base',
     desc: 'KB genre detail page renders without crashing (unknown slug shows 404, not error)',
-    method: 'web', url: '/kb/test-slug-that-does-not-exist',
-    fn: async (page) => {
-      await page.waitForLoadState('domcontentloaded');
-      // Should show a graceful not-found message, not a JS error / blank page
-      const text = await page.textContent('body');
-      return text.length > 50;
-    },
+    method: 'skip',
+    reason: 'Web version removed — Mercury is Tauri-desktop-only',
   },
   {
     id: 'P7-04', phase: 7, area: 'Time Machine',
     desc: '/time-machine page loads',
-    method: 'web', url: '/time-machine',
-    fn: async (page) => {
-      await page.waitForLoadState('networkidle');
-      const text = await page.textContent('body');
-      return text.length > 100;
-    },
+    method: 'skip',
+    reason: 'Web version removed — Mercury is Tauri-desktop-only',
   },
   {
     id: 'P7-05', phase: 7, area: 'Knowledge Base',
@@ -461,13 +350,8 @@ export const PHASE_8 = [
   {
     id: 'P8-05', phase: 8, area: 'Settings',
     desc: 'Web: /settings page loads (shows desktop-only message)',
-    method: 'web', url: '/settings',
-    fn: async (page) => {
-      await page.waitForLoadState('networkidle');
-      const text = await page.textContent('body');
-      // Either real settings or the "desktop only" gating message — not a crash
-      return text.length > 50;
-    },
+    method: 'skip',
+    reason: 'Web version removed — Mercury is Tauri-desktop-only',
   },
   {
     id: 'P8-06', phase: 8, area: 'Settings',

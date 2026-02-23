@@ -18,9 +18,14 @@ export async function runWebTests(tests, { verbose = false } = {}) {
 
   for (const test of tests) {
     const page = await context.newPage();
-    // Suppress console noise
-    page.on('console', () => {});
-    page.on('pageerror', () => {});
+    // Capture console errors per test (instead of suppressing)
+    const consoleErrors = [];
+    page.on('console', msg => {
+      if (msg.type() === 'error') consoleErrors.push(msg.text());
+    });
+    page.on('pageerror', err => {
+      consoleErrors.push(err.message ?? String(err));
+    });
 
     let passed = false;
     let error = null;
@@ -30,6 +35,12 @@ export async function runWebTests(tests, { verbose = false } = {}) {
       await page.goto(url, { waitUntil: 'networkidle', timeout: 15000 });
       passed = await test.fn(page);
       if (passed == null) passed = true; // fn returning undefined = pass
+      // Allow async errors to surface (fired after test.fn resolves)
+      await page.waitForTimeout(200);
+      if (!test.allowConsoleErrors && consoleErrors.length > 0 && passed !== false) {
+        passed = false;
+        error = `console.error detected: ${consoleErrors[0]}`;
+      }
     } catch (e) {
       error = e.message?.split('\n')[0] ?? String(e);
       passed = false;
