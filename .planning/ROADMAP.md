@@ -412,7 +412,7 @@ Plans:
 | 8. Underground Aesthetic | 4/4 | Complete   | 2026-02-21 |
 | 9. Community Foundation | 6/6 | Complete   | 2026-02-22 |
 | 10. Communication Layer | 9/9 | Complete    | 2026-02-23 |
-| 10.1. Communication Hotfixes | 2/2 | Complete   | 2026-02-23 |
+| 10.1. Communication Hotfixes | 2/2 | Complete    | 2026-02-23 |
 | 11. Scene Building | 0/TBD | Not started | - |
 | 12. Curator / Blog Tools | 0/TBD | Not started | - |
 | 13. Interoperability | 0/TBD | Not started | - |
