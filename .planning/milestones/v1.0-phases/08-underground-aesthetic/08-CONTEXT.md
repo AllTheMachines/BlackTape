@@ -33,10 +33,12 @@ Transform Mercury's desktop UI from a search engine into a cockpit. Dense panel-
 - **Reactivity:** Controls filter their own panel only. Main page content stays independent until user navigates. Sidebar discovery filters affect sidebar suggestions, not the main content.
 
 ### Layout templates
-- **3 templates:** Cockpit (3-pane full), Focus (main + one sidebar), Minimal (single column, current look)
+- **3 built-in templates:** Cockpit (3-pane full), Focus (main + one sidebar), Minimal (single column, current look)
+- **User-created templates:** Users can arrange panels, save the layout, and name it. Saved templates sit alongside built-ins in the switcher.
 - **Default for new Tauri users:** Cockpit (3-pane) — this is what Mercury IS now. New users get the full experience immediately.
 - **Switching:** Both toolbar quick-switch (layout icon, click to cycle or dropdown) AND full options in Settings page
 - **Per-template persistence:** Each template saves its own panel sizes. Switching back restores exactly how you left it.
+- **Template sharing → Phase 9:** Export/import templates and browsing community layouts are deferred. Once templates exist, sharing is the obvious next step.
 
 ### Claude's Discretion
 - Exact keyboard shortcuts for panel collapse/expand
