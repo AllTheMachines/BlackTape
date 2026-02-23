@@ -1,7 +1,7 @@
 # Requirements: Mercury
 
 **Defined:** 2026-02-15
-**Updated:** 2026-02-21 — Phase 07.3: PLAYER-01/PLAYER-02 marked Complete; traceability aligned; COMM-01/02/03 added for Phase 9 community foundation traceability
+**Updated:** 2026-02-23 — Phase 10: COMM-04/05/06 added for Phase 10 communication layer; INTEROP-01/02 traceability corrected to Phase 13
 **Core Value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
 
 ## v1 Requirements
@@ -74,6 +74,12 @@
 - [x] **COMM-01**: Pseudonymous identity system — handles + generative pixel art avatars; no real names, no photos; local-first, no central account
 - [x] **COMM-02**: Collections / shelves curation — multiple named shelves containing saved artists and releases; artists and release pages show Save to Shelf with inline creation
 - [x] **COMM-03**: Generative avatar system — pixel art avatar driven by user taste data; in-app editor for manual customization; three layers (generative default, pixel editor, preset selection)
+
+### Communication Layer (Phase 10)
+
+- [x] **COMM-04**: Private DM system — encrypted 1:1 messaging between Mercury users using Nostr NIP-17 gift-wrap
+- [x] **COMM-05**: Scene rooms — persistent group chat organized by tag taxonomy, with AI-gated creation and owner moderation tools
+- [x] **COMM-06**: Ephemeral listening party sessions — zero-persistence shared listening moments tied to specific music
 
 ### Social
 
