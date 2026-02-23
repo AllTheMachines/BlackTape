@@ -286,7 +286,7 @@ Plans:
 **Goal**: People found each other in Phase 9. Now they can talk. Encrypted, layered communication: private DMs, persistent scene rooms, and ephemeral sessions. Zero server cost is a hard constraint. Infrastructure architecture (Matrix, P2P, relay, Nostr) requires research — the right answer depends on the ecosystem at build time.
 **Depends on**: Phase 9 (identity system)
 **Requirements**: COMM-04, COMM-05, COMM-06
-**Architecture Decision Required**: Communication infrastructure protocol — deferred until phase planning. Options: Matrix (federated, existing infra), P2P/libp2p (purist, no server), hybrid relay (Cloudflare Workers free tier), Nostr (decentralized, growing ecosystem).
+**Protocol Decision**: Nostr via @nostr-dev-kit/ndk 3.0.0 — NIP-17 gift-wrap for DMs, NIP-28 for scene rooms, ephemeral kinds 20000+ for listening parties. All over community-operated public relays. Zero server cost.
 **Success Criteria**:
   1. Encrypted private DMs between users
   2. Persistent scene rooms — organized by genre/vibe, discoverable, anyone can join
@@ -296,7 +296,16 @@ Plans:
   6. AI taste translation — explains WHY two people's tastes overlap
   7. AI matchmaking context — describes overlap and divergence between users
   8. Zero server cost for Mercury maintainer
-**Plans**: TBD
+**Plans**: 8 plans
+Plans:
+- [ ] 10-01-PLAN.md — Nostr deps + keypair (IndexedDB) + NDK singleton + /api/unfurl endpoint
+- [ ] 10-02-PLAN.md — NIP-17 encrypted DM module + notifications/chat overlay state
+- [ ] 10-03-PLAN.md — NIP-28 scene rooms module + AI moderation + content safety filter
+- [ ] 10-04-PLAN.md — Ephemeral listening party sessions (zero persistence, kinds 20000+)
+- [ ] 10-05-PLAN.md — Core chat UI: ChatOverlay drawer + ChatPanel + MessageList + MessageInput + UnfurlCard
+- [ ] 10-06-PLAN.md — Room/session UI: RoomDirectory + RoomCreator + AiGatePrompt + SessionCreator + ModerationQueue
+- [ ] 10-07-PLAN.md — Root layout integration: Nostr init + ChatOverlay mount + nav badge + artist/discover room links
+- [ ] 10-08-PLAN.md — ARCHITECTURE.md + user-manual.md + BUILD-LOG.md + final build verification
 
 ### Phase 11: Scene Building
 **Goal**: The community has identity (Phase 9) and communication (Phase 10). Now scenes emerge. AI detects emerging patterns in collective listening. Label collectives form organically. Mercury provides the space — people decide what happens in it. Creation tools are added only if the community asks for them.
@@ -383,7 +392,7 @@ Plans:
 | 07.3. Requirements & Verification Cleanup | 3/3 | Complete    | 2026-02-21 |
 | 8. Underground Aesthetic | 4/4 | Complete   | 2026-02-21 |
 | 9. Community Foundation | 6/6 | Complete   | 2026-02-22 |
-| 10. Communication Layer | 0/TBD | Not started | - |
+| 10. Communication Layer | 0/8 | In progress | - |
 | 11. Scene Building | 0/TBD | Not started | - |
 | 12. Curator / Blog Tools | 0/TBD | Not started | - |
 | 13. Interoperability | 0/TBD | Not started | - |
