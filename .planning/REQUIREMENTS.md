@@ -190,6 +190,9 @@
 | COMM-01 | Phase 9 | Complete |
 | COMM-02 | Phase 9 | Complete |
 | COMM-03 | Phase 9 | Complete |
+| COMM-04 | Phase 10 | Complete |
+| COMM-05 | Phase 10 | Complete |
+| COMM-06 | Phase 10 | Complete |
 | SOCIAL-01 | Phase 9 | Complete |
 | SOCIAL-02 | Phase 9 | Complete |
 | SOCIAL-03 | Deferred | Deferred — per-item tagging not in Phase 9 scope; see Deferred table |
@@ -203,8 +206,8 @@
 | BLOG-01 | Phase 9 | Pending |
 | BLOG-02 | Phase 9 | Pending |
 | BLOG-03 | Phase 9 | Pending |
-| INTEROP-01 | Phase 10 | Pending |
-| INTEROP-02 | Phase 10 | Pending |
+| INTEROP-01 | Phase 13 | Pending |
+| INTEROP-02 | Phase 13 | Pending |
 | LISTEN-01 | Phase 11 | Pending |
 | LISTEN-02 | Phase 11 | Pending |
 | ARTIST-01 | Phase 12 | Pending |
@@ -223,10 +226,10 @@
 | SUST-10 | Phase 0 / Stage 4 | Pending |
 
 **Coverage:**
-- v1 requirements: 67 total (added 4 UX for Phase 8; added 3 COMM for Phase 9 community foundation traceability)
-- Mapped to phases: 67
+- v1 requirements: 70 total (added 4 UX for Phase 8; added 3 COMM for Phase 9; added 3 COMM for Phase 10 communication layer)
+- Mapped to phases: 70
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-15*
-*Last updated: 2026-02-21 — Phase 8: added UX-01 through UX-04; fixed SOCIAL traceability (Phase 9, not Phase 8); KB-01 marked Complete. Phase 9 revision: added COMM-01/02/03 definitions and traceability rows.*
+*Last updated: 2026-02-23 — Phase 10 gap closure: added COMM-04/05/06 definitions and traceability rows (Phase 10, Complete); corrected INTEROP-01/02 phase assignment from Phase 10 to Phase 13.*
