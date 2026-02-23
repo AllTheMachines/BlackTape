@@ -3200,3 +3200,40 @@ TypeScript strict mode treats `response.json()` as returning `unknown`. Added ex
 
 > **Commit 55239ef** (2026-02-23 01:54) — feat(10-03): implement NIP-28 scene rooms state module
 > Files changed: 2
+
+> **Commit 5bf30d4** (2026-02-23 01:56) — docs(10-03): complete NIP-28 scene rooms + moderation plan
+> Files changed: 4
+
+> **Commit e5e5fbb** (2026-02-23 01:59) — feat(10-04): add ephemeral listening party sessions module
+> Files changed: 2
+
+> **Commit ed9160b** (2026-02-23 02:02) — docs(10-04): complete ephemeral sessions plan — SUMMARY + STATE + ROADMAP
+
+---
+
+## Entry 041 — 2026-02-23 — Phase 10 Plan 04: Ephemeral Listening Party Sessions
+
+### What Was Built
+
+**Plan 10-04:** Ephemeral listening party sessions (COMM-06). The live, shared-moment experience for Mercury users: "I'm playing this album right now, come listen with me."
+
+One new module in `src/lib/comms/`:
+
+**`sessions.svelte.ts`** — Zero-persistence listening party sessions using Nostr ephemeral event kinds (NIP-01 range 20000–29999). These events are relayed in real-time by relays but MUST NOT be stored. Two kinds: `kind:20001` for session messages, `kind:20002` for session announcements and presence. NIP-40 expiration tags (1-hour TTL) on every published event as a belt-and-suspenders hint for relays that might cache anyway.
+
+The architectural constraint is hard: this module has zero Tauri `invoke()` calls. Session state lives only in Svelte `$state`. When `endSession()` is called, `mySession` and `joinedSession` are set to null — messages, participant lists, and context are gone. No database, no local storage, no persistence of any kind.
+
+Session lifecycle:
+- `createSession(artistName, 'public' | 'private', options)` — announces public sessions on Nostr, generates invite codes for private sessions. Returns session ID.
+- `joinSession(sessionId)` — looks up from `publicSessions` list or constructs minimal object for private sessions. Announces presence via kind:20002.
+- `sendPartyMessage(sessionId, content)` — publishes kind:20001 with optimistic local add.
+- `endSession()` — complete state wipe, stops subscriptions, deletes from `_sessionSubs` Map.
+- `loadPublicSessions()` — queries relays for recent kind:20002 events tagged `['t', 'mercury'] + ['t', 'listening-party']`, populates discovery feed.
+- `activePublicSessions` — `$derived` export, sorted by recency for session browser UI.
+
+### Key Decision: NDKKind double cast for ephemeral kinds
+
+NDK's `NDKKind` enum only includes named kinds (40/42 for channels, etc.). The ephemeral range 20001/20002 isn't in the enum. TypeScript rejects a direct `as NDKKind[]` cast because the numeric literal types don't overlap with enum members. The fix is a double cast: `[20001, 20002] as unknown as NDKKind[]` — this is the standard TypeScript escape hatch for intentional type boundary crossings. NDK does accept these numeric kinds at runtime (the filter type accepts `K extends number`), the enum just hasn't been updated to include the full NIP-01 ephemeral range.
+
+`npm run check` exits 0, zero TypeScript errors.
+> Files changed: 3
