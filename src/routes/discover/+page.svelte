@@ -1,6 +1,7 @@
 <script lang="ts">
 	import ArtistCard from '$lib/components/ArtistCard.svelte';
 	import TagFilter from '$lib/components/TagFilter.svelte';
+	import RssButton from '$lib/components/RssButton.svelte';
 	import type { PageData } from './$types';
 	import { PROJECT_NAME } from '$lib/config';
 	import { openChat, chatState } from '$lib/comms/notifications.svelte.js';
@@ -27,13 +28,18 @@
 	<TagFilter tags={data.popularTags} activeTags={data.tags} />
 
 	{#if data.tags.length > 0}
-		<button
-			onclick={() => { chatState.view = 'rooms'; openChat('rooms'); }}
-			class="discover-rooms-btn"
-			title="Find scene rooms for these tags"
-		>
-			Scene rooms for this vibe &rarr;
-		</button>
+		<div class="discover-actions">
+			<button
+				onclick={() => { chatState.view = 'rooms'; openChat('rooms'); }}
+				class="discover-rooms-btn"
+				title="Find scene rooms for these tags"
+			>
+				Scene rooms for this vibe &rarr;
+			</button>
+			{#if data.tags.length === 1}
+				<RssButton href="/api/rss/tag/{encodeURIComponent(data.tags[0])}" label="RSS feed for {data.tags[0]}" />
+			{/if}
+		</div>
 	{/if}
 
 	<section class="results">
@@ -73,6 +79,13 @@
 		margin: 0;
 	}
 
+	.discover-actions {
+		display: flex;
+		align-items: center;
+		gap: var(--space-sm);
+		margin-top: var(--space-md);
+	}
+
 	.discover-rooms-btn {
 		background: none;
 		border: 1px solid var(--border-default);
@@ -81,7 +94,6 @@
 		cursor: pointer;
 		color: var(--text-muted);
 		font-size: 0.75rem;
-		margin-top: var(--space-md);
 		transition: border-color 0.15s, color 0.15s;
 	}
 
