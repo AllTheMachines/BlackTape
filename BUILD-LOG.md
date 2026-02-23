@@ -4199,3 +4199,9 @@ Test suite updated: **62/62 code checks passing**. Added 24 new tests covering P
 
 > **Commit 20506c8** (2026-02-23 23:41) — fix(tauri): global __data.json handler prevents navigation crashes
 > Files changed: 1
+
+> **Commit 614c89d** (2026-02-23 23:41) — wip: auto-save
+> Files changed: 1
+
+> **Commit 3bcf401** (2026-02-23 23:43) — chore: session handoff — Phase 12 verified, nav fix committed
+> Files changed: 1
