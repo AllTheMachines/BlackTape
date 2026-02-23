@@ -3880,3 +3880,41 @@ Phase 12 starts. The first feature for music bloggers: RSS/Atom feeds for every 
 
 > **Commit a8fe49f** (2026-02-23 15:39) — feat(12-01): implement four RSS/Atom feed endpoints + RssButton component
 > Files changed: 7
+
+> **Commit 82fefc9** (2026-02-23 15:41) — docs(12-01): complete RSS feeds plan — SUMMARY.md + state updates
+> Files changed: 4
+
+## Entry — 2026-02-23 — Phase 12 Plan 02: Embed Widget System
+
+Embedded artist cards that bloggers can paste into any blog post. Clean, minimal, dark/light adaptive. No Mercury chrome leaks into the iframe.
+
+### What was built
+
+**Layout isolation:** `/embed/+layout@.svelte` uses SvelteKit's layout reset syntax (`@` suffix). This completely breaks the layout inheritance chain — embed routes get their own clean HTML shell with zero Mercury styles, nav, player, chat overlay, or AI features. The `@` suffix is the critical detail; `+layout.svelte` (without `@`) would still inherit the root layout.
+
+**Artist card embed** (`/embed/artist/[slug]`): Shows cover art from Cover Art Archive (graceful onerror if missing), artist name linked to Mercury, tag-derived bio snippet (top-4 tags joined with ` · ` since D1 has no bio column), top-5 tags as pills, country if available, "Listen on Mercury →" link, and Mercury attribution footer. Auto-adapts to OS dark/light via `window.matchMedia('(prefers-color-scheme: dark)')` in onMount.
+
+**Collection embed** (`/embed/collection/[id]`): Honest placeholder — collections are Tauri-only. Shows "This collection requires the Mercury desktop app." Not an error page, just a graceful desktop gate.
+
+**Embed snippet utilities** (`src/lib/curator/`): `generateEmbedSnippets()` returns both an iframe snippet and a script-tag snippet. `generateQrSvg()` uses the qrcode package (already installed in Plan 01) with dynamic import to stay client-side only.
+
+**Artist page embed UI**: Collapsible "Embed this artist" section at the bottom of artist pages. Toggle between iframe and script-tag views, copy button, QR code generation (lazy loaded on click). Unobtrusive — small button that expands inline.
+
+**GET /embed.js**: Bootstrap script for the script-tag embed variant. IIFE that finds the `mercury-embed` div, injects an iframe, and fires an attribution ping to `/api/curator-feature?slug=&curator=` when `data-curator` is set. Access-Control-Allow-Origin: * required since this is loaded from external blog domains. 24hr cache.
+
+### One wrinkle
+
+Svelte 5 requires event handlers to be JavaScript expressions, not HTML strings. The plan specified `onerror="this.style.display='none'"` which is Svelte 4 / plain HTML syntax. Fixed to `onerror={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}`.
+
+### Attribution design decision
+
+The embed.js ping fires to `/api/curator-feature?slug=&curator=` (slug-based lookup) because the embed URL only contains the slug, not the artist MBID. Plan 03 must accept `slug` as an alternative to the `artist` MBID param.
+
+> **Commit 8aa3062** (2026-02-23 15:46) — feat(12-02): create embed layout + artist card + collection embed routes
+> Files changed: 4
+
+> **Commit 0f86fcc** (2026-02-23 15:48) — feat(12-02): embed snippet utility, QR utility, artist page embed UI
+> Files changed: 3
+
+> **Commit d61ce59** (2026-02-23 15:50) — feat(12-02): add GET /embed.js route — script-tag embed bootstrap
+> Files changed: 1

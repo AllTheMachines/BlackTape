@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-02-23 after v1.0 milestone)
 ## Current Position
 
 Phase: 12-curator-blog-tools
-Status: In Progress — Plan 01/04 complete (RSS feeds). Plans 02-04 remaining.
-Last activity: 2026-02-23 — Phase 12 Plan 01 complete. RSS/Atom feeds for artist, tag, collection, curator. RssButton component. feed@5.2.0 + qrcode@1.5.4 installed.
-Next: Phase 12 Plan 02 (embed widgets with QR codes)
-Stopped at: Completed 12-01-PLAN.md
+Status: In Progress — Plan 02/04 complete (embed widgets). Plans 03-04 remaining.
+Last activity: 2026-02-23 — Phase 12 Plan 02 complete. Embed widget system: /embed/* routes (isolated from root layout), artist card embed, collection embed placeholder, embed snippet utility, QR utility, artist page embed UI, GET /embed.js bootstrap script.
+Next: Phase 12 Plan 03 (curator-feature API — accepts slug param per embed.js attribution design)
+Stopped at: Completed 12-02-PLAN.md
 
-Progress: [██████████] v1.0 SHIPPED — v1.1 Phase 12 In Progress (1/4 plans done)
+Progress: [██████████] v1.0 SHIPPED — v1.1 Phase 12 In Progress (2/4 plans done)
 
 ## Performance Metrics
 
@@ -99,6 +99,7 @@ Progress: [██████████] v1.0 SHIPPED — v1.1 Phase 12 In Pro
 | Phase 11-scene-building P03 | 4min | 2 tasks | 7 files |
 | Phase 11-scene-building P04 | 7 | 2 tasks | 7 files |
 | Phase 12-curator-blog-tools P01 | 8 | 2 tasks | 8 files |
+| Phase 12 P02 | 8min | 3 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -346,6 +347,9 @@ Progress: [██████████] v1.0 SHIPPED — v1.1 Phase 12 In Pro
 - [Phase 12-curator-blog-tools]: [Phase 12-01]: Cover art embedded in content:encoded HTML not as enclosure — feed package Item.image generates broken MIME type from URL string
 - [Phase 12-curator-blog-tools]: [Phase 12-01]: Graceful empty feeds for collection (desktop-only) and curator (table not yet created) — returns valid RSS with descriptive message, not 404/500
 - [Phase 12-curator-blog-tools]: [Phase 12-01]: RssButton placed in artist name row and inline with scene-rooms button on discover page (single-tag filter only)
+- [Phase 12]: +layout@.svelte breaks SvelteKit layout chain — embed routes get no Mercury chrome (nav/player/chat)
+- [Phase 12]: embed.js attribution ping uses slug param (/api/curator-feature?slug=&curator=) — Plan 03 must accept slug as alternative to MBID
+- [Phase 12]: D1 has no bio column — embed artist card uses top-4 tags joined with ' · ' as bio descriptor (no live API call)
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
