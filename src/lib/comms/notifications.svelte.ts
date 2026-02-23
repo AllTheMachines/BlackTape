@@ -44,5 +44,7 @@ export const notifState = $state({
 	roomUnread: 0
 });
 
-/** Total unread count across DMs and rooms. */
-export const totalUnread = $derived(notifState.dmUnread + notifState.roomUnread);
+/** Total unread count across DMs and rooms. Exposed as a getter to satisfy Svelte 5 module export rules ($derived cannot be exported from .svelte.ts files). */
+export function totalUnread(): number {
+	return notifState.dmUnread + notifState.roomUnread;
+}

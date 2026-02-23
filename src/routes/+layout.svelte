@@ -20,6 +20,10 @@
 	import type { LayoutTemplate } from '$lib/theme/templates';
 	import { DEFAULT_TEMPLATE, LAYOUT_TEMPLATES, TEMPLATE_LIST, expandUserTemplate } from '$lib/theme/templates';
 	import { layoutState } from '$lib/theme/layout-state.svelte';
+	import { initNostr } from '$lib/comms/nostr.svelte.js';
+	import { subscribeToIncomingDMs } from '$lib/comms/dms.svelte.js';
+	import { totalUnread, chatState, openChat } from '$lib/comms/notifications.svelte.js';
+	import ChatOverlay from '$lib/components/chat/ChatOverlay.svelte';
 
 	let { children } = $props();
 
@@ -35,6 +39,10 @@
 
 	onMount(async () => {
 		tauriMode = isTauri();
+
+		// Initialize Nostr communication layer — fire-and-forget, does not block layout render
+		// Runs on both web and Tauri — IndexedDB available in all environments
+		initNostr().then(() => subscribeToIncomingDMs()).catch(e => console.warn('[comms] Nostr init:', e));
 
 		if (isTauri()) {
 			await loadAiSettings();
@@ -111,6 +119,18 @@
 			<a href="/profile" class="nav-link" class:active={$page.url.pathname === '/profile'}>Profile</a>
 			<a href="/settings" class="nav-link">Settings</a>
 			<a href="/about" class="nav-link">About</a>
+			<button
+				class="nav-chat-btn"
+				class:active={chatState.open}
+				onclick={() => openChat('dms')}
+				aria-label="Open chat"
+				title="Messages"
+			>
+				Chat
+				{#if totalUnread() > 0}
+					<span class="nav-badge">{totalUnread() > 99 ? '99+' : totalUnread()}</span>
+				{/if}
+			</button>
 		</nav>
 		{#if aiState.status === 'loading' || aiState.status === 'downloading'}
 			<span class="ai-indicator" title="AI is loading">
@@ -135,6 +155,10 @@
 			<a href="/kb" class="nav-link" class:active={$page.url.pathname.startsWith('/kb')}>Knowledge Base</a>
 			<a href="/time-machine" class="nav-link" class:active={$page.url.pathname.startsWith('/time-machine')}>Time Machine</a>
 			<a href="/about" class="nav-link">About</a>
+			<button class="nav-chat-btn" onclick={() => openChat('dms')} aria-label="Open chat" title="Messages">
+				Chat
+				{#if totalUnread() > 0}<span class="nav-badge">{totalUnread() > 99 ? '99+' : totalUnread()}</span>{/if}
+			</button>
 		</nav>
 	{/if}
 </header>
@@ -177,6 +201,9 @@
 {#if isTauri()}
 	<Player />
 {/if}
+
+<!-- Chat overlay — present on all pages, slides in on demand -->
+<ChatOverlay />
 
 <style>
 	header {
@@ -251,6 +278,40 @@
 
 	.nav-link.active {
 		color: var(--text-accent);
+	}
+
+	.nav-chat-btn {
+		position: relative;
+		background: none;
+		border: none;
+		cursor: pointer;
+		font-size: 0.75rem;
+		padding: 4px 8px;
+		color: var(--text-muted);
+		border-radius: 4px;
+		margin-left: var(--space-lg);
+		transition: color 0.15s, background 0.15s;
+	}
+
+	.nav-chat-btn:hover,
+	.nav-chat-btn.active {
+		color: var(--text-primary);
+		background: var(--bg-tertiary, var(--bg-elevated));
+	}
+
+	.nav-badge {
+		position: absolute;
+		top: 0;
+		right: 0;
+		background: var(--text-accent);
+		color: var(--bg-primary, var(--bg-surface));
+		border-radius: 10px;
+		font-size: 0.6rem;
+		font-weight: 700;
+		padding: 1px 4px;
+		min-width: 16px;
+		text-align: center;
+		line-height: 1.4;
 	}
 
 	.ai-indicator {

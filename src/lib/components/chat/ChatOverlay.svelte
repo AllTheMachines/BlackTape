@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { chatState, closeChat } from '$lib/comms/notifications.svelte.js';
 	import ChatPanel from './ChatPanel.svelte';
-	// Lazy imports for room/session views (loaded in Plan 06)
 </script>
 
 <aside
@@ -16,10 +15,36 @@
 			 chatState.view === 'rooms' || chatState.view === 'room-view' ? 'Scene Rooms' :
 			 'Listening Party'}
 		</span>
-		<button class="chat-close" onclick={closeChat} aria-label="Close chat">✕</button>
+		<button class="chat-close" onclick={closeChat} aria-label="Close chat">&#x2715;</button>
 	</div>
+
+	<div class="chat-tabs">
+		<button
+			class:active={chatState.view === 'dms' || chatState.view === 'dm-thread'}
+			onclick={() => chatState.view = 'dms'}
+		>DMs</button>
+		<button
+			class:active={chatState.view === 'rooms' || chatState.view === 'room-view'}
+			onclick={() => chatState.view = 'rooms'}
+		>Rooms</button>
+		<button
+			class:active={chatState.view === 'sessions' || chatState.view === 'session-view'}
+			onclick={() => chatState.view = 'sessions'}
+		>Parties</button>
+	</div>
+
 	<div class="chat-body">
-		<ChatPanel />
+		{#if chatState.view === 'rooms' || chatState.view === 'room-view'}
+			{#await import('./RoomDirectory.svelte') then { default: RoomDirectory }}
+				<RoomDirectory />
+			{/await}
+		{:else if chatState.view === 'sessions' || chatState.view === 'session-view'}
+			{#await import('./SessionCreator.svelte') then { default: SessionCreator }}
+				<SessionCreator />
+			{/await}
+		{:else}
+			<ChatPanel />
+		{/if}
 	</div>
 </aside>
 
@@ -62,6 +87,29 @@
 		color: var(--text-secondary);
 		font-size: 1rem;
 		padding: 4px;
+	}
+	.chat-tabs {
+		display: flex;
+		border-bottom: 1px solid var(--border-default);
+		flex-shrink: 0;
+	}
+	.chat-tabs button {
+		flex: 1;
+		background: none;
+		border: none;
+		border-bottom: 2px solid transparent;
+		padding: 8px 4px;
+		font-size: 0.8rem;
+		color: var(--text-muted);
+		cursor: pointer;
+		transition: color 0.15s, border-color 0.15s;
+	}
+	.chat-tabs button:hover {
+		color: var(--text-primary);
+	}
+	.chat-tabs button.active {
+		color: var(--text-primary);
+		border-bottom-color: var(--text-accent);
 	}
 	.chat-body {
 		flex: 1;

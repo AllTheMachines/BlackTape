@@ -315,6 +315,7 @@ export async function loadPublicSessions(): Promise<void> {
  * Derived from sessionsState.publicSessions — updates reactively when
  * loadPublicSessions() populates the list.
  */
-export const activePublicSessions = $derived(
-	sessionsState.publicSessions.slice().sort((a, b) => b.startedAt - a.startedAt)
-);
+/** Public sessions sorted by most recent start. Exposed as getter (Svelte 5 module export rule: $derived cannot be exported). */
+export function activePublicSessions() {
+	return sessionsState.publicSessions.slice().sort((a, b) => b.startedAt - a.startedAt);
+}
