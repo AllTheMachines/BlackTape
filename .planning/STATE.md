@@ -2,21 +2,19 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-02-15)
+See: .planning/PROJECT.md (updated 2026-02-23 after v1.0 milestone)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Phase 10 complete. All 9 plans shipped: Nostr keypair + NDK, DMs (NIP-17), rooms (NIP-28), ephemeral sessions, moderation, chat UI, root layout integration, documentation, requirements gap closure.
+**Current focus:** v1.0 MVP shipped. Planning next milestone (v1.1 — Phases 11–15).
 
 ## Current Position
 
-Phase: 10.1-communication-hotfixes of 15 (Communication Hotfixes — In Progress)
-Current Plan: 10.1-02 (complete)
-Status: Phase 10.1 Plan 02 complete — GAP-07 (taste profile never published to Nostr) and GAP-08 (export_play_history_to_path unimplemented) closed. 2026-02-23.
-Last activity: 2026-02-23 — 10.1-02 complete. taste-publish.ts: publishTasteProfile() kind:30078 with session flag. Profile page: Nostr section + export button. taste_db.rs: export_play_history_to_path command. lib.rs: registered in generate_handler!. npm run check 0 errors, cargo check success.
-Stopped at: Completed 10.1-02-PLAN.md
-Next: Phase 10.1 Plan 03 (if planned)
+Phase: v1.0 complete — archived to .planning/milestones/
+Status: Milestone archived 2026-02-23. All 41 requirements satisfied. Git tag v1.0 created.
+Last activity: 2026-02-23 — v1.0 milestone complete. ROADMAP.md reorganized. REQUIREMENTS.md archived. PROJECT.md evolved. 15 phases, 71 plans shipped.
+Next: /gsd:new-milestone to plan v1.1
 
-Progress: [█████████░] 9/9 plans complete (Phase 10 Complete)
+Progress: [██████████] v1.0 SHIPPED
 
 ## Performance Metrics
 
