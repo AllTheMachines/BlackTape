@@ -39,15 +39,8 @@ export class TauriProvider implements DbProvider {
 	private async ensureDb(): Promise<TauriDatabase> {
 		if (!this.db) {
 			const { default: Database } = await import('@tauri-apps/plugin-sql');
-			// Use explicit app data directory path for clarity and reliability.
-			// tauri-plugin-sql resolves 'sqlite:mercury.db' to {appDataDir}/mercury.db,
-			// but being explicit avoids ambiguity.
-			const { appDataDir } = await import('@tauri-apps/api/path');
-			const dir = await appDataDir();
-			// Normalize Windows backslashes to forward slashes for SQLite URI
-			const normalized = dir.replaceAll('\\', '/').replace(/\/?$/, '/');
-			const dbPath = `sqlite:${normalized}mercury.db`;
-			this.db = await Database.load(dbPath) as unknown as TauriDatabase;
+			// tauri-plugin-sql resolves 'sqlite:mercury.db' to {appDataDir}/mercury.db
+			this.db = await Database.load('sqlite:mercury.db') as unknown as TauriDatabase;
 		}
 		return this.db;
 	}
