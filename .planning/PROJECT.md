@@ -6,6 +6,20 @@ A music discovery engine that indexes 2.8M+ artists from open databases, lets yo
 
 v1.0 shipped: data pipeline → web gateway → desktop app → local music player → client-side AI → tag discovery engine → knowledge base → underground aesthetic → community foundation → encrypted communication layer.
 
+v1.1 shipped (partial): scene building → curator/blog tools. Phases 13–15 (Interoperability, Listening Rooms, Artist Tools) deferred — test infrastructure prioritized first.
+
+## Current Milestone: v1.2 — Zero-Click Confidence
+
+**Goal:** Make every feature, route, and user flow verifiable without manual intervention — I can prove the whole app works without Steve clicking a single button.
+
+**Target features:**
+- Console error capture on every Playwright test (silent crashes auto-detected)
+- Navigation flow tests: full user journeys, not just static page loads
+- API contract tests: every endpoint validated for response shape
+- Tauri-specific coverage: protocol handler, navigation, local DB queries
+- Phase test templates: tests written before code, required for every future phase
+- Pre-phase gate: full suite must be green before any new phase executes
+
 ## Core Value
 
 Uniqueness is rewarded — the more niche you are, the more discoverable you become.
@@ -36,13 +50,10 @@ Uniqueness is rewarded — the more niche you are, the more discoverable you bec
 
 ### Active
 
-- [ ] Scene building — AI scene detection, label collectives, community creation tools
-- [ ] Curator / blog tools — embeddable widgets, attribution, RSS feeds
-- [ ] Interoperability — ActivityPub, Fediverse federation
-- [ ] Listening rooms — shared real-time synchronized playback
-- [ ] Artist tools — claiming, dashboard, auto-news, self-hosted site generator
-- [ ] Embeddable collections for external websites
-- [ ] Writing and discussion features (community-requested)
+- [ ] **v1.2** Complete test automation — zero-click confidence, every feature provably working
+- [ ] Interoperability — ActivityPub, Fediverse federation (deferred to v1.3+)
+- [ ] Listening rooms — shared real-time synchronized playback (deferred to v1.3+)
+- [ ] Artist tools — claiming, dashboard, auto-news, self-hosted site generator (deferred to v1.3+)
 - [ ] Sustainability infrastructure — sponsors, Ko-fi, Patreon, backer credits
 
 ### Out of Scope
@@ -97,4 +108,4 @@ Pre-project research (2026-02-14) saved in ControlCenter:
 | Pseudonymous identity | Music speaks, not bios. Local-first, no central account | ✓ Good |
 
 ---
-*Last updated: 2026-02-23 after v1.0 milestone*
+*Last updated: 2026-02-23 after v1.2 milestone start (test infrastructure)*

@@ -9,13 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-23 after v1.0 milestone)
 
 ## Current Position
 
-Phase: 12-curator-blog-tools
-Status: COMPLETE — All 4 plans done. Phase 12 closed.
-Last activity: 2026-02-23 — Phase 12 Plan 04 complete. New & Rising page (/new-rising, /api/new-rising, /api/rss/new-rising), nav link, curator filter via ?curator= param. ARCHITECTURE.md + user-manual.md updated with full Phase 12 Curator / Blog Tools documentation.
-Next: Phase 13 (next planned phase)
-Stopped at: Completed 12-04-PLAN.md
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements for v1.2 (Zero-Click Confidence)
+Last activity: 2026-02-23 — Milestone v1.2 started. Previous: Phase 12 complete (v1.1 Phases 13–15 deferred).
 
-Progress: [██████████] v1.0 SHIPPED — v1.1 Phase 12 COMPLETE (4/4 plans done)
+Progress: [░░░░░░░░░░] v1.2 — 0 phases complete
 
 ## Performance Metrics
 
