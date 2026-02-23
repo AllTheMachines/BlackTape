@@ -1,33 +1,21 @@
 /**
- * TauriProvider — wraps @tauri-apps/plugin-sql behind the DbProvider interface.
+ * TauriProvider — implements DbProvider using direct Rust rusqlite commands.
  *
- * Used in the Tauri desktop build where the SQLite database is a local file.
- * Uses a lazy singleton pattern: the database connection is opened once on
- * first use via `Database.load()`.
+ * Bypasses @tauri-apps/plugin-sql entirely. In production Tauri builds,
+ * Database.load() hangs indefinitely; invoking a Rust command with rusqlite
+ * works correctly.
  *
- * All imports of @tauri-apps/plugin-sql are dynamic so this module never
- * causes build failures in the web context (it's tree-shaken out or
- * dynamically imported only when isTauri() is true).
+ * All queries go through the generic `query_mercury_db` Rust command which
+ * accepts arbitrary SQL + params and returns rows as JSON objects.
  */
 
 import type { DbProvider } from './provider';
 
-// Type alias for the Database class from @tauri-apps/plugin-sql.
-// We don't import the actual class at the top level to avoid build errors.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type TauriDatabase = { select<T>(sql: string, params?: unknown[]): Promise<T>; close(): Promise<void> };
-
 let instance: TauriProvider | null = null;
 
 export class TauriProvider implements DbProvider {
-	private db: TauriDatabase | null = null;
-
 	private constructor() {}
 
-	/**
-	 * Get or create the singleton TauriProvider instance.
-	 * The actual database connection is opened lazily on first query.
-	 */
 	static async getInstance(): Promise<TauriProvider> {
 		if (!instance) {
 			instance = new TauriProvider();
@@ -35,20 +23,9 @@ export class TauriProvider implements DbProvider {
 		return instance;
 	}
 
-	/** Ensure the database connection is open. */
-	private async ensureDb(): Promise<TauriDatabase> {
-		if (!this.db) {
-			const { default: Database } = await import('@tauri-apps/plugin-sql');
-			// tauri-plugin-sql resolves 'sqlite:mercury.db' to {appDataDir}/mercury.db
-			this.db = await Database.load('sqlite:mercury.db') as unknown as TauriDatabase;
-		}
-		return this.db;
-	}
-
 	async all<T>(sql: string, ...params: unknown[]): Promise<T[]> {
-		const db = await this.ensureDb();
-		// tauri-plugin-sql takes bind parameters as an array
-		return db.select<T[]>(sql, params) as unknown as T[];
+		const { invoke } = await import('@tauri-apps/api/core');
+		return invoke<T[]>('query_mercury_db', { sql, params });
 	}
 
 	async get<T>(sql: string, ...params: unknown[]): Promise<T | null> {

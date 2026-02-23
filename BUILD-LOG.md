@@ -3988,3 +3988,40 @@ All four plans shipped:
 
 > **Commit b6876c9** (2026-02-23 17:21) — fix(12): embed routes skip root layout chrome via isEmbed guard
 > Files changed: 1
+
+> **Commit 1af1c77** (2026-02-23 17:22) — docs(phase-12): complete phase execution — curator blog tools verified
+> Files changed: 5
+
+> **Commit 85ab038** (2026-02-23 18:04) — feat: add address bar to ControlBar center for direct navigation in Tauri
+> Files changed: 1
+
+> **Commit b5d9c24** (2026-02-23 18:29) — fix: use simple sqlite:mercury.db path in TauriProvider — avoids absolute path hang
+> Files changed: 1
+
+---
+
+## Entry 027 — 2026-02-23 — Tauri Search Fix: Bypass tauri-plugin-sql Entirely
+
+### Problem
+`Database.load('sqlite:mercury.db')` from `@tauri-apps/plugin-sql` hangs indefinitely in production Tauri builds. The loading indicator animates forever, search never returns. `b5d9c24` tried simplifying the DB path — didn't fix it. The plugin itself is the problem.
+
+### Root Cause
+`tauri-plugin-sql` has connection-open issues in production builds (known upstream behavior). Meanwhile, `rusqlite::Connection::open()` works fine — it's already used by `match_artists_batch` and `check_database` which have never hung.
+
+### Solution
+Bypass `tauri-plugin-sql` entirely for mercury.db. Added a generic `query_mercury_db` Rust command that:
+1. Holds a `rusqlite::Connection` in `MercuryDbState` (opened once at startup, same pattern as `LibraryState`)
+2. Accepts arbitrary SQL + JSON params, runs them through rusqlite
+3. Returns rows as JSON objects — same shape as what `Database.load().select()` returned
+
+`TauriProvider` became a 15-line wrapper calling `invoke('query_mercury_db', { sql, params })`. All `queries.ts` functions work unchanged — they still call `db.all()` / `db.get()`, they just don't know the provider changed.
+
+### Why Generic Instead of 4 Specific Commands
+The handoff planned 4 specific Rust commands (search_artists, search_by_tag, etc). But `TauriProvider` is used by more than 4 queries — discover, crate dig, genre graph, time machine, uniqueness scores. All of them would hang too. A single generic SQL passthrough command covers everything with zero changes to `queries.ts` or any page file. The 4 specific commands are also included for potential direct invoke use.
+
+### Files Changed
+- `src-tauri/src/mercury_db.rs` — `MercuryDbState(Mutex<Option<Connection>>)`, `query_mercury_db` command, 4 typed commands
+- `src-tauri/src/lib.rs` — `mod mercury_db`, state init in setup(), 5 commands registered
+- `src/lib/db/tauri-provider.ts` — removed `Database.load()`, now calls `invoke('query_mercury_db')`
+
+`cargo check` clean. `npm run check` clean (0 errors). Ready to build and test.

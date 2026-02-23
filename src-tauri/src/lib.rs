@@ -1,5 +1,6 @@
 mod ai;
 mod library;
+mod mercury_db;
 mod scanner;
 
 use tauri::Manager;
@@ -106,6 +107,11 @@ pub fn run() {
             ai::taste_db::write_json_to_path,
             ai::taste_db::export_play_history_to_path,
             match_artists_batch,
+            mercury_db::query_mercury_db,
+            mercury_db::search_artists,
+            mercury_db::search_by_tag,
+            mercury_db::get_artist_by_slug,
+            mercury_db::get_popular_tags,
             ai::taste_db::get_detected_scenes,
             ai::taste_db::save_detected_scenes,
             ai::taste_db::follow_scene,
@@ -127,6 +133,10 @@ pub fn run() {
             let conn = library::db::init_library_db(&app_data)
                 .expect("failed to init library db");
             app.manage(scanner::LibraryState(std::sync::Mutex::new(conn)));
+
+            // Initialize mercury.db for catalog search queries (graceful — may not exist yet)
+            let mercury_conn = mercury_db::init_mercury_db(&app_data).ok();
+            app.manage(mercury_db::MercuryDbState(std::sync::Mutex::new(mercury_conn)));
 
             // Initialize taste.db for AI settings and taste profile
             let taste_conn = ai::taste_db::init_taste_db(&app_data)
