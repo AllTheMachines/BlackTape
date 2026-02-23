@@ -8,10 +8,6 @@
 	let dbPath = $state('');
 
 	async function checkDatabase() {
-		// DBG: mark JS running via title - held for 2s so polling can catch it
-		document.title = 'JS_OK:' + isTauri();
-		await new Promise((r) => setTimeout(r, 2000));
-
 		if (!isTauri()) {
 			dbStatus = 'ready';
 			return;
@@ -22,11 +18,8 @@
 				await invoke('check_database');
 			dbStatus = result.exists ? 'ready' : 'missing';
 			dbPath = result.path;
-			// DBG: check_database result
-			document.title = 'DB:' + result.exists + ':' + result.path.slice(-30);
 		} catch (e) {
 			// If check fails, assume ready to avoid blocking the web build
-			document.title = 'DB_ERR:' + String(e).slice(0, 60);
 			dbStatus = 'ready';
 		}
 	}
