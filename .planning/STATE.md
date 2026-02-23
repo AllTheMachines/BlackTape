@@ -94,6 +94,7 @@ Progress: [██████████] v1.0 SHIPPED
 | Phase 10.1-communication-hotfixes P01 | 2min | 2 tasks | 4 files |
 | Phase 10.1 P02 | 7 | 2 tasks | 4 files |
 | Phase 11-scene-building P01 | 3 | 2 tasks | 2 files |
+| Phase 11-scene-building P02 | 3 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -329,6 +330,8 @@ Progress: [██████████] v1.0 SHIPPED
 - [Phase 11-scene-building]: scene_suggestions uses UNIQUE(scene_slug, artist_name): free-text artist names have no MBID at suggestion time; empty-string artist_mbid would cause silent INSERT OR IGNORE failures on second attempt
 - [Phase 11-scene-building]: save_detected_scenes does full DELETE + INSERT batch (not merge): detection engine always produces a fresh complete result set, not incremental updates
 - [Phase 11-scene-building]: is_emerging stored as INTEGER 0/1 in SQLite, converted to bool in Rust struct — rusqlite has no native bool column type
+- [Phase 11-scene-building]: Two-tier partition with Fisher-Yates shuffle (active/emerging) — anti-rich-get-richer by design; niche filter (< 200 artists per tag) excludes mainstream genres from scene candidates
+- [Phase 11-scene-building]: isNovelTagCombination() checks genres KB table — tag combos not in any known genre are classified as emerging scenes (the most interesting discoveries)
 
 ### Roadmap Evolution
 - Phase 06.1 inserted after Phase 6: Affiliate Buy Links — passive income from Bandcamp, Amazon, Apple purchase links on release pages (INSERTED)
@@ -342,6 +345,7 @@ None
 ## Session Continuity
 
 Last session: 2026-02-23
-Phase 11 Plan 01 complete. taste_db.rs: 4 new tables (detected_scenes, scene_follows, scene_suggestions, feature_requests) + 8 Tauri commands. lib.rs: all 8 commands registered in invoke_handler. Cargo build 0 errors. npm run check 0 errors.
-Stopped at: Completed 11-01-PLAN.md
+Phase 11 Plan 02 complete. src/lib/scenes/ module created with 4 files (types.ts, detection.ts, state.svelte.ts, index.ts). sceneDescription prompt added to PROMPTS. npm run check 0 errors.
+Stopped at: Completed 11-02-PLAN.md
+Next: Phase 11 Plan 03 (scene UI)
 Next: Phase 11 Plan 02 (scene detection engine)
