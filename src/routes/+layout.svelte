@@ -30,6 +30,7 @@
 	let showPlayer = $state(false);
 	let tauriMode = $state(false);
 	let canGoBack = $derived($page.url.pathname !== '/');
+	let isEmbed = $derived($page.url.pathname.startsWith('/embed'));
 
 	/** All templates for ControlBar — built-ins + user templates */
 	let allTemplateConfigs = $derived([
@@ -93,6 +94,10 @@
 <svelte:head>
 	<link rel="icon" href={favicon} />
 </svelte:head>
+
+{#if isEmbed}
+	{@render children()}
+{:else}
 
 {#if $navigating}
 	<div class="loading-bar" aria-hidden="true"></div>
@@ -207,6 +212,8 @@
 
 <!-- Chat overlay — present on all pages, slides in on demand -->
 <ChatOverlay />
+
+{/if}
 
 <style>
 	header {
