@@ -4067,3 +4067,9 @@ The handoff planned 4 specific Rust commands (search_artists, search_by_tag, etc
 
 > **Commit 9872132** (2026-02-23 20:46) — auto-save: 1 files @ 20:46
 > Files changed: 1
+
+> **Commit cf4ae44** (2026-02-23 20:50) — wip: auto-save
+> Files changed: 1
+
+> **Commit 348ec32** (2026-02-23 21:01) — fix: clean up debug instrumentation from production build investigation
+> Files changed: 3
