@@ -5974,3 +5974,9 @@ Next step: review mockups in browser, make any adjustments, then map each visual
 
 > **Commit f766857** (2026-02-25 00:01) — wip: auto-save
 > Files changed: 1
+
+> **Commit ff66b61** (2026-02-25 00:16) — auto-save: 1 files @ 00:16
+> Files changed: 1
+
+> **Commit 0e67e8d** (2026-02-25 00:19) — docs(23): capture phase context
+> Files changed: 1
