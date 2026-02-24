@@ -2,6 +2,7 @@ mod ai;
 mod library;
 mod mercury_db;
 mod scanner;
+mod site_gen;
 
 use tauri::Manager;
 
@@ -171,6 +172,8 @@ pub fn run() {
             ai::taste_db::record_artist_visit,
             ai::taste_db::get_artist_summary,
             ai::taste_db::save_artist_summary,
+            site_gen::generate_artist_site,
+            site_gen::open_in_explorer,
         ])
         .plugin(tauri_plugin_sql::Builder::new().build())
         .plugin(tauri_plugin_updater::Builder::new().build())
