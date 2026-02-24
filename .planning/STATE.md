@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-02-24 after v1.3 milestone started)
 ## Current Position
 
 Phase: 18 of 21 (AI Auto-News)
-Plan: 04 of TBD complete
-Status: Phase 18 IN PROGRESS — Plan 04 done (AiSettings UI with provider selector and auto-generate toggle)
-Last activity: 2026-02-24 — Phase 18 Plan 04 complete (AiSettings.svelte UI extension)
+Plan: 05 of 05 complete
+Status: Phase 18 COMPLETE — Plan 05 done (ArtistSummary wired into artist page; Phase 18 test manifest entries added)
+Last activity: 2026-02-24 — Phase 18 Plan 05 complete (ArtistSummary live on artist page)
 
 Progress: [██░░░░░░░░] 33% (v1.3 — 2/6 phases partially complete)
 
@@ -29,7 +29,7 @@ Progress: [██░░░░░░░░] 33% (v1.3 — 2/6 phases partially co
 |-------|-------|--------|
 | 16. Sustainability Links | 2 | Complete |
 | 17. Artist Stats Dashboard | 2 | Complete |
-| 18. AI Auto-News | TBD | In progress (Plans 01-04 complete) |
+| 18. AI Auto-News | 5 | Complete |
 | 19. Static Site Generator | TBD | Not started |
 | 20. Listening Rooms | TBD | Not started |
 | 21. ActivityPub Outbound | TBD | Not started |
@@ -64,6 +64,8 @@ Progress: [██░░░░░░░░] 33% (v1.3 — 2/6 phases partially co
 - Background stale-refresh is fire-and-forget (not awaited) — showing old text immediately is better UX than blocking
 - Silent fail in ArtistSummary means empty catch blocks — no error UI per spec, reverts to last cached state
 - [Phase 18-ai-auto-news]: openUrl via @tauri-apps/plugin-shell not @tauri-apps/plugin-opener — project already uses plugin-shell for Spotify auth; no new packages needed
+- [Phase 18-ai-auto-news]: ArtistSummary placed at top of overview tab content before discography — matching plan specification for above-releases position
+- [Phase 18-ai-auto-news]: P18-12 kept as tauri method in test manifest — requires running app for cache-miss vs visible logic, not automatable via code check
 
 ### Pending Todos
 None
@@ -76,6 +78,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-24
-Stopped at: Completed 18-04-PLAN.md — AiSettings.svelte provider selector and auto-generate toggle
+Stopped at: Completed 18-05-PLAN.md — ArtistSummary wired into artist page and Phase 18 test manifest entries added
 Resume file: None
-Next: Phase 18 Plan 05 or integration — wire ArtistSummary into artist page
+Next: Phase 19 Static Site Generator — planning phase

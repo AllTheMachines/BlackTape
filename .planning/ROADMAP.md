@@ -65,7 +65,7 @@ Full archive: `.planning/milestones/v1.2-ROADMAP.md`
 
 - [x] **Phase 16: Sustainability Links** — Artist support links, share-to-Fediverse, Mercury funding screen, backer credits (completed 2026-02-24)
 - [x] **Phase 17: Artist Stats Dashboard** — Discoverability stats page and personal visit count per artist (completed 2026-02-24)
-- [ ] **Phase 18: AI Auto-News** — MusicBrainz-grounded AI summary on artist pages, cached, labeled
+- [x] **Phase 18: AI Auto-News** — MusicBrainz-grounded AI summary on artist pages, cached, labeled (completed 2026-02-24)
 - [ ] **Phase 19: Static Site Generator** — Export a self-contained artist HTML page for self-hosting
 - [ ] **Phase 20: Listening Rooms** — Host-controlled synchronized YouTube embed via Nostr coordination
 - [ ] **Phase 21: ActivityPub Outbound** — Static AP actor export for self-hosted Fediverse presence
@@ -228,7 +228,7 @@ Runs alongside everything else. Not blocking any phase. Rolls out in stages as f
 | 15. Navigation Flows + Rust Unit Tests | v1.2 | done | Complete | 2026-02-24 |
 | 16. Sustainability Links | 2/2 | Complete    | 2026-02-24 | - |
 | 17. Artist Stats Dashboard | 2/2 | Complete    | 2026-02-24 | - |
-| 18. AI Auto-News | 4/5 | In Progress|  | - |
+| 18. AI Auto-News | 5/5 | Complete   | 2026-02-24 | - |
 | 19. Static Site Generator | v1.3 | 0/TBD | Not started | - |
 | 20. Listening Rooms | v1.3 | 0/TBD | Not started | - |
 | 21. ActivityPub Outbound | v1.3 | 0/TBD | Not started | - |
