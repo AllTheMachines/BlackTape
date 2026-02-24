@@ -6000,9 +6000,20 @@ Starting v1.4 "The Interface" — the complete visual redesign. Phase 23 is the 
 
 The mockup system is already fully designed in `mockups/styles.css`. The job here is wiring it into the app.
 
-<!-- status -->
-Phase 23 Plan 01 complete — 2/2 tasks done. Design tokens in theme.css + custom Titlebar with native decorations disabled.
-<!-- /status -->
 
 > **Commit 774fee7** (2026-02-25 00:30) — feat(23-01): add Mercury v1.4 design tokens to theme.css
 > Files changed: 2
+
+> **Commit da7ab13** (2026-02-25 00:32) — feat(23-01): add custom Titlebar and disable native window decorations
+> Files changed: 5
+
+
+### Outcome — Phase 23 Plan 01 Complete
+
+**Design tokens live:** 25 CSS custom properties in `theme.css` — the v1.4 token vocabulary is now the language every subsequent component will speak.
+
+**Native chrome gone:** `decorations: false` in `tauri.conf.json` + `Titlebar.svelte` in its place. The window now looks like software, not a browser tab.
+
+**Key decision:** Dynamic import of `@tauri-apps/api/window` inside button handlers instead of a static import at the top of `Titlebar.svelte`. Static would fail in dev/web mode (no Tauri context). Dynamic is lazy — only executes inside the `isTauri()` guard anyway, but cleaner.
+
+Test suite: 93/93 code checks passing, including 4 new P23 tests.

@@ -7,9 +7,9 @@
 
 ### Design System
 
-- [ ] **DSYS-01**: App uses a consistent visual design system — square controls (2px radius), layered dark grey backgrounds, 1px panel borders, amber accent
+- [x] **DSYS-01**: App uses a consistent visual design system — square controls (2px radius), layered dark grey backgrounds, 1px panel borders, amber accent
 - [ ] **DSYS-02**: Every interactive element has a visible background and border (no bare text links acting as buttons)
-- [ ] **DSYS-03**: Topbar, sidebar, and player bar are visually distinct panels separated by 1px borders
+- [x] **DSYS-03**: Topbar, sidebar, and player bar are visually distinct panels separated by 1px borders
 - [ ] **DSYS-04**: Navigation sidebar uses left-border indicator for active item (amber), nav groups with section labels
 - [ ] **DSYS-05**: All tag chips are square (2px radius), use consistent sizing (22px height), amber on active state
 
@@ -94,9 +94,9 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DSYS-01 | Phase 23: Design System Foundation | Pending |
+| DSYS-01 | Phase 23: Design System Foundation | Complete |
 | DSYS-02 | Phase 23: Design System Foundation | Pending |
-| DSYS-03 | Phase 23: Design System Foundation | Pending |
+| DSYS-03 | Phase 23: Design System Foundation | Complete |
 | DSYS-04 | Phase 23: Design System Foundation | Pending |
 | DSYS-05 | Phase 23: Design System Foundation | Pending |
 | ARTP-01 | Phase 24: Artist Page | Pending |
