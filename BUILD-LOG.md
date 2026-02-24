@@ -5986,3 +5986,20 @@ Next step: review mockups in browser, make any adjustments, then map each visual
 
 > **Commit e24db63** (2026-02-25 00:26) — docs(23): create phase plan
 > Files changed: 4
+
+> **Commit e5284a7** (2026-02-25 00:28) — wip: auto-save
+> Files changed: 1
+
+---
+
+## Entry 024 — 2026-02-25 — v1.4 Phase 23: Design System Foundation
+
+### Context
+
+Starting v1.4 "The Interface" — the complete visual redesign. Phase 23 is the foundation: design tokens and custom titlebar. Everything in Phases 24-27 references `var(--bg-N)`, `var(--b-N)`, `var(--acc)` etc., so these tokens must land first.
+
+The mockup system is already fully designed in `mockups/styles.css`. The job here is wiring it into the app.
+
+<!-- status -->
+Phase 23 Plan 01 executing — 1/2 tasks done. Added 25 design tokens to theme.css. Working on Titlebar component.
+<!-- /status -->
