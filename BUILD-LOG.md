@@ -5941,3 +5941,6 @@ The mockups are the contract for the actual implementation sprint. Key UI patter
 
 Next step: review mockups in browser, make any adjustments, then map each visual pattern to the corresponding Svelte component for implementation.
 > Files changed: 4
+
+> **Commit a6da267** (2026-02-24 23:42) — wip: auto-save
+> Files changed: 4
