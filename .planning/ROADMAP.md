@@ -51,7 +51,7 @@ Full archive: `.planning/milestones/v1.0-ROADMAP.md`
 ### 📋 v1.2 — Zero-Click Confidence
 
 - [x] **Phase 13: Foundation Fixes** — Repair active defects in test infrastructure; add console capture, fix false-green exit codes, eliminate flaky timing, add coverage gaps from Phases 11–12 (completed 2026-02-24)
-- [ ] **Phase 14: API Contract Layer** — Prove every endpoint returns the right shape, independent of the UI layer
+- [ ] **Phase 14: Tauri E2E Testing** — Key user flows proven end-to-end via Playwright CDP — from app launch through search, navigation, and artist discovery
 - [ ] **Phase 15: Navigation Flows + Rust Unit Tests** — Multi-step user journeys tested end-to-end; Rust logic verified in isolation; pre-commit gate and phase test template locked in
 
 ---
@@ -117,20 +117,26 @@ Plans:
 - [ ] 13-02-PLAN.md — Add data-ready signals to D3 components + Phase 13 manifest code checks (INFRA-03, INFRA-04)
 - [ ] 13-03-PLAN.md — Tauri navigation progress bar: nav-progress.svelte.ts + layout integration (UX-01–UX-04)
 
-### Phase 14: API Contract Layer
-**Goal**: Every JSON API endpoint and RSS feed is proven to return the correct shape, status codes, and headers — independent of any browser or UI layer.
-**Depends on**: Phase 13 (infrastructure clean — api runner runs against wrangler :8788, inherits fixed exit-code behavior)
-**Requirements**: API-01, API-02, API-03, API-04
+### Phase 14: Tauri E2E Testing
+**Goal**: Key user flows in the Tauri desktop app are proven to work end-to-end using Playwright CDP — from app launch through search, navigation, and artist discovery. No user flow can silently break.
+**Depends on**: Phase 13 (foundation clean — nav progress bar, data-ready signals)
+**Requirements**: E2E-01, E2E-02, E2E-03, E2E-04, E2E-05
 **Success Criteria**:
-  1. Running `node tools/test-suite/run.mjs --phase 14` tests all JSON API endpoints with fetch-based assertions and fails explicitly on shape drift — no endpoint can silently change its response structure
-  2. Invalid params, missing required fields, and out-of-range values all return structured error responses with correct HTTP status codes — crashes and unhandled rejections are caught
-  3. RSS feed endpoints return a response with `Content-Type: application/rss+xml` or `application/atom+xml` and valid XML structure — feed readers will not silently break
-  4. The `/api/unfurl` POST endpoint has a contract test verifying it accepts a URL body and returns the expected shape — the only POST endpoint no longer has zero coverage
-**Plans**: TBD
+  1. `node tools/test-suite/run.mjs --phase 14` drives the real Tauri app via Playwright CDP and exits 0 with all smoke tests passing
+  2. App launch smoke tests pass: window appears, homepage renders, Settings and About pages load — no console.error on any route
+  3. Search flow: typing "radiohead" returns results from seeded fixture DB; clicking through lands on the artist page with correct title and tags
+  4. Discovery flow: Discover page loads tag list; clicking "electronic" returns filtered results
+  5. Error paths: unknown routes show 404 UI; empty search shows empty state
+**Plans**: 3 plans
+
+Plans:
+- [x] 14-01-PLAN.md — Tauri CDP runner (setup/teardown/runTauriTest) + run.mjs tauri session block
+- [x] 14-02-PLAN.md — Fixture DB seed script (15 artists, FTS5, tag_stats)
+- [x] 14-03-PLAN.md — PHASE_14 manifest (3 code + 12 tauri tests) + docs + roadmap/requirements updates
 
 ### Phase 15: Navigation Flows + Rust Unit Tests
 **Goal**: Multi-step user journeys are tested end-to-end with console error capture active; Rust logic is verified in isolation without compiling the full Tauri binary; a pre-commit gate and mandatory test-plan template prevent future regressions from shipping.
-**Depends on**: Phase 13 (console capture active — flow test failures are visible), Phase 14 (API layer verified — flow failures are not data-layer bugs)
+**Depends on**: Phase 13 (console capture active — flow test failures are visible), Phase 14 (Tauri E2E runner active — CDP driver available)
 **Requirements**: FLOW-01, FLOW-02, FLOW-03, FLOW-04, RUST-01, RUST-02, RUST-03, PROC-01, PROC-03
 **Success Criteria**:
   1. The full search → artist → second artist journey runs headlessly with no console.error at any step — navigation state corruption is caught automatically
@@ -185,6 +191,7 @@ Runs alongside everything else. Not blocking any phase. Rolls out in stages as f
 | Database diff-based updates | Full replacement is simpler; diff sizes unknown until MusicBrainz weekly dump testing | Full replacement feels too large for users |
 | Licensing model | Open source vs source-available vs custom — depends on sustainability trajectory | When sustainability model is clearer |
 | Writing/discussion features | Community should ask for creation tools, not have them imposed | Phase 11+ if community requests |
+| API Contract Layer (Phase 14 original) | Replaced by Tauri E2E — more value to test the actual running app first | v1.3 |
 
 ## Progress
 
@@ -208,5 +215,5 @@ Runs alongside everything else. Not blocking any phase. Rolls out in stages as f
 | 11. Scene Building | v1.1 | 4/4 | Complete | 2026-02-23 |
 | 12. Curator / Blog Tools | v1.1 | 4/4 | Complete | 2026-02-23 |
 | 13. Foundation Fixes | 3/3 | Complete    | 2026-02-24 | - |
-| 14. API Contract Layer | v1.2 | 0/TBD | Not started | - |
+| 14. Tauri E2E Testing | v1.2 | 3/3 | Complete | 2026-02-24 |
 | 15. Navigation Flows + Rust Unit Tests | v1.2 | 0/TBD | Not started | - |

@@ -15,7 +15,8 @@
 		"build:desktop": "cross-env TAURI_ENV=1 VITE_TAURI=1 vite build",
 		"tauri": "tauri",
 		"tauri:dev": "cross-env VITE_TAURI=1 tauri dev",
-		"tauri:build": "tauri build"
+		"tauri:build": "tauri build",
+		"test:seed-db": "node tools/test-suite/fixtures/seed-test-db.mjs"
 	},
 	"devDependencies": {
 		"@cloudflare/workers-types": "^4.20260214.0",

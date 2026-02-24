@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Baseline (Phase 13, 2026-02-24): 63 passing (62 code + 1 build), 0 web, 30 skipped — exits 0
-// Phase 14 adds: method:'tauri' block — connects to running Tauri app via CDP
+// Phase 14 adds: method: 'tauri' block — connects to running Tauri app via CDP
 /**
  * Mercury Test Suite
  *

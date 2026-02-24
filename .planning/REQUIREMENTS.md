@@ -20,10 +20,20 @@ Fix the active defects in the existing test infrastructure before expanding cove
 
 Every endpoint proven to return the right shape, independent of the UI layer.
 
-- [ ] **API-01**: Every JSON API endpoint has a fetch-based contract test validating response shape, required fields, and correct status codes
-- [ ] **API-02**: API error states tested — invalid params, missing required fields, out-of-range values all return graceful responses (not crashes)
-- [ ] **API-03**: RSS feed endpoints return valid XML with correct Content-Type headers
-- [ ] **API-04**: POST `/api/unfurl` has a contract test (only POST endpoint, currently zero coverage)
+- [ ] **[DEFERRED → v1.3] API-01**: Every JSON API endpoint has a fetch-based contract test validating response shape, required fields, and correct status codes
+- [ ] **[DEFERRED → v1.3] API-02**: API error states tested — invalid params, missing required fields, out-of-range values all return graceful responses (not crashes)
+- [ ] **[DEFERRED → v1.3] API-03**: RSS feed endpoints return valid XML with correct Content-Type headers
+- [ ] **[DEFERRED → v1.3] API-04**: POST `/api/unfurl` has a contract test (only POST endpoint, currently zero coverage)
+
+### E2E — Tauri End-to-End Testing
+
+Key user flows driven through the real running Tauri app via Playwright CDP.
+
+- [x] **E2E-01**: Playwright CDP runner connects to running Tauri app (WebView2) without installing new test frameworks — Playwright already present, CDP via `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS`
+- [x] **E2E-02**: Fixture DB (`tools/test-suite/fixtures/mercury-test.db`) is seeded with 15 known artists/tags; tests are deterministic and isolated from the real user DB
+- [x] **E2E-03**: App launch smoke tests pass — window title, homepage, Settings and About pages load without error
+- [x] **E2E-04**: Search → artist page flow passes with fixture DB — "radiohead" returns results, clicking navigates to `/artist/radiohead` with correct name and tags
+- [x] **E2E-05**: Discovery flow (tag filter) and error paths (unknown route, empty search) pass
 
 ### WEB — Coverage Gaps
 
@@ -111,10 +121,15 @@ Prevents future regressions from being committed or shipped.
 | UX-03 | Phase 13 | Complete |
 | UX-04 | Phase 13 | Complete |
 | PROC-02 | Phase 13 Plan 01 | Complete |
-| API-01 | Phase 14 | Pending |
-| API-02 | Phase 14 | Pending |
-| API-03 | Phase 14 | Pending |
-| API-04 | Phase 14 | Pending |
+| API-01 | Phase 14 (deferred → v1.3) | Deferred |
+| API-02 | Phase 14 (deferred → v1.3) | Deferred |
+| API-03 | Phase 14 (deferred → v1.3) | Deferred |
+| API-04 | Phase 14 (deferred → v1.3) | Deferred |
+| E2E-01 | Phase 14 | Complete |
+| E2E-02 | Phase 14 | Complete |
+| E2E-03 | Phase 14 | Complete |
+| E2E-04 | Phase 14 | Complete |
+| E2E-05 | Phase 14 | Complete |
 | FLOW-01 | Phase 15 | Pending |
 | FLOW-02 | Phase 15 | Pending |
 | FLOW-03 | Phase 15 | Pending |
@@ -126,10 +141,10 @@ Prevents future regressions from being committed or shipped.
 | PROC-03 | Phase 15 | Pending |
 
 **Coverage:**
-- v1.2 requirements: 25 total
-- Mapped to phases: 25
+- v1.2 requirements: 30 total (25 original + 5 E2E; 4 API deferred to v1.3)
+- Mapped to phases: 30
 - Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-02-23*
-*Last updated: 2026-02-23 — traceability filled after roadmap creation*
+*Last updated: 2026-02-24 — Phase 14 replaced API Contract Layer with Tauri E2E; API-01–API-04 deferred to v1.3; E2E-01–E2E-05 added*

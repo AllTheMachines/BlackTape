@@ -711,6 +711,183 @@ export const PHASE_13 = [
 ];
 
 // ---------------------------------------------------------------------------
+// PHASE 14 — Tauri E2E Testing
+// ---------------------------------------------------------------------------
+
+export const PHASE_14 = [
+  // Code checks — always run, confirm scaffolding is in place
+  {
+    id: 'P14-01', phase: 14, area: 'Infrastructure',
+    desc: 'Tauri CDP runner exists (tools/test-suite/runners/tauri.mjs)',
+    method: 'code',
+    fn: fileExists('tools/test-suite/runners/tauri.mjs'),
+  },
+  {
+    id: 'P14-02', phase: 14, area: 'Infrastructure',
+    desc: 'Fixture DB seed script exists (tools/test-suite/fixtures/seed-test-db.mjs)',
+    method: 'code',
+    fn: fileExists('tools/test-suite/fixtures/seed-test-db.mjs'),
+  },
+  {
+    id: 'P14-03', phase: 14, area: 'Infrastructure',
+    desc: "run.mjs contains method: 'tauri' session block",
+    method: 'code',
+    fn: fileContains('tools/test-suite/run.mjs', "method: 'tauri'"),
+  },
+
+  // Tauri smoke tests — require debug binary (src-tauri/target/debug/mercury.exe)
+  {
+    id: 'P14-04', phase: 14, area: 'Launch',
+    desc: 'Window title contains Mercury',
+    method: 'tauri',
+    fn: async (page) => {
+      const title = await page.title();
+      return title.toLowerCase().includes('mercury');
+    },
+  },
+  {
+    id: 'P14-05', phase: 14, area: 'Launch',
+    desc: 'Homepage renders — nav element visible, no crash',
+    method: 'tauri',
+    fn: async (page) => {
+      await page.waitForLoadState('domcontentloaded');
+      return await page.locator('nav').isVisible();
+    },
+  },
+  {
+    id: 'P14-06', phase: 14, area: 'Navigation',
+    desc: 'Navigate to /settings — settings heading visible',
+    method: 'tauri',
+    fn: async (page) => {
+      await page.click('a[href="/settings"]');
+      await page.waitForLoadState('domcontentloaded');
+      return await page.locator('h1:has-text("Settings")').isVisible();
+    },
+  },
+  {
+    id: 'P14-07', phase: 14, area: 'Navigation',
+    desc: 'Navigate to /about — about heading visible',
+    method: 'tauri',
+    fn: async (page) => {
+      await page.click('a[href="/about"]');
+      await page.waitForLoadState('domcontentloaded');
+      return await page.locator('h1:has-text("About")').isVisible();
+    },
+  },
+  {
+    id: 'P14-08', phase: 14, area: 'Navigation',
+    desc: 'Home → Settings → Home round-trip — no crash, URL updates correctly',
+    method: 'tauri',
+    fn: async (page) => {
+      await page.click('a.site-name');
+      await page.waitForLoadState('domcontentloaded');
+      await page.click('a[href="/settings"]');
+      await page.waitForLoadState('domcontentloaded');
+      if (!page.url().includes('/settings')) return false;
+      await page.click('a.site-name');
+      await page.waitForLoadState('domcontentloaded');
+      return !page.url().includes('/settings');
+    },
+  },
+
+  // Search flow — requires fixture DB with Radiohead
+  {
+    id: 'P14-09', phase: 14, area: 'Search',
+    desc: 'Search input accepts "radiohead" — results list appears',
+    method: 'tauri',
+    fn: async (page) => {
+      // Should be on home after P14-08; wait for search bar (DB check must complete)
+      await page.waitForSelector('input[type="search"]', { timeout: 10000 });
+      await page.fill('input[type="search"]', 'radiohead');
+      await page.keyboard.press('Enter');
+      await page.waitForURL(/\/search/, { timeout: 10000 });
+      await page.waitForSelector('.artist-card, .message', { timeout: 10000 });
+      return await page.locator('.artist-card').count() > 0;
+    },
+  },
+  {
+    id: 'P14-10', phase: 14, area: 'Search',
+    desc: 'Click first search result — URL changes to /artist/radiohead',
+    method: 'tauri',
+    fn: async (page) => {
+      // Should be on search results page after P14-09
+      const firstResult = page.locator('a.artist-name').first();
+      await firstResult.click();
+      await page.waitForURL(/\/artist\/radiohead/, { timeout: 10000 });
+      return page.url().includes('/artist/radiohead');
+    },
+  },
+  {
+    id: 'P14-11', phase: 14, area: 'Artist Page',
+    desc: 'Artist page shows name and at least one tag',
+    method: 'tauri',
+    fn: async (page) => {
+      // Should be on /artist/radiohead after P14-10
+      await page.waitForLoadState('domcontentloaded');
+      const nameVisible = await page.locator('h1.artist-name:has-text("Radiohead")').isVisible();
+      const tagCount = await page.locator('.tag-chip').count();
+      return nameVisible && tagCount > 0;
+    },
+  },
+
+  // Discovery flow — requires fixture DB with electronic tag
+  {
+    id: 'P14-12', phase: 14, area: 'Discovery',
+    desc: '/discover loads — tag filter buttons visible',
+    method: 'tauri',
+    fn: async (page) => {
+      const origin = new URL(page.url()).origin;
+      await page.goto(`${origin}/discover`);
+      await page.waitForLoadState('domcontentloaded');
+      await page.waitForSelector('.tag-cloud .tag-chip', { timeout: 10000 });
+      return await page.locator('.tag-cloud .tag-chip').count() > 0;
+    },
+  },
+  {
+    id: 'P14-13', phase: 14, area: 'Discovery',
+    desc: 'Click "electronic" tag — results list updates',
+    method: 'tauri',
+    fn: async (page) => {
+      // Should be on /discover after P14-12
+      await page.locator('.tag-cloud .tag-chip').filter({ hasText: 'electronic' }).first().click();
+      await page.waitForURL(/[?&]tags=/, { timeout: 10000 });
+      await page.waitForSelector('.artist-card, .empty-state', { timeout: 10000 });
+      return await page.locator('.artist-card').count() > 0;
+    },
+  },
+
+  // Error paths
+  {
+    id: 'P14-14', phase: 14, area: 'Error Paths',
+    desc: 'Unknown route shows error/404 UI — no JS crash',
+    method: 'tauri',
+    fn: async (page) => {
+      const errors = [];
+      page.once('pageerror', e => errors.push(e));
+      const origin = new URL(page.url()).origin;
+      await page.goto(`${origin}/does-not-exist`);
+      await page.waitForLoadState('domcontentloaded');
+      // SvelteKit renders an error page or empty shell — either way, no crash
+      return errors.length === 0;
+    },
+  },
+  {
+    id: 'P14-15', phase: 14, area: 'Error Paths',
+    desc: 'Empty search shows no results — empty state UI, no crash',
+    method: 'tauri',
+    fn: async (page) => {
+      const origin = new URL(page.url()).origin;
+      await page.goto(`${origin}/search?q=&mode=artist`);
+      await page.waitForLoadState('domcontentloaded');
+      // Empty query → search bar visible, no artist cards
+      const searchVisible = await page.locator('input[type="search"]').isVisible();
+      const artistCards = await page.locator('.artist-card').count();
+      return searchVisible && artistCards === 0;
+    },
+  },
+];
+
+// ---------------------------------------------------------------------------
 // Build check — always runs last
 // ---------------------------------------------------------------------------
 
@@ -739,5 +916,6 @@ export const ALL_TESTS = [
   ...PHASE_11,
   ...PHASE_12,
   ...PHASE_13,
+  ...PHASE_14,
   ...BUILD,
 ];

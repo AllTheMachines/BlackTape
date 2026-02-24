@@ -4444,6 +4444,81 @@ Phase 13 complete. Moving to Phase 14.
 > **Commit 1118ad6** (2026-02-24 01:29) — wip: auto-save
 > Files changed: 1
 
-<!-- status -->
-Phase 14 implementation in progress — replacing API Contract Layer with Tauri E2E Testing. Creating CDP runner, fixture DB, and manifest tests.
-<!-- /status -->
+
+---
+
+## Entry 033 — 2026-02-24 — Phase 14: Tauri E2E Testing
+
+### The Pivot
+
+Phase 14 was originally "API Contract Layer" — fetch-based tests against JSON endpoints running on wrangler :8788. But Mercury is Tauri-only. There's no wrangler. The API endpoints only matter insofar as they're used by the running app.
+
+> Testing the API layer independently when the whole app is a desktop binary is testing the wrong thing. Test what users actually experience.
+
+Phase 14 became Tauri E2E Testing: launch the real binary, connect Playwright via CDP, drive the actual user flows.
+
+### Why Playwright CDP Works Here
+
+Tauri 2 on Windows uses WebView2 (Chromium-based). WebView2 supports Chrome DevTools Protocol. Pass `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=9222` and you get a full CDP endpoint. Playwright's `chromium.connectOverCDP()` connects to it — same protocol it uses for real Chrome. No special Tauri WebDriver needed, no Edge version coupling.
+
+<!-- decision: Playwright CDP via WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=9222 — no new frameworks, uses existing Playwright v1.58.2 install -->
+The approach uses Playwright already in devDependencies. No tauri-driver, no Edge version coupling, no macOS compat issues.
+<!-- /decision -->
+
+### Fixture DB Strategy
+
+E2E tests against the real DB would be non-deterministic — search results depend on what data the user has downloaded. Instead: swap in a fixture DB before launch, restore after.
+
+- `tools/test-suite/fixtures/seed-test-db.mjs` — creates `mercury-test.db` using Node v24's built-in `node:sqlite`
+- 15 known artists with fixed slugs (Radiohead, Boards of Canada, Aphex Twin, Burial, etc.)
+- FTS5 index and `tag_stats` table populated — all queries the app makes are satisfied
+- Setup copies fixture to `%APPDATA%/com.mercury.app/mercury.db` before launch, restores original on teardown
+- "electronic" tag covers 14 of 15 artists — guaranteed to appear in tag cloud
+
+### Architecture
+
+Three new files:
+
+```
+tools/test-suite/
+  runners/tauri.mjs          ← setup/teardown/runTauriTest (CDP runner)
+  fixtures/seed-test-db.mjs  ← creates mercury-test.db
+  fixtures/mercury-test.db   ← seeded fixture DB (15 artists, 45 tags)
+```
+
+`run.mjs` has a 4th test section for `method: 'tauri'` — runs after build check, before skipped tests. If the binary doesn't exist, all tauri tests are marked skipped (not failed) with a clear message.
+
+### 15 Tests in PHASE_14
+
+3 code checks (infrastructure presence — always run):
+- P14-01: tauri.mjs runner exists
+- P14-02: seed-test-db.mjs exists
+- P14-03: run.mjs has tauri session block
+
+12 tauri E2E tests (require `src-tauri/target/debug/mercury.exe`):
+- P14-04–P14-08: Launch and navigation smoke tests (title, nav, settings, about, round-trip)
+- P14-09–P14-11: Search flow (radiohead → results → artist page with name + tags)
+- P14-12–P14-13: Discovery flow (discover page → electronic tag filter → results)
+- P14-14–P14-15: Error paths (unknown route, empty search)
+
+### Final Numbers
+
+```
+72 passing (69 code + 3 Phase 14 code checks + 1 build)
+0 failing
+12 tauri tests ready (skipped until binary built)
+30 skipped (desktop-only from earlier phases)
+Exit code: 0
+```
+
+npm run check: 0 errors, 8 pre-existing warnings (unchanged).
+
+To run the full E2E suite:
+```
+cargo build --manifest-path src-tauri/Cargo.toml
+node tools/test-suite/fixtures/seed-test-db.mjs
+node tools/test-suite/run.mjs --phase 14
+```
+
+> **Commit 9ecf57b** (2026-02-24 01:46) — auto-save: 4 files @ 01:46
+> Files changed: 4
