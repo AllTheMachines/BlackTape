@@ -6139,3 +6139,6 @@ The entire app now has a consistent design language. Every panel border is `--b-
 
 > **Commit e3b8e18** (2026-02-25 00:56) — fix(titlebar): use --t-2 for ctrl buttons — --t-3 was invisible on dark bg
 > Files changed: 1
+
+> **Commit 7f8688e** (2026-02-25 00:56) — wip: auto-save
+> Files changed: 1
