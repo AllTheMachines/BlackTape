@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-24 after v1.3 milestone started)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** v1.3 The Open Network — Phase 20: Listening Rooms (Plan 01 complete)
+**Current focus:** v1.3 The Open Network — Phase 20: Listening Rooms (Plan 02 complete)
 
 ## Current Position
 
 Phase: 20 of 21 (Listening Rooms)
-Plan: 01 of TBD complete
-Status: Phase 20 in progress — Plan 01 done (listening-room.svelte.ts state machine + /room/[channelId] route shell)
-Last activity: 2026-02-24 — Phase 20 Plan 01 complete (Nostr room state machine + route scaffold)
+Plan: 02 of TBD complete
+Status: Phase 20 in progress — Plan 02 done (complete room UI: player + queue + participants)
+Last activity: 2026-02-24 — Phase 20 Plan 02 complete (full /room/[channelId] page UI)
 
 Progress: [████░░░░░░] 44% (v1.3 — 3/6 phases complete, Phase 20 started)
 
@@ -31,8 +31,9 @@ Progress: [████░░░░░░] 44% (v1.3 — 3/6 phases complete, Ph
 | 17. Artist Stats Dashboard | 2 | Complete |
 | 18. AI Auto-News | 5 | Complete |
 | 19. Static Site Generator | 3 | Complete |
-| 20. Listening Rooms | TBD | In progress (1 done) |
+| 20. Listening Rooms | TBD | In progress (2 done) |
 | 21. ActivityPub Outbound | TBD | Not started |
+| Phase 20-listening-rooms P03 | 3 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -79,6 +80,8 @@ Progress: [████░░░░░░] 44% (v1.3 — 3/6 phases complete, Ph
 - [Phase 20-01]: kind:30311 (addressable) used instead of STATE.md's kind:10311 (replaceable) — #d tag filter reliability is spec-guaranteed for addressable events; replaceable event tag filter behavior varies by relay implementation
 - [Phase 20-01]: participants as Record<string, RoomParticipant> not Map — Svelte 5 $state tracks plain object mutations but not Map.set() mutations
 - [Phase 20-01]: Heartbeat TTL: 30s interval, 75s expiry window (2.5x) — tolerates exactly one missed heartbeat before dropping participant
+- [Phase 20-02]: Host controls and guest controls are mutually exclusive via {#if roomState.isHost} — same page, different UI per role
+- [Phase 20-02]: Leave Room navigates to /scenes/[channelId] via goto() — natural return path to the scene that launched the room
 
 ### Pending Todos
 None
@@ -90,6 +93,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-24
-Stopped at: Completed 20-01-PLAN.md — listening-room.svelte.ts state machine + /room/[channelId] route shell
+Stopped at: Completed 20-02-PLAN.md — full /room/[channelId] page UI (player + queue + participants)
 Resume file: None
-Next: Phase 20 Plan 02 — Room UI
+Next: Phase 20 Plan 03 — Scene page integration (show "Room active" indicator)
