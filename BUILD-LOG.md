@@ -5959,3 +5959,12 @@ Next step: review mockups in browser, make any adjustments, then map each visual
 
 > **Commit 21e445a** (2026-02-24 23:46) — auto-save: 1 files @ 23:46
 > Files changed: 1
+
+> **Commit 3050f62** (2026-02-24 23:47) — wip: auto-save
+> Files changed: 1
+
+> **Commit 8eb6121** (2026-02-24 23:56) — docs: start milestone v1.4 The Interface
+> Files changed: 3
+
+> **Commit fdbe805** (2026-02-24 23:59) — docs: create milestone v1.4 roadmap (5 phases)
+> Files changed: 3
