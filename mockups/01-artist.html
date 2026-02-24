@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Mercury — Artist Page</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* ── Artist-page specific ── */
+    .artist-header {
+      padding: 18px 20px 0;
+      border-bottom: 1px solid var(--b-1);
+      background: var(--bg-2);
+    }
+    .artist-name-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .artist-name {
+      font-size: 24px;
+      font-weight: 300;
+      letter-spacing: 0.02em;
+      color: var(--t-1);
+    }
+    .unique-badge {
+      background: var(--acc-bg);
+      border: 1px solid var(--b-acc);
+      border-radius: var(--r);
+      padding: 3px 9px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--acc);
+    }
+    .artist-meta {
+      font-size: 11px;
+      color: var(--t-3);
+      margin-top: 5px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .meta-sep { color: var(--b-3); }
+    .tags-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 10px;
+      padding-bottom: 14px;
+    }
+    .listen-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 20px;
+      border-bottom: 1px solid var(--b-1);
+      background: var(--bg-1);
+    }
+    .listen-lbl {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--t-3);
+      width: 62px;
+      flex-shrink: 0;
+    }
+    .bio-text {
+      font-size: 12px;
+      line-height: 1.75;
+      color: var(--t-2);
+      max-width: 720px;
+    }
+    .releases-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(108px, 1fr));
+      gap: 8px;
+    }
+    .link-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 0;
+    }
+    .link-group-lbl {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--t-3);
+      width: 68px;
+      flex-shrink: 0;
+    }
+    .members-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 6px;
+    }
+    .member-card {
+      background: var(--bg-3);
+      border: 1px solid var(--b-1);
+      border-radius: var(--r);
+      padding: 8px 10px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .member-avatar {
+      width: 28px; height: 28px;
+      background: var(--bg-5);
+      border: 1px solid var(--b-2);
+      border-radius: var(--r);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 600; color: var(--t-3);
+      flex-shrink: 0;
+    }
+    .member-name { font-size: 11px; font-weight: 500; }
+    .member-role { font-size: 10px; color: var(--t-3); margin-top: 1px; }
+  </style>
+</head>
+<body>
+
+  <!-- ── TOPBAR ── -->
+  <div class="topbar">
+    <div class="btn-icon">←</div>
+    <span class="topbar-logo">Mercury</span>
+    <div class="topbar-crumb">
+      <span>Discover</span>
+      <span class="topbar-crumb-sep">/</span>
+      <span class="topbar-crumb-cur">Stars of the Lid</span>
+    </div>
+    <div class="topbar-right">
+      <div class="search-wrap">
+        <input class="search-input" type="text" placeholder="Search artists, tags…">
+      </div>
+      <div class="btn-icon" title="Chat">💬</div>
+      <div class="ai-pill"><div class="ai-dot"></div> AI</div>
+    </div>
+  </div>
+
+  <!-- ── SIDEBAR ── -->
+  <div class="sidebar">
+    <div class="sidebar-head">Mercury</div>
+
+    <div class="nav-group">
+      <div class="nav-lbl">Discovery</div>
+      <div class="nav-item"><span class="nav-ico">◈</span> Discover</div>
+      <div class="nav-item active"><span class="nav-ico">◉</span> Artist</div>
+      <div class="nav-item"><span class="nav-ico">◫</span> Style Map</div>
+      <div class="nav-item"><span class="nav-ico">◎</span> Knowledge Base</div>
+      <div class="nav-item"><span class="nav-ico">◷</span> Time Machine</div>
+      <div class="nav-item"><span class="nav-ico">▣</span> Crate Dig</div>
+      <div class="nav-item"><span class="nav-ico">◌</span> Explore</div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-lbl">Community</div>
+      <div class="nav-item"><span class="nav-ico">◐</span> Scenes</div>
+      <div class="nav-item"><span class="nav-ico">↑</span> New &amp; Rising</div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-lbl">Your Library</div>
+      <div class="nav-item"><span class="nav-ico">▤</span> Library</div>
+      <div class="nav-item"><span class="nav-ico">♥</span> Favorites</div>
+      <div class="nav-item"><span class="nav-ico">▨</span> Shelves</div>
+    </div>
+
+    <div class="nav-group" style="margin-top: auto; border-top: 1px solid var(--b-0);">
+      <div class="nav-item"><span class="nav-ico">◍</span> Profile</div>
+      <div class="nav-item"><span class="nav-ico">⚙</span> Settings</div>
+    </div>
+  </div>
+
+  <!-- ── MAIN ── -->
+  <div class="main">
+
+    <!-- Artist header panel -->
+    <div class="artist-header">
+      <div class="artist-name-row">
+        <h1 class="artist-name">Stars of the Lid</h1>
+        <div class="unique-badge">◆ Rare · 94</div>
+      </div>
+
+      <div class="artist-meta">
+        <span>Group</span>
+        <span class="meta-sep">·</span>
+        <span>United States</span>
+        <span class="meta-sep">·</span>
+        <span>Austin, TX</span>
+        <span class="meta-sep">·</span>
+        <span>1993 — present</span>
+      </div>
+
+      <div class="btn-row" style="margin-top: 10px;">
+        <button class="btn accent">♥ Favorite</button>
+        <button class="btn">RSS</button>
+        <button class="btn">+ Shelf</button>
+        <button class="btn">↑ Mastodon</button>
+        <button class="btn">Export Site</button>
+        <button class="btn ghost" style="margin-left:auto;">Edit on MusicBrainz ↗</button>
+      </div>
+
+      <div class="tags-row">
+        <div class="tag">ambient <span class="tag-arrow">↗</span></div>
+        <div class="tag">drone <span class="tag-arrow">↗</span></div>
+        <div class="tag">post-rock <span class="tag-arrow">↗</span></div>
+        <div class="tag">orchestral <span class="tag-arrow">↗</span></div>
+        <div class="tag">neoclassical <span class="tag-arrow">↗</span></div>
+        <div class="tag">experimental <span class="tag-arrow">↗</span></div>
+        <div class="tag">slowcore <span class="tag-arrow">↗</span></div>
+      </div>
+    </div>
+
+    <!-- Listen On -->
+    <div class="listen-bar">
+      <span class="listen-lbl">Listen On</span>
+      <div class="btn-row">
+        <button class="btn accent">Bandcamp</button>
+        <button class="btn">Spotify</button>
+        <button class="btn">Apple Music</button>
+        <button class="btn">YouTube</button>
+        <button class="btn">SoundCloud</button>
+      </div>
+    </div>
+
+    <!-- Tab bar -->
+    <div class="tab-bar">
+      <div class="tab active">Overview</div>
+      <div class="tab">Members</div>
+      <div class="tab">Stats</div>
+    </div>
+
+    <!-- Bio -->
+    <div class="sec">
+      <div class="sec-bar">
+        <span class="sec-lbl">About</span>
+        <div style="display:flex;gap:5px;align-items:center;">
+          <span class="source-badge">Wikipedia</span>
+        </div>
+      </div>
+      <div class="sec-body">
+        <p class="bio-text">Stars of the Lid is an American ambient music duo from Austin, Texas, consisting of Adam Wiltzie and Brian McBride. The band formed in 1993 and is known for their expansive, orchestral drone compositions — dense, slowly evolving soundscapes built from strings, brass, piano, and electronics. Their 2007 double album <em>And Their Refinement of the Decline</em> is widely regarded as one of the defining statements in orchestral ambient music. The name is a reference to eyelids and the visual experience of closing one's eyes.</p>
+        <div style="margin-top:10px;">
+          <button class="btn">Read more ↓</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Members -->
+    <div class="sec">
+      <div class="sec-bar">
+        <span class="sec-lbl">Members</span>
+        <span class="source-badge">MusicBrainz</span>
+      </div>
+      <div class="sec-body">
+        <div class="members-grid">
+          <div class="member-card">
+            <div class="member-avatar">AW</div>
+            <div>
+              <div class="member-name">Adam Wiltzie</div>
+              <div class="member-role">Guitar, electronics — 1993–present</div>
+            </div>
+          </div>
+          <div class="member-card">
+            <div class="member-avatar">BM</div>
+            <div>
+              <div class="member-name">Brian McBride</div>
+              <div class="member-role">Guitar, electronics — 1993–present</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Discography -->
+    <div class="sec">
+      <div class="sec-bar">
+        <span class="sec-lbl">Discography</span>
+        <div class="btn-row">
+          <button class="btn sm active">All</button>
+          <button class="btn sm">Albums</button>
+          <button class="btn sm">EPs</button>
+          <button class="btn sm">⇅ Newest</button>
+        </div>
+      </div>
+      <div class="sec-body">
+        <div class="releases-grid">
+          <div class="release-card">
+            <div class="r-art" style="background:#1c1618;">
+              SOTL
+              <div class="r-play-overlay"><div class="r-play-btn">▶</div></div>
+            </div>
+            <div class="r-info">
+              <div class="r-title">And Their Refinement…</div>
+              <div class="r-meta"><span>2007</span><span class="r-type">Album</span></div>
+            </div>
+          </div>
+          <div class="release-card">
+            <div class="r-art" style="background:#101820;">
+              SOTL
+              <div class="r-play-overlay"><div class="r-play-btn">▶</div></div>
+            </div>
+            <div class="r-info">
+              <div class="r-title">The Tired Sounds of…</div>
+              <div class="r-meta"><span>2001</span><span class="r-type">Album</span></div>
+            </div>
+          </div>
+          <div class="release-card">
+            <div class="r-art" style="background:#181818;">
+              SOTL
+              <div class="r-play-overlay"><div class="r-play-btn">▶</div></div>
+            </div>
+            <div class="r-info">
+              <div class="r-title">Avec Laudenum</div>
+              <div class="r-meta"><span>1999</span><span class="r-type">Album</span></div>
+            </div>
+          </div>
+          <div class="release-card">
+            <div class="r-art" style="background:#141420;">
+              SOTL
+              <div class="r-play-overlay"><div class="r-play-btn">▶</div></div>
+            </div>
+            <div class="r-info">
+              <div class="r-title">Music for Nitrous Oxide</div>
+              <div class="r-meta"><span>1995</span><span class="r-type">Album</span></div>
+            </div>
+          </div>
+          <div class="release-card">
+            <div class="r-art" style="background:#1a1810;">
+              SOTL
+              <div class="r-play-overlay"><div class="r-play-btn">▶</div></div>
+            </div>
+            <div class="r-info">
+              <div class="r-title">Per Aspera Ad Astra</div>
+              <div class="r-meta"><span>2004</span><span class="r-type">EP</span></div>
+            </div>
+          </div>
+          <div class="release-card">
+            <div class="r-art" style="background:#141810;">
+              SOTL
+              <div class="r-play-overlay"><div class="r-play-btn">▶</div></div>
+            </div>
+            <div class="r-info">
+              <div class="r-title">The Self-Titled LP</div>
+              <div class="r-meta"><span>1994</span><span class="r-type">Album</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Links -->
+    <div class="sec">
+      <div class="sec-bar"><span class="sec-lbl">Links</span></div>
+      <div class="sec-body" style="display:flex;flex-direction:column;gap:4px;">
+        <div class="link-group">
+          <span class="link-group-lbl">Official</span>
+          <div class="btn-row">
+            <button class="btn sm">Website ↗</button>
+            <button class="btn sm">Facebook ↗</button>
+          </div>
+        </div>
+        <div class="link-group">
+          <span class="link-group-lbl">Databases</span>
+          <div class="btn-row">
+            <button class="btn sm">MusicBrainz ↗</button>
+            <button class="btn sm">Discogs ↗</button>
+            <button class="btn sm">RateYourMusic ↗</button>
+          </div>
+        </div>
+        <div class="link-group">
+          <span class="link-group-lbl">Support</span>
+          <div class="btn-row">
+            <button class="btn sm">♥ Patreon ↗</button>
+            <button class="btn sm">☕ Bandcamp ↗</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Discovered By -->
+    <div class="sec">
+      <div class="sec-bar"><span class="sec-lbl">Discovered By</span></div>
+      <div class="sec-body">
+        <div class="btn-row">
+          <button class="btn sm">@droneheads</button>
+          <button class="btn sm">@quietforms</button>
+          <button class="btn sm">@texasambi</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+
+  <!-- ── PLAYER BAR ── -->
+  <div class="player">
+    <div class="p-art" style="background:#1c1618;color:#3a2828;">SOTL</div>
+    <div class="p-info">
+      <div class="p-track">The Lonely People Are All Asleep</div>
+      <div class="p-artist">Stars of the Lid · And Their Refinement of the Decline</div>
+    </div>
+    <div class="p-controls">
+      <div class="p-btn">⏮</div>
+      <div class="p-btn play">▶</div>
+      <div class="p-btn">⏭</div>
+    </div>
+    <div class="p-prog">
+      <span class="p-time">3:14</span>
+      <div class="p-bar">
+        <div class="p-fill" style="width:28%"></div>
+        <div class="p-thumb" style="left:28%"></div>
+      </div>
+      <span class="p-time r">14:22</span>
+    </div>
+    <div class="p-right">
+      <div class="p-btn">≡</div>
+      <div class="p-btn">🔊</div>
+      <div class="vol-bar"><div class="vol-fill"></div></div>
+    </div>
+  </div>
+
+</body>
+</html>
