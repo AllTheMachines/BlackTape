@@ -5095,6 +5095,21 @@ All building blocks from Plan 01 (Rust backend, TypeScript query, ArtistStats.sv
 > **Commit 1f44098** (2026-02-24 13:19) — wip: auto-save
 > Files changed: 1
 
+## Entry — 2026-02-24 — Phase 18 Plan 01: AI Summary Cache Backend
+
+Pure Rust plan — zero frontend changes. Added the SQLite persistence layer for AI artist summaries to taste.db in two tasks:
+
+1. **`taste_db.rs`** — New `artist_summaries` table (`artist_mbid TEXT PRIMARY KEY`, `summary TEXT`, `generated_at INTEGER`). Added `auto_generate_on_visit` and `selected_provider_name` defaults to ai_settings. Added `ArtistSummaryRow` struct and two Tauri commands: `get_artist_summary` (returns `Option<ArtistSummaryRow>` — cache miss is None, not an error) and `save_artist_summary` (INSERT OR REPLACE with Rust-side Unix timestamp).
+2. **`lib.rs`** — Registered both commands in `tauri::generate_handler![]`.
+
+`cargo check` passed with zero errors. All 92 test suite checks green. Plans 02-04 can now call these commands from TypeScript.
+
+> **Commit 69d5915** (2026-02-24 13:20) — feat(18-01): add artist_summaries DDL and get/save commands to taste_db.rs
+> Files changed: 1
+
+> **Commit b6b5a16** (2026-02-24 13:20) — feat(18-01): register get_artist_summary and save_artist_summary in invoke_handler
+> Files changed: 1
+
 ## Entry — 2026-02-24 — Phase 18 Plan 02: AI TypeScript Infrastructure
 
 <!-- decision: Anthropic via aimlapi for standard Bearer auth -->
@@ -5123,3 +5138,6 @@ All 92 tests passing. Plan 03 (ArtistSummary component) and Plan 04 (AI Settings
 
 > **Commit f88af6a** (2026-02-24 13:23) — docs(18-02): complete AI TypeScript infrastructure plan — providers, state, prompts
 > Files changed: 5
+
+> **Commit 0d28b7b** (2026-02-24 13:23) — wip: auto-save
+> Files changed: 2
