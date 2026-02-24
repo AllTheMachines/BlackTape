@@ -207,6 +207,6 @@ Runs alongside everything else. Not blocking any phase. Rolls out in stages as f
 | 10.1. Communication Hotfixes | v1.0 | 2/2 | Complete | 2026-02-23 |
 | 11. Scene Building | v1.1 | 4/4 | Complete | 2026-02-23 |
 | 12. Curator / Blog Tools | v1.1 | 4/4 | Complete | 2026-02-23 |
-| 13. Foundation Fixes | v1.2 | 0/3 | Not started | - |
+| 13. Foundation Fixes | 2/3 | In Progress|  | - |
 | 14. API Contract Layer | v1.2 | 0/TBD | Not started | - |
 | 15. Navigation Flows + Rust Unit Tests | v1.2 | 0/TBD | Not started | - |

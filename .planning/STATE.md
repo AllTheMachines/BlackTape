@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-23 after v1.2 milestone start)
 ## Current Position
 
 Phase: 13-foundation-fixes
-Plan: 01 complete (1/3 plans)
-Status: Phase 13 Plan 01 complete — PROC-02 green baseline established. 23 web tests removed from manifest, web runner console capture added, full suite exits 0 (63 passing, 30 skipped).
-Last activity: 2026-02-24 — Phase 13 Plan 01 complete.
+Plan: 02 complete (2/3 plans)
+Status: Phase 13 Plan 02 complete — data-ready signals added to all 3 D3 components (StyleMap, GenreGraph, TasteFingerprint), PHASE_13 code checks (7) added to manifest, P13-01..P13-04 pass, P13-05/06/07 pre-registered for Plan 03.
+Last activity: 2026-02-24 — Phase 13 Plan 02 complete.
 
-Progress: [█░░░░░░░░░] v1.2 — Phase 13 in progress (1/3 plans complete)
+Progress: [██░░░░░░░░] v1.2 — Phase 13 in progress (2/3 plans complete)
 
 ## Performance Metrics
 
@@ -372,6 +372,10 @@ Progress: [█░░░░░░░░░] v1.2 — Phase 13 in progress (1/3 pl
 - [Phase 13-01]: consoleErrors captured per-test in web runner with allowConsoleErrors opt-out flag — Phase 14 navigation flow tests will use this
 - [Phase 13-01]: checkWrangler() left dormant in run.mjs — zero web tests, branch unreachable; removed when web runner is next significantly modified
 - [Phase 13-01]: PROC-02 baseline: 63 passing (62 code + 1 build), 30 skipped, 0 web, exits 0 as of 2026-02-24
+- [Phase 13-02]: data-ready attribute on D3 container divs — reactive $state variable drives attribute after simulation.tick() + stop() completes
+- [Phase 13-02]: data-ready=undefined when not ready (not false) — attribute omitted from DOM when falsy, avoids data-ready="false" string truthy in CSS selectors
+- [Phase 13-02]: TasteFingerprint uses 'nodes' state variable (not 'layoutNodes') — matched to actual component code, same pattern
+- [Phase 13-02]: P13-05/06/07 forward-registered in manifest now but fail intentionally — Plan 03 creates nav-progress artifacts
 
 ### Pending Todos
 None
@@ -382,6 +386,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-24
-Phase 13 Plan 01 complete. PROC-02 green baseline established. 23 Playwright web tests removed from manifest (Mercury is Tauri-desktop-only), console.error capture added to web runner, full suite exits 0 (63 passing).
-Stopped at: Phase 13 Plan 01 complete
-Next: Phase 13 Plan 02
+Phase 13 Plan 02 complete. data-ready signals added to all 3 D3 force simulation components (StyleMap, GenreGraph, TasteFingerprint). PHASE_13 export added to manifest with 7 code checks (P13-01..P13-04 passing, P13-05/06/07 pre-registered for Plan 03).
+Stopped at: Phase 13 Plan 02 complete
+Next: Phase 13 Plan 03

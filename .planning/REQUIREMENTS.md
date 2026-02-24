@@ -13,8 +13,8 @@ Fix the active defects in the existing test infrastructure before expanding cove
 
 - [x] **INFRA-01**: Console errors auto-detected on every Playwright test — silent JS crashes auto-fail the suite (no more Radiohead scenarios passing silently)
 - [ ] **INFRA-02**: Test suite exits with code 1 when wrangler is not running — pre-phase gate cannot give a false green on a broken environment
-- [ ] **INFRA-03**: D3 animation tests use `data-ready` signals instead of hardcoded `waitForTimeout` — flaky timing-dependent tests eliminated
-- [ ] **INFRA-04**: New tests use `data-testid` attributes instead of CSS class selectors — tests survive style refactors
+- [x] **INFRA-03**: D3 animation tests use `data-ready` signals instead of hardcoded `waitForTimeout` — flaky timing-dependent tests eliminated
+- [x] **INFRA-04**: New tests use `data-testid` attributes instead of CSS class selectors — tests survive style refactors
 
 ### API — Contract Coverage
 
@@ -101,8 +101,8 @@ Prevents future regressions from being committed or shipped.
 |-------------|-------|--------|
 | INFRA-01 | Phase 13 Plan 01 | Complete |
 | INFRA-02 | Phase 13 | Pending |
-| INFRA-03 | Phase 13 | Pending |
-| INFRA-04 | Phase 13 | Pending |
+| INFRA-03 | Phase 13 | Complete |
+| INFRA-04 | Phase 13 | Complete |
 | WEB-01 | Phase 13 | Pending |
 | WEB-02 | Phase 13 | Pending |
 | WEB-03 | Phase 13 | Pending |

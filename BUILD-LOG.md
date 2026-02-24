@@ -4312,3 +4312,58 @@ PROC-02 gate is now established. This is the floor. Every future phase has to ma
 <!-- decision: PROC-02 baseline: 63 passing, 30 skipped, exits 0 as of 2026-02-24 -->
 Phase 13 Plan 01 complete. The suite can now be trusted as a gate.
 <!-- /decision -->
+
+> **Commit 5fb2e02** (2026-02-24 01:03) — docs(13-01): complete foundation-fixes plan 01 — PROC-02 baseline
+> Files changed: 5
+
+> **Commit d4f44b6** (2026-02-24 01:05) — feat(13-02): add data-ready signals to D3 force simulation components
+> Files changed: 3
+
+<!-- status -->
+Phase 13 Plan 03 — Task 1 done (nav-progress.svelte.ts created, committed 13e44ef). Now on Task 2: integrate navProgress into layout with NProgress-style animation.
+<!-- /status -->
+
+> **Commit c8d34de** (2026-02-24 01:05) — feat(13-02): add PHASE_13 code checks to test manifest (INFRA-04)
+> Files changed: 1
+
+## Entry — 2026-02-24 — Phase 13 Plan 02: D3 data-ready Signals
+
+### What Happened
+
+Phase 13 Plan 02 added deterministic completion signals to the three D3 force simulation components so future tests can wait for real readiness instead of hardcoded sleep delays.
+
+### The Problem
+
+The existing approach: `waitForTimeout(2000–4000ms)` in Playwright tests for D3 component readiness. This is fragile — too short on slow machines, wastes time on fast ones. No signal that the simulation actually finished.
+
+### The Fix
+
+Each D3 component now sets `data-ready="true"` on its container div reactively, driven by its `$state` layout variable — which is only assigned after `simulation.tick()` completes and `simulation.stop()` is called. Svelte 5 runes ensure the DOM attribute updates atomically.
+
+- **StyleMap.svelte**: `data-ready={layoutNodes.length > 0 ? 'true' : undefined}` on `.style-map-container`
+- **GenreGraph.svelte**: `data-ready={layoutNodes.length > 0 ? 'true' : undefined}` on `.genre-graph-container`
+- **TasteFingerprint.svelte**: `data-ready={nodes.length > 0 ? 'true' : undefined}` on `.fingerprint-wrapper`
+
+The TasteFingerprint case uses `nodes` (not `layoutNodes`) because that's the state variable name in that component — same pattern, different variable name.
+
+### INFRA-04: Stable Selectors
+
+Seven new P13-xx code checks added to the manifest. All use `fileContains`/`fileExists` — no CSS class selectors. This satisfies INFRA-04: new test assertions must use data-testid / stable selectors.
+
+P13-05/06/07 (nav-progress artifacts) register tests now but fail intentionally — Plan 03 will create those files.
+
+### New Baseline
+
+```
+66 passing (65 code + 1 build)
+3 failing (P13-05/06/07 — expected, Plan 03)
+0 web
+30 skipped
+```
+
+<!-- decision: data-ready on D3 container divs — reactive $state drives attribute, Svelte 5 sets it after simulation.tick() + stop() -->
+D3 components now signal completion via attribute instead of requiring sleep delays.
+<!-- /decision -->
+
+> **Commit 13e44ef** (2026-02-24 01:07) — feat(13-03): create nav-progress.svelte.ts state module
+> Files changed: 1
