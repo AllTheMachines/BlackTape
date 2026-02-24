@@ -5055,3 +5055,6 @@ All building blocks from Plan 01 (Rust backend, TypeScript query, ArtistStats.sv
 
 > **Commit d88afb0** (2026-02-24 12:08) — docs(17-02): complete artist-stats-dashboard plan 02 — Stats tab + visit tracking + test manifest
 > Files changed: 4
+
+> **Commit 971d0e3** (2026-02-24 12:14) — wip: auto-save
+> Files changed: 3
