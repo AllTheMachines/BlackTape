@@ -11,7 +11,7 @@
 
 Fix the active defects in the existing test infrastructure before expanding coverage. Every new test written before these are fixed inherits the defects.
 
-- [ ] **INFRA-01**: Console errors auto-detected on every Playwright test — silent JS crashes auto-fail the suite (no more Radiohead scenarios passing silently)
+- [x] **INFRA-01**: Console errors auto-detected on every Playwright test — silent JS crashes auto-fail the suite (no more Radiohead scenarios passing silently)
 - [ ] **INFRA-02**: Test suite exits with code 1 when wrangler is not running — pre-phase gate cannot give a false green on a broken environment
 - [ ] **INFRA-03**: D3 animation tests use `data-ready` signals instead of hardcoded `waitForTimeout` — flaky timing-dependent tests eliminated
 - [ ] **INFRA-04**: New tests use `data-testid` attributes instead of CSS class selectors — tests survive style refactors
@@ -64,7 +64,7 @@ Every interaction gives immediate animated feedback, making frozen states visual
 Prevents future regressions from being committed or shipped.
 
 - [ ] **PROC-01**: Pre-commit hook runs `--code-only` tests on every commit (2–5s, gates every commit automatically)
-- [ ] **PROC-02**: Full test suite must be green before any new phase begins execution — not advisory, a hard gate
+- [x] **PROC-02**: Full test suite must be green before any new phase begins execution — not advisory, a hard gate
 - [ ] **PROC-03**: Every future phase plan includes a mandatory TEST-PLAN section specifying tests to be written — tests are defined before code, not after
 
 ---
@@ -99,7 +99,7 @@ Prevents future regressions from being committed or shipped.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INFRA-01 | Phase 13 | Pending |
+| INFRA-01 | Phase 13 Plan 01 | Complete |
 | INFRA-02 | Phase 13 | Pending |
 | INFRA-03 | Phase 13 | Pending |
 | INFRA-04 | Phase 13 | Pending |
@@ -110,7 +110,7 @@ Prevents future regressions from being committed or shipped.
 | UX-02 | Phase 13 | Pending |
 | UX-03 | Phase 13 | Pending |
 | UX-04 | Phase 13 | Pending |
-| PROC-02 | Phase 13 | Pending |
+| PROC-02 | Phase 13 Plan 01 | Complete |
 | API-01 | Phase 14 | Pending |
 | API-02 | Phase 14 | Pending |
 | API-03 | Phase 14 | Pending |

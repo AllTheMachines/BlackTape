@@ -4268,3 +4268,47 @@ Test suite updated: **62/62 code checks passing**. Added 24 new tests covering P
 
 > **Commit f8260c6** (2026-02-24 00:50) — docs(13-foundation-fixes): create phase plan
 > Files changed: 3
+
+> **Commit 28e5c57** (2026-02-24 00:52) — wip: auto-save
+> Files changed: 1
+
+> **Commit 17445e4** (2026-02-24 00:57) — feat(13-01): remove web tests from manifest and fix web runner console capture
+> Files changed: 2
+
+> **Commit 1ec5e84** (2026-02-24 00:58) — feat(13-01): clean run.mjs wrangler comments and document PROC-02 baseline
+> Files changed: 1
+
+## Entry — 2026-02-24 — Phase 13 Plan 01: PROC-02 Baseline Established
+
+### What Happened
+
+Phase 13 is the test infrastructure repair phase before v1.2 can begin real work. Plan 01 was the first task: establish a verifiable green baseline by removing the 23 Playwright web tests that no longer apply (Mercury went Tauri-desktop-only) and fixing the web runner to actually catch console.error crashes.
+
+### The Problem
+
+The test suite had 23 `method: 'web'` tests that required wrangler running on :8788. Since Mercury is now Tauri-desktop-only, these tests were just dead weight — and the runner treated them as silently passing when wrangler wasn't running. You couldn't trust the suite's green exit code.
+
+### What Was Changed
+
+**manifest.mjs**: Converted all 23 `method: 'web'` tests to `method: 'skip'` with reason "Web version removed — Mercury is Tauri-desktop-only". Test objects kept (IDs preserved for history). Header comment updated.
+
+Converted: P2-01..P2-11 (11), P5-05 (1), P6-01..P6-06 (6), P7-01..P7-04 (4), P8-05 (1).
+
+**runners/web.mjs**: Replaced the `page.on('console', () => {})` suppression pattern with per-test `consoleErrors` array capture. Added `allowConsoleErrors` opt-out flag. After `test.fn(page)` resolves, waits 200ms for async errors and fails the test if any console.error fired.
+
+**run.mjs**: Added dormant comment to `checkWrangler()`, updated fast-filter comment, added baseline header comment.
+
+### Baseline Numbers (2026-02-24)
+
+```
+63 passing (62 code + 1 build)
+0 web
+30 skipped (23 web-converted + 7 original desktop-only)
+Exit code: 0
+```
+
+PROC-02 gate is now established. This is the floor. Every future phase has to maintain this — or explicitly explain why counts changed.
+
+<!-- decision: PROC-02 baseline: 63 passing, 30 skipped, exits 0 as of 2026-02-24 -->
+Phase 13 Plan 01 complete. The suite can now be trusted as a gate.
+<!-- /decision -->

@@ -113,7 +113,7 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 13-01-PLAN.md — Remove web tests from manifest + fix console.error capture in web runner (PROC-02 baseline)
+- [x] 13-01-PLAN.md — Remove web tests from manifest + fix console.error capture in web runner (PROC-02 baseline)
 - [ ] 13-02-PLAN.md — Add data-ready signals to D3 components + Phase 13 manifest code checks (INFRA-03, INFRA-04)
 - [ ] 13-03-PLAN.md — Tauri navigation progress bar: nav-progress.svelte.ts + layout integration (UX-01–UX-04)
 

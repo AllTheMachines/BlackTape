@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-23 after v1.2 milestone start)
 
 ## Current Position
 
-Phase: Not started (roadmap defined, ready for Phase 13 planning)
-Plan: —
-Status: v1.2 roadmap created. Ready to plan Phase 13 (Foundation Fixes).
-Last activity: 2026-02-23 — v1.2 roadmap written. Previous: Phase 12 complete (v1.1 Phases 13–15 deferred to v1.3).
+Phase: 13-foundation-fixes
+Plan: 01 complete (1/3 plans)
+Status: Phase 13 Plan 01 complete — PROC-02 green baseline established. 23 web tests removed from manifest, web runner console capture added, full suite exits 0 (63 passing, 30 skipped).
+Last activity: 2026-02-24 — Phase 13 Plan 01 complete.
 
-Progress: [░░░░░░░░░░] v1.2 — 0/3 phases complete
+Progress: [█░░░░░░░░░] v1.2 — Phase 13 in progress (1/3 plans complete)
 
 ## Performance Metrics
 
@@ -368,6 +368,11 @@ Progress: [░░░░░░░░░░] v1.2 — 0/3 phases complete
 - v1.1 Phases 13–15 (Interoperability, Listening Rooms, Artist Tools) deferred to v1.3 — test infrastructure prioritized first
 - v1.2 phases 13–15 reassigned: Foundation Fixes → API Contract Layer → Navigation Flows + Rust Unit Tests
 
+- [Phase 13-01]: 23 method:'web' tests converted to method:'skip' (not deleted) — IDs preserved for history; reason documents Tauri-desktop-only decision
+- [Phase 13-01]: consoleErrors captured per-test in web runner with allowConsoleErrors opt-out flag — Phase 14 navigation flow tests will use this
+- [Phase 13-01]: checkWrangler() left dormant in run.mjs — zero web tests, branch unreachable; removed when web runner is next significantly modified
+- [Phase 13-01]: PROC-02 baseline: 63 passing (62 code + 1 build), 30 skipped, 0 web, exits 0 as of 2026-02-24
+
 ### Pending Todos
 None
 
@@ -376,7 +381,7 @@ None
 
 ## Session Continuity
 
-Last session: 2026-02-23
-v1.2 roadmap created. 3 phases defined (13–15), 25 requirements mapped, 100% coverage. ROADMAP.md, STATE.md, REQUIREMENTS.md traceability section all written.
-Stopped at: Roadmap complete
-Next: `/gsd:plan-phase 13` — Phase 13: Foundation Fixes
+Last session: 2026-02-24
+Phase 13 Plan 01 complete. PROC-02 green baseline established. 23 Playwright web tests removed from manifest (Mercury is Tauri-desktop-only), console.error capture added to web runner, full suite exits 0 (63 passing).
+Stopped at: Phase 13 Plan 01 complete
+Next: Phase 13 Plan 02
