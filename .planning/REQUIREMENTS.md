@@ -1,0 +1,114 @@
+# Requirements: Mercury v1.4 — The Interface
+
+**Defined:** 2026-02-24
+**Core Value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
+
+## v1.4 Requirements
+
+### Design System
+
+- [ ] **DSYS-01**: App uses a consistent visual design system — square controls (2px radius), layered dark grey backgrounds, 1px panel borders, amber accent
+- [ ] **DSYS-02**: Every interactive element has a visible background and border (no bare text links acting as buttons)
+- [ ] **DSYS-03**: Topbar, sidebar, and player bar are visually distinct panels separated by 1px borders
+- [ ] **DSYS-04**: Navigation sidebar uses left-border indicator for active item (amber), nav groups with section labels
+- [ ] **DSYS-05**: All tag chips are square (2px radius), use consistent sizing (22px height), amber on active state
+
+### Artist Page
+
+- [ ] **ARTP-01**: Artist page is fully redesigned to match the v1.4 design system (header, sections, tabs, player integration)
+- [ ] **ARTP-02**: Artist page displays band members sourced from MusicBrainz relationships
+- [ ] **ARTP-03**: Artist page displays influenced-by and influenced artists from MusicBrainz relationships
+- [ ] **ARTP-04**: Artist page displays associated labels from MusicBrainz relationships
+- [ ] **ARTP-05**: Release credits (producers, engineers, featured artists) are displayed and linked to their own artist pages
+- [ ] **ARTP-06**: Discography has a type filter — All / Albums / EPs / Singles
+- [ ] **ARTP-07**: Discography can be sorted by date (newest / oldest)
+- [ ] **ARTP-08**: Mastodon share button has a visible text label (not just "↑")
+
+### Queue & Playback
+
+- [ ] **QUEU-01**: Every track row in the app has ▶ Play and + Queue action buttons (visible on hover)
+- [ ] **QUEU-02**: Artist page has a "Play All" and "+ Queue All" button for the artist's top tracks
+- [ ] **QUEU-03**: Release pages have a "▶ Play Album" and "+ Queue Album" button
+- [ ] **QUEU-04**: Library tracklist has ▶ Play and + Queue on every track row
+- [ ] **QUEU-05**: Player bar shows current queue (accessible via queue icon)
+- [ ] **QUEU-06**: Queue can be reordered and items removed
+
+### Library
+
+- [ ] **LIBR-01**: Library uses a two-pane layout — album list (left) + tracklist (right) — matching the v1.4 mockup
+- [ ] **LIBR-02**: Selected album is highlighted with the amber left-border indicator
+- [ ] **LIBR-03**: Tracklist column headers: #, Title, Time, Actions
+
+### Discover
+
+- [ ] **DISC-01**: Discover page uses the filter panel + results grid layout from the v1.4 mockup
+- [ ] **DISC-02**: Active filters are shown as dismissable chips in the results toolbar
+- [ ] **DISC-03**: Artist cards show name, country, top tags, and uniqueness score bar
+
+### Discovery Cross-Linking
+
+- [ ] **XLINK-01**: Artist page links to Style Map filtered to artist's primary tag
+- [ ] **XLINK-02**: Knowledge Base genre pages link to Discover filtered by that genre
+- [ ] **XLINK-03**: Scene pages link to the Knowledge Base for the scene's primary genre
+- [ ] **XLINK-04**: Crate Dig results surface "Explore similar in Style Map" and "Open scene room" where relevant
+- [ ] **XLINK-05**: Time Machine results link to artist pages and Knowledge Base entries for the era
+
+### Search
+
+- [ ] **SRCH-01**: Search input shows autocomplete suggestions as the user types (artist names)
+- [ ] **SRCH-02**: Search can filter by city/location (e.g. "artists from Berlin")
+- [ ] **SRCH-03**: Search can filter by label name (e.g. "artists on Warp Records")
+- [ ] **SRCH-04**: Search results distinguish between artist matches and tag matches
+
+### Knowledge Base
+
+- [ ] **KBAS-01**: Knowledge Base genre pages are redesigned to match the v1.4 mockup (type badge, description panel, key artists, related genres with colour-coded type dots, genre map placeholder)
+
+### Crate Digging
+
+- [ ] **CRAT-01**: Country filter uses a dropdown with country names (not raw ISO codes)
+
+## Future Requirements
+
+### Track-Level Discovery
+
+- **TRCK-01**: Search by song title
+- **TRCK-02**: On-demand recording data fetched and cached per artist on first visit
+- **TRCK-03**: Artist-contributed track data (corrections, additions)
+
+### Deep Data Distribution
+
+- **DATA-01**: Per-artist data chunks available via torrent or cost-free peer distribution
+- **DATA-02**: Incremental DB updates (only changed artists since last sync)
+
+## Out of Scope
+
+| Feature | Reason |
+|---------|--------|
+| Song title search | Requires 35M recording index — 15GB+ DB. Deferred to Track-Level Discovery milestone |
+| Audio hosting | Core constraint — never |
+| Algorithmic manipulation | Core constraint — never |
+| Paid tiers | Core constraint — never |
+
+## Traceability
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| DSYS-01–05  | Phase 23 | Pending |
+| ARTP-01–08  | Phase 24 | Pending |
+| QUEU-01–06  | Phase 25 | Pending |
+| LIBR-01–03  | Phase 25 | Pending |
+| DISC-01–03  | Phase 26 | Pending |
+| XLINK-01–05 | Phase 26 | Pending |
+| SRCH-01–04  | Phase 27 | Pending |
+| KBAS-01     | Phase 27 | Pending |
+| CRAT-01     | Phase 26 | Pending |
+
+**Coverage:**
+- v1.4 requirements: 35 total
+- Mapped to phases: 35
+- Unmapped: 0 ✓
+
+---
+*Requirements defined: 2026-02-24*
+*Last updated: 2026-02-24 after initial definition*

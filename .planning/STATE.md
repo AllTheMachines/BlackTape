@@ -2,17 +2,17 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-02-24 after v1.3 milestone started)
+See: .planning/PROJECT.md (updated 2026-02-24 after v1.4 milestone started)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** v1.3 The Open Network — Phase 21: ActivityPub Outbound (COMPLETE)
+**Current focus:** v1.4 The Interface — design overhaul + UX depth
 
 ## Current Position
 
-Phase: 21 of 21 (ActivityPub Outbound)
-Plan: 02 of 02 complete
-Status: Phase 21 complete — Plans 01–02 done (Rust backend + Svelte UI)
-Last activity: 2026-02-24 — Phase 21 Plan 02 complete (FediverseSettings.svelte + settings page wiring + PHASE_21 test manifest)
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements for v1.4 — The Interface
+Last activity: 2026-02-24 — Milestone v1.4 started
 
 Progress: [██████████] 100% (v1.3 — all 6 phases complete)
 

@@ -10,7 +10,19 @@ v1.1 shipped: scene building → curator/blog tools.
 
 v1.2 shipped: test automation complete — Playwright CDP E2E runner, Rust unit tests, pre-commit gate. Web gateway removed — Tauri-desktop-only confirmed.
 
-## Current State: v1.3 Shipped (2026-02-24)
+## Current Milestone: v1.4 — The Interface
+
+**Goal:** Transform Mercury from a functional prototype into a real desktop application — ground-up visual redesign plus the UX depth the app has been missing.
+
+**Target features:**
+- Full visual overhaul implementing the square/layered-grey design system from mockups
+- Queue management — ▶ Play and + Queue from every track surface in the app
+- Artist relationships — MusicBrainz members, influences, labels; release credits linked
+- Discovery cross-linking — the 7 tools reference each other naturally
+- Search improvements — autocomplete + label + city search
+- Discography filters, Crate Dig country dropdown, Mastodon button label
+
+## Previous: v1.3 Shipped (2026-02-24)
 
 ## Core Value
 
@@ -54,7 +66,14 @@ Uniqueness is rewarded — the more niche you are, the more discoverable you bec
 
 ### Active
 
-(Planning v1.4 — start with `/gsd:new-milestone`)
+- [ ] Full visual redesign — square UI, layered dark greys, amber accent, 1px borders on every panel
+- [ ] Queue system — ▶ Play and + Queue actions on every track surface; Play Album on release pages
+- [ ] Artist relationships — band members, influenced-by, labels from MusicBrainz; credits linked to artist pages
+- [ ] Discovery cross-linking — tools surface each other (Discover → Style Map → Scenes → KB → Time Machine)
+- [ ] Search autocomplete + label + city search
+- [ ] Discography type filter (Albums/EPs/Singles) + date sort
+- [ ] Crate Dig country dropdown (replace raw ISO code input)
+- [ ] Mastodon share button visible label
 
 ### Out of Scope
 
@@ -117,4 +136,4 @@ Pre-project research (2026-02-14) saved in ControlCenter:
 | Phases 14–15 outside GSD workflow | Speed over process — test infra sprint; accepted tech debt (no VERIFICATION.md/SUMMARY.md) | ⚠️ Revisit (use GSD for v1.3) |
 
 ---
-*Last updated: 2026-02-24 after v1.3 milestone shipped (The Open Network)*
+*Last updated: 2026-02-24 after v1.4 milestone started (The Interface)*
