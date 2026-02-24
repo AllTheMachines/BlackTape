@@ -245,4 +245,4 @@ Runs alongside everything else. Not blocking any phase. Rolls out in stages as f
 | 18. AI Auto-News | 5/5 | Complete    | 2026-02-24 | - |
 | 19. Static Site Generator | 3/3 | Complete    | 2026-02-24 | - |
 | 20. Listening Rooms | 3/3 | Complete    | 2026-02-24 | - |
-| 21. ActivityPub Outbound | v1.3 | 0/2 | Not started | - |
+| 21. ActivityPub Outbound | 1/2 | In Progress|  | - |

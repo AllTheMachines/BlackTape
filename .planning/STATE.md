@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-24 after v1.3 milestone started)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** v1.3 The Open Network — Phase 20: Listening Rooms (Plan 03 complete — Phase 20 done)
+**Current focus:** v1.3 The Open Network — Phase 21: ActivityPub Outbound (Plan 01 complete)
 
 ## Current Position
 
-Phase: 20 of 21 (Listening Rooms)
-Plan: 03 of 03 complete
-Status: Phase 20 complete — Plans 01–03 done (data layer, room UI, scene page integration)
-Last activity: 2026-02-24 — Phase 20 Plan 03 complete (scene page room-indicator + PHASE_20 test manifest)
+Phase: 21 of 21 (ActivityPub Outbound)
+Plan: 01 of TBD complete
+Status: Phase 21 in progress — Plan 01 done (Rust backend: RSA keypair + AP JSON-LD export command)
+Last activity: 2026-02-24 — Phase 21 Plan 01 complete (activitypub.rs module + lib.rs registration)
 
-Progress: [████░░░░░░] 44% (v1.3 — 3/6 phases complete, Phase 20 started)
+Progress: [████░░░░░░] 44% (v1.3 — 4/6 phases complete or in progress, Phase 21 started)
 
 ## Performance Metrics
 
@@ -32,7 +32,7 @@ Progress: [████░░░░░░] 44% (v1.3 — 3/6 phases complete, Ph
 | 18. AI Auto-News | 5 | Complete |
 | 19. Static Site Generator | 3 | Complete |
 | 20. Listening Rooms | 3 | Complete |
-| 21. ActivityPub Outbound | TBD | Not started |
+| 21. ActivityPub Outbound | TBD | In Progress (Plan 01 done) |
 
 ## Accumulated Context
 
@@ -82,6 +82,10 @@ Progress: [████░░░░░░] 44% (v1.3 — 3/6 phases complete, Ph
 - [Phase 20-02]: Host controls and guest controls are mutually exclusive via {#if roomState.isHost} — same page, different UI per role
 - [Phase 20-02]: Leave Room navigates to /scenes/[channelId] via goto() — natural return path to the scene that launched the room
 - [Phase 20-listening-rooms]: roomStatus initial value 'checking' hides room-indicator during async check — avoids flash of 'Start listening room' on every scene page load
+- [Phase 21-01]: PKCS1 PEM for AP publicKeyPem (not PKCS8/SPKI) — Mastodon rejects SPKI format; to_pkcs1_pem() used for public key, to_pkcs8_pem() for private key storage
+- [Phase 21-01]: AP keypair persisted via ON CONFLICT upsert — stable across re-exports; Mastodon caches actors by key ID, changing keypair breaks federation
+- [Phase 21-01]: hosting_url trailing slash stripped before URL construction — prevents double-slash paths in all AP JSON-LD URL fields
+- [Phase 21-01]: Outbox is empty OrderedCollection (totalItems:0) — no curator_posts table exists yet; added when post authoring is implemented
 
 ### Pending Todos
 None
@@ -93,6 +97,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-24
-Stopped at: Completed 20-03-PLAN.md — scene page room discovery indicator + PHASE_20 test manifest
+Stopped at: Completed 21-01-PLAN.md — activitypub.rs Rust backend with RSA keypair + AP JSON-LD export command
 Resume file: None
-Next: Phase 21 — ActivityPub Outbound
+Next: Phase 21 Plan 02 — FediverseSettings.svelte UI component

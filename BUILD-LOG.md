@@ -5589,3 +5589,19 @@ Commits: 81d1eea (scene page), f86d201 (manifest)
 
 > **Commit f948e1c** (2026-02-24 19:41) — wip: auto-save
 > Files changed: 1
+
+> **Commit a0da538** (2026-02-24 19:46) — auto-save: 1 files @ 19:46
+> Files changed: 1
+
+<!-- status -->
+Phase 21 Plan 01: ActivityPub Rust backend complete — 2/2 tasks done. RSA keypair generation + AP JSON-LD export command implemented and compiling clean.
+<!-- /status -->
+
+> **Commit 5895ff1** (2026-02-24 19:54) — feat(21-02): create FediverseSettings.svelte component
+> Files changed: 1
+
+> **Commit 3d698e4** (2026-02-24 19:54) — feat(21-01): add activitypub.rs module with RSA keypair and AP JSON-LD builders
+> Files changed: 2
+
+> **Commit 2ffc1fe** (2026-02-24 19:54) — feat(21-01): register activitypub module in lib.rs invoke_handler
+> Files changed: 1
