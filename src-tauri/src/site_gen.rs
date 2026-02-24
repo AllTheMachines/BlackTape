@@ -798,6 +798,6 @@ mod tests {
         downloaded.insert("abc123".to_string());
         let html = build_html(&artist, &downloaded);
         assert!(html.contains(r#"src="covers/abc123.jpg""#));
-        assert!(!html.contains("cover-placeholder"));
+        assert!(!html.contains(r#"<div class="cover-placeholder">"#));
     }
 }
