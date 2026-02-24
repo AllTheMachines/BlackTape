@@ -167,3 +167,139 @@ a:hover {
 	scrollbar-width: thin;
 	scrollbar-color: var(--border-default) var(--bg-base);
 }
+
+/* ═══════════════════════════════════════════════════
+   Mercury v1.4 — Global element base styles
+   Square, layered, amber accent
+   ═══════════════════════════════════════════════════ */
+
+/* --- Buttons --- */
+button, .btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	height: 26px;
+	padding: 0 10px;
+	background: var(--bg-4);
+	border: 1px solid var(--b-2);
+	border-radius: var(--r);
+	font-size: 11px;
+	font-weight: 500;
+	color: var(--t-2);
+	cursor: pointer;
+	white-space: nowrap;
+	font-family: inherit;
+	letter-spacing: 0.01em;
+	transition: background 0.1s, border-color 0.1s, color 0.1s;
+}
+button:hover, .btn:hover {
+	background: var(--bg-5);
+	color: var(--t-1);
+	border-color: var(--b-3);
+}
+
+/* Icon-only buttons */
+.btn-icon {
+	width: 26px;
+	height: 26px;
+	padding: 0;
+	justify-content: center;
+}
+
+/* Accent button — primary action */
+.btn-accent, button.accent {
+	background: var(--acc-bg);
+	border-color: var(--b-acc);
+	color: var(--acc);
+}
+.btn-accent:hover, button.accent:hover {
+	background: var(--acc-bg-h);
+}
+
+/* Ghost button */
+.btn-ghost, button.ghost {
+	background: transparent;
+	border-color: transparent;
+	color: var(--t-3);
+}
+.btn-ghost:hover, button.ghost:hover {
+	background: var(--bg-4);
+	color: var(--t-2);
+	border-color: var(--b-2);
+}
+
+/* Small variant */
+.btn-sm, button.sm {
+	height: 22px;
+	padding: 0 8px;
+	font-size: 10px;
+}
+
+/* --- Inputs and Selects --- */
+input:not([type="range"]):not([type="checkbox"]):not([type="radio"]),
+select,
+textarea {
+	background: var(--bg-4);
+	border: 1px solid var(--b-2);
+	border-radius: var(--r);
+	color: var(--t-1);
+	font-size: 11px;
+	font-family: inherit;
+	outline: none;
+	transition: border-color 0.1s;
+}
+
+input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):focus,
+select:focus,
+textarea:focus {
+	border-color: var(--acc);
+}
+
+input::placeholder,
+textarea::placeholder {
+	color: var(--t-3);
+}
+
+/* --- Badges / Source badges --- */
+.badge, .source-badge, .nav-badge {
+	display: inline-flex;
+	align-items: center;
+	height: 16px;
+	padding: 0 5px;
+	font-size: 9px;
+	font-weight: 600;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--t-3);
+	background: var(--bg-4);
+	border: 1px solid var(--b-1);
+	border-radius: var(--r);
+}
+
+/* Tab bar — global pattern */
+.tab-bar {
+	display: flex;
+	border-bottom: 1px solid var(--b-1);
+	padding: 0 20px;
+	background: var(--bg-2);
+}
+.tab {
+	height: 34px;
+	padding: 0 14px;
+	display: flex;
+	align-items: center;
+	font-size: 11px;
+	font-weight: 500;
+	color: var(--t-3);
+	cursor: pointer;
+	border-bottom: 2px solid transparent;
+	margin-bottom: -1px;
+	transition: color 0.1s;
+	text-decoration: none;
+	background: none;
+	border-left: none;
+	border-right: none;
+	border-top: none;
+}
+.tab:hover { color: var(--t-2); }
+.tab.active { color: var(--acc); border-bottom-color: var(--acc); }

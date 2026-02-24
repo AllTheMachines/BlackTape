@@ -2061,6 +2061,35 @@ export const PHASE_23 = [
       fileContains('src/routes/+layout.svelte', 'Titlebar') &&
       fileContains('src/routes/+layout.svelte', "import Titlebar"),
   },
+  {
+    id: 'P23-09', phase: 23, area: 'Design System',
+    desc: 'TagChip.svelte has no pill radius (999px), has 22px height, var(--r), var(--bg-4), var(--acc)',
+    method: 'code',
+    fn: () =>
+      !fileContains('src/lib/components/TagChip.svelte', '999px')() &&
+      fileContains('src/lib/components/TagChip.svelte', '22px')() &&
+      fileContains('src/lib/components/TagChip.svelte', 'var(--r)')() &&
+      fileContains('src/lib/components/TagChip.svelte', 'var(--bg-4)')() &&
+      fileContains('src/lib/components/TagChip.svelte', 'var(--acc)')(),
+  },
+  {
+    id: 'P23-10', phase: 23, area: 'Design System',
+    desc: 'theme.css contains .btn-icon, .badge, .tab-bar, and border-radius: var(--r) in global button rules',
+    method: 'code',
+    fn: () =>
+      fileContains('src/lib/styles/theme.css', '.btn-icon')() &&
+      fileContains('src/lib/styles/theme.css', '.badge')() &&
+      fileContains('src/lib/styles/theme.css', '.tab-bar')() &&
+      fileContains('src/lib/styles/theme.css', 'border-radius: var(--r)')(),
+  },
+  {
+    id: 'P23-11', phase: 23, area: 'Design System',
+    desc: 'TagFilter.svelte does not reference old var(--border-default) or var(--bg-elevated) tokens',
+    method: 'code',
+    fn: () =>
+      !fileContains('src/lib/components/TagFilter.svelte', 'var(--border-default)')() &&
+      !fileContains('src/lib/components/TagFilter.svelte', 'var(--bg-elevated)')(),
+  },
 ];
 
 // ---------------------------------------------------------------------------

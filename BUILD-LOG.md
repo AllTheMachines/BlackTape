@@ -6029,5 +6029,11 @@ Test suite: 93/93 code checks passing, including 4 new P23 tests.
 Phase 23 Plan 03 applies the v1.4 aesthetic universally to two visible surfaces: TagChip (the most repeated element in the app) and the global interactive element base (buttons, inputs, badges, tabs). When TagChip is correct everywhere, it's immediately obvious across search results, artist pages, crate dig, and discover.
 
 <!-- status -->
-Phase 23 Plan 03 in progress — Task 1/2 complete (TagChip restyled to 22px/2px-radius spec).
+Phase 23 Plan 03 — 2/2 tasks complete. TagChip + global styles done. Running final verification.
 <!-- /status -->
+
+> **Commit 7f174cd** (2026-02-25 00:35) — feat(23-03): restyle TagChip to 22px/2px-radius v1.4 spec
+> Files changed: 2
+
+> **Commit 981bd50** (2026-02-25 00:36) — feat(23-02): restyle ControlBar topbar to v1.4 design tokens
+> Files changed: 2

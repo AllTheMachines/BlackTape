@@ -4,16 +4,34 @@
 
 	const MAX_TAGS = 5;
 
-	// Quick nav links — all main sections
-	const navLinks = [
-		{ href: '/discover', label: 'Discover' },
-		{ href: '/style-map', label: 'Style Map' },
-		{ href: '/kb', label: 'Knowledge Base' },
-		{ href: '/time-machine', label: 'Time Machine' },
-		{ href: '/crate', label: 'Dig (Crate)' },
-		{ href: '/library', label: 'Library' },
-		{ href: '/explore', label: 'Explore' },
-		{ href: '/settings', label: 'Settings' }
+	// Navigation groups — Discover, Library, Account
+	const navGroups = [
+		{
+			label: 'Discover',
+			links: [
+				{ href: '/discover', label: 'Discover', icon: '◉' },
+				{ href: '/style-map', label: 'Style Map', icon: '⬡' },
+				{ href: '/kb', label: 'Knowledge Base', icon: '◈' },
+				{ href: '/time-machine', label: 'Time Machine', icon: '◷' },
+				{ href: '/crate', label: 'Crate Dig', icon: '▦' },
+				{ href: '/scenes', label: 'Scenes', icon: '◎' }
+			]
+		},
+		{
+			label: 'Library',
+			links: [
+				{ href: '/library', label: 'Library', icon: '▤' },
+				{ href: '/explore', label: 'Explore', icon: '◬' }
+			]
+		},
+		{
+			label: 'Account',
+			links: [
+				{ href: '/profile', label: 'Profile', icon: '◐' },
+				{ href: '/settings', label: 'Settings', icon: '⚙' },
+				{ href: '/about', label: 'About', icon: '◌' }
+			]
+		}
 	] as const;
 
 	// Discovery filter state — derived from URL so it stays in sync with TagFilter
@@ -63,33 +81,32 @@
 </script>
 
 <aside class="left-sidebar" aria-label="Navigation and discovery">
-	<!-- Quick Nav -->
-	<section class="sidebar-section nav-section">
-		<h4 class="section-label">Navigation</h4>
-		<nav class="quick-nav">
-			{#each navLinks as link}
-				<a
-					href={link.href}
-					class="nav-link"
-					class:active={isActive(link.href)}
-				>
-					{link.label}
-				</a>
-			{/each}
-		</nav>
-	</section>
-
-	<div class="section-divider"></div>
+	<!-- Grouped Nav -->
+	<nav class="sidebar-nav">
+		{#each navGroups as group}
+			<div class="nav-group">
+				<span class="nav-lbl">{group.label}</span>
+				{#each group.links as link}
+					<a href={link.href} class="nav-item" class:active={isActive(link.href)}>
+						<span class="nav-ico">{link.icon}</span>
+						{link.label}
+					</a>
+				{/each}
+			</div>
+		{/each}
+	</nav>
 
 	<!-- Discovery Filters — shown on Discover page, or as a link to get there -->
-	<section class="sidebar-section filter-section">
-		<h4 class="section-label">Discovery Filters</h4>
-
-		{#if !isOnDiscover}
+	{#if !isOnDiscover}
+		<div class="filter-hint-wrap">
 			<p class="filter-hint">
 				<a href="/discover" class="discover-link">Go to Discover</a> to filter by tags.
 			</p>
-		{:else}
+		</div>
+	{:else}
+		<div class="filter-section">
+			<span class="nav-lbl">Discovery Filters</span>
+
 			<!-- Tag Input -->
 			<div class="filter-group">
 				<label class="filter-label" for="sidebar-tag-input">Tags</label>
@@ -121,78 +138,94 @@
 			{#if activeTags.length > 0}
 				<button class="clear-btn" onclick={() => applyTags([])}>Clear all filters</button>
 			{/if}
-		{/if}
-	</section>
+		</div>
+	{/if}
 </aside>
 
 <style>
 	.left-sidebar {
+		width: var(--sidebar);
 		height: 100%;
+		background: var(--bg-1);
+		border-right: 1px solid var(--b-1);
+		display: flex;
+		flex-direction: column;
 		overflow-y: auto;
-		padding: var(--space-sm);
-		background: var(--bg-base);
-		display: flex;
-		flex-direction: column;
-		gap: 0;
+		overflow-x: hidden;
 	}
 
-	.sidebar-section {
-		padding: var(--space-sm) 0;
+	.sidebar-nav {
+		flex-shrink: 0;
 	}
 
-	.section-divider {
-		height: 1px;
-		background: var(--border-subtle);
-		margin: var(--space-xs) 0;
+	.nav-group {
+		border-bottom: 1px solid var(--b-0);
+		padding: 5px 0;
 	}
 
-	.section-label {
-		font-size: 0.65rem;
+	.nav-lbl {
+		font-size: 9px;
 		font-weight: 600;
+		letter-spacing: 0.12em;
 		text-transform: uppercase;
-		letter-spacing: 0.08em;
-		color: var(--text-muted);
-		margin: 0 0 var(--space-xs) 0;
-	}
-
-	/* Quick Nav */
-	.quick-nav {
-		display: flex;
-		flex-direction: column;
-		gap: 1px;
-	}
-
-	.nav-link {
+		color: var(--t-3);
+		padding: 5px 12px 2px;
 		display: block;
-		padding: 3px var(--space-xs);
-		font-size: 0.75rem;
-		color: var(--text-muted);
+	}
+
+	.nav-item {
+		display: flex;
+		align-items: center;
+		gap: 9px;
+		height: 28px;
+		padding: 0 12px;
+		cursor: pointer;
+		color: var(--t-3);
+		font-size: 11px;
+		border-left: 2px solid transparent;
 		text-decoration: none;
-		border-radius: 3px;
-		transition: color 0.1s, background 0.1s;
+		transition: background 0.1s, color 0.1s;
 	}
 
-	.nav-link:hover {
-		color: var(--text-secondary);
-		background: var(--bg-hover);
+	.nav-item:hover {
+		background: #181818;
+		color: var(--t-2);
 		text-decoration: none;
 	}
 
-	.nav-link.active {
-		color: var(--text-accent);
-		background: var(--bg-elevated);
+	.nav-item.active {
+		background: #1c1c1c;
+		color: var(--t-1);
+		border-left-color: var(--acc);
 	}
 
-	/* Filter hint (when not on /discover) */
+	.nav-item.active .nav-ico {
+		color: var(--acc);
+	}
+
+	.nav-ico {
+		width: 14px;
+		text-align: center;
+		font-size: 11px;
+		flex-shrink: 0;
+		color: inherit;
+	}
+
+	/* Discovery Filters */
+	.filter-hint-wrap {
+		padding: 8px 12px;
+		border-top: 1px solid var(--b-0);
+	}
+
 	.filter-hint {
-		font-size: 0.7rem;
-		color: var(--text-muted);
+		font-size: 10px;
+		color: var(--t-3);
 		margin: 0;
 		line-height: 1.5;
 	}
 
 	.discover-link {
-		color: var(--text-accent);
+		color: var(--acc);
 		text-decoration: none;
 	}
 
@@ -200,33 +233,38 @@
 		text-decoration: underline;
 	}
 
-	/* Filter Controls */
+	.filter-section {
+		padding: 5px 0;
+		border-top: 1px solid var(--b-0);
+	}
+
 	.filter-group {
-		margin-bottom: var(--space-sm);
+		padding: 0 12px;
+		margin-bottom: 6px;
 	}
 
 	.filter-label {
 		display: block;
-		font-size: 0.65rem;
-		color: var(--text-muted);
+		font-size: 9px;
+		color: var(--t-3);
 		margin-bottom: 3px;
 	}
 
 	.tag-input {
 		width: 100%;
 		box-sizing: border-box;
-		background: var(--bg-elevated);
-		border: 1px solid var(--border-default);
-		border-radius: 3px;
-		color: var(--text-primary);
-		font-size: 0.75rem;
+		background: var(--bg-4);
+		border: 1px solid var(--b-2);
+		border-radius: var(--r);
+		color: var(--t-1);
+		font-size: 11px;
 		padding: 3px 6px;
 		font-family: inherit;
+		outline: none;
 	}
 
 	.tag-input:focus {
-		outline: none;
-		border-color: var(--text-accent);
+		border-color: var(--acc);
 	}
 
 	.tag-input:disabled {
@@ -238,7 +276,7 @@
 		display: flex;
 		flex-wrap: wrap;
 		gap: 3px;
-		margin-top: var(--space-xs);
+		margin-top: 4px;
 	}
 
 	.tag-remove-wrap {
@@ -250,44 +288,47 @@
 	.tag-chip-inline {
 		display: inline-flex;
 		align-items: center;
-		padding: 2px 6px;
-		background: var(--tag-bg);
-		color: var(--tag-text);
-		border: 1px solid var(--tag-border);
-		border-radius: 999px;
-		font-size: 0.75rem;
+		padding: 1px 5px;
+		background: var(--bg-4);
+		color: var(--t-2);
+		border: 1px solid var(--b-2);
+		border-radius: var(--r);
+		font-size: 10px;
 		white-space: nowrap;
 	}
 
 	.tag-remove-btn {
 		background: none;
 		border: none;
-		color: var(--text-muted);
+		color: var(--t-3);
 		cursor: pointer;
-		font-size: 0.75rem;
+		font-size: 12px;
 		padding: 0 2px;
 		line-height: 1;
 	}
 
 	.tag-remove-btn:hover {
-		color: var(--text-primary);
+		color: var(--t-1);
 	}
 
 	.clear-btn {
+		display: block;
+		width: calc(100% - 24px);
+		margin: 0 12px;
 		background: none;
-		border: 1px solid var(--border-default);
-		border-radius: 3px;
-		color: var(--text-muted);
+		border: 1px solid var(--b-2);
+		border-radius: var(--r);
+		color: var(--t-3);
 		cursor: pointer;
-		font-size: 0.65rem;
-		padding: 2px 6px;
-		width: 100%;
+		font-size: 10px;
+		padding: 3px 6px;
 		text-align: center;
+		font-family: inherit;
 		transition: color 0.1s, border-color 0.1s;
 	}
 
 	.clear-btn:hover {
-		color: var(--text-primary);
-		border-color: var(--border-hover);
+		color: var(--t-1);
+		border-color: var(--b-3);
 	}
 </style>

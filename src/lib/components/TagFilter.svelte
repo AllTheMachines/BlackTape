@@ -78,13 +78,13 @@
 		align-items: center;
 		gap: var(--space-xs);
 		padding: var(--space-sm) 0;
-		border-bottom: 1px solid var(--border-subtle);
+		border-bottom: 1px solid var(--b-1);
 		margin-bottom: var(--space-xs);
 	}
 
 	.filter-label {
 		font-size: 0.75rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 		text-transform: uppercase;
 		letter-spacing: 0.06em;
 		margin-right: var(--space-xs);
@@ -92,7 +92,7 @@
 
 	.max-note {
 		font-size: 0.7rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 		font-style: italic;
 	}
 
@@ -105,31 +105,28 @@
 	.tag-chip {
 		display: inline-flex;
 		align-items: center;
-		gap: var(--space-xs);
-		padding: 3px var(--space-sm);
-		background: var(--tag-bg);
-		color: var(--tag-text);
-		border: 1px solid var(--tag-border);
-		border-radius: 999px;
-		font-size: 0.8rem;
-		line-height: 1.4;
+		gap: 3px;
+		height: 22px;
+		padding: 0 7px;
+		background: var(--bg-4);
+		border: 1px solid var(--b-2);
+		border-radius: var(--r);
+		font-size: 10px;
+		color: var(--t-3);
 		cursor: pointer;
-		transition:
-			background 0.15s,
-			border-color 0.15s,
-			color 0.15s;
 		white-space: nowrap;
+		transition: border-color 0.1s, color 0.1s;
 	}
 
 	.tag-chip:hover:not(:disabled) {
-		background: var(--bg-hover);
-		border-color: var(--border-default);
+		border-color: var(--acc);
+		color: var(--t-2);
 	}
 
 	.tag-chip.active {
-		background: var(--text-accent);
-		color: var(--bg-base);
-		border-color: var(--text-accent);
+		background: var(--acc-bg);
+		border-color: var(--b-acc);
+		color: var(--acc);
 	}
 
 	.tag-chip.active:hover {
@@ -142,7 +139,7 @@
 	}
 
 	.count {
-		font-size: 0.7rem;
+		font-size: 9px;
 		opacity: 0.65;
 	}
 
