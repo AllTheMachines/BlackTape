@@ -394,40 +394,70 @@ These are features that don't exist yet but that a music nerd would instinctivel
 
 ---
 
-## 20. Priority Ranking
+## 20. The Queue Gap — Confirmed by User Testing
+
+**You cannot add tracks to the playback queue.**
+
+This is a fundamental gap that Steve discovered through actual use. Here's the full picture of what's broken:
+
+The app has a Player component (Tauri only) that plays audio. The Library page lets you scan local folders and see tracks. The release page shows a tracklist. The artist page has an inline player (embedded YouTube/SoundCloud iframe) that loads when you click a release card. But **none of these surfaces let you queue tracks.**
+
+Specifically:
+- On a release page, you see the tracklist. There's no "Add to queue" button on any track row. No "Queue this album" button. You can read the tracklist but not act on it.
+- On the artist page, clicking a release card loads an inline iframe player (YouTube/SoundCloud). There's no queue — you can play exactly one thing at a time and clicking another replaces it.
+- In the local Library, clicking a track plays it (presumably). But there's no queue management — no "play next", no "add to queue", no "queue this album". You can't build a listening session.
+- There is a Player component in the Tauri shell. It exists. But there's no path from "I found a track I want to hear" to "it's in my queue."
+
+**The queue is infrastructure without an interface.** The Player exists but the bridges into it — from release tracklist, from discovery, from library browsing — are missing.
+
+**What this needs:**
+- Track rows everywhere (Library, release tracklist, search results) need: "▶ Play now" and "+ Add to queue" actions
+- Release pages need "▶ Play album" and "⊕ Queue album" buttons in the header
+- Artist pages need "▶ Play discography" (shuffled or chronological)
+- A persistent queue panel (accessible from the player or via keyboard shortcut) to see and reorder what's coming next
+- Drag-to-reorder within the queue
+
+**Why this matters:** Without a queue, Mercury is a catalogue you can look at but not really listen to. Every track interaction is one-shot. A music nerd builds listening sessions — a queue of things they want to hear in sequence. Without it, discovery doesn't convert into listening.
+
+---
+
+## 21. Priority Ranking
 
 If I had to rank what to fix or add, in order of user impact:
 
 **High impact, relatively low complexity:**
-1. Search autocomplete — fundamental UX gap
-2. Artist page: band members / lineup from MusicBrainz relationships
-3. Artist page: "influenced by" relationships from MusicBrainz
-4. Discography: filter by type (album / EP / single / compilation)
-5. Discography: sort by date (newest first, oldest first)
-6. Credit names on release pages → linked to artist pages
-7. "Edit on MusicBrainz" link on artist and release pages
-8. Tag list in Discover: show artist count per tag
-9. Crate Digging: country dropdown (not freetext code)
-10. Crate Digging: auto-dig on page load
+1. **Queue: "Add to queue" on track rows** — Library, release tracklist, search results
+2. **Queue: "Play album" / "Queue album" on release pages** — the most obvious missing action
+3. Search autocomplete — fundamental UX gap
+4. Artist page: band members / lineup from MusicBrainz relationships
+5. Artist page: "influenced by" relationships from MusicBrainz
+6. Discography: filter by type (album / EP / single / compilation)
+7. Discography: sort by date (newest first, oldest first)
+8. Credit names on release pages → linked to artist pages
+9. "Edit on MusicBrainz" link on artist and release pages
+10. Tag list in Discover: show artist count per tag
+11. Crate Digging: country dropdown (not freetext code)
+12. Crate Digging: auto-dig on page load
 
 **High impact, medium complexity:**
-11. Discover: country filter
-12. Discover: decade filter (merge with Time Machine logic)
-13. Artist page: cover image / portrait
-14. New & Rising: "New in my taste" personalized tab
-15. Genre pages: timeline of activity (artists formed per decade)
-16. Label pages (via MusicBrainz label data)
-17. Style Map: multi-node selection → intersection Discover
-18. Room discovery: "All active rooms" global view
-19. Shelves: item annotation/notes
-20. Shelves: public share link
+13. Queue panel — view and reorder the current queue
+14. Discover: country filter
+15. Discover: decade filter (merge with Time Machine logic)
+16. Artist page: cover image / portrait
+17. New & Rising: "New in my taste" personalized tab
+18. Genre pages: timeline of activity (artists formed per decade)
+19. Label pages (via MusicBrainz label data)
+20. Style Map: multi-node selection → intersection Discover
+21. Room discovery: "All active rooms" global view
+22. Shelves: item annotation/notes
+23. Shelves: public share link
 
 **High impact, high complexity (but worth it):**
-21. Track-level search and linking
-22. "How these two artists connect" AI mode
-23. Pressing/edition data (Discogs integration)
-24. Personal music map (geographic taste visualization)
-25. Discovery system integration — cross-linking all seven discovery modes into a unified experience
+24. Track-level search and linking
+25. "How these two artists connect" AI mode
+26. Pressing/edition data (Discogs integration)
+27. Personal music map (geographic taste visualization)
+28. Discovery system integration — cross-linking all seven discovery modes into a unified experience
 
 ---
 
