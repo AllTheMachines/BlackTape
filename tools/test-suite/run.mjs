@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 // Baseline (Phase 13, 2026-02-24): 63 passing (62 code + 1 build), 0 web, 30 skipped — exits 0
+// Phase 14 adds: method:'tauri' block — connects to running Tauri app via CDP
 /**
  * Mercury Test Suite
  *
@@ -15,6 +16,7 @@
 
 import { createRequire } from 'module';
 import { spawn } from 'child_process';
+import path from 'path';
 const require = createRequire(import.meta.url);
 import { ALL_TESTS } from './manifest.mjs';
 import { runWebTests } from './runners/web.mjs';
@@ -94,9 +96,10 @@ async function main() {
   const webTests = tests.filter(t => t.method === 'web');
   const codeTests = tests.filter(t => t.method === 'code');
   const buildTests = tests.filter(t => t.method === 'build');
+  const tauriTests = tests.filter(t => t.method === 'tauri');
   const skipTests = tests.filter(t => t.method === 'skip');
 
-  log(` Tests: ${webTests.length} web, ${codeTests.length} code, ${skipTests.length} skipped`);
+  log(` Tests: ${webTests.length} web, ${codeTests.length} code, ${tauriTests.length} tauri, ${skipTests.length} skipped`);
   if (phaseFilter) log(` Filter: Phase ${phaseFilter} only`);
   log('');
 
@@ -164,7 +167,48 @@ async function main() {
   }
 
   // ---------------------------------------------------------------------------
-  // 4. Skipped tests
+  // 4. Tauri E2E tests (Playwright CDP — requires debug binary)
+  // ---------------------------------------------------------------------------
+
+  if (tauriTests.length > 0 && !codeOnly) {
+    header('Tauri E2E Tests (CDP)');
+
+    let setup, teardown, runTauriTest;
+    try {
+      ({ setup, teardown, runTauriTest } = await import('./runners/tauri.mjs'));
+    } catch (e) {
+      log(` ⚠  Could not load Tauri runner: ${e.message}`);
+      tauriTests.forEach(t => results.push({ ...t, passed: null, error: 'Runner unavailable' }));
+    }
+
+    if (setup) {
+      let page = null;
+      try {
+        const rootDir = path.resolve(import.meta.dirname, '../..');
+        page = await setup(rootDir);
+        for (const test of tauriTests) {
+          const result = await runTauriTest(test, page);
+          const icon = result.passed ? PASS : FAIL;
+          log(` ${icon}  [${test.id}] ${test.desc}`);
+          if (!result.passed && result.error) log(`       ${result.error}`);
+          results.push(result);
+        }
+      } catch (e) {
+        log(` ⚠  Tauri runner failed: ${e.message}`);
+        log('    Skipping all Tauri tests. Build the debug binary to run them.');
+        tauriTests.forEach(t => {
+          if (!results.find(r => r.id === t.id)) {
+            results.push({ ...t, passed: null, error: e.message?.split('\n')[0] });
+          }
+        });
+      } finally {
+        if (teardown) await teardown().catch(() => {});
+      }
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // 5. Skipped tests
   // ---------------------------------------------------------------------------
 
   if (skipTests.length > 0) {
@@ -177,7 +221,7 @@ async function main() {
   }
 
   // ---------------------------------------------------------------------------
-  // 5. Summary
+  // 6. Summary
   // ---------------------------------------------------------------------------
 
   const passed = results.filter(r => r.passed === true);
