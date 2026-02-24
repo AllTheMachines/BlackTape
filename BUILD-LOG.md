@@ -4755,3 +4755,9 @@ Tag: v1.2
 ```
 
 **Next:** `/gsd:new-milestone` — plan v1.3 (Interoperability, Listening Rooms, Artist Tools — Phases 16–18)
+
+> **Commit 2ea1bb5** (2026-02-24 08:58) — wip: auto-save
+> Files changed: 1
+
+> **Commit 616f3c7** (2026-02-24 09:09) — docs: start milestone v1.3 The Open Network
+> Files changed: 2
