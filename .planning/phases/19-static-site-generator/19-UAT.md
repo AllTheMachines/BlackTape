@@ -55,10 +55,11 @@ skipped: 2
   reason: "User reported: site_gen::tests::build_html_cover_img_when_downloaded panicked: assertion failed: !html.contains('cover-placeholder') — CSS stylesheet always contains the .cover-placeholder selector so this string check never passes even when the img branch is taken"
   severity: major
   test: 3
-  root_cause: "Test assertion uses bare substring 'cover-placeholder' which matches the CSS class selector '.cover-placeholder {' in the stylesheet. When the cover IS downloaded, the <img> branch is used (not the placeholder div), but the CSS still defines the .cover-placeholder rule. The assertion should check for the div element '<div class=\"cover-placeholder\">' to distinguish stylesheet presence from element presence."
+  root_cause: "Test assertion used bare substring 'cover-placeholder' which matched the CSS class selector '.cover-placeholder {' in the stylesheet. When the cover IS downloaded, the <img> branch is used (not the placeholder div), but the CSS still defines the .cover-placeholder rule. The assertion needed to check for the div element '<div class=\"cover-placeholder\">' to distinguish stylesheet presence from element presence."
   artifacts:
     - path: "src-tauri/src/site_gen.rs"
-      issue: "Test assertion at line 801 checks html.contains('cover-placeholder') — matches CSS selector in stylesheet, not just the placeholder div"
-  missing:
-    - "Change assertion from !html.contains('cover-placeholder') to !html.contains('<div class=\"cover-placeholder\">')"
+      issue: "Test assertion at line 801 checked html.contains('cover-placeholder') — matched CSS selector in stylesheet, not just the placeholder div"
+  missing: []
   debug_session: ""
+  fix_commit: "12bf81d"
+  fix_status: resolved

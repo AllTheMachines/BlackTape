@@ -5422,3 +5422,23 @@ Test suite now at 114 code checks. 0 failures.
 
 > **Commit d68aecf** (2026-02-24 16:47) — docs(phase-19): complete phase execution
 > Files changed: 1
+
+> **Commit 824aae5** (2026-02-24 16:47) — wip: auto-save
+> Files changed: 1
+
+> **Commit 12bf81d** (2026-02-24 16:51) — fix(19): correct unit test assertion in build_html_cover_img_when_downloaded
+> Files changed: 2
+
+## Entry — 2026-02-24 — Phase 19 UAT: Static Site Generator
+
+UAT run on all 3 Phase 19 plans. All code checks pass (P19-01 through P19-11). One issue found and fixed immediately.
+
+**Issue found:** `site_gen::tests::build_html_cover_img_when_downloaded` was failing. The test asserted `!html.contains("cover-placeholder")` — but the CSS stylesheet in the generated HTML always contains `.cover-placeholder {` as a class selector. So even when the `<img>` branch was correctly taken, the bare string check matched the stylesheet and the assertion failed.
+
+**Fix:** Changed assertion to check for the specific element `!html.contains(r#"<div class="cover-placeholder">"#)` — now correctly passes when a cover is downloaded (img rendered) and fails when it's not (div rendered). One-line fix.
+
+Full suite after fix: **114 code checks, 0 failures.** All Rust unit tests pass (19 site_gen tests, 45 total). Svelte/TS build clean.
+
+Desktop-only tests (P19-12 and the interactive dialog flow) are marked skipped — require running Tauri app with OS folder picker.
+
+Phase 19 is verified. Ready for Phase 20.
