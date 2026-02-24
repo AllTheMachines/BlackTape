@@ -5184,3 +5184,6 @@ All 92 tests passing. Phase 18 UI layer complete — Plans 01–04 done.
 
 > **Commit 3574ab8** (2026-02-24 13:31) — docs(18-04): complete AiSettings UI plan — provider selector and auto-generate toggle
 > Files changed: 3
+
+> **Commit 3185efd** (2026-02-24 13:31) — wip: auto-save
+> Files changed: 1
