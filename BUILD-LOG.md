@@ -6095,3 +6095,6 @@ Note: Plan 03 (TagChip + global styles) ran concurrently in a parallel session. 
 The app's visual frame is now the v1.4 design system: every border between panels is `--b-1` (1px at #202020), every surface is `--bg-1` (#0f0f0f), every input is `--bg-4` (#212121) with `--b-2` (#2c2c2c) border and 2px radius. The amber accent (`--acc` #c4a55a) appears exactly where it should — active nav items and the play button.
 
 Test suite: 100/100 code checks passing.
+
+> **Commit 8ea85f4** (2026-02-25 00:44) — docs(23-02): complete chrome-surfaces plan
+> Files changed: 4
