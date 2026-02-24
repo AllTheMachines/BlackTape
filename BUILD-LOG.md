@@ -4605,3 +4605,6 @@ test suite:     67 passing, 0 failing
 Files removed: 25 (13 server files + 10 API routes + d1-provider.ts + package-lock changes)
 Files modified: 17 (page loaders, config, docs, test runner)
 Files added: 2 (new-rising/+page.ts, embed/+page.ts)
+
+> **Commit fcb8b91** (2026-02-24 02:19) — refactor: full web version purge — Tauri-desktop-only codebase
+> Files changed: 3
