@@ -6017,3 +6017,17 @@ The mockup system is already fully designed in `mockups/styles.css`. The job her
 **Key decision:** Dynamic import of `@tauri-apps/api/window` inside button handlers instead of a static import at the top of `Titlebar.svelte`. Static would fail in dev/web mode (no Tauri context). Dynamic is lazy — only executes inside the `isTauri()` guard anyway, but cleaner.
 
 Test suite: 93/93 code checks passing, including 4 new P23 tests.
+> **Commit a14ddf7** (2026-02-25 00:34) — docs(23-01): complete design-system-foundation plan 01
+> Files changed: 5
+
+---
+
+## Entry 025 — 2026-02-25 — v1.4 Phase 23 Plan 03: Tag Chips + Global Styles
+
+### Context
+
+Phase 23 Plan 03 applies the v1.4 aesthetic universally to two visible surfaces: TagChip (the most repeated element in the app) and the global interactive element base (buttons, inputs, badges, tabs). When TagChip is correct everywhere, it's immediately obvious across search results, artist pages, crate dig, and discover.
+
+<!-- status -->
+Phase 23 Plan 03 in progress — Task 1/2 complete (TagChip restyled to 22px/2px-radius spec).
+<!-- /status -->
