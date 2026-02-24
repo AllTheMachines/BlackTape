@@ -49,3 +49,33 @@ Tags: ${tags.slice(0, 5).join(', ')}.
 Example artists: ${artistNames.slice(0, 3).join(', ')}.
 Capture the vibe — something a fan would recognise immediately. No genre labels as standalone nouns.`
 };
+
+/**
+ * Build a grounded AI summary prompt from MusicBrainz release data.
+ *
+ * Phase 18: AI Auto-News — uses release catalog as context, not tags.
+ * DO NOT confuse with PROMPTS.artistSummary which uses tags/country.
+ *
+ * Slices to 20 releases to keep prompt under ~400 tokens.
+ * System prompt enforces strict grounding: no invented information.
+ */
+export function artistSummaryFromReleases(
+	artistName: string,
+	releases: Array<{ title: string; year: number | null; type: string }>,
+	tags: string
+): { system: string; user: string } {
+	const releaseList = releases
+		.slice(0, 20)
+		.map((r) => `- "${r.title}" (${r.year ?? 'unknown year'}, ${r.type})`)
+		.join('\n');
+
+	return {
+		system: `You are a factual music cataloger. Write exactly 2-3 sentences describing an artist based ONLY on the provided data. Do not invent, speculate, or add any information not present in the data provided. Do not use subjective or evaluative language.`,
+		user: `Artist: ${artistName}
+Tags/genres: ${tags || 'unknown'}
+Discography:
+${releaseList || '(no releases available)'}
+
+Write a 2-3 sentence factual summary of this artist's catalog using only the data above.`
+	};
+}
