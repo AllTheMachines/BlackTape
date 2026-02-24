@@ -90,7 +90,8 @@
 	}
 </script>
 
-<div class="style-map-container" bind:this={container}>
+<div class="style-map-container" bind:this={container}
+     data-ready={layoutNodes.length > 0 ? 'true' : undefined}>
 	{#if layoutNodes.length === 0}
 		<div class="loading">Building style map...</div>
 	{:else}

@@ -159,7 +159,7 @@
 		<p>Your Taste Fingerprint will appear here once you've saved some artists or listened to local tracks.</p>
 	</div>
 {:else}
-	<div class="fingerprint-wrapper">
+	<div class="fingerprint-wrapper" data-ready={nodes.length > 0 ? 'true' : undefined}>
 		<svg
 			bind:this={svgEl}
 			class="fingerprint-svg"
