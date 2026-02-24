@@ -2023,6 +2023,47 @@ export const PHASE_22 = [
 ];
 
 // ---------------------------------------------------------------------------
+// PHASE 23 — Design System Foundation
+// ---------------------------------------------------------------------------
+
+export const PHASE_23 = [
+  {
+    id: 'P23-01', phase: 23, area: 'Design System',
+    desc: 'theme.css contains all required v1.4 tokens (bg-0..bg-6, b-0..b-acc, t-1..t-3, acc, sidebar, topbar, player, r)',
+    method: 'code',
+    fn: () => {
+      const tokens = ['--bg-0','--bg-1','--bg-2','--bg-3','--bg-4','--bg-5','--bg-6','--b-0','--b-1','--b-2','--b-3','--b-acc','--t-1','--t-2','--t-3','--acc','--acc-bg','--acc-bg-h','--sidebar','--topbar','--player','--r'];
+      return tokens.every(t => fileContains('src/lib/styles/theme.css', t));
+    },
+  },
+  {
+    id: 'P23-02', phase: 23, area: 'Design System',
+    desc: 'Titlebar.svelte exists with drag region, getCurrentWindow, --bg-1 and --acc tokens',
+    method: 'code',
+    fn: () =>
+      fileExists('src/lib/components/Titlebar.svelte') &&
+      fileContains('src/lib/components/Titlebar.svelte', 'data-tauri-drag-region') &&
+      fileContains('src/lib/components/Titlebar.svelte', 'getCurrentWindow') &&
+      fileContains('src/lib/components/Titlebar.svelte', 'var(--bg-1)') &&
+      fileContains('src/lib/components/Titlebar.svelte', 'var(--acc)'),
+  },
+  {
+    id: 'P23-03', phase: 23, area: 'Design System',
+    desc: 'tauri.conf.json has decorations: false in app.windows[0]',
+    method: 'code',
+    fn: () => fileContains('src-tauri/tauri.conf.json', '"decorations": false'),
+  },
+  {
+    id: 'P23-04', phase: 23, area: 'Design System',
+    desc: 'layout.svelte imports and renders Titlebar component',
+    method: 'code',
+    fn: () =>
+      fileContains('src/routes/+layout.svelte', 'Titlebar') &&
+      fileContains('src/routes/+layout.svelte', "import Titlebar"),
+  },
+];
+
+// ---------------------------------------------------------------------------
 // Build check — always runs last
 // ---------------------------------------------------------------------------
 
@@ -2060,5 +2101,6 @@ export const ALL_TESTS = [
   ...PHASE_20,
   ...PHASE_21,
   ...PHASE_22,
+  ...PHASE_23,
   ...BUILD,
 ];

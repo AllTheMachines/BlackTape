@@ -25,6 +25,7 @@
 	import { totalUnread, chatState, openChat } from '$lib/comms/notifications.svelte.js';
 	import ChatOverlay from '$lib/components/chat/ChatOverlay.svelte';
 	import { navProgress } from '$lib/nav-progress.svelte';
+	import Titlebar from '$lib/components/Titlebar.svelte';
 
 	let { children } = $props();
 
@@ -99,6 +100,10 @@
 {#if isEmbed}
 	{@render children()}
 {:else}
+
+{#if tauriMode}
+	<Titlebar />
+{/if}
 
 {#if $navigating || (tauriMode && navProgress.active)}
 	<div

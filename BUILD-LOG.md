@@ -6001,5 +6001,8 @@ Starting v1.4 "The Interface" — the complete visual redesign. Phase 23 is the 
 The mockup system is already fully designed in `mockups/styles.css`. The job here is wiring it into the app.
 
 <!-- status -->
-Phase 23 Plan 01 executing — 1/2 tasks done. Added 25 design tokens to theme.css. Working on Titlebar component.
+Phase 23 Plan 01 complete — 2/2 tasks done. Design tokens in theme.css + custom Titlebar with native decorations disabled.
 <!-- /status -->
+
+> **Commit 774fee7** (2026-02-25 00:30) — feat(23-01): add Mercury v1.4 design tokens to theme.css
+> Files changed: 2
