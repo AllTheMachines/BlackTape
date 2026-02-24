@@ -1554,6 +1554,493 @@ export const PHASE_21 = [
 ];
 
 // ---------------------------------------------------------------------------
+// PHASE 22 — Comprehensive User Journey Tests
+//
+// Goes through every user-facing feature and tests real user paths:
+//   - Artist page deep (stats tab, embed, shelf, share, export site)
+//   - Crate Digging flow (load, tag filter, decade filter, click-through)
+//   - Discovery advanced (active tag count, two-tag intersection, empty state)
+//   - Route smoke tests for every page not previously E2E tested
+//   - Settings deep (Fediverse + AI sections)
+//   - KB genre navigation from artist tag links
+//   - Search edge cases (multi-word, tag-mode)
+// ---------------------------------------------------------------------------
+
+export const PHASE_22 = [
+
+  // ── Code checks ──────────────────────────────────────────────────────────
+
+  {
+    id: 'P22-01', phase: 22, area: 'Crate Digging',
+    desc: 'getCrateDigArtists query function exists in db/queries.ts',
+    method: 'code',
+    fn: () => fileContains('src/lib/db/queries.ts', 'getCrateDigArtists'),
+  },
+  {
+    id: 'P22-02', phase: 22, area: 'Navigation',
+    desc: '/about route file exists',
+    method: 'code',
+    fn: () => fileExists('src/routes/about/+page.svelte'),
+  },
+  {
+    id: 'P22-03', phase: 22, area: 'Embed',
+    desc: '/embed/collection/[id] route file exists',
+    method: 'code',
+    fn: () => fileExists('src/routes/embed/collection/[id]/+page.svelte'),
+  },
+  {
+    id: 'P22-04', phase: 22, area: 'Scenes',
+    desc: 'Scene detail page has Mastodon share link (sharetomastodon)',
+    method: 'code',
+    fn: () => fileContains('src/routes/scenes/[slug]/+page.svelte', 'sharetomastodon'),
+  },
+  {
+    id: 'P22-05', phase: 22, area: 'Listening Rooms',
+    desc: 'Room page imports and uses leaveRoom',
+    method: 'code',
+    fn: () => fileContains('src/routes/room/[channelId]/+page.svelte', 'leaveRoom'),
+  },
+  {
+    id: 'P22-06', phase: 22, area: 'Discovery',
+    desc: 'Discover page has empty-state element for no results',
+    method: 'code',
+    fn: () => fileContains('src/routes/discover/+page.svelte', 'empty-state'),
+  },
+  {
+    id: 'P22-07', phase: 22, area: 'Artist Page',
+    desc: 'Artist page has Mastodon share button (share-mastodon-btn class)',
+    method: 'code',
+    fn: () => fileContains('src/routes/artist/[slug]/+page.svelte', 'share-mastodon-btn'),
+  },
+  {
+    id: 'P22-08', phase: 22, area: 'Release Page',
+    desc: 'Release page imports BuyOnBar component',
+    method: 'code',
+    fn: () => fileContains('src/routes/artist/[slug]/release/[mbid]/+page.svelte', 'BuyOnBar'),
+  },
+
+  // ── Artist Page — Deep E2E ────────────────────────────────────────────────
+
+  {
+    id: 'P22-09', phase: 22, area: 'Artist Page',
+    desc: 'Stats tab switch — click Stats → stats-hero visible, overview hidden',
+    method: 'tauri',
+    fn: async (page) => {
+      const origin = new URL(page.url()).origin;
+      await page.goto(`${origin}/artist/radiohead`);
+      await page.locator('[data-testid="tab-content-overview"]').waitFor({ timeout: 5000 });
+      await page.locator('[data-testid="tab-stats"]').click();
+      await page.locator('[data-testid="tab-content-stats"]').waitFor({ timeout: 3000 });
+      const statsVisible = await page.locator('[data-testid="tab-content-stats"]').isVisible();
+      const overviewGone = !(await page.locator('[data-testid="tab-content-overview"]').isVisible());
+      const heroVisible = await page.locator('[data-testid="stats-hero"]').isVisible();
+      return statsVisible && overviewGone && heroVisible;
+    },
+  },
+  {
+    id: 'P22-10', phase: 22, area: 'Artist Page',
+    desc: 'Embed widget expand — click </> toggle → code snippet appears',
+    method: 'tauri',
+    fn: async (page) => {
+      const origin = new URL(page.url()).origin;
+      await page.goto(`${origin}/artist/radiohead`);
+      await page.locator('[data-testid="tab-content-overview"]').waitFor({ timeout: 5000 });
+      await page.locator('.embed-toggle').click();
+      await page.locator('.embed-panel').waitFor({ timeout: 3000 });
+      return await page.locator('pre.embed-code').isVisible();
+    },
+  },
+  {
+    id: 'P22-11', phase: 22, area: 'Artist Page',
+    desc: 'Save to Shelf button visible in Tauri mode',
+    method: 'tauri',
+    fn: async (page) => {
+      const origin = new URL(page.url()).origin;
+      await page.goto(`${origin}/artist/radiohead`);
+      await page.locator('[data-testid="tab-content-overview"]').waitFor({ timeout: 5000 });
+      return await page.locator('.save-shelf-btn').isVisible();
+    },
+  },
+  {
+    id: 'P22-12', phase: 22, area: 'Artist Page',
+    desc: 'Mastodon share button visible on artist page',
+    method: 'tauri',
+    fn: async (page) => {
+      const origin = new URL(page.url()).origin;
+      await page.goto(`${origin}/artist/radiohead`);
+      await page.locator('[data-testid="tab-content-overview"]').waitFor({ timeout: 5000 });
+      return await page.locator('.share-mastodon-btn').isVisible();
+    },
+  },
+  {
+    id: 'P22-13', phase: 22, area: 'Artist Page',
+    desc: 'Export site button visible in Tauri mode (data-testid="export-site-btn")',
+    method: 'tauri',
+    fn: async (page) => {
+      const origin = new URL(page.url()).origin;
+      await page.goto(`${origin}/artist/radiohead`);
+      await page.locator('[data-testid="tab-content-overview"]').waitFor({ timeout: 5000 });
+      return await page.locator('[data-testid="export-site-btn"]').isVisible();
+    },
+  },
+
+  // ── Crate Digging — E2E ──────────────────────────────────────────────────
+
+  {
+    id: 'P22-14', phase: 22, area: 'Crate Digging',
+    desc: '/crate loads — Dig button visible, initial artist cards pre-loaded',
+    method: 'tauri',
+    fn: async (page) => {
+      const origin = new URL(page.url()).origin;
+      await page.goto(`${origin}/crate`);
+      await page.locator('.dig-btn').waitFor({ timeout: 5000 });
+      const digVisible = await page.locator('.dig-btn').isVisible();
+      // Crate page pre-loads 20 random artists via +page.ts on initial load (Tauri mode)
+      await page.locator('.artist-card').waitFor({ timeout: 5000 });
+      const cardCount = await page.locator('.artist-card').count();
+      return digVisible && cardCount > 0;
+    },
+  },
+  {
+    id: 'P22-15', phase: 22, area: 'Crate Digging',
+    desc: 'Crate dig with tag filter "electronic" — results appear after clicking Dig',
+    method: 'tauri',
+    fn: async (page) => {
+      const origin = new URL(page.url()).origin;
+      await page.goto(`${origin}/crate`);
+      await page.locator('.dig-btn').waitFor({ timeout: 5000 });
+      // Fill first filter-input (tag field)
+      await page.locator('.filter-input').first().fill('electronic');
+      await page.locator('.dig-btn').click();
+      await page.locator('.artist-card').waitFor({ timeout: 10000 });
+      // Fixture: 13/15 artists have the "electronic" tag
+      return await page.locator('.artist-card').count() > 0;
+    },
+  },
+  {
+    id: 'P22-16', phase: 22, area: 'Crate Digging',
+    desc: 'Crate decade filter — select 1990s, Dig → no crash, results or empty state',
+    method: 'tauri',
+    fn: async (page) => {
+      const errors = [];
+      page.once('pageerror', e => errors.push(e));
+      const origin = new URL(page.url()).origin;
+      await page.goto(`${origin}/crate`);
+      await page.locator('.dig-btn').waitFor({ timeout: 5000 });
+      await page.locator('.filter-select').selectOption({ label: '1990s' });
+      await page.locator('.dig-btn').click();
+      // Wait for any result (artist cards OR an empty/no-results state)
+      await page.waitForTimeout(1500);
+      return errors.length === 0;
+    },
+  },
+  {
+    id: 'P22-17', phase: 22, area: 'Crate Digging',
+    desc: 'Crate artist click-through — click first artist card → navigates to /artist/...',
+    method: 'tauri',
+    fn: async (page) => {
+      const origin = new URL(page.url()).origin;
+      await page.goto(`${origin}/crate`);
+      await page.locator('.artist-card').waitFor({ timeout: 10000 });
+      await page.locator('a.artist-name').first().click();
+      await page.waitForURL(/\/artist\//, { timeout: 10000 });
+      return page.url().includes('/artist/');
+    },
+  },
+
+  // ── Discovery Advanced ───────────────────────────────────────────────────
+
+  {
+    id: 'P22-18', phase: 22, area: 'Discovery',
+    desc: 'Discover with active tag — page description shows "artists tagged with"',
+    method: 'tauri',
+    fn: async (page) => {
+      const origin = new URL(page.url()).origin;
+      // electronic tag: 13/15 fixture artists have it
+      await page.goto(`${origin}/discover?tags=electronic`);
+      await page.waitForLoadState('domcontentloaded');
+      await page.locator('.artist-card, .empty-state').waitFor({ timeout: 10000 });
+      const descText = await page.locator('.page-desc').textContent();
+      return (descText ?? '').includes('artists tagged with');
+    },
+  },
+  {
+    id: 'P22-19', phase: 22, area: 'Discovery',
+    desc: 'Discover two-tag intersection — URL gets comma-joined tags, results visible',
+    method: 'tauri',
+    fn: async (page) => {
+      const origin = new URL(page.url()).origin;
+      await page.goto(`${origin}/discover`);
+      await page.waitForLoadState('domcontentloaded');
+      await page.locator('.tag-cloud .tag-chip').waitFor({ timeout: 10000 });
+      // Click "electronic" tag
+      await page.locator('.tag-cloud .tag-chip').filter({ hasText: /^electronic/ }).first().click();
+      await page.waitForURL(/tags=electronic/, { timeout: 5000 });
+      // Click "idm" tag — comma-joined in URL: ?tags=electronic,idm
+      await page.locator('.tag-cloud .tag-chip').filter({ hasText: /^idm/ }).first().click();
+      // Comma may be percent-encoded (%2C) by some browsers — match either
+      await page.waitForURL(/tags=electronic.*idm/, { timeout: 5000 });
+      await page.locator('.artist-card').waitFor({ timeout: 5000 });
+      // Fixture artists with both electronic+idm: Boards of Canada, Autechre, Aphex Twin, Four Tet
+      return await page.locator('.artist-card').count() > 0;
+    },
+  },
+  {
+    id: 'P22-20', phase: 22, area: 'Discovery',
+    desc: 'Discover empty state — tag with no matching artists shows no-results message',
+    method: 'tauri',
+    fn: async (page) => {
+      const origin = new URL(page.url()).origin;
+      await page.goto(`${origin}/discover?tags=xyzzy-no-match-1234`);
+      await page.waitForLoadState('domcontentloaded');
+      await page.locator('.empty-state').waitFor({ timeout: 5000 });
+      return await page.locator('.empty-state').isVisible();
+    },
+  },
+
+  // ── Route Smoke Tests — pages not yet E2E tested ─────────────────────────
+
+  {
+    id: 'P22-21', phase: 22, area: 'Style Map',
+    desc: '/style-map loads — page renders, heading visible, no JS crash',
+    method: 'tauri',
+    fn: async (page) => {
+      const errors = [];
+      page.once('pageerror', e => errors.push(e));
+      const origin = new URL(page.url()).origin;
+      await page.goto(`${origin}/style-map`);
+      await page.waitForLoadState('domcontentloaded');
+      await page.locator('h1').waitFor({ timeout: 5000 });
+      return errors.length === 0 && await page.locator('h1').isVisible();
+    },
+  },
+  {
+    id: 'P22-22', phase: 22, area: 'Knowledge Base',
+    desc: '/kb loads — page renders, heading visible, no JS crash',
+    method: 'tauri',
+    fn: async (page) => {
+      const errors = [];
+      page.once('pageerror', e => errors.push(e));
+      const origin = new URL(page.url()).origin;
+      await page.goto(`${origin}/kb`);
+      await page.waitForLoadState('domcontentloaded');
+      await page.locator('h1').waitFor({ timeout: 5000 });
+      return errors.length === 0 && await page.locator('h1').isVisible();
+    },
+  },
+  {
+    id: 'P22-23', phase: 22, area: 'Knowledge Base',
+    desc: '/time-machine loads — page renders, heading visible, no JS crash',
+    method: 'tauri',
+    fn: async (page) => {
+      const errors = [];
+      page.once('pageerror', e => errors.push(e));
+      const origin = new URL(page.url()).origin;
+      await page.goto(`${origin}/time-machine`);
+      await page.waitForLoadState('domcontentloaded');
+      await page.locator('h1').waitFor({ timeout: 5000 });
+      return errors.length === 0 && await page.locator('h1').isVisible();
+    },
+  },
+  {
+    id: 'P22-24', phase: 22, area: 'Scenes',
+    desc: '/scenes loads — page renders, no JS crash (AI detection runs async in background)',
+    method: 'tauri',
+    fn: async (page) => {
+      const errors = [];
+      page.once('pageerror', e => errors.push(e));
+      const origin = new URL(page.url()).origin;
+      await page.goto(`${origin}/scenes`);
+      await page.waitForLoadState('domcontentloaded');
+      await page.locator('h1').waitFor({ timeout: 5000 });
+      return errors.length === 0 && await page.locator('h1').isVisible();
+    },
+  },
+  {
+    id: 'P22-25', phase: 22, area: 'New & Rising',
+    desc: '/new-rising loads — page renders, heading visible, no JS crash',
+    method: 'tauri',
+    fn: async (page) => {
+      const errors = [];
+      page.once('pageerror', e => errors.push(e));
+      const origin = new URL(page.url()).origin;
+      await page.goto(`${origin}/new-rising`);
+      await page.waitForLoadState('domcontentloaded');
+      await page.locator('h1').waitFor({ timeout: 5000 });
+      return errors.length === 0 && await page.locator('h1').isVisible();
+    },
+  },
+  {
+    id: 'P22-26', phase: 22, area: 'Profile',
+    desc: '/profile loads — profile-page section renders in Tauri mode, no JS crash',
+    method: 'tauri',
+    fn: async (page) => {
+      const errors = [];
+      page.once('pageerror', e => errors.push(e));
+      const origin = new URL(page.url()).origin;
+      await page.goto(`${origin}/profile`);
+      await page.waitForLoadState('domcontentloaded');
+      // Profile page has main.profile-page in Tauri mode
+      await page.locator('.profile-page').waitFor({ timeout: 5000 });
+      return errors.length === 0 && await page.locator('.profile-page').isVisible();
+    },
+  },
+  {
+    id: 'P22-27', phase: 22, area: 'Backers',
+    desc: '/backers loads — renders without crash (MERCURY_PUBKEY is placeholder → shows empty state)',
+    method: 'tauri',
+    fn: async (page) => {
+      const errors = [];
+      page.once('pageerror', e => errors.push(e));
+      const origin = new URL(page.url()).origin;
+      await page.goto(`${origin}/backers`);
+      await page.waitForLoadState('domcontentloaded');
+      // Backers page always renders some container even in empty-pubkey state
+      await page.locator('h1, .backers-page').first().waitFor({ timeout: 5000 });
+      return errors.length === 0;
+    },
+  },
+  {
+    id: 'P22-28', phase: 22, area: 'Listening Rooms',
+    desc: '/room/[channelId] loads — room UI renders, no JS crash',
+    method: 'tauri',
+    fn: async (page) => {
+      const errors = [];
+      page.once('pageerror', e => errors.push(e));
+      const origin = new URL(page.url()).origin;
+      await page.goto(`${origin}/room/test-channel-abc123`);
+      await page.waitForLoadState('domcontentloaded');
+      // Room check runs async — give it time to settle to loading/not-found state
+      await page.waitForTimeout(1500);
+      return errors.length === 0;
+    },
+  },
+  {
+    id: 'P22-29', phase: 22, area: 'Embed',
+    desc: '/embed/artist/radiohead loads standalone — .card visible, main nav absent',
+    method: 'tauri',
+    fn: async (page) => {
+      const errors = [];
+      page.once('pageerror', e => errors.push(e));
+      const origin = new URL(page.url()).origin;
+      await page.goto(`${origin}/embed/artist/radiohead`);
+      await page.waitForLoadState('domcontentloaded');
+      // Embed layout (@reset) strips main nav — nav element should be absent
+      const navCount = await page.locator('nav').count();
+      // Embed card uses class="card" and contains artist name
+      await page.locator('.card').waitFor({ timeout: 5000 });
+      const cardVisible = await page.locator('.card').isVisible();
+      return errors.length === 0 && navCount === 0 && cardVisible;
+    },
+  },
+
+  // ── Settings Deep ────────────────────────────────────────────────────────
+
+  {
+    id: 'P22-30', phase: 22, area: 'Settings',
+    desc: 'Settings: Fediverse section renders — ap-handle-input visible',
+    method: 'tauri',
+    fn: async (page) => {
+      const origin = new URL(page.url()).origin;
+      await page.goto(`${origin}/settings`);
+      await page.waitForURL(/\/settings/, { timeout: 5000 });
+      await page.locator('h1:has-text("Settings")').waitFor({ timeout: 3000 });
+      await page.locator('[data-testid="ap-handle-input"]').waitFor({ timeout: 5000 });
+      return await page.locator('[data-testid="ap-handle-input"]').isVisible();
+    },
+  },
+  {
+    id: 'P22-31', phase: 22, area: 'Settings',
+    desc: 'Settings: AI section renders — affiliate disclosure visible',
+    method: 'tauri',
+    fn: async (page) => {
+      const origin = new URL(page.url()).origin;
+      await page.goto(`${origin}/settings`);
+      await page.waitForURL(/\/settings/, { timeout: 5000 });
+      await page.locator('h1:has-text("Settings")').waitFor({ timeout: 3000 });
+      // AiSettings always renders the affiliate badge (P18-09 confirms the text is present)
+      await page.locator('text=affiliate link').waitFor({ timeout: 5000 });
+      return await page.locator('text=affiliate link').isVisible();
+    },
+  },
+
+  // ── KB Genre Navigation ──────────────────────────────────────────────────
+
+  {
+    id: 'P22-32', phase: 22, area: 'Knowledge Base',
+    desc: 'Artist page tag ↗ KB link navigates to /kb/genre/[tag] — page loads, no crash',
+    method: 'tauri',
+    fn: async (page) => {
+      const errors = [];
+      page.on('pageerror', e => errors.push(e));
+      const origin = new URL(page.url()).origin;
+      await page.goto(`${origin}/artist/radiohead`);
+      await page.locator('[data-testid="tab-content-overview"]').waitFor({ timeout: 5000 });
+      // Get the href from first tag KB link (↗ arrow) and navigate there
+      const href = await page.locator('a.tag-kb-link').first().getAttribute('href');
+      await page.goto(`${origin}${href}`);
+      await page.waitForLoadState('domcontentloaded');
+      // KB genre page shows either genre content or "Genre not found" — both are valid, no crash
+      await page.locator('h1, .genre-page, p.not-found').first().waitFor({ timeout: 5000 });
+      return errors.length === 0;
+    },
+  },
+
+  // ── Search Edge Cases ────────────────────────────────────────────────────
+
+  {
+    id: 'P22-33', phase: 22, area: 'Search',
+    desc: 'Search multi-word query "boards of canada" — correct artist appears in results',
+    method: 'tauri',
+    fn: async (page) => {
+      const origin = new URL(page.url()).origin;
+      await page.goto(`${origin}/`);
+      await page.waitForSelector('input[type="search"]', { timeout: 10000 });
+      await page.fill('input[type="search"]', 'boards of canada');
+      await page.keyboard.press('Enter');
+      await page.waitForURL(/\/search/, { timeout: 10000 });
+      await page.waitForSelector('.artist-card', { timeout: 10000 });
+      const names = await page.locator('a.artist-name').allTextContents();
+      return names.some(n => n.toLowerCase().includes('boards of canada'));
+    },
+  },
+  {
+    id: 'P22-34', phase: 22, area: 'Search',
+    desc: 'Tag-mode search for "idm" — returns artist results with idm tag',
+    method: 'tauri',
+    fn: async (page) => {
+      const origin = new URL(page.url()).origin;
+      await page.goto(`${origin}/search?q=idm&mode=tag`);
+      await page.waitForLoadState('domcontentloaded');
+      await page.locator('.artist-card, .message, .empty-state').waitFor({ timeout: 10000 });
+      // Fixture: Boards of Canada, Autechre, Aphex Twin, Four Tet, Prefuse 73 all have idm tag
+      return await page.locator('.artist-card').count() > 0;
+    },
+  },
+
+  // ── Skips (require live external services or OS dialogs) ─────────────────
+
+  {
+    id: 'P22-35', phase: 22, area: 'Release Page',
+    desc: '[skip] Release page with buy links — requires live MusicBrainz API response',
+    method: 'skip',
+    reason: 'Releases are fetched live from MusicBrainz API — fixture DB has no release data; test requires network',
+  },
+  {
+    id: 'P22-36', phase: 22, area: 'Profile',
+    desc: '[skip] Taste Fingerprint D3 constellation renders — requires taste data in taste.db',
+    method: 'skip',
+    reason: 'TasteFingerprint only renders when tasteProfile.tags are populated; fixture has no taste data',
+  },
+  {
+    id: 'P22-37', phase: 22, area: 'Scenes',
+    desc: '[skip] Scene follow/unfollow persists across navigation — requires Nostr relay',
+    method: 'skip',
+    reason: 'Scene follow state is published to Nostr relays; headless test cannot verify relay propagation',
+  },
+];
+
+// ---------------------------------------------------------------------------
 // Build check — always runs last
 // ---------------------------------------------------------------------------
 
@@ -1590,5 +2077,6 @@ export const ALL_TESTS = [
   ...PHASE_19,
   ...PHASE_20,
   ...PHASE_21,
+  ...PHASE_22,
   ...BUILD,
 ];

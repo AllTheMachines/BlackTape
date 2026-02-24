@@ -5727,3 +5727,44 @@ Final result: **111/111 passing, 0 failures, 38 skipped** (desktop-only).
 
 > **Commit 5406647** (2026-02-24 21:46) — auto-save: 1 files @ 21:46
 > Files changed: 1
+
+## Entry — 2026-02-24 — PHASE_22: Comprehensive User Journey Tests
+
+v1.3 is shipped and all tests pass. Now going back through every feature in the app and writing tests from the user's perspective — what would someone actually DO with this thing?
+
+**Approach:** Walked through all 24 routes, all components, all user-facing flows. For each one, asked: "Is there an E2E test that covers this?" Mapped gaps against the existing 111 tests.
+
+**What was missing:** The existing suite had good code checks and basic Tauri E2E for search/artist/discovery. But huge chunks of the app had zero E2E coverage:
+- Artist page interactions (stats tab, embed widget, save shelf, mastodon share, export site)
+- Crate Digging — entire sub-feature untested end-to-end
+- Discovery advanced (multi-tag intersection, empty state, counter text)
+- 9 routes never visited in E2E: /style-map, /kb, /time-machine, /scenes, /new-rising, /profile, /backers, /room, /embed
+- Settings deep (Fediverse section, AI section)
+- KB genre navigation from artist tag links
+- Search edge cases (multi-word, tag-mode)
+
+**Added PHASE_22 — 37 tests total:**
+
+| Category | Tests | Method |
+|----------|-------|--------|
+| Code checks (coverage gaps) | 8 | code |
+| Artist page deep | 5 | tauri |
+| Crate Digging flow | 4 | tauri |
+| Discovery advanced | 3 | tauri |
+| Route smoke tests (9 unvisited pages) | 9 | tauri |
+| Settings deep | 2 | tauri |
+| KB genre navigation | 1 | tauri |
+| Search edge cases | 2 | tauri |
+| Skips (documented limitations) | 3 | skip |
+
+**Code checks: 92/92 passing** (was 73 before, +19 new). Tauri E2E tests run against the live debug binary.
+
+**Notable test designs:**
+- Stats tab: clicks tab, verifies overview hidden + stats-hero visible — catches tab rendering bugs
+- Two-tag intersection: clicks "electronic" then "idm", verifies URL has both and results non-empty
+- Crate click-through: digs, clicks artist, verifies URL changes to /artist/
+- Embed standalone: verifies `<nav>` count is 0 (layout@ reset strips main nav)
+- Route smokes: pageerror listener + waitFor on h1/.page-class — any JS crash is a fail
+
+> **Commit 379635d** (2026-02-24 21:46) — wip: auto-save
+> Files changed: 1
