@@ -17,6 +17,13 @@
 	);
 	let followPending = $state(false);
 
+	/** Mastodon share URL for this scene. */
+	let sceneMastodonShareUrl = $derived(
+		data.scene
+			? `https://sharetomastodon.github.io/?text=${encodeURIComponent(`${data.scene.name} scene on Mercury — mercury://scene/${data.scene.slug}`)}`
+			: '#'
+	);
+
 	// Artist suggestion form
 	let suggestionInput = $state('');
 	let suggestionSubmitted = $state(false);
@@ -117,6 +124,14 @@
 						{/if}
 					</button>
 				{/if}
+				<a
+					href={sceneMastodonShareUrl}
+					target="_blank"
+					rel="noopener noreferrer"
+					class="share-mastodon-btn"
+					aria-label="Share on Mastodon"
+					title="Share on Mastodon"
+				>&#8593;</a>
 			</div>
 			<div class="scene-meta">
 				{#if data.scene.listenerCount > 0}
@@ -551,6 +566,24 @@
 		color: var(--text-muted);
 		font-style: italic;
 		margin: 0;
+	}
+
+	/* ── Mastodon Share Button ───────────────────────────── */
+	.share-mastodon-btn {
+		font-size: 0.85rem;
+		color: var(--text-muted);
+		text-decoration: none;
+		padding: 0.25rem 0.5rem;
+		border: 1px solid var(--border-subtle);
+		border-radius: 4px;
+		line-height: 1;
+		transition: color 0.15s, border-color 0.15s;
+		flex-shrink: 0;
+	}
+
+	.share-mastodon-btn:hover {
+		color: var(--text-secondary);
+		border-color: var(--text-muted);
 	}
 
 	.back-link {
