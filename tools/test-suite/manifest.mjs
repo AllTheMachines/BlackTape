@@ -1032,6 +1032,140 @@ export const PHASE_15 = [
 ];
 
 // ---------------------------------------------------------------------------
+// PHASE 16 — Sustainability Links
+// ---------------------------------------------------------------------------
+
+export const PHASE_16 = [
+  {
+    id: 'P16-01', phase: 16, area: 'Sustainability Links',
+    desc: 'Support links section renders on artist page',
+    method: 'code',
+    fn: fileContains('src/routes/artist/[slug]/+page.svelte', 'support-section'),
+  },
+  {
+    id: 'P16-02', phase: 16, area: 'Sustainability Links',
+    desc: 'supportIcon() helper exists in artist page',
+    method: 'code',
+    fn: fileContains('src/routes/artist/[slug]/+page.svelte', 'supportIcon'),
+  },
+  {
+    id: 'P16-03', phase: 16, area: 'Nostr',
+    desc: 'nostr.svelte.ts Nostr NDK module exists in comms',
+    method: 'code',
+    fn: fileExists('src/lib/comms/nostr.svelte.ts'),
+  },
+  {
+    id: 'P16-04', phase: 16, area: 'Nostr',
+    desc: '/backers route fetches Nostr kind:30000 backer credits',
+    method: 'code',
+    fn: fileContains('src/routes/backers/+page.svelte', 'MERCURY_PUBKEY'),
+  },
+];
+
+// ---------------------------------------------------------------------------
+// PHASE 17 — Artist Stats Dashboard
+// ---------------------------------------------------------------------------
+
+export const PHASE_17 = [
+  {
+    id: 'P17-01', phase: 17, area: 'Stats Dashboard',
+    desc: 'ArtistStats component file exists',
+    method: 'code',
+    fn: fileExists('src/lib/components/ArtistStats.svelte'),
+  },
+  {
+    id: 'P17-02', phase: 17, area: 'Stats Dashboard',
+    desc: 'Stats hero section has testid',
+    method: 'code',
+    fn: fileContains('src/lib/components/ArtistStats.svelte', 'data-testid="stats-hero"'),
+  },
+  {
+    id: 'P17-03', phase: 17, area: 'Stats Dashboard',
+    desc: 'Tag distribution has testid',
+    method: 'code',
+    fn: fileContains('src/lib/components/ArtistStats.svelte', 'data-testid="tag-distribution"'),
+  },
+  {
+    id: 'P17-04', phase: 17, area: 'Stats Dashboard',
+    desc: 'Rarest tag section has testid',
+    method: 'code',
+    fn: fileContains('src/lib/components/ArtistStats.svelte', 'data-testid="rarest-tag"'),
+  },
+  {
+    id: 'P17-05', phase: 17, area: 'Stats Dashboard',
+    desc: 'getArtistTagDistribution query exists',
+    method: 'code',
+    fn: fileContains('src/lib/db/queries.ts', 'getArtistTagDistribution'),
+  },
+  {
+    id: 'P17-06', phase: 17, area: 'Stats Dashboard',
+    desc: 'ArtistTagStat interface exists',
+    method: 'code',
+    fn: fileContains('src/lib/db/queries.ts', 'ArtistTagStat'),
+  },
+  {
+    id: 'P17-07', phase: 17, area: 'Stats Dashboard',
+    desc: 'artist_visits table DDL exists',
+    method: 'code',
+    fn: fileContains('src-tauri/src/ai/taste_db.rs', 'artist_visits'),
+  },
+  {
+    id: 'P17-08', phase: 17, area: 'Stats Dashboard',
+    desc: 'record_artist_visit command exists',
+    method: 'code',
+    fn: fileContains('src-tauri/src/ai/taste_db.rs', 'record_artist_visit'),
+  },
+  {
+    id: 'P17-09', phase: 17, area: 'Stats Dashboard',
+    desc: 'record_artist_visit registered in handler',
+    method: 'code',
+    fn: fileContains('src-tauri/src/lib.rs', 'ai::taste_db::record_artist_visit'),
+  },
+  {
+    id: 'P17-12', phase: 17, area: 'Stats Dashboard',
+    desc: 'Tab bar has testid',
+    method: 'code',
+    fn: fileContains('src/routes/artist/[slug]/+page.svelte', 'data-testid="artist-tabs"'),
+  },
+  {
+    id: 'P17-13', phase: 17, area: 'Stats Dashboard',
+    desc: 'Overview tab button has testid',
+    method: 'code',
+    fn: fileContains('src/routes/artist/[slug]/+page.svelte', 'data-testid="tab-overview"'),
+  },
+  {
+    id: 'P17-14', phase: 17, area: 'Stats Dashboard',
+    desc: 'Stats tab button has testid',
+    method: 'code',
+    fn: fileContains('src/routes/artist/[slug]/+page.svelte', 'data-testid="tab-stats"'),
+  },
+  {
+    id: 'P17-15', phase: 17, area: 'Stats Dashboard',
+    desc: 'Overview tab content has testid',
+    method: 'code',
+    fn: fileContains('src/routes/artist/[slug]/+page.svelte', 'data-testid="tab-content-overview"'),
+  },
+  {
+    id: 'P17-16', phase: 17, area: 'Stats Dashboard',
+    desc: 'Stats tab content has testid',
+    method: 'code',
+    fn: fileContains('src/routes/artist/[slug]/+page.svelte', 'data-testid="tab-content-stats"'),
+  },
+  {
+    id: 'P17-17', phase: 17, area: 'Stats Dashboard',
+    desc: 'Visit tracking invoke in artist page',
+    method: 'code',
+    fn: fileContains('src/routes/artist/[slug]/+page.svelte', 'record_artist_visit'),
+  },
+  {
+    id: 'P17-18', phase: 17, area: 'Stats Dashboard',
+    desc: 'ArtistStats imported in artist page',
+    method: 'code',
+    fn: fileContains('src/routes/artist/[slug]/+page.svelte', 'ArtistStats'),
+  },
+];
+
+// ---------------------------------------------------------------------------
 // Build check — always runs last
 // ---------------------------------------------------------------------------
 
@@ -1062,5 +1196,7 @@ export const ALL_TESTS = [
   ...PHASE_13,
   ...PHASE_14,
   ...PHASE_15,
+  ...PHASE_16,
+  ...PHASE_17,
   ...BUILD,
 ];
