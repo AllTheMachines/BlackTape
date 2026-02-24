@@ -1,3 +1,4 @@
+mod activitypub;
 mod ai;
 mod library;
 mod mercury_db;
@@ -174,6 +175,7 @@ pub fn run() {
             ai::taste_db::save_artist_summary,
             site_gen::generate_artist_site,
             site_gen::open_in_explorer,
+            activitypub::export_activitypub,
         ])
         .plugin(tauri_plugin_sql::Builder::new().build())
         .plugin(tauri_plugin_updater::Builder::new().build())
