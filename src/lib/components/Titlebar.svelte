@@ -69,7 +69,7 @@
 		height: 28px;
 		background: transparent;
 		border: none;
-		color: var(--t-3);
+		color: var(--t-2);
 		cursor: pointer;
 		display: flex;
 		align-items: center;
