@@ -94,15 +94,42 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DSYS-01–05  | Phase 23 | Pending |
-| ARTP-01–08  | Phase 24 | Pending |
-| QUEU-01–06  | Phase 25 | Pending |
-| LIBR-01–03  | Phase 25 | Pending |
-| DISC-01–03  | Phase 26 | Pending |
-| XLINK-01–05 | Phase 26 | Pending |
-| SRCH-01–04  | Phase 27 | Pending |
-| KBAS-01     | Phase 27 | Pending |
-| CRAT-01     | Phase 26 | Pending |
+| DSYS-01 | Phase 23: Design System Foundation | Pending |
+| DSYS-02 | Phase 23: Design System Foundation | Pending |
+| DSYS-03 | Phase 23: Design System Foundation | Pending |
+| DSYS-04 | Phase 23: Design System Foundation | Pending |
+| DSYS-05 | Phase 23: Design System Foundation | Pending |
+| ARTP-01 | Phase 24: Artist Page | Pending |
+| ARTP-02 | Phase 24: Artist Page | Pending |
+| ARTP-03 | Phase 24: Artist Page | Pending |
+| ARTP-04 | Phase 24: Artist Page | Pending |
+| ARTP-05 | Phase 24: Artist Page | Pending |
+| ARTP-06 | Phase 24: Artist Page | Pending |
+| ARTP-07 | Phase 24: Artist Page | Pending |
+| ARTP-08 | Phase 24: Artist Page | Pending |
+| QUEU-01 | Phase 25: Queue System + Library | Pending |
+| QUEU-02 | Phase 25: Queue System + Library | Pending |
+| QUEU-03 | Phase 25: Queue System + Library | Pending |
+| QUEU-04 | Phase 25: Queue System + Library | Pending |
+| QUEU-05 | Phase 25: Queue System + Library | Pending |
+| QUEU-06 | Phase 25: Queue System + Library | Pending |
+| LIBR-01 | Phase 25: Queue System + Library | Pending |
+| LIBR-02 | Phase 25: Queue System + Library | Pending |
+| LIBR-03 | Phase 25: Queue System + Library | Pending |
+| DISC-01 | Phase 26: Discover + Cross-Linking + Crate Fix | Pending |
+| DISC-02 | Phase 26: Discover + Cross-Linking + Crate Fix | Pending |
+| DISC-03 | Phase 26: Discover + Cross-Linking + Crate Fix | Pending |
+| XLINK-01 | Phase 26: Discover + Cross-Linking + Crate Fix | Pending |
+| XLINK-02 | Phase 26: Discover + Cross-Linking + Crate Fix | Pending |
+| XLINK-03 | Phase 26: Discover + Cross-Linking + Crate Fix | Pending |
+| XLINK-04 | Phase 26: Discover + Cross-Linking + Crate Fix | Pending |
+| XLINK-05 | Phase 26: Discover + Cross-Linking + Crate Fix | Pending |
+| CRAT-01 | Phase 26: Discover + Cross-Linking + Crate Fix | Pending |
+| SRCH-01 | Phase 27: Search + Knowledge Base | Pending |
+| SRCH-02 | Phase 27: Search + Knowledge Base | Pending |
+| SRCH-03 | Phase 27: Search + Knowledge Base | Pending |
+| SRCH-04 | Phase 27: Search + Knowledge Base | Pending |
+| KBAS-01 | Phase 27: Search + Knowledge Base | Pending |
 
 **Coverage:**
 - v1.4 requirements: 35 total
@@ -111,4 +138,4 @@
 
 ---
 *Requirements defined: 2026-02-24*
-*Last updated: 2026-02-24 after initial definition*
+*Last updated: 2026-02-24 — traceability updated with v1.4 roadmap phase assignments*
