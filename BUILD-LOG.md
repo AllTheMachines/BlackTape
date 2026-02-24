@@ -6045,3 +6045,53 @@ Phase 23 Plan 03 applies the v1.4 aesthetic universally to two visible surfaces:
 **Note on test syntax:** The `fileContains()` utility in `runners/code.mjs` returns a function, not a boolean. Tests with negation (`!fileContains(...)`) must call the returned function explicitly: `!fileContains(...)()`. The existing tests that use `&&` chains without negation happen to work because a function object is truthy. New tests using negation must use the invocation pattern.
 
 Test suite: 96/96 code checks passing (3 new P23 tests: P23-09, P23-10, P23-11).
+
+> **Commit 919ed0c** (2026-02-25 00:40) — docs(23-03): complete tag-chips-and-global-styles plan
+> Files changed: 4
+
+> **Commit d42ae13** (2026-02-25 00:41) — feat(23-02): restyle Player bar to v1.4 design tokens; add P23-05 to P23-08 tests
+> Files changed: 2
+
+---
+
+## Entry 026 — 2026-02-25 — v1.4 Phase 23 Plan 02: Chrome Surfaces
+
+### Context
+
+Plan 02 restyled the three chrome surfaces that frame every page: the topbar (ControlBar), the sidebar (LeftSidebar), and the player bar (Player). These are the highest-impact components — get them right and the whole app looks v1.4.
+
+Note: Plan 03 (TagChip + global styles) ran concurrently in a parallel session. The sessions interleaved but the deliverables were correct.
+
+### Changes
+
+**ControlBar.svelte** — Full restyle to v1.4 tokens:
+- Height: `var(--topbar)` (42px), background `--bg-1`, bottom border `--b-1`
+- Search form: `--bg-4` + `--b-2` + `var(--r)`, focus border turns `--acc` amber
+- Nav input (address bar): `--bg-4` + `--b-2` + `var(--r)`, height 26px
+- Layout select: `--bg-4` + `--b-2` + `var(--r)`, `--t-2` color
+- Theme indicator: 26×26 filled button-style with `--bg-4` + `--b-2` + `var(--r)`
+
+**LeftSidebar.svelte** — Rebuilt with grouped navigation:
+- Groups: Discover (◉ Discover, ⬡ Style Map, ◈ KB, ◷ Time Machine, ▦ Crate Dig, ◎ Scenes), Library (▤ Library, ◬ Explore), Account (◐ Profile, ⚙ Settings, ◌ About)
+- Section labels: 9px uppercase `--t-3` text with 0.12em letter-spacing
+- Nav items: 28px height, `--t-3` color, 2px left border (transparent → `--acc` amber when active)
+- Active state: `#1c1c1c` background, `--t-1` text, `--acc` left border
+- Discovery filter inputs: `--bg-4` + `--b-2` + `var(--r)`, tag chips same
+
+**Player.svelte** — Complete scoped-style restyle:
+- Bar: `--bg-1` background, `--b-1` top border, `var(--player)` height (66px)
+- Transport buttons: 24×24, `--bg-4` bg, `--b-2` border, `var(--r)` radius
+- Play button: 28×28, amber `--acc-bg` background, `--b-acc` border, `--acc` color
+- Active state (shuffle/repeat): `--acc-bg` + `--b-acc` + `--acc`
+- Seek bar: 3px, `--b-2` background, `accent-color: var(--acc)`
+- Volume bar: 64px, `--b-2` background, `--t-2` thumb
+
+**+layout.svelte** — `<header class:hidden={tauriMode}>` — the old header is hidden in Tauri mode (ControlBar replaces it). Web fallback unchanged.
+
+**Test manifest** — Added P23-05 through P23-08 for all three restyled components.
+
+### Outcome — Phase 23 Plan 02 Complete
+
+The app's visual frame is now the v1.4 design system: every border between panels is `--b-1` (1px at #202020), every surface is `--bg-1` (#0f0f0f), every input is `--bg-4` (#212121) with `--b-2` (#2c2c2c) border and 2px radius. The amber accent (`--acc` #c4a55a) appears exactly where it should — active nav items and the play button.
+
+Test suite: 100/100 code checks passing.

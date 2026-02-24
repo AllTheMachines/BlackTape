@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-24 after v1.4 milestone started)
 Phase: 23 of 27 (Design System Foundation)
 Plan: 4 of 5 in current phase
 Status: In Progress
-Last activity: 2026-02-25 — Phase 23 Plan 03 complete: TagChip + global interactive styles
+Last activity: 2026-02-25 — Phase 23 Plans 02+03 complete: chrome surfaces + TagChip/global styles
 
 Progress: [███░░░░░░░] 8% (v1.4 — 0/5 phases complete, 3/5 plans in phase 23)
 
@@ -34,6 +34,7 @@ Progress: [███░░░░░░░] 8% (v1.4 — 0/5 phases complete, 3/5
 | 20. Listening Rooms | 3 | Complete |
 | 21. ActivityPub Outbound | 2 | Complete |
 | Phase 23 P01 | 3 | 2 tasks | 5 files |
+| Phase 23 P02 | ~7min | 3 tasks | 5 files |
 | Phase 23 P03 | ~4min | 2 tasks | 4 files |
 
 ## Accumulated Context
@@ -46,6 +47,10 @@ Progress: [███░░░░░░░] 8% (v1.4 — 0/5 phases complete, 3/5
 - Autocomplete (Phase 27) scoped to artist names only (song title search deferred to future milestone)
 - [23-01] Dynamic import of @tauri-apps/api/window in Titlebar handlers to avoid SSR errors in dev/web mode
 - [23-01] PROJECT_NAME from config.ts used in Titlebar logo (not hardcoded) — single-variable naming rule
+- [23-02] LeftSidebar nav grouped into Discover/Library/Account sections with Unicode icons matching mockup spec
+- [23-02] Header hidden via class:hidden={tauriMode} in layout — preserves web fallback, ControlBar acts as topbar
+- [23-02] Player control buttons use filled bg-4 box style (24x24, border) not borderless ghost — matches mockup
+- [23-02] Play button uses acc-bg + b-acc + acc amber pattern (not solid white circle)
 - [23-03] fileContains() in test runner returns a function, not a boolean — negation tests must call: !fileContains(path, str)()
 - [23-03] Global button/input base styles placed in theme.css (not separate file) — Svelte components inherit automatically, can override locally
 - [23-03] TagFilter uses parallel chip styles (not TagChip component) because it needs button elements with disabled state, not anchor elements
@@ -60,6 +65,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-25
-Stopped at: Phase 23 Plan 03 complete (23-03-SUMMARY.md created)
+Stopped at: Phase 23 Plan 02 complete (23-02-SUMMARY.md created)
 Resume file: None
-Next: Execute Phase 23 Plan 04
+Next: Execute Phase 23 Plan 04 (Plan 03 already complete)
