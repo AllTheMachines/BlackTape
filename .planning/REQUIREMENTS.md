@@ -54,10 +54,10 @@ Rust logic verified in isolation, without compiling the full Tauri binary.
 
 Every interaction gives immediate animated feedback, making frozen states visually and programmatically distinguishable from loading states.
 
-- [ ] **UX-01**: Global animated top-bar progress indicator appears on every navigation click, immediately — before any network request is sent (YouTube/NProgress style, thin bar at top of viewport)
-- [ ] **UX-02**: Loading indicator is always motion-based (animated, never static) — a frozen animation means a frozen app, not a loading one
-- [ ] **UX-03**: Loading indicator clears automatically when navigation completes or errors out
-- [ ] **UX-04**: Web and desktop (Tauri) both show the indicator — SvelteKit's `$navigating` store drives web, equivalent Tauri navigation events drive desktop
+- [x] **UX-01**: Global animated top-bar progress indicator appears on every navigation click, immediately — before any network request is sent (YouTube/NProgress style, thin bar at top of viewport)
+- [x] **UX-02**: Loading indicator is always motion-based (animated, never static) — a frozen animation means a frozen app, not a loading one
+- [x] **UX-03**: Loading indicator clears automatically when navigation completes or errors out
+- [x] **UX-04**: Web and desktop (Tauri) both show the indicator — SvelteKit's `$navigating` store drives web, equivalent Tauri navigation events drive desktop
 
 ### PROC — Process Gate
 
@@ -106,10 +106,10 @@ Prevents future regressions from being committed or shipped.
 | WEB-01 | Phase 13 | Pending |
 | WEB-02 | Phase 13 | Pending |
 | WEB-03 | Phase 13 | Pending |
-| UX-01 | Phase 13 | Pending |
-| UX-02 | Phase 13 | Pending |
-| UX-03 | Phase 13 | Pending |
-| UX-04 | Phase 13 | Pending |
+| UX-01 | Phase 13 | Complete |
+| UX-02 | Phase 13 | Complete |
+| UX-03 | Phase 13 | Complete |
+| UX-04 | Phase 13 | Complete |
 | PROC-02 | Phase 13 Plan 01 | Complete |
 | API-01 | Phase 14 | Pending |
 | API-02 | Phase 14 | Pending |

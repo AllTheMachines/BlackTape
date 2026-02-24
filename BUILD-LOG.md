@@ -4319,10 +4319,6 @@ Phase 13 Plan 01 complete. The suite can now be trusted as a gate.
 > **Commit d4f44b6** (2026-02-24 01:05) — feat(13-02): add data-ready signals to D3 force simulation components
 > Files changed: 3
 
-<!-- status -->
-Phase 13 Plan 03 — Task 1 done (nav-progress.svelte.ts created, committed 13e44ef). Now on Task 2: integrate navProgress into layout with NProgress-style animation.
-<!-- /status -->
-
 > **Commit c8d34de** (2026-02-24 01:05) — feat(13-02): add PHASE_13 code checks to test manifest (INFRA-04)
 > Files changed: 1
 
@@ -4367,3 +4363,56 @@ D3 components now signal completion via attribute instead of requiring sleep del
 
 > **Commit 13e44ef** (2026-02-24 01:07) — feat(13-03): create nav-progress.svelte.ts state module
 > Files changed: 1
+
+> **Commit 270c50f** (2026-02-24 01:08) — docs(13-02): complete foundation-fixes plan 02 — data-ready signals + PHASE_13 manifest
+> Files changed: 5
+
+> **Commit ec7b3d3** (2026-02-24 01:08) — feat(13-03): integrate navProgress into layout with NProgress animation
+> Files changed: 1
+
+## Entry — 2026-02-24 — Phase 13 Plan 03: Tauri Navigation Progress Bar
+
+### What Happened
+
+Phase 13 Plan 03 — the final plan in Phase 13 — adds a proper NProgress-style navigation progress bar for Tauri desktop. Previous behavior: infinite scaleX loop (bar sweeps left-to-right-to-left indefinitely). Problem: no directional signal, no way to tell if loading is stuck vs in progress.
+
+### The New Bar
+
+Two-phase animation:
+1. **Phase 1 (active):** Bar grows from 0% to 80% over 3 seconds with ease-out (fast start, decelerates, gives "waiting for server" feel). `forwards` fill mode holds at 80% if load takes longer than 3s.
+2. **Phase 2 (completing):** `animation: none`, `width: 100%` snaps immediately, then `opacity: 0` fades over 200ms with 100ms delay. User sees the snap before the fade.
+
+The key insight: a frozen bar means a frozen app. The ease-out deceleration toward 80% creates the illusion of approach without arrival — the bar is always in motion until completion.
+
+### The State Module
+
+`nav-progress.svelte.ts` — a `.svelte.ts` module (Svelte 5 pattern for module-level `$state`). Two exports: `startProgress()` and `completeProgress()`. Page-level load functions call these around their `invoke()` calls:
+
+```typescript
+if (isTauri()) startProgress();
+try {
+  const data = await invoke('get_data', { ... });
+} finally {
+  if (isTauri()) completeProgress();
+}
+```
+
+Why this matters: SvelteKit's `$navigating` goes false when the router completes — before Tauri's `invoke()` data arrives. Without `navProgress`, the UI would flash "loaded" then populate a moment later. The progress bar bridges that gap.
+
+### Phase 13 Baseline: Final Numbers
+
+All Phase 13 work (Plans 01, 02, 03) complete:
+
+```
+70 passing (69 code + 1 build)
+0 failing
+0 web
+30 skipped
+Exit code: 0
+```
+
+PROC-02 gate is solid. Phase 13 is done.
+
+<!-- decision: NProgress two-phase animation: loading-advance (0→80% ease-out) + .completing (snap 100% + fade) — directional progress with graceful completion signal -->
+Phase 13 complete. Moving to Phase 14.
+<!-- /decision -->
