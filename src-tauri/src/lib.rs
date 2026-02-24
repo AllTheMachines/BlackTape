@@ -169,6 +169,8 @@ pub fn run() {
             ai::taste_db::get_scene_suggestions,
             ai::taste_db::upvote_feature_request,
             ai::taste_db::record_artist_visit,
+            ai::taste_db::get_artist_summary,
+            ai::taste_db::save_artist_summary,
         ])
         .plugin(tauri_plugin_sql::Builder::new().build())
         .plugin(tauri_plugin_updater::Builder::new().build())
