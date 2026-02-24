@@ -6028,12 +6028,20 @@ Test suite: 93/93 code checks passing, including 4 new P23 tests.
 
 Phase 23 Plan 03 applies the v1.4 aesthetic universally to two visible surfaces: TagChip (the most repeated element in the app) and the global interactive element base (buttons, inputs, badges, tabs). When TagChip is correct everywhere, it's immediately obvious across search results, artist pages, crate dig, and discover.
 
-<!-- status -->
-Phase 23 Plan 03 — 2/2 tasks complete. TagChip + global styles done. Running final verification.
-<!-- /status -->
-
 > **Commit 7f174cd** (2026-02-25 00:35) — feat(23-03): restyle TagChip to 22px/2px-radius v1.4 spec
 > Files changed: 2
 
-> **Commit 981bd50** (2026-02-25 00:36) — feat(23-02): restyle ControlBar topbar to v1.4 design tokens
-> Files changed: 2
+> **Commit 3e2e7ee** (2026-02-25 00:38) — feat(23-03): add global button/input/badge styles to theme.css; restyle TagFilter
+> Files changed: 5
+
+### Outcome — Phase 23 Plan 03 Complete
+
+**TagChip universally restyled:** `border-radius: 999px` (pill) is gone. Every tag chip across the app — search results, artist pages, discover, crate dig — is now 22px tall, 2px radius (square), `--bg-4` background. Active state is amber (`--acc-bg` / `--b-acc` / `--acc`). The `active` prop was added to the component interface so parent components can highlight selected tags without fighting the default styles.
+
+**Global base styles in theme.css:** `button`, `.btn`, `input`, `select`, `textarea`, `.badge`, `.tab-bar` — all inherit the right look without per-component overrides. This is the "pay once, win everywhere" move. When a new component uses a bare `<button>`, it gets 26px height, `--bg-4` background, `--b-2` border, `var(--r)` radius automatically. The square aesthetic propagates.
+
+**TagFilter cleaned up:** All old OKLCH-era tokens (`--tag-bg`, `--tag-border`, `--border-default`, `999px`) replaced with v1.4 tokens. The tag cloud and active filter bar now use the same design language as everything else.
+
+**Note on test syntax:** The `fileContains()` utility in `runners/code.mjs` returns a function, not a boolean. Tests with negation (`!fileContains(...)`) must call the returned function explicitly: `!fileContains(...)()`. The existing tests that use `&&` chains without negation happen to work because a function object is truthy. New tests using negation must use the invocation pattern.
+
+Test suite: 96/96 code checks passing (3 new P23 tests: P23-09, P23-10, P23-11).
