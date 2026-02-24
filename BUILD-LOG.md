@@ -4868,3 +4868,30 @@ Five new Rust crates: `axum ^0.8` (embedded HTTP for future AP serving), `tower 
 
 > **Commit 9ac48b2** (2026-02-24 10:48) — wip: auto-save
 > Files changed: 1
+
+> **Commit cc80cda** (2026-02-24 10:50) — wip: auto-save
+> Files changed: 4
+
+---
+
+## Entry 030 — 2026-02-24 — Phase 16: Sustainability Links (Plan 02)
+
+### What's Being Built
+
+Phase 16, Plan 02: Support links on the About page + Backer Credits screen. Two tasks:
+
+1. Add `MERCURY_PUBKEY` constant to `config.ts` + Support section to About page (Ko-fi, GitHub Sponsors, Open Collective + "View backers →" link)
+2. Create `/backers` route — fetches supporter names from a Nostr kind:30000 addressable list event, state machine: loading → loaded/empty/error
+
+The backer list is published to Nostr (kind:30000 NIP-51 addressable list, `d` tag = `backers`) by Mercury's own keypair. Each `name` tag in the event is a backer display name. When `MERCURY_PUBKEY` is empty (as it is now — keypair not yet generated), the page immediately shows "Backer credits coming soon" instead of attempting a fetch.
+
+### Key Design Decisions
+
+- No kind:0 profile fetching for backers — names stored directly as `name` tags on the kind:30000 event. Simple, single-event fetch, no per-pubkey lookups.
+- `MERCURY_PUBKEY` placeholder approach: the constant exists and is empty, allowing the UI to show a graceful message until the real identity is set up.
+- Retry pattern on error state: loading → error → retry resets to loading, re-runs the full fetch flow.
+- Support section placed before the CTA buttons, after Mission and Data Sources. Natural reading flow: understand the project → understand how to support it → go discover music.
+
+<!-- status -->
+Phase 16 Plan 02 — 1/2 tasks done. Task 1: MERCURY_PUBKEY added to config, Support section added to About page with 3 funding links + backers link. Running check: 0 errors. Now building /backers route.
+<!-- /status -->
