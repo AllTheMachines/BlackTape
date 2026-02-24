@@ -10,15 +10,7 @@ v1.1 shipped: scene building → curator/blog tools.
 
 v1.2 shipped: test automation complete — Playwright CDP E2E runner, Rust unit tests, pre-commit gate. Web gateway removed — Tauri-desktop-only confirmed.
 
-## Current Milestone: v1.3 The Open Network
-
-**Goal:** Connect Mercury to the open web — ActivityPub federation, synchronized listening rooms, artist tools (stats/auto-news/site generator), and sustainability infrastructure for both Mercury and artists.
-
-**Target features:**
-- Interoperability — ActivityPub outbound (artist pages, scenes, collections as AP actors; Fediverse follow)
-- Listening rooms — synchronized embed playback via Nostr coordination (host controls, guests sync)
-- Artist tools — discovery stats dashboard, AI auto-news, self-hosted site generator (no claiming)
-- Sustainability — artist support links from MusicBrainz (Patreon/Ko-fi/tip URLs); Mercury project funding links; backer credits screen
+## Current State: v1.3 Shipped (2026-02-24)
 
 ## Core Value
 
@@ -53,13 +45,16 @@ Uniqueness is rewarded — the more niche you are, the more discoverable you bec
 - ✓ Zero-click confidence — Playwright CDP E2E runner wired to live Tauri app, 22 Rust unit tests, pre-commit gate — v1.2
 - ✓ `data-ready` signals on all D3 force simulations — deterministic test assertions — v1.2
 - ✓ NProgress-style navigation progress indicator with startProgress/completeProgress API — v1.2
+- ✓ Artist support links (Patreon/Ko-fi/crowdfunding) visually distinct + Mastodon share on artist/scene pages — v1.3
+- ✓ Artist stats dashboard — uniqueness score, rarest tag, tag distribution, silent visit tracking — v1.3
+- ✓ AI artist summaries — MusicBrainz-grounded, always labeled, cached in taste.db, regeneratable — v1.3
+- ✓ Static site generator — self-contained HTML export with cover art, XSS-safe, zero Mercury dependency — v1.3
+- ✓ Synchronized listening rooms via Nostr — host YouTube control, jukebox queue, participant presence — v1.3
+- ✓ ActivityPub outbound — static AP actor export (actor.json + webfinger.json + outbox.json) for self-hosted Fediverse presence — v1.3
 
 ### Active
 
-- [ ] Interoperability — ActivityPub outbound: artist pages, scenes, collections as AP actors (v1.3)
-- [ ] Listening rooms — synchronized embed playback via Nostr coordination (v1.3)
-- [ ] Artist tools — discovery stats dashboard, AI auto-news, self-hosted site generator (v1.3)
-- [ ] Sustainability — artist support links from MusicBrainz; Mercury project funding links; backer credits screen (v1.3)
+(Planning v1.4 — start with `/gsd:new-milestone`)
 
 ### Out of Scope
 
@@ -79,10 +74,9 @@ Uniqueness is rewarded — the more niche you are, the more discoverable you bec
 
 **v1.1 shipped 2026-02-23.** Phases 11–12: scene building + curator tools.
 
-**v1.2 shipped 2026-02-24.** Test automation milestone complete:
-- Test suite: 72 code/build checks + 22 Rust unit tests + 12 Tauri E2E tests (requires running app)
-- Pre-commit gate: `--code-only` runs 2–5s on every commit
-- Web gateway removed — Tauri-desktop-only (all web tests removed from suite)
+**v1.2 shipped 2026-02-24.** Test automation milestone complete.
+
+**v1.3 shipped 2026-02-24.** The Open Network — Phases 16–21: sustainability links, stats dashboard, AI summaries, static site generator, listening rooms, ActivityPub outbound. Codebase: ~38,456 LOC.
 
 **Tech stack:** SvelteKit (Svelte 5) + Tauri 2.0 + SQLite + FTS5. Client-side AI via llama.cpp sidecar (Qwen2.5 3B) + Nomic Embed. Nostr (NDK) for communications.
 
@@ -123,4 +117,4 @@ Pre-project research (2026-02-14) saved in ControlCenter:
 | Phases 14–15 outside GSD workflow | Speed over process — test infra sprint; accepted tech debt (no VERIFICATION.md/SUMMARY.md) | ⚠️ Revisit (use GSD for v1.3) |
 
 ---
-*Last updated: 2026-02-24 after v1.3 milestone started (The Open Network)*
+*Last updated: 2026-02-24 after v1.3 milestone shipped (The Open Network)*

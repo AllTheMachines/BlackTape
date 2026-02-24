@@ -63,3 +63,25 @@
 **Audit:** `.planning/milestones/v1.2-MILESTONE-AUDIT.md` — ⚡ TECH DEBT (25/25 requirements satisfied, no blockers; tech debt: Phases 14–15 have no GSD plan files/VERIFICATION.md)
 
 ---
+
+## v1.3 The Open Network (Shipped: 2026-02-24)
+
+**Phases completed:** 6 phases (16–21), 17 plans
+**Code:** ~38,456 LOC (TypeScript/Svelte + Rust) across 80 files changed (+16,547 / −273)
+**Timeline:** 1 day (2026-02-24)
+
+**Delivered:** Mercury connects to the open web — sustainability infrastructure, artist tools, synchronized listening rooms, and ActivityPub federation export.
+
+**Key accomplishments:**
+1. Artist support links — Patreon/Ko-fi/crowdfunding visually distinct from generic links; Mastodon share buttons on artist + scene pages
+2. Artist stats dashboard — uniqueness score, rarest tag, proportional tag distribution chart; silent visit tracking in taste.db
+3. AI artist summaries — grounded in MusicBrainz release data, always labeled "AI summary based on MusicBrainz data", cached per artist, regeneratable on demand
+4. Static site generator — export any artist page as self-contained HTML + cover art to any local folder; zero Mercury dependency; XSS-safe
+5. Synchronized listening rooms — host-controlled YouTube embed via Nostr (kind:30311); jukebox queue with guest suggestions + host approve/reject; participant presence list
+6. ActivityPub outbound — RSA keypair + actor.json + webfinger.json + outbox.json export to local directory for self-hosted Fediverse presence
+
+**Audit:** `.planning/milestones/v1.3-MILESTONE-AUDIT.md` — ⚡ TECH DEBT (20/21 requirements satisfied; APUB-03 partial — live Mastodon test pending; no blockers)
+**Archive:** `.planning/milestones/v1.3-ROADMAP.md`, `.planning/milestones/v1.3-REQUIREMENTS.md`
+
+---
+
