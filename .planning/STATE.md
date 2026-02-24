@@ -2,16 +2,17 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-02-24 after v1.2 milestone complete)
+See: .planning/PROJECT.md (updated 2026-02-24 after v1.3 milestone started)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** v1.2 archived — planning next milestone (v1.3: Interoperability, Listening Rooms, Artist Tools)
+**Current focus:** v1.3 The Open Network — Defining requirements
 
 ## Current Position
 
-Phase: milestone-complete
-Status: v1.2 Zero-Click Confidence archived. 25/25 requirements satisfied. 72 code/build tests + 22 Rust unit tests passing. Pre-commit gate active. Ready for v1.3 planning.
-Last activity: 2026-02-24 — v1.2 milestone archived.
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-02-24 — Milestone v1.3 started
 
 Progress: [██████████] v1.2 COMPLETE — all 3 phases done (Phases 13–15)
 

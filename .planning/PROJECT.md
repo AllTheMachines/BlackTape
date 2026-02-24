@@ -10,6 +10,16 @@ v1.1 shipped: scene building → curator/blog tools.
 
 v1.2 shipped: test automation complete — Playwright CDP E2E runner, Rust unit tests, pre-commit gate. Web gateway removed — Tauri-desktop-only confirmed.
 
+## Current Milestone: v1.3 The Open Network
+
+**Goal:** Connect Mercury to the open web — ActivityPub federation, synchronized listening rooms, artist tools (stats/auto-news/site generator), and sustainability infrastructure for both Mercury and artists.
+
+**Target features:**
+- Interoperability — ActivityPub outbound (artist pages, scenes, collections as AP actors; Fediverse follow)
+- Listening rooms — synchronized embed playback via Nostr coordination (host controls, guests sync)
+- Artist tools — discovery stats dashboard, AI auto-news, self-hosted site generator (no claiming)
+- Sustainability — artist support links from MusicBrainz (Patreon/Ko-fi/tip URLs); Mercury project funding links; backer credits screen
+
 ## Core Value
 
 Uniqueness is rewarded — the more niche you are, the more discoverable you become.
@@ -46,10 +56,10 @@ Uniqueness is rewarded — the more niche you are, the more discoverable you bec
 
 ### Active
 
-- [ ] Interoperability — ActivityPub, Fediverse federation (v1.3)
-- [ ] Listening rooms — shared real-time synchronized playback (v1.3)
-- [ ] Artist tools — claiming, dashboard, auto-news, self-hosted site generator (v1.3)
-- [ ] Sustainability infrastructure — sponsors, Ko-fi, Patreon, backer credits
+- [ ] Interoperability — ActivityPub outbound: artist pages, scenes, collections as AP actors (v1.3)
+- [ ] Listening rooms — synchronized embed playback via Nostr coordination (v1.3)
+- [ ] Artist tools — discovery stats dashboard, AI auto-news, self-hosted site generator (v1.3)
+- [ ] Sustainability — artist support links from MusicBrainz; Mercury project funding links; backer credits screen (v1.3)
 
 ### Out of Scope
 
@@ -113,4 +123,4 @@ Pre-project research (2026-02-14) saved in ControlCenter:
 | Phases 14–15 outside GSD workflow | Speed over process — test infra sprint; accepted tech debt (no VERIFICATION.md/SUMMARY.md) | ⚠️ Revisit (use GSD for v1.3) |
 
 ---
-*Last updated: 2026-02-24 after v1.2 milestone (Zero-Click Confidence)*
+*Last updated: 2026-02-24 after v1.3 milestone started (The Open Network)*
