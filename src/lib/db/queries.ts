@@ -63,6 +63,13 @@ export interface UniquenessResult {
 	tag_count: number;
 }
 
+/** Tag stat for an artist: global prevalence + artist-specific MusicBrainz vote count */
+export interface ArtistTagStat {
+	tag: string;
+	artist_count: number; // global: how many artists worldwide have this tag (from tag_stats)
+	count: number;        // local: MusicBrainz vote count for this tag on this specific artist
+}
+
 /** A genre/scene/city node in the genre graph */
 export interface GenreNode {
 	id: number;
@@ -428,6 +435,27 @@ export async function getArtistUniquenessScore(
 		   ) AS uniqueness_score,
 		   (SELECT COUNT(*) FROM artist_tags WHERE artist_id = ?) AS tag_count`,
 		artistId,
+		artistId
+	);
+}
+
+/**
+ * Returns all tags for an artist with global artist_count from tag_stats.
+ * Ordered by artist_count ASC — distribution[0] is the rarest tag globally.
+ * Bar chart display should re-sort by count DESC for visual weight order.
+ */
+export async function getArtistTagDistribution(
+	db: DbProvider,
+	artistId: number
+): Promise<ArtistTagStat[]> {
+	return db.all<ArtistTagStat>(
+		`SELECT at.tag,
+		        COALESCE(ts.artist_count, 1) AS artist_count,
+		        at.count
+		 FROM artist_tags at
+		 LEFT JOIN tag_stats ts ON ts.tag = at.tag
+		 WHERE at.artist_id = ?
+		 ORDER BY COALESCE(ts.artist_count, 1) ASC`,
 		artistId
 	);
 }
