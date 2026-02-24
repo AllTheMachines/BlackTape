@@ -5058,3 +5058,9 @@ All building blocks from Plan 01 (Rust backend, TypeScript query, ArtistStats.sv
 
 > **Commit 971d0e3** (2026-02-24 12:14) — wip: auto-save
 > Files changed: 3
+
+> **Commit db35eb9** (2026-02-24 12:16) — auto-save: 1 files @ 12:16
+> Files changed: 1
+
+> **Commit 4d572b8** (2026-02-24 12:20) — docs(phase-17): complete phase execution and resolve SC2 scope decision
+> Files changed: 2
