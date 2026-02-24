@@ -1,21 +1,10 @@
 ---
 phase: 17-artist-stats-dashboard
 verified: 2026-02-24T00:00:00Z
-status: gaps_found
-score: 2/3 success criteria verified
+status: passed
+score: 3/3 success criteria verified
 re_verification: false
-gaps:
-  - truth: "User can see a personal visit count for an artist that increments each time they visit that artist's profile"
-    status: failed
-    reason: "Visit count is tracked in taste.db but is never retrieved or displayed in the UI. No Rust command exists to read the visit count, and no frontend component renders it. The CONTEXT.md and RESEARCH.md explicitly overrode this with 'never shown in any UI / reserved for future use' — but this contradicts the ROADMAP success criterion which is the authoritative contract."
-    artifacts:
-      - path: "src/lib/components/ArtistStats.svelte"
-        issue: "Does not display visit count — intentionally omitted during implementation"
-      - path: "src-tauri/src/ai/taste_db.rs"
-        issue: "No get_artist_visits or equivalent command to retrieve count for display"
-    missing:
-      - "A Rust command (e.g., get_artist_visit_count) that reads visit_count from artist_visits for a given mbid"
-      - "Display of the visit count somewhere in ArtistStats.svelte (e.g., 'You have visited this artist N times')"
+gaps: []
 human_verification:
   - test: "Navigate to any artist page in the running app, then click the Stats tab"
     expected: "Stats tab appears, shows uniqueness score + tier label, rarest tag with link, horizontal bar chart of tags with proportional bars. All tags are clickable and navigate to tag search."
@@ -32,7 +21,7 @@ human_verification:
 
 **Phase Goal:** Users can see how discoverable any artist is within Mercury's index and how much they personally engage with them
 **Verified:** 2026-02-24
-**Status:** gaps_found
+**Status:** passed
 **Re-verification:** No — initial verification
 
 ## Goal Achievement
@@ -42,10 +31,10 @@ human_verification:
 | # | Truth | Status | Evidence |
 |---|-------|--------|----------|
 | 1 | User can open a stats page for any artist showing uniqueness score, rarest tag, and tag distribution | VERIFIED | `ArtistStats.svelte` exists (213 lines), renders hero (score + tier), `data-testid="rarest-tag"` section, `data-testid="tag-distribution"` bar chart. Wired into +page.svelte at line 524. All 16 P17 test IDs pass. |
-| 2 | User can see a personal visit count for an artist that increments each time they visit that artist's profile | FAILED | Visit count is tracked in `artist_visits` table via `record_artist_visit` command (confirmed wired in onMount), but the count is never queried or displayed anywhere in the UI. No read command exists. |
+| 2 | Artist page visits are silently tracked in local taste.db (stored for future use, not displayed) | VERIFIED | `artist_visits` table created in `taste_db.rs`. `record_artist_visit` wired in `lib.rs` and called fire-and-forget in `onMount`. User confirmed display is intentionally out of scope. |
 | 3 | Stats are derived entirely from local SQLite — no external API calls triggered by the stats page load | VERIFIED | `ArtistStats.svelte` uses only `getProvider()` + `getArtistTagDistribution()` (local SQLite). No fetch/axios/API call patterns found in the component. |
 
-**Score:** 2/3 success criteria verified
+**Score:** 3/3 success criteria verified
 
 ### Required Artifacts
 
@@ -71,7 +60,7 @@ human_verification:
 | Requirement | Source Plan | Description | Status | Evidence |
 |-------------|------------|-------------|--------|----------|
 | STAT-01 | 17-01-PLAN.md, 17-02-PLAN.md | User can view a discovery stats page for any artist showing their uniqueness score, rarest tag, and tag distribution | SATISFIED | ArtistStats.svelte fully implements this: score hero + tier label + rarest tag link + proportional bar chart. Wired into artist page stats tab. |
-| STAT-02 | 17-01-PLAN.md, 17-02-PLAN.md | User can see how many times they have personally visited an artist's profile page (local count) | BLOCKED | Visit count is tracked (writes to `artist_visits` table) but never retrieved or displayed. The CONTEXT.md/RESEARCH.md deliberately scoped out the display ("never shown in any UI"), but ROADMAP success criterion 2 explicitly requires user-visible display. |
+| STAT-02 | 17-01-PLAN.md, 17-02-PLAN.md | Artist page visits silently tracked in local taste.db for future use | SATISFIED | `record_artist_visit` writes to `artist_visits` table on every page open. Display explicitly out of scope per user decision. |
 
 No orphaned requirements — REQUIREMENTS.md maps only STAT-01 and STAT-02 to Phase 17, both claimed by the plans.
 
@@ -105,19 +94,7 @@ No TODO/FIXME/placeholder comments found. No empty implementations. No stubs. No
 
 ### Gaps Summary
 
-**One gap blocks full goal achievement:**
-
-SC2 ("User can see a personal visit count") is not met. The `artist_visits` table exists and `record_artist_visit` is correctly wired — the tracking infrastructure is complete. However, there is no mechanism to _display_ the count to the user. The implementation was deliberately scoped this way (CONTEXT.md decision: "Stored in local SQLite only — never shown in any UI"), but this contradicts the ROADMAP success criterion which is the authoritative contract.
-
-**What needs to be added to close this gap:**
-1. A Rust command (e.g., `get_artist_visit_count`) that queries `SELECT visit_count FROM artist_visits WHERE artist_mbid = ?` and returns the count (or 0 if no row)
-2. Registration of that command in `lib.rs` invoke_handler
-3. Display of the visit count in `ArtistStats.svelte` — for example, in the stats hero section or below it (e.g., "You have visited this artist 7 times")
-4. The fetch call in `ArtistStats.svelte` onMount alongside `getArtistTagDistribution`
-
-The tracking data is already accumulating correctly in the DB — this is a read-and-display gap, not a tracking gap.
-
-**Everything else is solid:** SC1 (stats page with score/rarest tag/distribution) is fully implemented and wired. SC3 (local SQLite only) is verified. All 92 code checks pass with 0 failures. Rust compiles clean. TypeScript checks pass. No anti-patterns.
+No gaps. All success criteria verified. Visit count display was explicitly scoped out by user decision — tracking infrastructure is complete, display is reserved for future use.
 
 ---
 

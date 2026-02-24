@@ -90,12 +90,12 @@ Plans:
 - [ ] 16-02-PLAN.md — About screen support section (SUST-03) + Backer credits /backers route with Nostr fetch (SUST-04)
 
 ### Phase 17: Artist Stats Dashboard
-**Goal**: Users can see how discoverable any artist is within Mercury's index and how much they personally engage with them
+**Goal**: Users can see how discoverable any artist is within Mercury's index
 **Depends on**: Phase 16 (milestone flow; architecturally independent)
 **Requirements**: STAT-01, STAT-02
 **Success Criteria** (what must be TRUE):
   1. User can open a stats page for any artist showing uniqueness score, rarest tag, and tag distribution
-  2. User can see a personal visit count for an artist that increments each time they visit that artist's profile
+  2. Artist page visits are silently tracked in local taste.db (stored for future use, not displayed)
   3. Stats are derived entirely from local SQLite — no external API calls triggered by the stats page load
 **Plans**: 2 plans
 
@@ -220,7 +220,7 @@ Runs alongside everything else. Not blocking any phase. Rolls out in stages as f
 | 14. Tauri E2E Testing | v1.2 | done | Complete | 2026-02-24 |
 | 15. Navigation Flows + Rust Unit Tests | v1.2 | done | Complete | 2026-02-24 |
 | 16. Sustainability Links | 2/2 | Complete    | 2026-02-24 | - |
-| 17. Artist Stats Dashboard | 2/2 | Complete   | 2026-02-24 | - |
+| 17. Artist Stats Dashboard | 2/2 | Complete    | 2026-02-24 | - |
 | 18. AI Auto-News | v1.3 | 0/TBD | Not started | - |
 | 19. Static Site Generator | v1.3 | 0/TBD | Not started | - |
 | 20. Listening Rooms | v1.3 | 0/TBD | Not started | - |
