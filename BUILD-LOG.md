@@ -6136,3 +6136,6 @@ Phase 23 is done. The v1.4 design system is fully in place — tokens, titlebar,
 The entire app now has a consistent design language. Every panel border is `--b-1` (1px, #202020). Every surface is `--bg-1` (#0f0f0f). Every interactive element is `--bg-4` (#212121) with `--b-2` border and 2px square radius. Amber (`--acc` #c4a55a) appears at exactly the right moments: active nav, play button, tag chip selection, focus rings.
 
 **Test suite: 100/100 code checks passing.** Phase 23 added 11 new P23 tests (P23-01 through P23-11).
+
+> **Commit e3b8e18** (2026-02-25 00:56) — fix(titlebar): use --t-2 for ctrl buttons — --t-3 was invisible on dark bg
+> Files changed: 1
