@@ -4685,3 +4685,6 @@ cargo test:       23 passing, 0 failing
 REQUIREMENTS.md:  FLOW-01–04, RUST-01–03, PROC-01, PROC-03 → all ✓
 ROADMAP.md:       Phase 15 ✓
 ```
+
+> **Commit f6479af** (2026-02-24 02:40) — feat: ARCHITECTURE.md purge + Phase 15 complete (FLOW tests, Rust unit tests, pre-commit gate)
+> Files changed: 10
