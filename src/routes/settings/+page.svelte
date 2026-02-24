@@ -583,10 +583,8 @@
 			<ListeningHistory />
 		</div>
 
-		{#if tauriMode}
-			<div class="section-separator"></div>
-			<FediverseSettings />
-		{/if}
+		<div class="section-separator"></div>
+		<FediverseSettings />
 	</div>
 {/if}
 
