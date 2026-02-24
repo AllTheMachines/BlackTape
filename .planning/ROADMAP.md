@@ -97,7 +97,11 @@ Plans:
   1. User can open a stats page for any artist showing uniqueness score, rarest tag, and tag distribution
   2. User can see a personal visit count for an artist that increments each time they visit that artist's profile
   3. Stats are derived entirely from local SQLite — no external API calls triggered by the stats page load
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 17-01-PLAN.md — Rust visit tracking backend + tag distribution query + ArtistStats.svelte component
+- [ ] 17-02-PLAN.md — +page.svelte tab integration (Overview/Stats tabs) + test suite manifest entries
 
 ### Phase 18: AI Auto-News
 **Goal**: Artist pages show a grounded AI summary derived from MusicBrainz catalog data — never invented, always labeled
