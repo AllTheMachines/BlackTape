@@ -9,6 +9,7 @@
 	import RssButton from '$lib/components/RssButton.svelte';
 	import ArtistStats from '$lib/components/ArtistStats.svelte';
 	import ArtistSummary from '$lib/components/ArtistSummary.svelte';
+	import SiteGenDialog from '$lib/components/SiteGenDialog.svelte';
 	import { LINK_CATEGORY_ORDER, LINK_CATEGORY_LABELS } from '$lib/embeds/types';
 	import { isTauri } from '$lib/platform';
 	import { streamingPref } from '$lib/theme/preferences.svelte';
@@ -22,6 +23,7 @@
 
 	let tauriMode = $state(false);
 	let activeTab = $state<'overview' | 'stats'>('overview');
+	let showSiteGen = $state(false);
 
 	/** Save to Shelf state (Tauri-only) */
 	let savedInCollections = $state<string[]>([]);
@@ -279,6 +281,16 @@
 				aria-label="Share on Mastodon"
 				title="Share on Mastodon"
 			>↑</a>
+			{#if tauriMode}
+				<button
+					class="export-site-btn"
+					onclick={() => showSiteGen = true}
+					title="Export artist page as standalone website"
+					data-testid="export-site-btn"
+				>
+					Export site
+				</button>
+			{/if}
 		</div>
 
 		{#if headerMeta()}
@@ -535,6 +547,15 @@
 				tagCount={data.uniquenessTagCount}
 			/>
 		</div>
+	{/if}
+
+	{#if showSiteGen}
+		<SiteGenDialog
+			artist={data.artist}
+			releases={data.releases}
+			bio={effectiveBio}
+			onclose={() => showSiteGen = false}
+		/>
 	{/if}
 </div>
 
@@ -1078,6 +1099,22 @@
 
 	.support-link:hover {
 		background: color-mix(in srgb, var(--text-accent) 15%, transparent);
+	}
+
+	/* ── Export Site Button ─────────────────────────────── */
+	.export-site-btn {
+		padding: 0.25rem 0.6rem;
+		font-size: 0.8rem;
+		border: 1px solid var(--border-default, #333);
+		border-radius: 4px;
+		background: transparent;
+		color: var(--text-secondary, #b3b3b3);
+		cursor: pointer;
+		white-space: nowrap;
+	}
+	.export-site-btn:hover {
+		border-color: var(--link-color, #7ab4d8);
+		color: var(--link-color, #7ab4d8);
 	}
 
 	/* ── Mastodon Share Button ───────────────────────────── */
