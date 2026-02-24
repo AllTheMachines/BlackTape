@@ -58,7 +58,7 @@ Every interaction gives immediate animated feedback, making frozen states visual
 - [x] **UX-01**: Global animated top-bar progress indicator appears on every navigation click, immediately — before any network request is sent (YouTube/NProgress style, thin bar at top of viewport)
 - [x] **UX-02**: Loading indicator is always motion-based (animated, never static) — a frozen animation means a frozen app, not a loading one
 - [x] **UX-03**: Loading indicator clears automatically when navigation completes or errors out
-- [x] **UX-04**: Web and desktop (Tauri) both show the indicator — SvelteKit's `$navigating` store drives web, equivalent Tauri navigation events drive desktop
+- [x] **UX-04**: Navigation indicator uses SvelteKit's `$navigating` store plus Tauri navigation events for extended progress tracking
 
 ### PROC — Process Gate
 
@@ -101,12 +101,8 @@ Prevents future regressions from being committed or shipped.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | INFRA-01 | Phase 13 Plan 01 | Complete |
-| INFRA-02 | Phase 13 | Pending |
 | INFRA-03 | Phase 13 | Complete |
 | INFRA-04 | Phase 13 | Complete |
-| WEB-01 | Phase 13 | Pending |
-| WEB-02 | Phase 13 | Pending |
-| WEB-03 | Phase 13 | Pending |
 | UX-01 | Phase 13 | Complete |
 | UX-02 | Phase 13 | Complete |
 | UX-03 | Phase 13 | Complete |
@@ -132,8 +128,8 @@ Prevents future regressions from being committed or shipped.
 | PROC-03 | Phase 15 | Pending |
 
 **Coverage:**
-- v1.2 requirements: 30 total (25 original + 5 E2E; 4 API deferred to v1.3)
-- Mapped to phases: 30
+- v1.2 requirements: 25 total (INFRA-02, WEB-01–03 removed — web version purged 2026-02-24)
+- Mapped to phases: 25
 - Unmapped: 0 ✓
 
 ---

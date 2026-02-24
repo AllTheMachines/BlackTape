@@ -4543,3 +4543,65 @@ node tools/test-suite/run.mjs --phase 14
 
 > **Commit 561ebe5** (2026-02-24 02:03) — wip: auto-save
 > Files changed: 1
+
+> **Commit 21be3be** (2026-02-24 02:16) — auto-save: 45 files @ 02:16
+> Files changed: 45
+
+## Entry 034 — 2026-02-24 — Full Web Version Purge
+
+### Context
+
+Before starting Phase 15, Steve asked a direct question: "there is no web. how can we get rid of the web version so you don't ask me about it again." The web version was a planned Cloudflare Pages + D1 target that got superseded when we went Tauri-desktop-only (decided 2026-02-24). But the codebase still had the full web scaffold — adapter-cloudflare, D1Provider, +page.server.ts files, API endpoints — all dead code.
+
+### Decision: Full Purge
+
+<!-- decision -->
+**Removed the Cloudflare web target entirely.** Not a docs-only cleanup — the actual code went too. Everything in the codebase now assumes Tauri and nothing else. Future AI sessions won't see web as a pending TODO.
+<!-- /decision -->
+
+### What Was Removed
+
+**Build infrastructure:**
+- `svelte.config.js` — simplified from conditional adapter (cloudflare vs static) to always `adapter-static`
+- `package.json` — removed `@sveltejs/adapter-cloudflare` and `@cloudflare/workers-types`
+- `src/lib/db/d1-provider.ts` — the Cloudflare D1 database adapter (dead code for Tauri)
+
+**Server routes (12 `+page.server.ts` files deleted):**
+- All routes had a Tauri-specific `+page.ts` that already worked independently
+- The server files only ran when `platform?.env?.DB` (D1) was available — never in Tauri
+
+**API endpoints (10 `+server.ts` files deleted):**
+- All web-only API routes that imported D1Provider: genres, search, scenes, time-machine, new-rising, curator-feature, RSS feeds (artist, tag, new-rising, curator)
+- Tauri already fetches data via Tauri commands or MusicBrainz directly — these routes were never called in production Tauri builds
+
+**Planning docs cleaned:**
+- REQUIREMENTS.md — removed WEB-01, WEB-02, WEB-03, INFRA-02 (all web-only, all "Pending")
+- ROADMAP.md — ticked Phase 14 checkbox (was accidentally left unchecked)
+- CLAUDE.md — updated tech stack section
+
+**Test infrastructure cleaned:**
+- `manifest.mjs` — 5 Phase 12 tests that checked for deleted API files converted to `skip`; header comment updated
+- `run.mjs` — removed `checkWrangler()`, `--web-only` flag, web tests section (section 3), and `webTests` variable
+
+### What Was Added / Updated
+
+Each `+page.ts` was rewritten to remove the `isTauri()` / `__TAURI_INTERNALS__` guards — those guards routed web vs Tauri. Since there's no web, every page now runs the Tauri path directly:
+- `artist/[slug]` — always queries local SQLite + fetches from MusicBrainz; also loads `curators` from local DB (was missing from Tauri path before)
+- `discover`, `search`, `kb`, `style-map`, `time-machine`, `scenes`, `scenes/[slug]`, `kb/genre/[slug]` — simplified to Tauri path only
+- `artist/[slug]/release/[mbid]` — types inlined (were imported from the now-deleted server file)
+
+Two routes that had no `+page.ts` at all (web-only features) got empty shims:
+- `new-rising/+page.ts` — now queries local SQLite for new/traction artists (actually useful for Tauri!)
+- `embed/artist/[slug]/+page.ts` — returns null/empty (embed widgets are web-only, page is unreachable in Tauri)
+
+### Final State
+
+```
+npm run check:  0 errors, 8 pre-existing warnings
+npm run build:  ✓ Using @sveltejs/adapter-static
+test suite:     67 passing, 0 failing
+```
+
+Files removed: 25 (13 server files + 10 API routes + d1-provider.ts + package-lock changes)
+Files modified: 17 (page loaders, config, docs, test runner)
+Files added: 2 (new-rising/+page.ts, embed/+page.ts)

@@ -88,7 +88,7 @@ async function main() {
   // 1. Code checks (fast, run first)
   // ---------------------------------------------------------------------------
 
-  if (codeTests.length > 0 && !webOnly) {
+  if (codeTests.length > 0 && true) {
     header('Code Checks');
     for (const test of codeTests) {
       let passed = false;
@@ -110,7 +110,7 @@ async function main() {
   // 2. Build check
   // ---------------------------------------------------------------------------
 
-  if (buildTests.length > 0 && !webOnly) {
+  if (buildTests.length > 0 && true) {
     header('Build Check');
     for (const test of buildTests) {
       process.stdout.write(` ◆  [${test.id}] ${test.desc} ... `);
