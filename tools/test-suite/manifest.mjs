@@ -1253,6 +1253,85 @@ export const PHASE_18 = [
 ];
 
 // ---------------------------------------------------------------------------
+// PHASE 19 — Static Site Generator
+// ---------------------------------------------------------------------------
+
+export const PHASE_19 = [
+  {
+    id: 'P19-01', phase: 19, area: 'Site Gen',
+    desc: 'src-tauri/src/site_gen.rs exists',
+    method: 'code',
+    fn: () => fileExists('src-tauri/src/site_gen.rs'),
+  },
+  {
+    id: 'P19-02', phase: 19, area: 'Site Gen',
+    desc: 'site_gen.rs contains generate_artist_site command',
+    method: 'code',
+    fn: () => fileContains('src-tauri/src/site_gen.rs', 'generate_artist_site'),
+  },
+  {
+    id: 'P19-03', phase: 19, area: 'Site Gen',
+    desc: 'site_gen.rs contains html_escape function (XSS guard)',
+    method: 'code',
+    fn: () => fileContains('src-tauri/src/site_gen.rs', 'html_escape'),
+  },
+  {
+    id: 'P19-04', phase: 19, area: 'Site Gen',
+    desc: 'site_gen.rs contains open_in_explorer command',
+    method: 'code',
+    fn: () => fileContains('src-tauri/src/site_gen.rs', 'open_in_explorer'),
+  },
+  {
+    id: 'P19-05', phase: 19, area: 'Capabilities',
+    desc: 'capabilities/default.json contains dialog:allow-save',
+    method: 'code',
+    fn: () => fileContains('src-tauri/capabilities/default.json', 'dialog:allow-save'),
+  },
+  {
+    id: 'P19-06', phase: 19, area: 'Site Gen',
+    desc: 'SiteGenDialog.svelte component exists',
+    method: 'code',
+    fn: () => fileExists('src/lib/components/SiteGenDialog.svelte'),
+  },
+  {
+    id: 'P19-07', phase: 19, area: 'Site Gen',
+    desc: 'SiteGenDialog.svelte invokes generate_artist_site',
+    method: 'code',
+    fn: () => fileContains('src/lib/components/SiteGenDialog.svelte', 'generate_artist_site'),
+  },
+  {
+    id: 'P19-08', phase: 19, area: 'Site Gen',
+    desc: 'SiteGenDialog.svelte has data-testid="site-gen-dialog"',
+    method: 'code',
+    fn: () => fileContains('src/lib/components/SiteGenDialog.svelte', 'site-gen-dialog'),
+  },
+  {
+    id: 'P19-09', phase: 19, area: 'Site Gen',
+    desc: 'lib.rs declares mod site_gen',
+    method: 'code',
+    fn: () => fileContains('src-tauri/src/lib.rs', 'mod site_gen'),
+  },
+  {
+    id: 'P19-10', phase: 19, area: 'Site Gen',
+    desc: 'Artist page imports SiteGenDialog',
+    method: 'code',
+    fn: () => fileContains('src/routes/artist/[slug]/+page.svelte', 'SiteGenDialog'),
+  },
+  {
+    id: 'P19-11', phase: 19, area: 'Site Gen',
+    desc: 'Artist page has export-site-btn data-testid',
+    method: 'code',
+    fn: () => fileContains('src/routes/artist/[slug]/+page.svelte', 'export-site-btn'),
+  },
+  {
+    id: 'P19-12', phase: 19, area: 'Site Gen',
+    desc: 'Export site flow — requires running desktop app + OS folder picker',
+    method: 'skip',
+    reason: 'requires running desktop app — OS folder picker and file system writes cannot be headlessly tested',
+  },
+];
+
+// ---------------------------------------------------------------------------
 // Build check — always runs last
 // ---------------------------------------------------------------------------
 
@@ -1286,5 +1365,6 @@ export const ALL_TESTS = [
   ...PHASE_16,
   ...PHASE_17,
   ...PHASE_18,
+  ...PHASE_19,
   ...BUILD,
 ];
