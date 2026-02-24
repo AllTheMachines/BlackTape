@@ -751,7 +751,8 @@ export const PHASE_14 = [
     method: 'tauri',
     fn: async (page) => {
       await page.waitForLoadState('domcontentloaded');
-      return await page.locator('nav').isVisible();
+      // Use .first() — layout has multiple nav elements (header, footer, sidebar)
+      return await page.locator('nav').first().isVisible();
     },
   },
   {
@@ -760,7 +761,9 @@ export const PHASE_14 = [
     method: 'tauri',
     fn: async (page) => {
       await page.click('a[href="/settings"]');
-      await page.waitForLoadState('domcontentloaded');
+      // waitForURL handles SPA navigation — domcontentloaded fires immediately in SPA mode
+      await page.waitForURL(/\/settings/, { timeout: 5000 });
+      await page.locator('h1:has-text("Settings")').waitFor({ timeout: 3000 });
       return await page.locator('h1:has-text("Settings")').isVisible();
     },
   },
@@ -779,13 +782,13 @@ export const PHASE_14 = [
     desc: 'Home → Settings → Home round-trip — no crash, URL updates correctly',
     method: 'tauri',
     fn: async (page) => {
-      await page.click('a.site-name');
-      await page.waitForLoadState('domcontentloaded');
+      const origin = new URL(page.url()).origin;
+      await page.goto(`${origin}/`);
       await page.click('a[href="/settings"]');
-      await page.waitForLoadState('domcontentloaded');
+      await page.waitForURL(/\/settings/, { timeout: 5000 });
       if (!page.url().includes('/settings')) return false;
       await page.click('a.site-name');
-      await page.waitForLoadState('domcontentloaded');
+      await page.waitForURL(/^\w+:\/\/[^/]+\/?$/, { timeout: 5000 });
       return !page.url().includes('/settings');
     },
   },
@@ -878,8 +881,8 @@ export const PHASE_14 = [
     fn: async (page) => {
       const origin = new URL(page.url()).origin;
       await page.goto(`${origin}/search?q=&mode=artist`);
-      await page.waitForLoadState('domcontentloaded');
-      // Empty query → search bar visible, no artist cards
+      // Wait for SearchBar to render — SPA routing does not re-fire domcontentloaded
+      await page.locator('input[type="search"]').waitFor({ timeout: 5000 });
       const searchVisible = await page.locator('input[type="search"]').isVisible();
       const artistCards = await page.locator('.artist-card').count();
       return searchVisible && artistCards === 0;
@@ -999,7 +1002,8 @@ export const PHASE_15 = [
     fn: async (page) => {
       const origin = new URL(page.url()).origin;
       await page.goto(`${origin}/`);
-      await page.waitForLoadState('domcontentloaded');
+      // Wait for homepage to fully render before injecting observer
+      await page.locator('nav').first().waitFor({ timeout: 5000 });
 
       // Inject a MutationObserver to track if the progress bar ever appears
       await page.evaluate(() => {
@@ -1013,9 +1017,11 @@ export const PHASE_15 = [
         window.__navObserver = observer;
       });
 
-      // Trigger a navigation
+      // Trigger a navigation and wait for URL to change (not domcontentloaded — SPA)
       await page.click('a[href="/settings"]');
-      await page.waitForLoadState('domcontentloaded');
+      await page.waitForURL(/\/settings/, { timeout: 5000 });
+      // Give Svelte time to finish rendering and clean up the bar
+      await page.waitForTimeout(300);
 
       // Verify: bar appeared during navigation
       const appeared = await page.evaluate(() => {
@@ -1241,7 +1247,8 @@ export const PHASE_18 = [
     desc: 'ArtistSummary renders on live artist page with summary visible',
     method: 'tauri',
     fn: async (page) => {
-      await page.goto('tauri://localhost/artist/radiohead');
+      const origin = new URL(page.url()).origin;
+      await page.goto(`${origin}/artist/radiohead`);
       await page.waitForTimeout(500);
       // Summary section only visible if cache exists — skip if not present
       const summaryEl = page.locator('[data-testid="ai-summary"]');

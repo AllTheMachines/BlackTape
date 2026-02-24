@@ -46,8 +46,8 @@
 				const { getArtistTagDistribution } = await import('$lib/db/queries');
 				const provider = await getProvider();
 				distribution = await getArtistTagDistribution(provider, artistId);
-			} catch (err) {
-				console.error('ArtistStats: failed to load tag distribution', err);
+			} catch {
+				// silent fail — UI shows nothing when stats unavailable
 			} finally {
 				loading = false;
 			}
