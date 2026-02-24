@@ -234,6 +234,6 @@ Runs alongside everything else. Not blocking any phase. Rolls out in stages as f
 | 16. Sustainability Links | 2/2 | Complete    | 2026-02-24 | - |
 | 17. Artist Stats Dashboard | 2/2 | Complete    | 2026-02-24 | - |
 | 18. AI Auto-News | 5/5 | Complete    | 2026-02-24 | - |
-| 19. Static Site Generator | v1.3 | 0/TBD | Not started | - |
+| 19. Static Site Generator | 1/3 | In Progress|  | - |
 | 20. Listening Rooms | v1.3 | 0/TBD | Not started | - |
 | 21. ActivityPub Outbound | v1.3 | 0/TBD | Not started | - |

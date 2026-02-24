@@ -5323,3 +5323,32 @@ The final Phase 18 wiring plan. ArtistSummary.svelte has been live in the codeba
 
 > **Commit 2bfd88a** (2026-02-24 15:46) — auto-save: 1 files @ 15:46
 > Files changed: 1
+
+> **Commit e4acdf1** (2026-02-24 16:16) — auto-save: 1 files @ 16:16
+> Files changed: 1
+
+## Entry — 2026-02-24 — Phase 19 Plan 01: Static Site Generator — Rust Backend
+
+Phase 19 kicks off. Goal: export any artist page as a self-contained HTML folder with zero Mercury dependency. Plan 01 is the pure Rust backend — all HTML generation, cover art downloading, and OS integration. Plans 02-03 will wire it to the frontend.
+
+**Two tasks:**
+1. `src-tauri/src/site_gen.rs` — New Rust module: data structs, `html_escape()`, `download_cover()`, `build_html()`, `generate_artist_site` command, `open_in_explorer` command
+2. `src-tauri/capabilities/default.json` — Add `dialog:allow-save` permission
+
+## Entry — 2026-02-24 — Phase 19 Plan 02: SiteGenDialog.svelte
+
+The frontend dialog component that wraps the Rust site generator. A 5-state machine (confirming → picking → generating → success / error) that guides the user through previewing what will be exported, picking an output folder via the OS native dialog, watching generation progress, and then either opening the folder or seeing an error message.
+
+**Single task, self-contained Svelte 5 component:**
+- Props: `artist`, `releases`, `bio`, `onclose` — everything the artist page already has
+- State machine: `confirming | picking | generating | success | error`
+- OS folder picker via `@tauri-apps/plugin-dialog` (directory mode, native dialog)
+- Invokes `generate_artist_site` with the full artist payload serialized to match the Rust struct
+- Success shows output path + cover image count with "Open folder" via `open_in_explorer`
+- Mercury dark theme: `#1c1c1c` card, `#333` border, `#5a4fe8` primary button, CSS spinner animation
+- All `data-testid` attributes for test verification (P19-06 through P19-09 in manifest)
+
+All 92 existing tests still pass. Zero new errors or warnings introduced (3 a11y warnings from old-format svelte-ignore fixed inline).
+
+> **Commit 4e8fdd8** (2026-02-24 16:30) — feat(19-02): implement SiteGenDialog.svelte with 5-state machine
+> Files changed: 1

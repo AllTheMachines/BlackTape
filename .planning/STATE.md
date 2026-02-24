@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-24 after v1.3 milestone started)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** v1.3 The Open Network — Phase 18: AI Auto-News
+**Current focus:** v1.3 The Open Network — Phase 19: Static Site Generator
 
 ## Current Position
 
-Phase: 18 of 21 (AI Auto-News)
-Plan: 05 of 05 complete
-Status: Phase 18 COMPLETE — Plan 05 done (ArtistSummary wired into artist page; Phase 18 test manifest entries added)
-Last activity: 2026-02-24 — Phase 18 Plan 05 complete (ArtistSummary live on artist page)
+Phase: 19 of 21 (Static Site Generator)
+Plan: 02 of TBD complete
+Status: Phase 19 IN PROGRESS — Plan 02 done (SiteGenDialog.svelte component with 5-state machine)
+Last activity: 2026-02-24 — Phase 19 Plan 02 complete (SiteGenDialog.svelte implemented)
 
-Progress: [██░░░░░░░░] 33% (v1.3 — 2/6 phases partially complete)
+Progress: [███░░░░░░░] 38% (v1.3 — 2.5/6 phases partially complete)
 
 ## Performance Metrics
 
@@ -30,7 +30,7 @@ Progress: [██░░░░░░░░] 33% (v1.3 — 2/6 phases partially co
 | 16. Sustainability Links | 2 | Complete |
 | 17. Artist Stats Dashboard | 2 | Complete |
 | 18. AI Auto-News | 5 | Complete |
-| 19. Static Site Generator | TBD | Not started |
+| 19. Static Site Generator | TBD | In progress (plan 02 done) |
 | 20. Listening Rooms | TBD | Not started |
 | 21. ActivityPub Outbound | TBD | Not started |
 
@@ -66,6 +66,9 @@ Progress: [██░░░░░░░░] 33% (v1.3 — 2/6 phases partially co
 - [Phase 18-ai-auto-news]: openUrl via @tauri-apps/plugin-shell not @tauri-apps/plugin-opener — project already uses plugin-shell for Spotify auth; no new packages needed
 - [Phase 18-ai-auto-news]: ArtistSummary placed at top of overview tab content before discography — matching plan specification for above-releases position
 - [Phase 18-ai-auto-news]: P18-12 kept as tauri method in test manifest — requires running app for cache-miss vs visible logic, not automatable via code check
+- [Phase 19-static-site-generator]: Dialog is Tauri-only — no isTauri guard inside SiteGenDialog; parent artist page gates with {#if tauriMode}
+- [Phase 19-static-site-generator]: country/type/begin_year/ended passed as null/false in artist payload — not in dialog props, Rust struct accepts null
+- [Phase 19-static-site-generator]: Svelte 5 svelte-ignore uses underscore format (a11y_click_events_have_key_events), not hyphen format
 
 ### Pending Todos
 None
@@ -78,6 +81,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-24
-Stopped at: Completed 18-05-PLAN.md — ArtistSummary wired into artist page and Phase 18 test manifest entries added
+Stopped at: Completed 19-02-PLAN.md — SiteGenDialog.svelte component with 5-state machine implemented
 Resume file: None
-Next: Phase 19 Static Site Generator — planning phase
+Next: Phase 19 Plan 03 — wire SiteGenDialog into artist page + add test manifest entries
