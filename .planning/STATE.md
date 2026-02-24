@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-24 after v1.3 milestone started)
 ## Current Position
 
 Phase: 16 of 21 (Sustainability Links)
-Plan: — (not yet planned)
-Status: Ready to plan
-Last activity: 2026-02-24 — v1.3 roadmap created (Phases 16–21)
+Plan: 02 of 02 complete
+Status: Phase 16 complete — ready for Phase 17
+Last activity: 2026-02-24 — Phase 16 Plans 01 + 02 complete (Sustainability Links)
 
-Progress: [░░░░░░░░░░] 0% (v1.3 — 0/6 phases complete)
+Progress: [█░░░░░░░░░] 17% (v1.3 — 1/6 phases complete)
 
 ## Performance Metrics
 
@@ -27,7 +27,7 @@ Progress: [░░░░░░░░░░] 0% (v1.3 — 0/6 phases complete)
 
 | Phase | Plans | Status |
 |-------|-------|--------|
-| 16. Sustainability Links | TBD | Not started |
+| 16. Sustainability Links | 2 | Complete |
 | 17. Artist Stats Dashboard | TBD | Not started |
 | 18. AI Auto-News | TBD | Not started |
 | 19. Static Site Generator | TBD | Not started |
@@ -45,7 +45,9 @@ Progress: [░░░░░░░░░░] 0% (v1.3 — 0/6 phases complete)
 - Zero new npm packages needed for v1.3 — confirmed by codebase inspection in research phase
 - Artist support links (`support` category) already implemented in `categorize.ts` — Phase 16 is rendering what already exists
 - kind:10311 chosen as Mercury's custom listening room event kind; state machine design needed before implementation
-- backer credits Nostr event kind: kind:30000 with `d` tag (NIP-51 addressable list) — confirm against NIP-51 spec during Phase 16
+- backer credits Nostr event kind: kind:30000 with `d` tag (NIP-51 addressable list) — confirmed and implemented in Phase 16 Plan 02
+- MERCURY_PUBKEY stored as empty string placeholder in config.ts — fills in when Mercury Nostr identity keypair is generated
+- Backer names stored directly as 'name' tags on kind:30000 event — no kind:0 profile fetch, single relay round-trip
 
 ### Pending Todos
 None
@@ -58,6 +60,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-24
-Stopped at: v1.3 roadmap created — 6 phases (16–21), 21/21 requirements mapped
+Stopped at: Completed 16-01-PLAN.md — artist Support section + Mastodon share buttons on artist and scene pages
 Resume file: None
-Next: `/gsd:plan-phase 16`
+Next: Phase 17 (Artist Stats Dashboard)

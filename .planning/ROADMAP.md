@@ -63,7 +63,7 @@ Full archive: `.planning/milestones/v1.2-ROADMAP.md`
 
 **Milestone Goal:** Connect Mercury to the open web — sustainability infrastructure, artist tools (stats/auto-news/site generator), synchronized listening rooms, and ActivityPub federation export.
 
-- [ ] **Phase 16: Sustainability Links** — Artist support links, share-to-Fediverse, Mercury funding screen, backer credits
+- [x] **Phase 16: Sustainability Links** — Artist support links, share-to-Fediverse, Mercury funding screen, backer credits (completed 2026-02-24)
 - [ ] **Phase 17: Artist Stats Dashboard** — Discoverability stats page and personal visit count per artist
 - [ ] **Phase 18: AI Auto-News** — MusicBrainz-grounded AI summary on artist pages, cached, labeled
 - [ ] **Phase 19: Static Site Generator** — Export a self-contained artist HTML page for self-hosting
@@ -215,7 +215,7 @@ Runs alongside everything else. Not blocking any phase. Rolls out in stages as f
 | 13. Foundation Fixes | v1.2 | 3/3 | Complete | 2026-02-24 |
 | 14. Tauri E2E Testing | v1.2 | done | Complete | 2026-02-24 |
 | 15. Navigation Flows + Rust Unit Tests | v1.2 | done | Complete | 2026-02-24 |
-| 16. Sustainability Links | v1.3 | 0/TBD | Not started | - |
+| 16. Sustainability Links | 2/2 | Complete   | 2026-02-24 | - |
 | 17. Artist Stats Dashboard | v1.3 | 0/TBD | Not started | - |
 | 18. AI Auto-News | v1.3 | 0/TBD | Not started | - |
 | 19. Static Site Generator | v1.3 | 0/TBD | Not started | - |
