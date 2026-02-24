@@ -5712,3 +5712,6 @@ Resumed from HANDOFF and discovered v1.3 was already fully complete (all 6 phase
 Final result: **111/111 passing, 0 failures, 38 skipped** (desktop-only).
 
 **Key lesson:** SvelteKit SPA navigation does not re-fire `domcontentloaded`. Always use `waitForURL()` + element `waitFor()` for Tauri E2E tests — not `waitForLoadState('domcontentloaded')` after link clicks.
+
+> **Commit 304918c** (2026-02-24 21:25) — wip: auto-save
+> Files changed: 2
