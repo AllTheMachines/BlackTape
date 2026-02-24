@@ -1,208 +1,231 @@
 # Stack Research
 
-**Domain:** Test automation — SvelteKit + Tauri 2.0 + Cloudflare D1 music discovery app
-**Researched:** 2026-02-23
-**Confidence:** HIGH (Playwright/Zod/Vitest), MEDIUM (tauri-driver — officially supported but fragile on Windows)
+**Domain:** v1.3 The Open Network — ActivityPub outbound, Nostr listening rooms, artist tools, sustainability
+**Researched:** 2026-02-24
+**Confidence:** HIGH (Nostr/NDK, MusicBrainz, ActivityPub endpoints), MEDIUM (ActivityPub RSA signing), HIGH (artist static site generator approach)
 
 ---
 
-## Context: What Already Exists
+## Context: What Already Exists (Do Not Re-Add)
 
-This is a subsequent-milestone research document. The baseline is NOT a greenfield test setup — the following are already installed and working:
+This is a subsequent-milestone document. The following are already installed, integrated, and working. Do not re-research, re-add, or duplicate these.
 
 | Already Present | Version | Notes |
 |-----------------|---------|-------|
-| `playwright` (npm) | ^1.58.2 | Used directly via API (not `@playwright/test`) |
-| Custom test runner | `tools/test-suite/run.mjs` | Node.js script, 3 test method types: web/code/skip |
-| Playwright web runner | `tools/test-suite/runners/web.mjs` | Chromium headless, `page.on('console', () => {})` suppresses all output |
-| 62 tests total | 23 web, 38 code, 7 skip | Skips are desktop-only (audio, OS dialogs, file pickers) |
-
-**The key architecture decision:** Mercury's test suite is a custom runner using `playwright` directly (not `@playwright/test` with its config system). This must be preserved — the milestone adds capabilities to this existing pattern, not a framework swap.
+| `@nostr-dev-kit/ndk` | ^3.0.0 | NDK — NIP-17 DMs, NIP-28 rooms, ephemeral sessions fully implemented |
+| `@nostr-dev-kit/ndk-svelte` | ^2.4.48 | Svelte 5 Nostr reactive stores |
+| `nostr-tools` | ^2.23.1 | Low-level Nostr utility functions |
+| `feed` | ^5.2.0 | RSS/Atom generation — used for RSS feeds on artist/scene/collection pages |
+| `@tauri-apps/api` | ^2.10.1 | Tauri IPC, file system access |
+| `@tauri-apps/plugin-sql` | ^2.3.2 | SQLite via Tauri |
+| `reqwest` (Rust) | ^0.12 | HTTP client — already used in AI model download |
+| `rusqlite` (Rust) | ^0.31 bundled | Direct SQLite access in Rust |
+| `serde` + `serde_json` (Rust) | ^1 | JSON serialization |
+| `base64` (Rust) | ^0.22 | Base64 encoding — needed for AP HTTP signatures too |
+| `tauri-plugin-shell` | ^2.3.5 | Shell commands from Tauri |
+| `tauri-plugin-dialog` | ^2.6.0 | File picker dialogs |
+| MusicBrainz support link categorization | — | `categorize.ts` already maps `'patronage'` and `'crowdfunding'` MB relationship types to `'support'` category. Artist page already renders the 'support' link group. |
+| Ephemeral Nostr sessions (kind:20001/20002) | — | `sessions.svelte.ts` — listening party sessions with host/guest, public/private, 1hr TTL |
 
 ---
 
-## Recommended Stack Additions
+## Feature 1: ActivityPub Outbound
 
-### Layer 1: Extending Playwright (Highest ROI, Zero New Dependencies)
+**Goal:** Artist pages, scenes, and collections become AP actors that Fediverse users can follow. Outbound-only — Mercury posts announcements (new artist discovery, scene events) to followers on other AP servers. No inbox processing.
 
-The existing web.mjs runner actively suppresses console output (`page.on('console', () => {})`). This must be inverted to capture errors.
+### What ActivityPub Outbound Actually Requires
 
-**No new packages needed.** All required APIs are in the already-installed `playwright@1.58.2`:
+ActivityPub for outbound-only (read: Mercury publishes, Fediverse reads) requires:
 
-| API | Purpose | Version Available |
-|-----|---------|------------------|
-| `page.on('console', msg => ...)` | Capture console.error, console.warn | All Playwright versions |
-| `page.on('pageerror', err => ...)` | Capture uncaught JS exceptions | All Playwright versions |
-| `page.consoleMessages()` | Retrieve buffered console messages after page load | Playwright 1.57+ (we have 1.58.2) |
-| `page.pageErrors()` | Retrieve buffered page errors after page load | Playwright 1.57+ (we have 1.58.2) |
-| `page.on('requestfailed', req => ...)` | Capture failed network requests | All Playwright versions |
-| `page.on('response', resp => ...)` | Inspect API response shapes passively | All Playwright versions |
-| `page.route(pattern, handler)` | Intercept + validate outgoing requests | All Playwright versions |
+1. **WebFinger endpoint** — `/.well-known/webfinger?resource=acct:artist@mercury.domain` → JSON discovery doc
+2. **Actor JSON-LD document** — stable URL per actor, served with `Content-Type: application/activity+json`
+3. **Outbox endpoint** — ordered collection of `Create` activities (announcements)
+4. **Inbox field in actor doc** — must exist in actor JSON even if not implemented; Mastodon rejects inbox-less actors (legacy requirement per Mastodon spec)
+5. **HTTP Signatures on outbound POSTs** — when Mercury sends activities to follower inboxes, each HTTP POST must be signed with the actor's RSA private key (cavage-12 draft: Date + Digest + Signature headers)
+6. **RSA-2048 keypair per actor** — private key stored locally, public key published in actor doc
 
-**Pattern for the runner update:**
+### Architecture Decision: No AP Library
 
-The `web.mjs` runner needs a `consoleErrors` array per page. Change `page.on('console', () => {})` to collect `msg.type() === 'error'` entries. Expose collected errors in test results so failing tests can report "2 console errors captured." The `page.consoleMessages()` method (new in 1.57) is a cleaner alternative to event listeners for post-load inspection.
+**Do not add an ActivityPub framework library** (e.g., `activitypub-express`, `@activity-pub/activitypub`). Mercury is outbound-only — no inbox processing, no federation relay, no delivery queue. The AP spec at this scope is 4 JSON templates + RSA signing. A full framework adds 50+ dependencies for 10% of the use cases. Hand-craft the JSON.
 
-### Layer 2: API Contract Testing — Zod
+### What Needs Adding: Rust HTTP Server for AP Serving
+
+ActivityPub endpoints need to be reachable by Mastodon/Pleroma/Misskey servers on the public internet. Mercury is a desktop app — this requires an embedded HTTP server in the Tauri Rust process, publicly reachable (via user-configured port forwarding or tunnel).
+
+**Option A (recommended): axum** — lightweight, Tokio-native (same runtime as Tauri), no runtime conflict.
+
+**Why not actix-web:** actix-web uses its own runtime and requires spawning on a `std::thread` to avoid conflict with Tauri's Tokio runtime. This adds complexity. axum runs directly on `tauri::async_runtime::spawn` without thread gymnastics.
 
 | Library | Version | Purpose | Why |
 |---------|---------|---------|-----|
-| `zod` | ^3.24 or 4.x | Schema validation for API responses | TypeScript-first, runtime validation, excellent DX |
+| `axum` (Rust) | ^0.8 | Embedded HTTP server for AP endpoints | Tokio-native, no runtime conflict with Tauri, minimal boilerplate for JSON routes |
+| `tower` (Rust) | ^0.5 | Middleware layer for axum | Required by axum for CORS and request handling |
 
-**Zod 4 released August 2025** — 14x faster parsing, 20x fewer TypeScript compiler instantiations, native JSON schema generation. Migration from v3 is straightforward. Use v4 for new installs.
+**RSA signing for outbound HTTP:** Node.js `crypto` module (Web Crypto API in the SvelteKit frontend) can generate RSA-OAEP-2048 keypairs and sign. In the Rust side, `rsa` crate handles signing for outbound delivery. Check which layer does delivery.
 
-**Why Zod over AJV:** AJV requires separate JSON Schema definitions that diverge from TypeScript types. Zod schemas ARE the TypeScript types — `z.infer<typeof schema>` gives you the type automatically. For a TypeScript-first SvelteKit codebase this is the right choice. AJV is better when you need OpenAPI/Swagger interoperability, which Mercury does not.
+| Library | Version | Purpose | Why |
+|---------|---------|---------|-----|
+| `rsa` (Rust) | ^0.9 | RSA-SHA256 signing for AP HTTP signatures | Pure Rust, no OpenSSL dependency, handles PKCS#1 signing required by Mastodon |
+| `sha2` (Rust) | ^0.10 | SHA-256 for Digest header generation | Already likely in tree via tauri deps; needed for AP body digest |
 
-**Usage pattern in test suite:**
+**Key generation:** Use Web Crypto API (`window.crypto.subtle.generateKey`) in TypeScript to generate the keypair in the frontend, store private key in taste.db via Tauri SQL. Public key extracted as PEM and embedded in actor JSON. This avoids adding a key-gen Rust command.
 
-```typescript
-// In test manifest, a 'code' test that fetches and validates:
-import { z } from 'zod';
+### AP Endpoint Structure (No New JS Libraries)
 
-const ArtistSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  tags: z.array(z.string()),
-  country: z.string().optional(),
-});
+The actor JSON, WebFinger response, and outbox are plain TypeScript objects serialized to JSON. SvelteKit's `+server.ts` files handle these routes when the embedded axum server proxies or when the SvelteKit app is the AP server. Given Mercury is desktop-only (static build), the axum Rust server serves AP endpoints directly — SvelteKit doesn't serve these, axum does.
 
-// Fetch from wrangler dev and validate shape
-const res = await fetch('http://localhost:8788/api/artist/aphex-twin');
-const data = await res.json();
-ArtistSchema.parse(data); // throws ZodError if shape is wrong
+**Endpoint routes in axum:**
+- `GET /.well-known/webfinger` — WebFinger discovery
+- `GET /ap/artist/:mbid` — Actor document
+- `GET /ap/artist/:mbid/outbox` — OrderedCollection of Create activities
+- `POST /ap/artist/:mbid/inbox` — Accept 200 OK, discard body (satisfy Mastodon requirement)
+- `GET /ap/scene/:id` — Scene actor
+- `GET /ap/collection/:id` — Collection actor
+
+---
+
+## Feature 2: Listening Rooms (Synchronized Embed Playback)
+
+**Goal:** Host controls which embedded player (Bandcamp/Spotify/YouTube/SoundCloud) is playing and at what position. Guests sync to host. Coordination via Nostr.
+
+### What's Already There
+
+`sessions.svelte.ts` already implements ephemeral Nostr sessions (kind:20001/20002) for listening parties with host/guest, public/private, session metadata (artistName, releaseName, artistMbid). The existing sessions are text-only — they announce what's being listened to but don't coordinate playback state.
+
+### What Needs Adding: Playback Sync Events
+
+NIP-53 (kind:30311 Live Activities) is the closest Nostr standard. However, kind:30311 is designed for audio stream URLs, not embed URL + timestamp sync. For Mercury's use case (iframe embed control, not a real stream), extend the existing ephemeral session protocol.
+
+**No new Nostr library needed.** NDK ^3.0.0 supports subscribing to any event kind. The sync protocol is a Mercury-specific ephemeral event (kind:20003, within ephemeral range 20000-29999) that carries playback state.
+
+**Mercury playback sync event (kind:20003):**
+```json
+{
+  "kind": 20003,
+  "tags": [
+    ["e", "<sessionId>"],
+    ["t", "mercury"],
+    ["t", "playback-sync"],
+    ["expiration", "<unix+3600>"]
+  ],
+  "content": "{\"embedUrl\": \"https://bandcamp.com/...\", \"platform\": \"bandcamp\", \"position\": 42.5, \"playing\": true, \"sequence\": 17}"
+}
 ```
 
-The test manifest's `method: 'code'` tests can do HTTP fetches directly — no browser needed for contract tests.
+Host publishes kind:20003 events when playback state changes (play/pause, seek, track change). Guests subscribe and apply state. `sequence` field prevents out-of-order application.
 
-**RSS/XML feeds:** Zod doesn't parse XML. Use the built-in `DOMParser` in a Node.js environment (via `@xmldom/xmldom`) or assert structural presence with regex + string checks. Do not add a full XML validation library for Mercury's small number of XML endpoints.
+**No new npm packages needed.** The existing `player/` module (`playback.svelte.ts`, `audio.svelte.ts`, `state.svelte.ts`) already manages embed state. Listening room sync wires kind:20003 events into the existing player state.
 
-### Layer 3: Tauri Desktop Testing — Two Separate Concerns
+**NIP-53 reference:** NIP-53 defines kind:1311 for live chat messages. Mercury can use kind:1311 alongside kind:20003 for room chat, replacing or complementing the current kind:20001 text messages. This is optional — kind:20001 already works.
 
-Desktop testing breaks into two completely separate problems with different tools:
+---
 
-#### 3a. Rust Unit Testing (cargo test) — Already Available, Zero Cost
+## Feature 3: Artist Tools
 
-The Tauri 2.0 `tauri` crate includes a `test` module with a mock runtime. Enabling it requires one Cargo.toml change:
+### 3a. Discovery Stats Dashboard
 
-```toml
-[dev-dependencies]
-tauri = { version = "2", features = ["test"] }
-```
+**Goal:** Show an artist their Mercury stats — how many searches led to their page, which tags drove traffic, which scenes they appear in.
 
-This enables `tauri::test::mock_builder()`, `mock_context()`, and `noop_assets()`. With these, Rust `#[cfg(test)]` modules can test command handlers in isolation without starting a real WebView. The SQLite/rusqlite code, FTS5 queries, library scanner, and AI sidecar startup logic are all testable this way.
+**What's already there:** The local SQLite `taste.db` records user history. The main `mercury.db` holds the artist index. No cross-user aggregation exists (offline-first, no server).
 
-**What cargo test covers:**
-- Rust command handlers (scan_folder, search queries, DB writes)
-- SQLite schema correctness
-- Data pipeline logic (MusicBrainz parsing, tag normalization)
-- Library scanner correctness (lofty metadata reading)
-- AI sidecar process lifecycle
+**Architecture:** Stats are local only — Mercury cannot aggregate cross-user data (no server, no telemetry). The dashboard shows the *local user's* interaction with an artist: how many times they searched for them, played them, added to collections, shared. This is honest and privacy-preserving.
 
-**What it cannot cover:** Any UI interaction, IPC from frontend, or anything requiring WebView.
+**No new libraries needed.** SQLite queries via `tauri-plugin-sql` already available. Stats are a new set of SQL queries against existing tables. Display in Svelte components with existing D3 (already installed for style map and taste fingerprint).
 
-#### 3b. Frontend IPC Mocking — @tauri-apps/api/mocks (Already Installed)
+### 3b. AI Auto-News
 
-`@tauri-apps/api` is already a dependency (`^2.10.1`). The `mocks` submodule (`@tauri-apps/api/mocks`) is part of that package:
+**Goal:** AI-generated "what's new" content for artists — release announcements, scene activity summaries.
 
-| Function | Purpose |
-|----------|---------|
-| `mockIPC(handler)` | Intercept all frontend→Rust IPC calls, return fake responses |
-| `mockWindows(labels)` | Fake multi-window contexts for window-specific code |
-| `clearMocks()` | Reset between tests |
+**What's already there:** `ai/engine.ts` + `ai/prompts.ts` provide the local AI pipeline (llama.cpp sidecar, Qwen2.5 3B). `ai/local-provider.ts` and `ai/remote-provider.ts` handle model routing. Prompt templates in `prompts.ts` cover artist summaries, genre descriptions, scene descriptions.
 
-This is for unit-testing Svelte components that call `invoke('command', args)` — you mock the Rust response and test the frontend reaction. No running Tauri binary needed.
+**What needs adding:** A new prompt template in `prompts.ts` for news-style summaries, plus a trigger mechanism (scheduled or on-visit). The existing AI pipeline handles execution.
 
-**Integration with Vitest browser mode** (see Layer 4): Run these mocks inside the real browser during component tests.
+**No new libraries needed.** Add a prompt to `prompts.ts`, a schedule trigger (use `setInterval` or store a `lastGenerated` timestamp in taste.db), and a news display component.
 
-#### 3c. End-to-End Tauri App Testing — tauri-driver (HIGH COMPLEXITY, LOW PRIORITY)
+**Data sources for news content:** MusicBrainz live API (already used — artist releases endpoint), scene Nostr events (already fetched via NDK). AI summarizes what it finds.
 
-| Tool | Install | Platform |
-|------|---------|---------|
-| `tauri-driver` | `cargo install tauri-driver --locked` (v2.0.4) | Windows + Linux only |
-| `msedgedriver` (Windows) | Match Edge browser version exactly | Critical: version mismatch = hanging |
-| `@wdio/cli` (WebdriverIO) | `npm install -D @wdio/cli` | Test framework on top of tauri-driver |
+### 3c. Self-Hosted Static Site Generator
 
-**Reality check for this project:**
+**Goal:** Artist clicks "Generate my site" — Mercury produces a folder of static HTML/CSS/JS that the artist can self-host anywhere. No claiming, no Mercury account. Pure export.
 
-tauri-driver works by wrapping the native WebDriver server (EdgeDriver on Windows, WebKitWebDriver on Linux). The **version matching requirement for Edge Driver is fragile** — if Windows Update upgrades Edge between sessions, tests can hang silently. macOS is not supported at all. The setup requires building a production binary (`tauri build`) before each test run, which takes 5-15 minutes for a Rust project this size.
+**Architecture:** Generate a minimal SvelteKit-style static site using a Tauri Rust command that writes files to disk. The generated site is a standalone HTML/CSS package, not dependent on Mercury infrastructure.
 
-**Verdict:** Do NOT add tauri-driver for v1.2. The ROI is poor:
-- Most Tauri-specific behavior is testable via `cargo test` + `mockIPC`
-- The 7 currently-skipped tests are genuinely untestable headlessly (audio playback, OS file dialogs)
-- tauri-driver cannot test audio playback either — it's still headless
-- The maintenance burden (Edge version matching, binary build requirement) outweighs any new coverage
+**Approach:** Rust command (`#[tauri::command]`) that:
+1. Fetches artist data (name, tags, biography, cover art URL, platform links, releases) from existing APIs
+2. Renders HTML using a template string (no separate template engine needed — Rust's `format!` macro for small templates, or `minijinja` for complex ones)
+3. Writes output to a user-selected directory (via `tauri-plugin-dialog` file picker — already installed)
 
-**Mark for v1.3 if needed.** If a future phase introduces critical IPC flows that can't be mocked, revisit.
+| Library | Version | Purpose | Why |
+|---------|---------|---------|-----|
+| `minijinja` (Rust) | ^2.0 | Jinja2-compatible template engine for Rust | Lightweight (no dependencies), familiar syntax, handles the HTML generation complexity that `format!` can't cleanly handle for multi-page sites |
 
-### Layer 4: Component Testing — Vitest (Optional, Deferred)
+**Alternative considered:** Generate the site entirely in TypeScript using SvelteKit's prerender capability. Rejected — the Tauri app is already built as a static SPA; adding a secondary "build a different SvelteKit app" pipeline inside the running app is complex. A Rust template engine writing files directly is simpler and keeps the generated output predictable.
 
-| Library | Version | Purpose |
-|---------|---------|---------|
-| `vitest` | ^3.x | Unit + component test runner |
-| `@vitest/browser` | ^3.x | Real browser component tests (Playwright provider) |
-| `vitest-browser-svelte` | ^1.x | Svelte 5 component rendering in real browser |
+**What NOT to add:** Do not add `@sveltejs/kit` as a runtime dependency for site generation. The app is already a SvelteKit app — this would be circular. The generated artist sites are simple enough (biography, discography, embed links) to not need a full framework.
 
-**Why not for v1.2:**
-- Mercury has no existing unit tests — adding Vitest is greenfield work
-- The custom runner at `tools/test-suite/run.mjs` already covers integration behavior
-- Svelte 5 runes (used throughout Mercury) have limited jsdom support, requiring browser mode which adds setup complexity
-- Coverage of Svelte components requires either jsdom (broken with Svelte 5 runes) or Playwright-backed browser mode (works but complex)
+---
 
-**If added later:** Use `@vitest/coverage-v8` (not istanbul — has SvelteKit compatibility issues). The V8 provider produces identical coverage reports since Vitest 3.2.0 which added AST-based remapping.
+## Feature 4: Sustainability
 
-**Verdict:** Skip for v1.2. Phase-specific research recommended before adding.
+### 4a. Artist Support Links (MusicBrainz)
 
-### Layer 5: Pre-commit Automation — Minimal Script Approach
+**Status: Already implemented.** This needs verification, not new stack.
 
-| Tool | Version | Purpose | Why |
-|------|---------|---------|-----|
-| Native git hook | n/a | Run `npm run check` before commits | Already have `.githooks/` configured |
+The existing stack already handles this:
+- `categorize.ts` maps MusicBrainz relationship types `'patronage'` and `'crowdfunding'` to the `'support'` link category (confirmed: lines 41-42)
+- `types.ts` defines `'support'` as a `LinkCategory` and includes it in `LINK_CATEGORY_ORDER`
+- `artist/[slug]/+page.svelte` renders all categories including 'support' in the links section
+- The artist links API (`/api/artist/[mbid]/links`) fetches URL relationships including patronage/crowdfunding from MusicBrainz `?inc=url-rels`
 
-**Recommended approach:** Extend the existing `.githooks/` system rather than adding Husky.
+MusicBrainz has two relevant relationship types (confirmed via official docs):
+- `'patronage'` (UUID: 6f77d54e-1d81-4e1a-9ea5-37947577151b) — Patreon, Ko-fi, PayPal.me, Flattr
+- `'crowdfunding'` (UUID: 93883cf6-e818-4938-990e-75863f8db2d3) — Kickstarter, Indiegogo
 
-The project already has `core.hooksPath = .githooks` configured and a working `post-commit` hook. Adding a `pre-commit` hook in the same directory requires zero new dependencies:
+**Action needed:** Visual differentiation — support links should render differently (highlight, icon) vs. info links. No new library — CSS + existing link rendering.
 
-```bash
-# .githooks/pre-commit
-#!/bin/bash
-echo "Running type check..."
-npm run check
-if [ $? -ne 0 ]; then
-  echo "Type check failed. Commit aborted."
-  exit 1
-fi
-```
+### 4b. Mercury Project Funding Links
 
-For test gates: run `node tools/test-suite/run.mjs --code-only` (fast, ~2s) in pre-commit. Skip `--web-only` tests in pre-commit (requires wrangler running, too slow). Run full suite in pre-push instead.
+**Goal:** A screen in Mercury showing how to support the project (GitHub Sponsors, Open Collective, etc.).
 
-**Why not Husky v9:**
-- Husky adds a `prepare` npm lifecycle hook and modifies `package.json`
-- The project already has a working git hooks directory at `.githooks/`
-- Husky is redundant overhead when you have a working hooks path configured
-- Husky's value is for teams who don't control gitconfig — a solo project with established hooks doesn't need it
+**No new libraries needed.** Static screen in Svelte with hardcoded links. Use `FUNDING.yml` in the repo (GitHub convention) for discoverability. Display in an "About / Support" panel.
 
-**Why not lint-staged:** Mercury's TypeScript check runs on the whole project (`svelte-check --tsconfig`), not per-file. lint-staged's per-file model doesn't map to SvelteKit's check behavior. Running the check on staged files only gives false negatives (cross-file type errors missed).
+### 4c. Backer Credits Screen
+
+**Goal:** Display names/handles of Mercury backers/supporters.
+
+**Approach:** Publish a Nostr list event from the Mercury project account. Clients read and display. NIP-51 kind:30003 (bookmark sets / custom lists) or a custom kind works. NDK already available to fetch and display.
+
+**No new libraries needed.** NDK `ndk.fetchEvents()` already used throughout the codebase. A backer list is a `#t: ['mercury', 'backers']` tagged replaceable event. Display in the About screen.
+
+---
+
+## New Stack Additions Summary
+
+| Library | Layer | Version | Why | Install |
+|---------|-------|---------|-----|---------|
+| `axum` (Rust) | AP HTTP server | ^0.8 | Tokio-native embedded HTTP, no runtime conflict with Tauri | `Cargo.toml` |
+| `tower` (Rust) | axum middleware | ^0.5 | Required by axum; CORS, routing layers | `Cargo.toml` |
+| `rsa` (Rust) | AP HTTP signatures | ^0.9 | RSA-SHA256 signing for AP outbound delivery (cavage-12) | `Cargo.toml` |
+| `sha2` (Rust) | AP body digest | ^0.10 | SHA-256 Digest header for AP HTTP signatures | `Cargo.toml` |
+| `minijinja` (Rust) | Artist site generator | ^2.0 | HTML template rendering for static site export | `Cargo.toml` |
+
+**Zero new npm packages needed for any v1.3 feature.** All TypeScript/Svelte functionality uses existing NDK, feed, SvelteKit, and D3 capabilities.
 
 ---
 
 ## Installation
 
 ```bash
-# Layer 2: API contract testing (only new npm dependency)
-npm install -D zod
+# All new dependencies are Rust-side. Add to src-tauri/Cargo.toml:
 
-# Layer 3a: Rust unit testing (Cargo.toml dev-dependency only)
-# Add to src-tauri/Cargo.toml:
-# [dev-dependencies]
-# tauri = { version = "2", features = ["test"] }
+# [dependencies] additions:
+# axum = { version = "0.8", features = ["json", "tokio"] }
+# tower = { version = "0.5", features = ["util"] }
+# rsa = { version = "0.9", features = ["sha2"] }
+# sha2 = "0.10"
+# minijinja = { version = "2", features = ["loader"] }
 
-# Layer 5: Pre-commit hook (no npm install needed)
-# Create .githooks/pre-commit and chmod +x it
-
-# NOT needed for v1.2:
-# npm install -D @wdio/cli                  (tauri-driver, deferred)
-# npm install -D vitest @vitest/browser     (component tests, deferred)
-# npm install -D husky                      (redundant with existing hooks)
+# No npm installs needed.
 ```
 
 ---
@@ -211,13 +234,17 @@ npm install -D zod
 
 | Recommended | Alternative | Why Not |
 |-------------|-------------|---------|
-| Zod v4 | AJV | AJV requires separate JSON Schema defs that diverge from TS types; no benefit for this codebase |
-| Zod v4 | Joi | Joi is Node-only, older ecosystem, weaker TypeScript inference |
-| cargo test + mockIPC | tauri-driver WebdriverIO | tauri-driver: fragile Edge version matching, no macOS, 15min build per run |
-| Native git hooks | Husky v9 | Redundant — project already has `.githooks/` configured; Husky adds zero value solo |
-| Native git hooks | lint-staged | SvelteKit check is project-wide, not per-file; per-file linting gives false negatives |
-| page.on('console') + page.consoleMessages() | External logging service | Overkill for a test suite; built-in Playwright APIs handle this fully |
-| @vitest/coverage-v8 | @vitest/coverage-istanbul | Istanbul has SvelteKit workspace compatibility bugs; V8 now produces equivalent reports |
+| `axum` (AP server) | `actix-web` | actix-web requires separate `std::thread` to avoid Tauri runtime conflict; axum is Tokio-native |
+| `axum` (AP server) | `warp` | warp is unmaintained (last release 2022); axum is the successor |
+| `axum` (AP server) | `tauri-plugin-localhost` | Plugin exposes the *app's SPA assets* on localhost, not suitable for serving custom AP JSON endpoints |
+| No AP library | `activitypub-express` | Mercury is outbound-only; full AP framework adds 50+ deps for inbox/federation features we don't use |
+| No AP library | `@misskey-dev/summaly` | Social graph tool, not relevant here |
+| `minijinja` | `tera` | tera is a good alternative; minijinja is lighter and uses familiar Jinja2 syntax |
+| `minijinja` | `handlebars` | handlebars (Rust) is heavier; minijinja more idiomatic for this use |
+| `minijinja` | TypeScript template literals | For a multi-page site with partials and conditionals, string concatenation in TS becomes unmaintainable; the Rust command is simpler |
+| Web Crypto API (key gen) | `openssl` (Rust) | openssl requires system OpenSSL; `rsa` crate is pure Rust, no system dep |
+| NIP-51 kind:30003 (backers) | Custom kind | Using standard NIP-51 list kinds means any Nostr client can read the backer list |
+| kind:20003 (playback sync) | NIP-53 kind:30311 | NIP-53 is designed for real audio stream URLs; Mercury syncs embed iframes + timestamps, which NIP-53 doesn't model well |
 
 ---
 
@@ -225,38 +252,47 @@ npm install -D zod
 
 | Avoid | Why | Use Instead |
 |-------|-----|-------------|
-| `@playwright/test` framework | Would require migrating existing 62 tests to `.spec.ts` format; the custom runner is intentional and working | Keep `playwright` direct API usage in `tools/test-suite/` |
-| `tauri-driver` (v1.2) | Fragile Edge version matching, no macOS support, requires full binary build per run, covers no new ground vs mockIPC | cargo test + `@tauri-apps/api/mocks` |
-| Vitest (v1.2) | No existing unit tests to run; Svelte 5 rune support requires browser mode complexity | Phase-specific research before adding |
-| `jest` | Not compatible with SvelteKit's ESM-first build; Vitest supersedes it for Vite-based projects | Vitest if/when unit tests are added |
-| `cypress` | Electron-based, large install, worse DX than Playwright which is already installed | Playwright (already present) |
-| XML schema validation library (`libxmljs2`, etc.) | Over-engineered for 1-2 RSS feeds | Structural string/regex assertions on feed output |
-| `supertest` | Node HTTP assertion library; not applicable to SvelteKit serverless/edge functions on Cloudflare | Direct fetch() in code tests against wrangler :8788 |
+| ActivityPub JS framework (`activitypub-express`, etc.) | Mercury is outbound-only — full AP frameworks solve inbox/delivery/federation complexity Mercury doesn't need | Hand-craft 4 JSON templates |
+| `warp` (Rust HTTP) | Unmaintained since 2022 | `axum` |
+| `actix-web` | Runtime conflict with Tauri's Tokio | `axum` |
+| `openssl` (Rust) | System dependency, compile complexity | `rsa` crate (pure Rust) |
+| New Nostr library | NDK ^3.0.0 already installed and used | Extend existing NDK usage |
+| `vitest` or test framework additions | v1.2 explicitly deferred this; no new features need component tests | Existing Playwright CDP suite |
+| Second SvelteKit build pipeline for artist sites | Circular: the app IS a SvelteKit app; a nested build is complex | `minijinja` Rust templates |
 
 ---
 
-## Stack Patterns by Variant
+## Stack Patterns by Feature
 
-**For console error capture (extending existing web tests):**
-- Modify `tools/test-suite/runners/web.mjs` to collect errors per page
-- Use `page.on('console', msg => { if (msg.type() === 'error') errors.push(msg.text()) })`
-- Use `page.on('pageerror', err => errors.push(err.message))`
-- Alternatively (cleaner for post-load inspection): `await page.consoleMessages()` after load
-- Return errors in test result; fail if unexpected errors present
+**ActivityPub actor (per artist/scene/collection):**
+- axum route handles `GET /ap/:type/:id` → returns JSON-LD with `Content-Type: application/activity+json`
+- Actor includes `publicKey` (RSA-2048 public key PEM) generated once per actor, stored in taste.db
+- WebFinger at `/.well-known/webfinger` maps `acct:artist-mbid@mercury.local` → actor URL
+- Outbox is an `OrderedCollection` of `Create` + `Note` activities (recent Mercury events for this actor)
+- Inbox exists as a route but returns 200 and discards body (Mastodon compatibility requirement)
 
-**For API contract tests (new 'api' method type in manifest):**
-- Add `method: 'api'` to manifest, backed by direct `fetch()` calls + Zod parsing
-- No browser launch needed — runs in Node.js process directly
-- Tests against `http://localhost:8788` (same wrangler instance as web tests)
+**Outbound AP delivery:**
+- When a follower follows an actor (their server sends a Follow to Mercury's inbox), Mercury's axum handler accepts it and stores the follower's inbox URL in taste.db
+- When Mercury wants to announce (new discovery, scene update), Rust code POSTs a `Create` activity to each follower's inbox URL via `reqwest` (already in Cargo.toml)
+- Each POST signed with actor's private RSA key: `Date`, `Digest`, `Signature` headers (cavage-12 draft)
 
-**For Rust unit tests:**
-- Standard `#[cfg(test)]` modules inside Rust source files
-- `cargo test -p mercury-lib` to run only app tests (not dependency tests)
-- Enable `tauri` test feature in `[dev-dependencies]` for command handler mocking
+**Playback sync (listening rooms):**
+- Host: on play/pause/seek/track-change → publish kind:20003 ephemeral Nostr event via NDK
+- Guest: subscribe to kind:20003 events tagged with session ID → apply playback state to local player
+- Both sides already have `ndkState.ndk` initialized → zero new Nostr setup
+- Sequence number in event content prevents out-of-order state application
 
-**For pre-commit gate:**
-- Fast path: `node tools/test-suite/run.mjs --code-only` (2-5 seconds)
-- Pre-push path: full suite (requires wrangler running — document this)
+**Artist static site generator:**
+- User clicks "Generate site" on artist page → `invoke('generate_artist_site', { mbid, outputDir })`
+- Rust fetches artist data from existing APIs (reqwest + MusicBrainz)
+- minijinja renders HTML templates (index.html, releases.html, links.html)
+- Writes to user-selected directory (tauri-plugin-dialog picker already installed)
+- Output: self-contained `/artist-name/` folder with inline CSS, no JS dependencies, no Mercury dependency
+
+**Backer credits:**
+- Mercury project Nostr account publishes a kind:30003 list event tagged `['t', 'mercury-backers']`
+- App fetches on About screen load: `ndk.fetchEvents({ kinds: [30003], '#t': ['mercury-backers'] })`
+- Display npub handles and optional display names from the list's `p` tags
 
 ---
 
@@ -264,37 +300,40 @@ npm install -D zod
 
 | Package | Compatible With | Notes |
 |---------|-----------------|-------|
-| `playwright@1.58.2` | All existing tests | `page.consoleMessages()` / `page.pageErrors()` require 1.57+ — already satisfied |
-| `zod@4.x` | TypeScript 5.9.3 | Zod 4 requires TS 5.x — satisfied |
-| `tauri` test feature | `tauri@2.x` | Must match the project's tauri crate version; check `src-tauri/Cargo.lock` |
-| `@tauri-apps/api/mocks` | `@tauri-apps/api@2.10.1` | Already installed — no new package needed |
-| `cargo test` | Rust edition 2021 | Already the project's edition |
+| `axum@0.8` | `tokio` embedded in Tauri 2.0 | axum 0.8 requires tokio 1.x — Tauri 2.0 uses tokio 1.x internally |
+| `rsa@0.9` | `sha2@0.10` | rsa 0.9 uses `sha2` as a feature gate — versions must align |
+| `minijinja@2` | Rust edition 2021 | Already the project's edition |
+| NDK `@nostr-dev-kit/ndk@3.0.0` | kind:20003 ephemeral | NDK supports any kind number; ephemeral 20000-29999 are relayed but not stored per NIP-01 |
+| `reqwest@0.12` (existing) | AP outbound delivery | Already installed; used for AI model downloads; reuse for AP POST delivery |
+| `base64@0.22` (existing) | AP HTTP signature encoding | Already in Cargo.toml; needed for AP signature Base64 encoding |
+
+---
+
+## Critical Finding: Zero New npm Dependencies
+
+The most important finding for v1.3 planning: **every TypeScript/Svelte capability needed already exists in the installed npm dependency tree.** NDK handles Nostr playback sync events. The `feed` package handles outbox generation if needed. D3 handles stats charts. The existing player module manages embed state.
+
+All new stack additions are Rust-side (axum, rsa, sha2, minijinja) for the ActivityPub HTTP server and the site generator command. The JavaScript/TypeScript layer extends, not expands.
+
+The artist support links (Patreon/Ko-fi via MusicBrainz) are the most surprising finding: **this feature is already implemented end-to-end**. MusicBrainz 'patronage' and 'crowdfunding' relationship types are already mapped to the 'support' category, and the artist page already renders all link categories including 'support'. The v1.3 task for sustainability links is visual polish, not new stack.
 
 ---
 
 ## Sources
 
-- [Playwright release notes](https://playwright.dev/docs/release-notes) — confirmed page.consoleMessages() and page.pageErrors() added in 1.57; we have 1.58.2. HIGH confidence.
-- [Playwright Network docs](https://playwright.dev/docs/network) — page.route(), page.on('response'), page.on('requestfailed') patterns. HIGH confidence.
-- [Tauri 2.0 Testing overview](https://v2.tauri.app/develop/tests/) — cargo test + mock runtime vs WebDriver. HIGH confidence.
-- [Tauri 2.0 WebDriver docs](https://v2.tauri.app/develop/tests/webdriver/) — tauri-driver install, platform limits, Edge version matching warning. HIGH confidence.
-- [Tauri 2.0 Mocking docs](https://v2.tauri.app/develop/tests/mocking/) — mockIPC, mockWindows, clearMocks. HIGH confidence.
-- [Zod v4 release](https://zod.dev/v4) — stable release August 2025, 14x speed, native JSON schema, TS 5.x required. HIGH confidence.
-- [Vitest coverage docs](https://vitest.dev/guide/coverage.html) — v8 vs istanbul, SvelteKit istanbul bug, v8 parity since 3.2.0. MEDIUM confidence.
-- [Svelte testing docs](https://svelte.dev/docs/svelte/testing) — vitest-browser-svelte for Svelte 5 runes. MEDIUM confidence.
-- [Husky docs](https://typicode.github.io/husky/) — v9 current, pre-commit patterns. HIGH confidence (but NOT recommended for this project).
-- tauri-driver v2.0.4 confirmed via crates.io search. MEDIUM confidence (couldn't access crates.io page directly).
-- @crabnebula/tauri-driver — npm package exists, macOS-compatible fork. MEDIUM confidence.
+- [Mastodon ActivityPub spec](https://docs.joinmastodon.org/spec/activitypub/) — Inbox required in actor doc even for outbound-only; Content-Type requirements. HIGH confidence.
+- [Mastodon blog: How to implement a basic ActivityPub server](https://blog.joinmastodon.org/2018/06/how-to-implement-a-basic-activitypub-server/) — Inbox field requirement confirmed; RSA-2048 keypair; HTTP signature headers (Date, Digest, Signature, cavage-12). HIGH confidence.
+- [maho.dev ActivityPub static site guide (2024)](https://maho.dev/2024/02/a-guide-to-implementing-activitypub-in-a-static-site-or-any-website-part-3/) — WebFinger structure; actor JSON-LD template; Content-Type: application/activity+json requirement. MEDIUM confidence (single source, well-documented).
+- [NIP-53 spec (nips.nostr.com)](https://nips.nostr.com/53) — kind:30311, kind:1311 live chat, streaming tag structure. HIGH confidence (official spec).
+- [NIP-51 spec (nips.nostr.com)](https://nips.nostr.com/51) — kind:30003 bookmark sets; kind:10003 bookmarks. HIGH confidence (official spec).
+- [MusicBrainz Artist-URL relationships](https://musicbrainz.org/relationships/artist-url) — 'patronage' (UUID: 6f77d54e) and 'crowdfunding' (UUID: 93883cf6) relationship types confirmed. HIGH confidence (official MB docs).
+- [axum GitHub / crates.io](https://github.com/tokio-rs/axum) — axum 0.8 is current stable; Tokio-native. HIGH confidence.
+- [Tauri discussion: Running actix-web from Tauri](https://github.com/tauri-apps/tauri/discussions/2942) — actix-web runtime conflict with Tauri; separate std::thread workaround. MEDIUM confidence (community discussion, multiple confirmations).
+- [MoonGuard blog: Setting up Actix Web in a Tauri App](https://blog.moonguard.dev/setting-up-actix-in-tauri) — Confirms runtime conflict pattern; axum is simpler alternative. MEDIUM confidence.
+- [actix-webfinger crate](https://docs.rs/actix-webfinger/0.4.1/actix_webfinger/) — Exists but not needed; WebFinger is simple enough to hand-craft in axum. LOW confidence (not used).
+- Existing codebase inspection — `categorize.ts`, `types.ts`, `+page.svelte` artist page, `sessions.svelte.ts`, `Cargo.toml`, `package.json`. HIGH confidence (direct code read).
 
 ---
 
-## Critical Finding: Playwright Already Has Everything Needed
-
-The single most important finding: **every Playwright feature needed for v1.2 is already available in the installed playwright@1.58.2 package.** The `page.consoleMessages()` and `page.pageErrors()` APIs (new in 1.57) enable cleaner post-load error inspection without event listener management. The web.mjs runner change is code surgery, not a new dependency.
-
-The only genuinely new npm dependency for v1.2 is `zod` for API contract testing.
-
----
-
-*Stack research for: Mercury v1.2 test automation (SvelteKit + Tauri 2.0)*
-*Researched: 2026-02-23*
+*Stack research for: Mercury v1.3 — The Open Network (ActivityPub outbound, synchronized listening rooms, artist tools, sustainability)*
+*Researched: 2026-02-24*
