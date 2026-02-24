@@ -1,9 +1,11 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
 	import { isTauri } from '$lib/platform';
 	import type { PageData } from './$types';
 	import { PROJECT_NAME } from '$lib/config';
 	import { followScene, unfollowScene, sceneFollowState, loadSceneFollows } from '$lib/comms/scenes.svelte.js';
+	import { checkActiveRoom, openRoom } from '$lib/comms/listening-room.svelte.js';
 
 	let { data }: { data: PageData } = $props();
 
@@ -24,6 +26,10 @@
 			: '#'
 	);
 
+	// Listening room state (Tauri only, best-effort)
+	let roomStatus = $state<'checking' | 'active' | 'none'>('checking');
+	let roomHostPubkey = $state<string | null>(null);
+
 	// Artist suggestion form
 	let suggestionInput = $state('');
 	let suggestionSubmitted = $state(false);
@@ -36,6 +42,21 @@
 
 		// Load follow state
 		await loadSceneFollows();
+
+		// Check if a listening room is active for this scene
+		if (data.scene) {
+			try {
+				const result = await checkActiveRoom(data.scene.slug);
+				if (result.active) {
+					roomStatus = 'active';
+					roomHostPubkey = result.hostPubkey ?? null;
+				} else {
+					roomStatus = 'none';
+				}
+			} catch {
+				roomStatus = 'none'; // best-effort — fail silently
+			}
+		}
 
 		// Load community suggestions — best-effort, fail silently
 		try {
@@ -81,6 +102,11 @@
 		} finally {
 			followPending = false;
 		}
+	}
+
+	async function handleStartRoom() {
+		if (!data.scene) return;
+		goto('/room/' + data.scene.slug);
 	}
 
 	async function handleSuggestion() {
@@ -152,6 +178,27 @@
 			<div class="ai-description">
 				<p>{aiDescription}</p>
 				<span class="source-badge">AI</span>
+			</div>
+		{/if}
+
+		<!-- Listening Room indicator — Tauri only (requires Nostr) -->
+		{#if isTauri() && data.scene && roomStatus !== 'checking'}
+			<div class="room-indicator" data-testid="room-indicator">
+				{#if roomStatus === 'active'}
+					<span class="room-active-dot"></span>
+					<span class="room-active-label">Room active</span>
+					<a
+						href="/room/{data.scene.slug}"
+						class="room-join-btn"
+						data-testid="room-join-btn"
+					>Join</a>
+				{:else}
+					<a
+						href="/room/{data.scene.slug}"
+						class="room-start-btn"
+						data-testid="room-start-btn"
+					>Start listening room</a>
+				{/if}
 			</div>
 		{/if}
 
@@ -600,5 +647,60 @@
 
 	.back-link a:hover {
 		color: var(--text-accent);
+	}
+
+	/* ── Listening Room Indicator ──────────────────────── */
+	.room-indicator {
+		display: flex;
+		align-items: center;
+		gap: var(--space-sm);
+		margin-bottom: var(--space-lg);
+		padding: var(--space-sm) var(--space-md);
+		background: var(--bg-surface);
+		border: 1px solid var(--border-subtle);
+		border-radius: 8px;
+		font-size: 0.85rem;
+	}
+
+	.room-active-dot {
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		background: #4ade80; /* green — active indicator */
+		flex-shrink: 0;
+		animation: pulse-dot 2s ease-in-out infinite;
+	}
+
+	@keyframes pulse-dot {
+		0%, 100% { opacity: 1; }
+		50% { opacity: 0.4; }
+	}
+
+	.room-active-label {
+		color: var(--text-secondary);
+		flex: 1;
+	}
+
+	.room-join-btn,
+	.room-start-btn {
+		padding: 4px 12px;
+		font-size: 0.8rem;
+		border-radius: 999px;
+		border: 1px solid var(--border-subtle);
+		background: transparent;
+		color: var(--text-accent);
+		text-decoration: none;
+		white-space: nowrap;
+		transition: background 0.15s, border-color 0.15s;
+	}
+
+	.room-join-btn:hover,
+	.room-start-btn:hover {
+		background: var(--bg-elevated);
+		border-color: var(--text-accent);
+	}
+
+	.room-start-btn {
+		color: var(--text-muted);
 	}
 </style>
