@@ -5120,3 +5120,6 @@ All 92 tests passing. Plan 03 (ArtistSummary component) and Plan 04 (AI Settings
 
 > **Commit b6b5a16** (2026-02-24 13:21) — feat(18-01): register get_artist_summary and save_artist_summary in invoke_handler
 > Files changed: 1
+
+> **Commit f88af6a** (2026-02-24 13:23) — docs(18-02): complete AI TypeScript infrastructure plan — providers, state, prompts
+> Files changed: 5
