@@ -63,11 +63,11 @@ Full archive: `.planning/milestones/v1.2-ROADMAP.md`
 
 **Milestone Goal:** Connect Mercury to the open web — sustainability infrastructure, artist tools (stats/auto-news/site generator), synchronized listening rooms, and ActivityPub federation export.
 
-- [x] **Phase 16: Sustainability Links** — Artist support links, share-to-Fediverse, Mercury funding screen, backer credits (completed 2026-02-24)
-- [x] **Phase 17: Artist Stats Dashboard** — Discoverability stats page and personal visit count per artist (completed 2026-02-24)
-- [x] **Phase 18: AI Auto-News** — MusicBrainz-grounded AI summary on artist pages, cached, labeled (completed 2026-02-24)
-- [x] **Phase 19: Static Site Generator** — Export a self-contained artist HTML page for self-hosting (completed 2026-02-24)
-- [x] **Phase 20: Listening Rooms** — Host-controlled synchronized YouTube embed via Nostr coordination (completed 2026-02-24)
+- [x] **Phase 16: Sustainability Links** — Artist support links, share-to-Fediverse, Mercury funding screen, backer credits (completed 2026-02-24)
+- [x] **Phase 17: Artist Stats Dashboard** — Discoverability stats page and personal visit count per artist (completed 2026-02-24)
+- [x] **Phase 18: AI Auto-News** — MusicBrainz-grounded AI summary on artist pages, cached, labeled (completed 2026-02-24)
+- [x] **Phase 19: Static Site Generator** — Export a self-contained artist HTML page for self-hosting (completed 2026-02-24)
+- [x] **Phase 20: Listening Rooms** — Host-controlled synchronized YouTube embed via Nostr coordination (completed 2026-02-24)
 - [ ] **Phase 21: ActivityPub Outbound** — Static AP actor export for self-hosted Fediverse presence
 
 ---
@@ -118,7 +118,7 @@ Plans:
 - [ ] 18-02-PLAN.md — TS AI infrastructure: providers.ts + state.svelte.ts extension + prompts.ts new function
 - [ ] 18-03-PLAN.md — ArtistSummary.svelte component (all states: hidden, generating, cached, stale-refresh)
 - [ ] 18-04-PLAN.md — AiSettings.svelte extension: provider selector + affiliate badge + auto-generate toggle
-- [x] 18-05-PLAN.md — Artist page wiring + test suite manifest Phase 18 entries (completed 2026-02-24)
+- [x] 18-05-PLAN.md — Artist page wiring + test suite manifest Phase 18 entries (completed 2026-02-24)
 
 ### Phase 19: Static Site Generator
 **Goal**: Any artist page in Mercury can be exported as a self-contained HTML file the artist can host anywhere with zero Mercury dependency
@@ -134,7 +134,7 @@ Plans:
 Plans:
 - [ ] 19-01-PLAN.md — Rust site_gen.rs backend (HTML generation, cover downloads, XSS escape) + dialog:allow-save capability
 - [ ] 19-02-PLAN.md — SiteGenDialog.svelte component (5-state machine: confirming/picking/generating/success/error)
-- [x] 19-03-PLAN.md — lib.rs registration + artist page "Export site" button wiring + test manifest Phase 19 entries (completed 2026-02-24)
+- [x] 19-03-PLAN.md — lib.rs registration + artist page "Export site" button wiring + test manifest Phase 19 entries (completed 2026-02-24)
 
 ### Phase 20: Listening Rooms
 **Goal**: Users can host or join a synchronized listening room where the host controls which YouTube video plays for all participants
@@ -151,7 +151,7 @@ Plans:
 Plans:
 - [ ] 20-01-PLAN.md — listening-room.svelte.ts state machine (Nostr I/O, all event kinds) + /room/[channelId] route scaffold
 - [ ] 20-02-PLAN.md — Full room UI (YouTube player, host/guest controls, jukebox queue, participant list)
-- [x] 20-03-PLAN.md — Scene page room indicator (Room active / Start room) + test manifest Phase 20 entries (completed 2026-02-24)
+- [x] 20-03-PLAN.md — Scene page room indicator (Room active / Start room) + test manifest Phase 20 entries (completed 2026-02-24)
 
 ### Phase 21: ActivityPub Outbound
 **Goal**: Users can configure and export a valid ActivityPub actor as static files they self-host, making their Mercury curation followable from Mastodon
@@ -161,7 +161,11 @@ Plans:
   1. User can configure an AP actor identity (handle, display name, hosting URL) in Settings
   2. User can export actor.json, webfinger.json, and outbox.json to a local directory via a file picker dialog
   3. When the exported files are uploaded to the configured hosting URL, the actor is followable from a Mastodon instance
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 21-01-PLAN.md — Rust activitypub.rs backend (RSA key gen, JSON-LD builders, export_activitypub command) + lib.rs registration
+- [ ] 21-02-PLAN.md — FediverseSettings.svelte component + Settings page wiring + PHASE_21 test manifest entries
 
 ---
 
@@ -241,4 +245,4 @@ Runs alongside everything else. Not blocking any phase. Rolls out in stages as f
 | 18. AI Auto-News | 5/5 | Complete    | 2026-02-24 | - |
 | 19. Static Site Generator | 3/3 | Complete    | 2026-02-24 | - |
 | 20. Listening Rooms | 3/3 | Complete    | 2026-02-24 | - |
-| 21. ActivityPub Outbound | v1.3 | 0/TBD | Not started | - |
+| 21. ActivityPub Outbound | v1.3 | 0/2 | Not started | - |
