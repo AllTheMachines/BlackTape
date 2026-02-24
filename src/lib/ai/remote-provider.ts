@@ -23,9 +23,8 @@ export class RemoteAiProvider implements AiProvider {
 	private model: string;
 
 	constructor(apiKey: string, baseUrl: string, model: string) {
-		// Strip trailing slash from base URL for consistent joining
-		this.apiKey = apiKey;
-		this.baseUrl = baseUrl.replace(/\/+$/, '');
+		this.apiKey = apiKey.trim();
+		this.baseUrl = baseUrl.trim().replace(/\/+$/, '');
 		this.model = model;
 	}
 
@@ -38,7 +37,7 @@ export class RemoteAiProvider implements AiProvider {
 		messages.push({ role: 'user', content: prompt });
 
 		try {
-			const response = await fetch(`${this.baseUrl}/v1/chat/completions`, {
+			const response = await fetch(`${this.baseUrl}/chat/completions`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -69,7 +68,7 @@ export class RemoteAiProvider implements AiProvider {
 		if (texts.length === 0) return [];
 
 		try {
-			const response = await fetch(`${this.baseUrl}/v1/embeddings`, {
+			const response = await fetch(`${this.baseUrl}/embeddings`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
