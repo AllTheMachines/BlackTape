@@ -33,10 +33,10 @@ AI-generated artist summaries grounded in MusicBrainz catalog data — no halluc
 
 Export a self-contained artist page anyone can host anywhere — no Mercury dependency, no server required.
 
-- [ ] **SITE-01**: User can generate a self-contained HTML/CSS artist page for any artist and export it to a user-selected local directory
-- [ ] **SITE-02**: Generated site includes artist bio (from Wikipedia/MusicBrainz), top tags, discography with release covers, and platform buy/stream links
-- [ ] **SITE-03**: Generated site has zero runtime dependency on Mercury, external APIs, or any hosted service for basic display
-- [ ] **SITE-04**: Generated HTML is sanitized — artist names and bios with special characters or markup cannot inject scripts
+- [x] **SITE-01**: User can generate a self-contained HTML/CSS artist page for any artist and export it to a user-selected local directory
+- [x] **SITE-02**: Generated site includes artist bio (from Wikipedia/MusicBrainz), top tags, discography with release covers, and platform buy/stream links
+- [x] **SITE-03**: Generated site has zero runtime dependency on Mercury, external APIs, or any hosted service for basic display
+- [x] **SITE-04**: Generated HTML is sanitized — artist names and bios with special characters or markup cannot inject scripts
 
 ### ROOM — Listening Rooms
 
@@ -105,10 +105,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | NEWS-01 | Phase 18 | Complete |
 | NEWS-02 | Phase 18 | Complete |
 | NEWS-03 | Phase 18 | Complete |
-| SITE-01 | Phase 19 | Pending |
-| SITE-02 | Phase 19 | Pending |
-| SITE-03 | Phase 19 | Pending |
-| SITE-04 | Phase 19 | Pending |
+| SITE-01 | Phase 19 | Complete |
+| SITE-02 | Phase 19 | Complete |
+| SITE-03 | Phase 19 | Complete |
+| SITE-04 | Phase 19 | Complete |
 | ROOM-01 | Phase 20 | Pending |
 | ROOM-02 | Phase 20 | Pending |
 | ROOM-03 | Phase 20 | Pending |

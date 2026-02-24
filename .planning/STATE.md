@@ -69,12 +69,16 @@ Progress: [███░░░░░░░] 38% (v1.3 — 2.5/6 phases partially 
 - [Phase 19-static-site-generator]: Dialog is Tauri-only — no isTauri guard inside SiteGenDialog; parent artist page gates with {#if tauriMode}
 - [Phase 19-static-site-generator]: country/type/begin_year/ended passed as null/false in artist payload — not in dialog props, Rust struct accepts null
 - [Phase 19-static-site-generator]: Svelte 5 svelte-ignore uses underscore format (a11y_click_events_have_key_events), not hyphen format
+- [Phase 19-01]: html_escape() inline 5-char substitution — no html-escape crate needed; auditable, zero dependency
+- [Phase 19-01]: r##"..."## raw string for SVG placeholder — SVG fill="#1c1c1c" contains "# which terminates r#"..."# delimiter
+- [Phase 19-01]: generate_artist_site downloads covers sequentially (not parallel) — avoids Cover Art Archive rate-limiting
+- [Phase 19-01]: open_in_explorer uses std::process::Command — avoids plugin-shell Windows path-with-spaces bug (GitHub #6431)
+- [Phase 19-01]: Generated site CSS uses hex/RGB not OKLCH — WebView2 supports OKLCH but generated sites open in users' own browsers
 
 ### Pending Todos
 None
 
 ### Blockers/Concerns
-- [Phase 19] minijinja multi-file template loading needs prototype early in planning — architecture assumes it works as described
 - [Phase 20] kind:10311 relay propagation latency: needs empirical validation with Mercury's relay pool during implementation
 - [Phase 21] AP JSON-LD output must be validated against a live Mastodon instance before Phase 21 ships — mandatory integration test
 

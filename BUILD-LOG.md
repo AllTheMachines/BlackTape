@@ -5335,6 +5335,26 @@ Phase 19 kicks off. Goal: export any artist page as a self-contained HTML folder
 1. `src-tauri/src/site_gen.rs` — New Rust module: data structs, `html_escape()`, `download_cover()`, `build_html()`, `generate_artist_site` command, `open_in_explorer` command
 2. `src-tauri/capabilities/default.json` — Add `dialog:allow-save` permission
 
+**What Was Shipped:**
+
+Both tasks complete. `cargo check` passes (module compiles cleanly; lib.rs registration handled in Plan 03). All 92 code checks still green.
+
+- **`src-tauri/src/site_gen.rs`** (new, 803 lines) — Complete Rust HTML generation backend:
+  - `ArtistSitePayload`, `ReleaseSitePayload`, `ReleaseLinkPayload`, `SiteGenResult` structs
+  - `html_escape()` — 5-char inline substitution, XSS prevention for ALL text fields
+  - `download_cover()` — async best-effort via reqwest, returns bool, never aborts generation
+  - `build_tags_html()`, `build_releases_html()`, `build_html()` — HTML generation pipeline
+  - Inline CSS uses hex/RGB only (no OKLCH — generated site must work in all browsers)
+  - 2-column release grid with media query for mobile, 120x120 cover images or SVG placeholder
+  - `generate_artist_site` — async Tauri command, sequential cover downloads (no rate-limit risk)
+  - `open_in_explorer` — sync Tauri command via `std::process::Command` (no new crates)
+  - Full unit test suite: XSS, placeholder vs img, color verification, no external deps
+- **`src-tauri/capabilities/default.json`** — `dialog:allow-save` added
+
+<!-- decision: Raw string r##"..."## for SVG with hex color attributes -->
+SVG placeholder uses `fill="#1c1c1c"` — the `"#` sequence terminates `r#"..."#` raw string delimiters. Fixed with `r##"..."##`. Idiomatic Rust.
+<!-- /decision -->
+
 ## Entry — 2026-02-24 — Phase 19 Plan 02: SiteGenDialog.svelte
 
 The frontend dialog component that wraps the Rust site generator. A 5-state machine (confirming → picking → generating → success / error) that guides the user through previewing what will be exported, picking an output folder via the OS native dialog, watching generation progress, and then either opening the folder or seeing an error message.
@@ -5351,4 +5371,13 @@ The frontend dialog component that wraps the Rust site generator. A 5-state mach
 All 92 existing tests still pass. Zero new errors or warnings introduced (3 a11y warnings from old-format svelte-ignore fixed inline).
 
 > **Commit 4e8fdd8** (2026-02-24 16:30) — feat(19-02): implement SiteGenDialog.svelte with 5-state machine
+> Files changed: 1
+
+> **Commit 3599d01** (2026-02-24 16:32) — docs(19-02): complete SiteGenDialog plan — summary, state, roadmap
+> Files changed: 4
+
+> **Commit 069fb32** (2026-02-24 16:33) — feat(19-01): create site_gen.rs with Rust HTML generation backend
+> Files changed: 1
+
+> **Commit 19f8f46** (2026-02-24 16:33) — feat(19-01): add dialog:allow-save to capabilities
 > Files changed: 1
