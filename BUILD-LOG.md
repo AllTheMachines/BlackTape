@@ -5052,3 +5052,6 @@ All building blocks from Plan 01 (Rust backend, TypeScript query, ArtistStats.sv
 
 > **Commit b1a3e87** (2026-02-24 12:05) — chore(17-02): add Phase 16 + 17 test entries to manifest
 > Files changed: 1
+
+> **Commit d88afb0** (2026-02-24 12:08) — docs(17-02): complete artist-stats-dashboard plan 02 — Stats tab + visit tracking + test manifest
+> Files changed: 4

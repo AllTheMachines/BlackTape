@@ -18,8 +18,8 @@ Connect Mercury to the open web's funding ecosystem and make the project's own s
 
 Give users insight into how discoverable any artist is within Mercury's index.
 
-- [ ] **STAT-01**: User can view a discovery stats page for any artist showing their uniqueness score, rarest tag, and tag distribution
-- [ ] **STAT-02**: User can see how many times they have personally visited an artist's profile page (local count)
+- [x] **STAT-01**: User can view a discovery stats page for any artist showing their uniqueness score, rarest tag, and tag distribution
+- [x] **STAT-02**: User can see how many times they have personally visited an artist's profile page (local count)
 
 ### NEWS — AI Auto-News
 
@@ -100,8 +100,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SUST-02 | Phase 16 | Complete |
 | SUST-03 | Phase 16 | Complete |
 | SUST-04 | Phase 16 | Complete |
-| STAT-01 | Phase 17 | Pending |
-| STAT-02 | Phase 17 | Pending |
+| STAT-01 | Phase 17 | Complete |
+| STAT-02 | Phase 17 | Complete |
 | NEWS-01 | Phase 18 | Pending |
 | NEWS-02 | Phase 18 | Pending |
 | NEWS-03 | Phase 18 | Pending |
