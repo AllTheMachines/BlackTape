@@ -364,7 +364,7 @@
 	{/if}
 
 	<!-- AI Auto-News: Provider Selection -->
-	<section class="settings-section">
+	<div class="settings-section">
 		<h3 class="settings-section-title">AI Summary Provider</h3>
 		<p class="settings-hint">Choose which AI provider generates artist summaries. A provider must be selected and API key entered for summaries to work.</p>
 
@@ -394,10 +394,10 @@
 				</button>
 			{/if}
 		{/if}
-	</section>
+	</div>
 
 	<!-- AI Auto-News: Auto-generate toggle -->
-	<section class="settings-section">
+	<div class="settings-section">
 		<h3 class="settings-section-title">Auto-generate on Artist Visit</h3>
 		<label class="settings-toggle-row">
 			<input
@@ -407,7 +407,7 @@
 			/>
 			<span>Automatically generate AI summaries when visiting artist pages (requires API key configured above)</span>
 		</label>
-	</section>
+	</div>
 {/if}
 
 <style>
