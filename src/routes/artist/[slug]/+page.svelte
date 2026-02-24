@@ -377,25 +377,46 @@
 			<h2 class="section-title">Links</h2>
 
 			{#each LINK_CATEGORY_ORDER as category}
-				{@const links = data.categorizedLinks[category]}
-				{#if links.length > 0}
-					<div class="link-group">
-						<h3 class="link-group-title">{LINK_CATEGORY_LABELS[category]}</h3>
-						<div class="link-list">
-							{#each links as link}
-								<a
-									href={link.url}
-									target="_blank"
-									rel="noopener noreferrer"
-									class="cat-link"
-								>
-									{link.label}
-								</a>
-							{/each}
+				{#if category !== 'support'}
+					{@const links = data.categorizedLinks[category]}
+					{#if links.length > 0}
+						<div class="link-group">
+							<h3 class="link-group-title">{LINK_CATEGORY_LABELS[category]}</h3>
+							<div class="link-list">
+								{#each links as link}
+									<a
+										href={link.url}
+										target="_blank"
+										rel="noopener noreferrer"
+										class="cat-link"
+									>
+										{link.label}
+									</a>
+								{/each}
+							</div>
 						</div>
-					</div>
+					{/if}
 				{/if}
 			{/each}
+		</section>
+	{/if}
+
+	<!-- Support links (artist funding) -->
+	{#if data.categorizedLinks.support.length > 0}
+		<section class="support-section">
+			<h2 class="section-title">Support</h2>
+			<div class="support-links">
+				{#each data.categorizedLinks.support as link}
+					<a
+						href={link.url}
+						target="_blank"
+						rel="noopener noreferrer"
+						class="support-link"
+					>
+						{supportIcon(link.label)}{link.label}
+					</a>
+				{/each}
+			</div>
 		</section>
 	{/if}
 
@@ -949,6 +970,52 @@
 		width: 100%;
 		height: auto;
 		display: block;
+	}
+
+	/* ── Support Links ────────────────────────────────── */
+	.support-section {
+		margin-top: var(--space-lg, 1.5rem);
+		padding-top: var(--space-lg, 1.5rem);
+		border-top: 1px solid var(--border-subtle);
+	}
+
+	.support-links {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-sm, 0.5rem);
+		margin-top: var(--space-sm, 0.5rem);
+	}
+
+	.support-link {
+		font-size: 0.85rem;
+		color: var(--text-accent);
+		text-decoration: none;
+		padding: 0.25rem 0.6rem;
+		border: 1px solid color-mix(in srgb, var(--text-accent) 40%, transparent);
+		border-radius: 4px;
+		transition: background 0.15s, color 0.15s;
+	}
+
+	.support-link:hover {
+		background: color-mix(in srgb, var(--text-accent) 15%, transparent);
+	}
+
+	/* ── Mastodon Share Button ───────────────────────────── */
+	.share-mastodon-btn {
+		font-size: 0.85rem;
+		color: var(--text-muted);
+		text-decoration: none;
+		padding: 0.25rem 0.5rem;
+		border: 1px solid var(--border-subtle);
+		border-radius: 4px;
+		line-height: 1;
+		transition: color 0.15s, border-color 0.15s;
+		flex-shrink: 0;
+	}
+
+	.share-mastodon-btn:hover {
+		color: var(--text-secondary);
+		border-color: var(--text-muted);
 	}
 
 	/* ── Responsive ────────────────────────────────────── */
