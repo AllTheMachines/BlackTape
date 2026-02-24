@@ -267,6 +267,7 @@
 	</div>
 {:else}
 	<div class="settings-page">
+		<div style="background:red;color:white;padding:10px;font-size:16px;">DEBUG: page loaded fresh</div>
 		<h1>Settings</h1>
 
 		<!-- Appearance (Theme) -->
