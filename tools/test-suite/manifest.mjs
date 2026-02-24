@@ -2062,6 +2062,48 @@ export const PHASE_23 = [
       fileContains('src/routes/+layout.svelte', "import Titlebar"),
   },
   {
+    id: 'P23-05', phase: 23, area: 'Design System',
+    desc: 'ControlBar.svelte contains var(--bg-1), var(--bg-4), var(--b-1), var(--b-2), var(--r)',
+    method: 'code',
+    fn: () =>
+      fileContains('src/lib/components/ControlBar.svelte', 'var(--bg-1)')() &&
+      fileContains('src/lib/components/ControlBar.svelte', 'var(--bg-4)')() &&
+      fileContains('src/lib/components/ControlBar.svelte', 'var(--b-1)')() &&
+      fileContains('src/lib/components/ControlBar.svelte', 'var(--b-2)')() &&
+      fileContains('src/lib/components/ControlBar.svelte', 'var(--r)')(),
+  },
+  {
+    id: 'P23-06', phase: 23, area: 'Design System',
+    desc: 'LeftSidebar.svelte contains var(--bg-1), var(--acc), nav-lbl, nav-group, border-left',
+    method: 'code',
+    fn: () =>
+      fileContains('src/lib/components/LeftSidebar.svelte', 'var(--bg-1)')() &&
+      fileContains('src/lib/components/LeftSidebar.svelte', 'var(--acc)')() &&
+      fileContains('src/lib/components/LeftSidebar.svelte', 'nav-lbl')() &&
+      fileContains('src/lib/components/LeftSidebar.svelte', 'nav-group')() &&
+      fileContains('src/lib/components/LeftSidebar.svelte', 'border-left')(),
+  },
+  {
+    id: 'P23-07', phase: 23, area: 'Design System',
+    desc: 'Player.svelte contains var(--bg-1), var(--b-1), var(--acc), var(--bg-4)',
+    method: 'code',
+    fn: () =>
+      fileContains('src/lib/components/Player.svelte', 'var(--bg-1)')() &&
+      fileContains('src/lib/components/Player.svelte', 'var(--b-1)')() &&
+      fileContains('src/lib/components/Player.svelte', 'var(--acc)')() &&
+      fileContains('src/lib/components/Player.svelte', 'var(--bg-4)')(),
+  },
+  {
+    id: 'P23-08', phase: 23, area: 'Design System',
+    desc: 'Player.svelte does not reference old token names (--player-bg, --player-border, --progress-color, --text-primary)',
+    method: 'code',
+    fn: () =>
+      !fileContains('src/lib/components/Player.svelte', 'var(--player-bg)')() &&
+      !fileContains('src/lib/components/Player.svelte', 'var(--player-border)')() &&
+      !fileContains('src/lib/components/Player.svelte', 'var(--progress-color)')() &&
+      !fileContains('src/lib/components/Player.svelte', 'var(--text-primary)')(),
+  },
+  {
     id: 'P23-09', phase: 23, area: 'Design System',
     desc: 'TagChip.svelte has no pill radius (999px), has 22px height, var(--r), var(--bg-4), var(--acc)',
     method: 'code',

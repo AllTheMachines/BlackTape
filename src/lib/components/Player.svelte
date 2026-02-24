@@ -244,11 +244,11 @@
 <style>
 	.expanded-panel {
 		position: fixed;
-		bottom: var(--player-height);
+		bottom: var(--player);
 		left: 0;
 		right: 0;
-		background: var(--player-bg);
-		border-top: 1px solid var(--player-border);
+		background: var(--bg-1);
+		border-top: 1px solid var(--b-1);
 		z-index: 199;
 		animation: slide-up 0.2s ease-out;
 		max-height: 280px;
@@ -271,13 +271,13 @@
 		bottom: 0;
 		left: 0;
 		right: 0;
-		height: var(--player-height);
-		background: var(--player-bg);
-		border-top: 1px solid var(--player-border);
+		height: var(--player);
+		background: var(--bg-1);
+		border-top: 1px solid var(--b-1);
 		display: flex;
 		align-items: center;
-		padding: 0 var(--space-lg);
-		gap: var(--space-lg);
+		padding: 0 14px;
+		gap: 12px;
 		z-index: 200;
 	}
 
@@ -289,17 +289,17 @@
 	}
 
 	.track-title {
-		font-size: 0.85rem;
+		font-size: 11px;
 		font-weight: 500;
-		color: var(--text-primary);
+		color: var(--t-1);
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
 	}
 
 	.track-meta {
-		font-size: 0.75rem;
-		color: var(--text-secondary);
+		font-size: 10px;
+		color: var(--t-3);
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
@@ -307,7 +307,7 @@
 
 	.meta-sep {
 		margin: 0 0.3em;
-		color: var(--text-muted);
+		color: var(--t-3);
 	}
 
 	/* Center — transport controls + seek */
@@ -323,29 +323,33 @@
 	.transport {
 		display: flex;
 		align-items: center;
-		gap: var(--space-sm);
+		gap: 6px;
 	}
 
 	.control-btn {
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		background: none;
-		border: none;
-		color: var(--text-secondary);
+		width: 24px;
+		height: 24px;
+		background: var(--bg-4);
+		border: 1px solid var(--b-2);
+		border-radius: var(--r);
+		color: var(--t-3);
 		cursor: pointer;
-		padding: 4px;
-		border-radius: 4px;
-		transition: color 0.15s, background 0.15s;
+		transition: background 0.1s, color 0.1s;
 		position: relative;
 	}
 
 	.control-btn:hover {
-		color: var(--text-primary);
+		background: var(--bg-5);
+		color: var(--t-2);
 	}
 
 	.control-btn.small {
-		opacity: 0.7;
+		width: 22px;
+		height: 22px;
+		opacity: 0.85;
 	}
 
 	.control-btn.small:hover {
@@ -353,7 +357,9 @@
 	}
 
 	.control-btn.active {
-		color: var(--progress-color);
+		color: var(--acc);
+		border-color: var(--b-acc);
+		background: var(--acc-bg);
 		opacity: 1;
 	}
 
@@ -361,28 +367,29 @@
 		display: flex;
 		align-items: center;
 		gap: 3px;
-		background: none;
-		border: 1px solid var(--border-default);
-		color: var(--text-muted);
+		background: var(--bg-4);
+		border: 1px solid var(--b-2);
+		border-radius: var(--r);
+		color: var(--t-3);
 		cursor: pointer;
 		padding: 3px 8px;
-		border-radius: 12px;
-		font-size: 0.65rem;
-		font-family: var(--font-sans);
+		height: 22px;
+		font-size: 10px;
+		font-family: inherit;
 		letter-spacing: 0.04em;
 		text-transform: uppercase;
-		transition: color 0.15s, border-color 0.15s, background 0.15s;
+		transition: color 0.1s, border-color 0.1s, background 0.1s;
 	}
 
 	.discover-btn:hover {
-		color: var(--text-secondary);
-		border-color: var(--border-hover);
+		background: var(--bg-5);
+		color: var(--t-2);
 	}
 
 	.discover-btn.active {
-		color: var(--progress-color);
-		border-color: var(--progress-color);
-		background: color-mix(in srgb, var(--progress-color) 8%, transparent);
+		color: var(--acc);
+		border-color: var(--b-acc);
+		background: var(--acc-bg);
 	}
 
 	.discover-label {
@@ -390,16 +397,15 @@
 	}
 
 	.play-btn {
-		width: 36px;
-		height: 36px;
-		border-radius: 50%;
-		background: var(--text-primary);
-		color: var(--player-bg);
+		width: 28px;
+		height: 28px;
+		background: var(--acc-bg);
+		border-color: var(--b-acc);
+		color: var(--acc);
 	}
 
 	.play-btn:hover {
-		background: var(--text-accent);
-		color: var(--player-bg);
+		background: var(--acc-bg-h);
 	}
 
 	.repeat-one-badge {
@@ -408,42 +414,43 @@
 		right: -2px;
 		font-size: 0.55rem;
 		font-weight: 700;
-		color: var(--progress-color);
+		color: var(--acc);
 	}
 
 	/* Seek bar */
 	.seek-row {
 		display: flex;
 		align-items: center;
-		gap: var(--space-sm);
+		gap: 8px;
 		width: 100%;
 	}
 
 	.time-display {
-		font-size: 0.7rem;
-		color: var(--text-muted);
+		font-size: 9px;
+		color: var(--t-3);
 		font-variant-numeric: tabular-nums;
-		min-width: 36px;
+		min-width: 30px;
 		text-align: center;
 	}
 
 	.seek-bar {
 		flex: 1;
-		height: 4px;
+		height: 3px;
 		-webkit-appearance: none;
 		appearance: none;
-		background: var(--progress-bg);
-		border-radius: 2px;
+		background: var(--b-2);
+		border-radius: 0;
 		outline: none;
 		cursor: pointer;
+		accent-color: var(--acc);
 	}
 
 	.seek-bar::-webkit-slider-thumb {
 		-webkit-appearance: none;
-		width: 12px;
-		height: 12px;
+		width: 10px;
+		height: 10px;
 		border-radius: 50%;
-		background: var(--progress-color);
+		background: var(--acc);
 		cursor: pointer;
 		opacity: 0;
 		transition: opacity 0.15s;
@@ -454,17 +461,17 @@
 	}
 
 	.seek-bar::-moz-range-thumb {
-		width: 12px;
-		height: 12px;
+		width: 10px;
+		height: 10px;
 		border-radius: 50%;
-		background: var(--progress-color);
+		background: var(--acc);
 		cursor: pointer;
 		border: none;
 	}
 
 	.seek-bar::-webkit-slider-runnable-track {
-		height: 4px;
-		border-radius: 2px;
+		height: 3px;
+		border-radius: 0;
 	}
 
 	/* Right section — volume + queue */
@@ -473,19 +480,20 @@
 		display: flex;
 		align-items: center;
 		justify-content: flex-end;
-		gap: var(--space-sm);
+		gap: 6px;
 		max-width: 240px;
 	}
 
 	.volume-bar {
-		width: 80px;
-		height: 4px;
+		width: 64px;
+		height: 3px;
 		-webkit-appearance: none;
 		appearance: none;
-		background: var(--progress-bg);
-		border-radius: 2px;
+		background: var(--b-2);
+		border-radius: 0;
 		outline: none;
 		cursor: pointer;
+		accent-color: var(--t-3);
 	}
 
 	.volume-bar::-webkit-slider-thumb {
@@ -493,7 +501,7 @@
 		width: 10px;
 		height: 10px;
 		border-radius: 50%;
-		background: var(--text-secondary);
+		background: var(--t-2);
 		cursor: pointer;
 	}
 
@@ -501,7 +509,7 @@
 		width: 10px;
 		height: 10px;
 		border-radius: 50%;
-		background: var(--text-secondary);
+		background: var(--t-2);
 		cursor: pointer;
 		border: none;
 	}
