@@ -11,7 +11,7 @@ Build order: data pipeline → desktop app → local player → AI → discovery
 - ✅ **v1.0 MVP** — Phases 1–10.1 (shipped 2026-02-23)
 - ✅ **v1.1 Scene Building + Curator Tools** — Phases 11–12 (shipped 2026-02-23)
 - ✅ **v1.2 Zero-Click Confidence** — Phases 13–15 (shipped 2026-02-24)
-- 📋 **v1.3** — Interoperability, Listening Rooms, Artist Tools (planned)
+- 🚧 **v1.3 The Open Network** — Phases 16–21 (in progress)
 
 ## Phases
 
@@ -44,7 +44,7 @@ Full archive: `.planning/milestones/v1.0-ROADMAP.md`
 - [x] **Phase 11: Scene Building** — AI scene detection, scene directory, follow/suggest/vote interactions (4/4 plans, completed 2026-02-23)
 - [x] **Phase 12: Curator / Blog Tools** — RSS feeds, embeddable widgets, curator attribution, New & Rising page (4/4 plans, completed 2026-02-23)
 
-Note: Original Phases 13–15 (Interoperability, Listening Rooms, Artist Tools) deferred — became v1.3 Phases 16–18.
+Note: Original Phases 13–15 (Interoperability, Listening Rooms, Artist Tools) deferred — became v1.3 Phases 16–21.
 
 </details>
 
@@ -59,11 +59,84 @@ Full archive: `.planning/milestones/v1.2-ROADMAP.md`
 
 </details>
 
-### 📋 v1.3 — [TBD]
+### 🚧 v1.3 The Open Network (Phases 16–21)
 
-- [ ] **Phase 16: Interoperability** — ActivityPub, Fediverse federation, RSS for everything
-- [ ] **Phase 17: Listening Rooms** — Shared real-time listening with synchronized embeds
-- [ ] **Phase 18: Artist Tools** — Claiming, dashboard, auto-news, self-hosted site generator
+**Milestone Goal:** Connect Mercury to the open web — sustainability infrastructure, artist tools (stats/auto-news/site generator), synchronized listening rooms, and ActivityPub federation export.
+
+- [ ] **Phase 16: Sustainability Links** — Artist support links, share-to-Fediverse, Mercury funding screen, backer credits
+- [ ] **Phase 17: Artist Stats Dashboard** — Discoverability stats page and personal visit count per artist
+- [ ] **Phase 18: AI Auto-News** — MusicBrainz-grounded AI summary on artist pages, cached, labeled
+- [ ] **Phase 19: Static Site Generator** — Export a self-contained artist HTML page for self-hosting
+- [ ] **Phase 20: Listening Rooms** — Host-controlled synchronized YouTube embed via Nostr coordination
+- [ ] **Phase 21: ActivityPub Outbound** — Static AP actor export for self-hosted Fediverse presence
+
+---
+
+## Phase Details
+
+### Phase 16: Sustainability Links
+**Goal**: Users can support artists and Mercury through visible, non-intrusive funding links that respect the open ethos
+**Depends on**: Phase 15 (existing link pipeline in `categorize.ts`)
+**Requirements**: SUST-01, SUST-02, SUST-03, SUST-04
+**Success Criteria** (what must be TRUE):
+  1. User can see Patreon/Ko-fi/crowdfunding links on artist pages, visually distinct from info and social links
+  2. User can share any artist or scene page to Mastodon via a pre-populated share link (URL-scheme only)
+  3. User can view Mercury's own Ko-fi, GitHub Sponsors, and Open Collective links in the About screen
+  4. User can open a backer credits screen listing Mercury supporters fetched from a Nostr list event
+**Plans**: TBD
+
+### Phase 17: Artist Stats Dashboard
+**Goal**: Users can see how discoverable any artist is within Mercury's index and how much they personally engage with them
+**Depends on**: Phase 16 (milestone flow; architecturally independent)
+**Requirements**: STAT-01, STAT-02
+**Success Criteria** (what must be TRUE):
+  1. User can open a stats page for any artist showing uniqueness score, rarest tag, and tag distribution
+  2. User can see a personal visit count for an artist that increments each time they visit that artist's profile
+  3. Stats are derived entirely from local SQLite — no external API calls triggered by the stats page load
+**Plans**: TBD
+
+### Phase 18: AI Auto-News
+**Goal**: Artist pages show a grounded AI summary derived from MusicBrainz catalog data — never invented, always labeled
+**Depends on**: Phase 17 (artist data context is stable)
+**Requirements**: NEWS-01, NEWS-02, NEWS-03
+**Success Criteria** (what must be TRUE):
+  1. User sees a 2–3 sentence AI-generated summary on artist pages drawn from MusicBrainz release data (albums, years, genres)
+  2. AI content is always labeled "AI summary based on MusicBrainz data" — no editorial presentation
+  3. User can trigger a regeneration of the summary on demand; result is cached per artist in taste.db
+**Plans**: TBD
+
+### Phase 19: Static Site Generator
+**Goal**: Any artist page in Mercury can be exported as a self-contained HTML file the artist can host anywhere with zero Mercury dependency
+**Depends on**: Phase 18 (artist data enrichment complete)
+**Requirements**: SITE-01, SITE-02, SITE-03, SITE-04
+**Success Criteria** (what must be TRUE):
+  1. User can click a "Generate site" action on any artist page and export an HTML/CSS folder to a user-chosen local directory
+  2. Generated site displays artist bio, top tags, discography with release covers, and platform buy/stream links
+  3. Generated site renders correctly in a browser with no internet connection and no Mercury running
+  4. Artist names and bio text containing HTML special characters or markup do not produce script injection in the generated output
+**Plans**: TBD
+
+### Phase 20: Listening Rooms
+**Goal**: Users can host or join a synchronized listening room where the host controls which YouTube video plays for all participants
+**Depends on**: Phase 16 (Nostr infrastructure validated; architecturally independent of Phases 17–19)
+**Requirements**: ROOM-01, ROOM-02, ROOM-03, ROOM-04, ROOM-05
+**Success Criteria** (what must be TRUE):
+  1. User can create a listening room associated with a Nostr scene channel
+  2. Host can set the active YouTube video; all room participants see the same embed URL loaded in their player
+  3. Guests can submit YouTube video suggestions to a visible jukebox queue
+  4. Host can approve a suggestion from the queue, making it the active video for all participants
+  5. User can see the list of current participants in a room
+**Plans**: TBD
+
+### Phase 21: ActivityPub Outbound
+**Goal**: Users can configure and export a valid ActivityPub actor as static files they self-host, making their Mercury curation followable from Mastodon
+**Depends on**: Phase 20 (all preceding phases shipped)
+**Requirements**: APUB-01, APUB-02, APUB-03
+**Success Criteria** (what must be TRUE):
+  1. User can configure an AP actor identity (handle, display name, hosting URL) in Settings
+  2. User can export actor.json, webfinger.json, and outbox.json to a local directory via a file picker dialog
+  3. When the exported files are uploaded to the configured hosting URL, the actor is followable from a Mastodon instance
+**Plans**: TBD
 
 ---
 
@@ -109,6 +182,10 @@ Runs alongside everything else. Not blocking any phase. Rolls out in stages as f
 | Database diff-based updates | Full replacement is simpler; diff sizes unknown until MusicBrainz weekly dump testing | Full replacement feels too large for users |
 | Licensing model | Open source vs source-available vs custom — depends on sustainability trajectory | When sustainability model is clearer |
 | Writing/discussion features | Community should ask for creation tools, not have them imposed | Phase 11+ if community requests |
+| AP WebFinger + live Fediverse follow | Requires always-on server — contradicts $0/desktop constraint | v1.4 serverless Worker |
+| Position-level audio sync in listening rooms | Iframe API limitation — Bandcamp/Spotify/SoundCloud have no usable sync API | Platforms open their APIs |
+| Multi-platform listening rooms | YouTube chosen for catalog breadth; other platforms have iframe limitations | v1.4+ |
+| Cross-user / global artist statistics | Local-only by design — no telemetry, no data leaves the machine | Never (by design) |
 
 ## Progress
 
@@ -134,6 +211,9 @@ Runs alongside everything else. Not blocking any phase. Rolls out in stages as f
 | 13. Foundation Fixes | v1.2 | 3/3 | Complete | 2026-02-24 |
 | 14. Tauri E2E Testing | v1.2 | done | Complete | 2026-02-24 |
 | 15. Navigation Flows + Rust Unit Tests | v1.2 | done | Complete | 2026-02-24 |
-| 16. Interoperability | v1.3 | 0/TBD | Not started | - |
-| 17. Listening Rooms | v1.3 | 0/TBD | Not started | - |
-| 18. Artist Tools | v1.3 | 0/TBD | Not started | - |
+| 16. Sustainability Links | v1.3 | 0/TBD | Not started | - |
+| 17. Artist Stats Dashboard | v1.3 | 0/TBD | Not started | - |
+| 18. AI Auto-News | v1.3 | 0/TBD | Not started | - |
+| 19. Static Site Generator | v1.3 | 0/TBD | Not started | - |
+| 20. Listening Rooms | v1.3 | 0/TBD | Not started | - |
+| 21. ActivityPub Outbound | v1.3 | 0/TBD | Not started | - |

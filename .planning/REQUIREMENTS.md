@@ -96,33 +96,33 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SUST-01 | — | Pending |
-| SUST-02 | — | Pending |
-| SUST-03 | — | Pending |
-| SUST-04 | — | Pending |
-| STAT-01 | — | Pending |
-| STAT-02 | — | Pending |
-| NEWS-01 | — | Pending |
-| NEWS-02 | — | Pending |
-| NEWS-03 | — | Pending |
-| SITE-01 | — | Pending |
-| SITE-02 | — | Pending |
-| SITE-03 | — | Pending |
-| SITE-04 | — | Pending |
-| ROOM-01 | — | Pending |
-| ROOM-02 | — | Pending |
-| ROOM-03 | — | Pending |
-| ROOM-04 | — | Pending |
-| ROOM-05 | — | Pending |
-| APUB-01 | — | Pending |
-| APUB-02 | — | Pending |
-| APUB-03 | — | Pending |
+| SUST-01 | Phase 16 | Pending |
+| SUST-02 | Phase 16 | Pending |
+| SUST-03 | Phase 16 | Pending |
+| SUST-04 | Phase 16 | Pending |
+| STAT-01 | Phase 17 | Pending |
+| STAT-02 | Phase 17 | Pending |
+| NEWS-01 | Phase 18 | Pending |
+| NEWS-02 | Phase 18 | Pending |
+| NEWS-03 | Phase 18 | Pending |
+| SITE-01 | Phase 19 | Pending |
+| SITE-02 | Phase 19 | Pending |
+| SITE-03 | Phase 19 | Pending |
+| SITE-04 | Phase 19 | Pending |
+| ROOM-01 | Phase 20 | Pending |
+| ROOM-02 | Phase 20 | Pending |
+| ROOM-03 | Phase 20 | Pending |
+| ROOM-04 | Phase 20 | Pending |
+| ROOM-05 | Phase 20 | Pending |
+| APUB-01 | Phase 21 | Pending |
+| APUB-02 | Phase 21 | Pending |
+| APUB-03 | Phase 21 | Pending |
 
 **Coverage:**
 - v1.3 requirements: 21 total
-- Mapped to phases: 0 (pending roadmap)
-- Unmapped: 21 ⚠️
+- Mapped to phases: 21 (100%)
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-24*
-*Last updated: 2026-02-24 after initial definition*
+*Last updated: 2026-02-24 — traceability filled after roadmap creation (Phases 16–21)*
