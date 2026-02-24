@@ -662,6 +662,55 @@ export const PHASE_12 = [
 ];
 
 // ---------------------------------------------------------------------------
+// PHASE 13 — Foundation Fixes (v1.2)
+// ---------------------------------------------------------------------------
+
+export const PHASE_13 = [
+  {
+    id: 'P13-01', phase: 13, area: 'Test Infrastructure',
+    desc: 'web.mjs runner captures console.error per test (not silently suppressed)',
+    method: 'code',
+    fn: fileContains('tools/test-suite/runners/web.mjs', 'consoleErrors'),
+  },
+  {
+    id: 'P13-02', phase: 13, area: 'Test Infrastructure',
+    desc: 'StyleMap.svelte has data-ready signal for D3 completion detection',
+    method: 'code',
+    fn: fileContains('src/lib/components/StyleMap.svelte', 'data-ready'),
+  },
+  {
+    id: 'P13-03', phase: 13, area: 'Test Infrastructure',
+    desc: 'GenreGraph.svelte has data-ready signal for D3 completion detection',
+    method: 'code',
+    fn: fileContains('src/lib/components/GenreGraph.svelte', 'data-ready'),
+  },
+  {
+    id: 'P13-04', phase: 13, area: 'Test Infrastructure',
+    desc: 'TasteFingerprint.svelte has data-ready signal for D3 completion detection',
+    method: 'code',
+    fn: fileContains('src/lib/components/TasteFingerprint.svelte', 'data-ready'),
+  },
+  {
+    id: 'P13-05', phase: 13, area: 'Navigation',
+    desc: 'nav-progress.svelte.ts navigation progress state module exists',
+    method: 'code',
+    fn: fileExists('src/lib/nav-progress.svelte.ts'),
+  },
+  {
+    id: 'P13-06', phase: 13, area: 'Navigation',
+    desc: 'Loading bar in layout has data-testid="nav-progress-bar" (INFRA-04)',
+    method: 'code',
+    fn: fileContains('src/routes/+layout.svelte', 'data-testid="nav-progress-bar"'),
+  },
+  {
+    id: 'P13-07', phase: 13, area: 'Navigation',
+    desc: 'Layout uses navProgress state for Tauri-specific progress extension',
+    method: 'code',
+    fn: fileContains('src/routes/+layout.svelte', 'navProgress'),
+  },
+];
+
+// ---------------------------------------------------------------------------
 // Build check — always runs last
 // ---------------------------------------------------------------------------
 
@@ -689,5 +738,6 @@ export const ALL_TESTS = [
   ...PHASE_10,
   ...PHASE_11,
   ...PHASE_12,
+  ...PHASE_13,
   ...BUILD,
 ];
