@@ -5507,3 +5507,46 @@ Commits: ca81a2b (listening-room.svelte.ts), de1437f (route shell)
 
 > **Commit de1437f** (2026-02-24 17:58) — feat(20-01): scaffold /room/[channelId] route page shell
 > Files changed: 1
+
+> **Commit 1f174e3** (2026-02-24 18:01) — docs(20-01): complete listening-room data layer plan
+> Files changed: 5
+
+> **Commit 81d1eea** (2026-02-24 18:03) — feat(20-03): add room discovery indicator to scene page
+> Files changed: 1
+
+> **Commit 6d2bf00** (2026-02-24 18:03) — feat(20-02): implement complete listening room UI
+> Files changed: 1
+
+> **Commit f86d201** (2026-02-24 18:04) — feat(20-03): add PHASE_20 test manifest entries
+> Files changed: 1
+
+
+## Entry — 2026-02-24 — Phase 20 Plan 03: Scene Page Room Discovery
+
+The last piece of Phase 20's user-facing surface: wiring the listening room entry point onto the scene page.
+
+### What Was Built
+
+**Scene page room indicator** — `src/routes/scenes/[slug]/+page.svelte`:
+- Imports `checkActiveRoom` and `openRoom` from `listening-room.svelte.js`
+- `roomStatus` state starts as `'checking'` (hides the block during async check — no layout shift)
+- After `loadSceneFollows()` in onMount, calls `checkActiveRoom(scene.slug)` — Tauri only, best-effort, catch all
+- When active: pulsing green dot + "Room active" label + "Join" link to `/room/[slug]`
+- When none: "Start listening room" link to `/room/[slug]`
+- Entire `room-indicator` block hidden while checking (roomStatus = 'checking') — avoids flash
+
+**Test manifest PHASE_20** — `tools/test-suite/manifest.mjs`:
+- 18 entries (P20-01 through P20-18) covering all Phase 20 deliverables
+- P20-01 through P20-07: listening-room.svelte.ts — module, exports, event kinds
+- P20-08 through P20-14: /room/[channelId] page — existence, testids, features
+- P20-15 through P20-17: scene page integration — checkActiveRoom, testids
+- P20-18: skip — full room interaction requires two live Tauri instances + Nostr relays
+- All 17 code checks pass immediately
+
+### Test Suite
+131 code checks (92 pre-existing + 17 new P20 + 22 rust skips not shown) — all pass. npm run check: 0 errors.
+
+Commits: 81d1eea (scene page), f86d201 (manifest)
+
+> **Commit 9479d24** (2026-02-24 18:05) — docs(20-02): complete listening room UI plan
+> Files changed: 2

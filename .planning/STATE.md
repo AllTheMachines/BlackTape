@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-24 after v1.3 milestone started)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** v1.3 The Open Network — Phase 20: Listening Rooms (Plan 02 complete)
+**Current focus:** v1.3 The Open Network — Phase 20: Listening Rooms (Plan 03 complete — Phase 20 done)
 
 ## Current Position
 
 Phase: 20 of 21 (Listening Rooms)
-Plan: 02 of TBD complete
-Status: Phase 20 in progress — Plan 02 done (complete room UI: player + queue + participants)
-Last activity: 2026-02-24 — Phase 20 Plan 02 complete (full /room/[channelId] page UI)
+Plan: 03 of 03 complete
+Status: Phase 20 complete — Plans 01–03 done (data layer, room UI, scene page integration)
+Last activity: 2026-02-24 — Phase 20 Plan 03 complete (scene page room-indicator + PHASE_20 test manifest)
 
 Progress: [████░░░░░░] 44% (v1.3 — 3/6 phases complete, Phase 20 started)
 
@@ -31,9 +31,8 @@ Progress: [████░░░░░░] 44% (v1.3 — 3/6 phases complete, Ph
 | 17. Artist Stats Dashboard | 2 | Complete |
 | 18. AI Auto-News | 5 | Complete |
 | 19. Static Site Generator | 3 | Complete |
-| 20. Listening Rooms | TBD | In progress (2 done) |
+| 20. Listening Rooms | 3 | Complete |
 | 21. ActivityPub Outbound | TBD | Not started |
-| Phase 20-listening-rooms P03 | 3 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -82,6 +81,7 @@ Progress: [████░░░░░░] 44% (v1.3 — 3/6 phases complete, Ph
 - [Phase 20-01]: Heartbeat TTL: 30s interval, 75s expiry window (2.5x) — tolerates exactly one missed heartbeat before dropping participant
 - [Phase 20-02]: Host controls and guest controls are mutually exclusive via {#if roomState.isHost} — same page, different UI per role
 - [Phase 20-02]: Leave Room navigates to /scenes/[channelId] via goto() — natural return path to the scene that launched the room
+- [Phase 20-listening-rooms]: roomStatus initial value 'checking' hides room-indicator during async check — avoids flash of 'Start listening room' on every scene page load
 
 ### Pending Todos
 None
@@ -93,6 +93,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-24
-Stopped at: Completed 20-02-PLAN.md — full /room/[channelId] page UI (player + queue + participants)
+Stopped at: Completed 20-03-PLAN.md — scene page room discovery indicator + PHASE_20 test manifest
 Resume file: None
-Next: Phase 20 Plan 03 — Scene page integration (show "Room active" indicator)
+Next: Phase 21 — ActivityPub Outbound

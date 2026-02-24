@@ -67,7 +67,7 @@ Full archive: `.planning/milestones/v1.2-ROADMAP.md`
 - [x] **Phase 17: Artist Stats Dashboard** — Discoverability stats page and personal visit count per artist (completed 2026-02-24)
 - [x] **Phase 18: AI Auto-News** — MusicBrainz-grounded AI summary on artist pages, cached, labeled (completed 2026-02-24)
 - [x] **Phase 19: Static Site Generator** — Export a self-contained artist HTML page for self-hosting (completed 2026-02-24)
-- [ ] **Phase 20: Listening Rooms** — Host-controlled synchronized YouTube embed via Nostr coordination
+- [x] **Phase 20: Listening Rooms** — Host-controlled synchronized YouTube embed via Nostr coordination (completed 2026-02-24)
 - [ ] **Phase 21: ActivityPub Outbound** — Static AP actor export for self-hosted Fediverse presence
 
 ---
@@ -151,7 +151,7 @@ Plans:
 Plans:
 - [ ] 20-01-PLAN.md — listening-room.svelte.ts state machine (Nostr I/O, all event kinds) + /room/[channelId] route scaffold
 - [ ] 20-02-PLAN.md — Full room UI (YouTube player, host/guest controls, jukebox queue, participant list)
-- [ ] 20-03-PLAN.md — Scene page room indicator (Room active / Start room) + test manifest Phase 20 entries
+- [x] 20-03-PLAN.md — Scene page room indicator (Room active / Start room) + test manifest Phase 20 entries (completed 2026-02-24)
 
 ### Phase 21: ActivityPub Outbound
 **Goal**: Users can configure and export a valid ActivityPub actor as static files they self-host, making their Mercury curation followable from Mastodon
@@ -240,5 +240,5 @@ Runs alongside everything else. Not blocking any phase. Rolls out in stages as f
 | 17. Artist Stats Dashboard | 2/2 | Complete    | 2026-02-24 | - |
 | 18. AI Auto-News | 5/5 | Complete    | 2026-02-24 | - |
 | 19. Static Site Generator | 3/3 | Complete    | 2026-02-24 | - |
-| 20. Listening Rooms | 1/3 | In Progress|  | - |
+| 20. Listening Rooms | 3/3 | Complete   | 2026-02-24 | - |
 | 21. ActivityPub Outbound | v1.3 | 0/TBD | Not started | - |
