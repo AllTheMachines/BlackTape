@@ -583,7 +583,6 @@
 			<ListeningHistory />
 		</div>
 
-		<div style="background:red;color:white;padding:20px;font-size:20px;">FEDIVERSE DEBUG MARKER</div>
 		<div class="section-separator"></div>
 		<FediverseSettings />
 	</div>
