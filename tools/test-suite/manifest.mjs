@@ -1447,6 +1447,103 @@ export const PHASE_20 = [
 ];
 
 // ---------------------------------------------------------------------------
+// PHASE 21 — ActivityPub Outbound
+// ---------------------------------------------------------------------------
+
+export const PHASE_21 = [
+  {
+    id: 'P21-01', phase: 21, area: 'ActivityPub',
+    desc: 'activitypub.rs module exists',
+    method: 'code',
+    fn: () => fileExists('src-tauri/src/activitypub.rs'),
+  },
+  {
+    id: 'P21-02', phase: 21, area: 'ActivityPub',
+    desc: 'activitypub.rs exports export_activitypub command',
+    method: 'code',
+    fn: () => fileContains('src-tauri/src/activitypub.rs', 'export_activitypub'),
+  },
+  {
+    id: 'P21-03', phase: 21, area: 'ActivityPub',
+    desc: 'activitypub.rs has ensure_rsa_keypair (stable keypair persistence)',
+    method: 'code',
+    fn: () => fileContains('src-tauri/src/activitypub.rs', 'ensure_rsa_keypair'),
+  },
+  {
+    id: 'P21-04', phase: 21, area: 'ActivityPub',
+    desc: 'activitypub.rs uses PKCS1 public key format (Mastodon compatibility)',
+    method: 'code',
+    fn: () => fileContains('src-tauri/src/activitypub.rs', 'to_pkcs1_pem'),
+  },
+  {
+    id: 'P21-05', phase: 21, area: 'ActivityPub',
+    desc: 'activitypub.rs includes security/v1 in @context (required for publicKey)',
+    method: 'code',
+    fn: () => fileContains('src-tauri/src/activitypub.rs', 'security/v1'),
+  },
+  {
+    id: 'P21-06', phase: 21, area: 'ActivityPub',
+    desc: 'lib.rs registers mod activitypub',
+    method: 'code',
+    fn: () => fileContains('src-tauri/src/lib.rs', 'mod activitypub'),
+  },
+  {
+    id: 'P21-07', phase: 21, area: 'ActivityPub',
+    desc: 'Cargo.toml has rsa crate dependency',
+    method: 'code',
+    fn: () => fileContains('src-tauri/Cargo.toml', 'rsa = { version'),
+  },
+  {
+    id: 'P21-08', phase: 21, area: 'ActivityPub',
+    desc: 'FediverseSettings.svelte component exists',
+    method: 'code',
+    fn: () => fileExists('src/lib/components/FediverseSettings.svelte'),
+  },
+  {
+    id: 'P21-09', phase: 21, area: 'ActivityPub',
+    desc: 'FediverseSettings.svelte has fediverse-settings testid',
+    method: 'code',
+    fn: () => fileContains('src/lib/components/FediverseSettings.svelte', 'data-testid="fediverse-settings"'),
+  },
+  {
+    id: 'P21-10', phase: 21, area: 'ActivityPub',
+    desc: 'FediverseSettings.svelte has ap-handle-input testid',
+    method: 'code',
+    fn: () => fileContains('src/lib/components/FediverseSettings.svelte', 'data-testid="ap-handle-input"'),
+  },
+  {
+    id: 'P21-11', phase: 21, area: 'ActivityPub',
+    desc: 'FediverseSettings.svelte has ap-export-btn testid',
+    method: 'code',
+    fn: () => fileContains('src/lib/components/FediverseSettings.svelte', 'data-testid="ap-export-btn"'),
+  },
+  {
+    id: 'P21-12', phase: 21, area: 'ActivityPub',
+    desc: 'FediverseSettings.svelte has ap-deploy-paths testid (URL path display)',
+    method: 'code',
+    fn: () => fileContains('src/lib/components/FediverseSettings.svelte', 'data-testid="ap-deploy-paths"'),
+  },
+  {
+    id: 'P21-13', phase: 21, area: 'ActivityPub',
+    desc: 'FediverseSettings.svelte has ap-handle-preview testid (live preview)',
+    method: 'code',
+    fn: () => fileContains('src/lib/components/FediverseSettings.svelte', 'data-testid="ap-handle-preview"'),
+  },
+  {
+    id: 'P21-14', phase: 21, area: 'ActivityPub',
+    desc: 'Settings page imports and mounts FediverseSettings',
+    method: 'code',
+    fn: () => fileContains('src/routes/settings/+page.svelte', 'FediverseSettings'),
+  },
+  {
+    id: 'P21-15', phase: 21, area: 'ActivityPub',
+    desc: '[skip] AP actor followable from Mastodon requires live self-hosted static files — cannot be headlessly automated',
+    method: 'skip',
+    reason: 'requires user to deploy exported files to a live static host and test from a Mastodon instance — integration test per STATE.md blocker',
+  },
+];
+
+// ---------------------------------------------------------------------------
 // Build check — always runs last
 // ---------------------------------------------------------------------------
 
@@ -1482,5 +1579,6 @@ export const ALL_TESTS = [
   ...PHASE_18,
   ...PHASE_19,
   ...PHASE_20,
+  ...PHASE_21,
   ...BUILD,
 ];

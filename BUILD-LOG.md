@@ -5594,7 +5594,7 @@ Commits: 81d1eea (scene page), f86d201 (manifest)
 > Files changed: 1
 
 <!-- status -->
-Phase 21 Plan 01: ActivityPub Rust backend complete — 2/2 tasks done. RSA keypair generation + AP JSON-LD export command implemented and compiling clean.
+Phase 21 Plan 02: Wiring settings page + PHASE_21 test manifest — 1/2 tasks done. FediverseSettings component committed.
 <!-- /status -->
 
 > **Commit 5895ff1** (2026-02-24 19:54) — feat(21-02): create FediverseSettings.svelte component
@@ -5605,3 +5605,6 @@ Phase 21 Plan 01: ActivityPub Rust backend complete — 2/2 tasks done. RSA keyp
 
 > **Commit 2ffc1fe** (2026-02-24 19:54) — feat(21-01): register activitypub module in lib.rs invoke_handler
 > Files changed: 1
+
+> **Commit 790876c** (2026-02-24 19:57) — docs(21-01): complete activitypub Rust backend plan
+> Files changed: 5

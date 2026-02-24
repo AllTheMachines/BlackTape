@@ -2,6 +2,7 @@
 	import AiSettings from '$lib/components/AiSettings.svelte';
 	import TasteEditor from '$lib/components/TasteEditor.svelte';
 	import ListeningHistory from '$lib/components/ListeningHistory.svelte';
+	import FediverseSettings from '$lib/components/FediverseSettings.svelte';
 	import { aiState } from '$lib/ai/state.svelte';
 	import { isTauri } from '$lib/platform';
 	import { onMount } from 'svelte';
@@ -581,6 +582,11 @@
 			</p>
 			<ListeningHistory />
 		</div>
+
+		{#if tauriMode}
+			<div class="section-separator"></div>
+			<FediverseSettings />
+		{/if}
 	</div>
 {/if}
 
