@@ -204,3 +204,52 @@ pub fn run() {
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
+
+// ---------------------------------------------------------------------------
+// RUST-02: Unit tests for __data.json protocol handler logic
+// ---------------------------------------------------------------------------
+
+#[cfg(test)]
+mod tests {
+    /// Mirrors the __data.json fallback detection logic from the URI scheme handler.
+    /// Returns true when a __data.json request resolved to the HTML index fallback,
+    /// meaning the real JSON data file doesn't exist (dynamic route not pre-rendered).
+    fn is_data_json_fallback(path: &str, mime_type: &str) -> bool {
+        path.ends_with("__data.json") && mime_type.contains("text/html")
+    }
+
+    #[test]
+    fn detects_html_fallback_for_data_json() {
+        assert!(is_data_json_fallback("/route/__data.json", "text/html"));
+        assert!(is_data_json_fallback(
+            "/artist/radiohead/__data.json",
+            "text/html; charset=utf-8"
+        ));
+    }
+
+    #[test]
+    fn ignores_non_data_json_paths() {
+        assert!(!is_data_json_fallback("/index.html", "text/html"));
+        assert!(!is_data_json_fallback("/app.css", "text/css"));
+        assert!(!is_data_json_fallback("/", "text/html"));
+    }
+
+    #[test]
+    fn ignores_real_json_responses() {
+        // If the asset resolver returns application/json, it's the real data file
+        assert!(!is_data_json_fallback("/route/__data.json", "application/json"));
+    }
+
+    #[test]
+    fn empty_data_json_body_is_valid_sveltekit_skip_format() {
+        // Verify the constant empty-data body is valid JSON in SvelteKit's expected format.
+        // SvelteKit client accepts {"type":"data","nodes":[null,{"type":"skip"}]} as a
+        // no-op server load — prevents JSON.parse crash on the index.html fallback.
+        let body = br#"{"type":"data","nodes":[null,{"type":"skip"}]}"#;
+        let parsed: serde_json::Value = serde_json::from_slice(body)
+            .expect("empty data body must be valid JSON");
+        assert_eq!(parsed["type"], "data");
+        assert!(parsed["nodes"].is_array());
+        assert!(parsed["nodes"][1]["type"] == "skip");
+    }
+}

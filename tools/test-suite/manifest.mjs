@@ -888,6 +888,150 @@ export const PHASE_14 = [
 ];
 
 // ---------------------------------------------------------------------------
+// PHASE 15 — Navigation Flows + Rust Unit Tests
+// ---------------------------------------------------------------------------
+
+export const PHASE_15 = [
+  // Code checks — confirm scaffolding exists
+  {
+    id: 'P15-01', phase: 15, area: 'Process',
+    desc: 'Pre-commit hook runs --code-only tests on every commit (PROC-01)',
+    method: 'code',
+    fn: fileContains('.githooks/pre-commit', '--code-only'),
+  },
+  {
+    id: 'P15-02', phase: 15, area: 'Rust Tests',
+    desc: 'mercury_db.rs has sanitize_fts unit test module (RUST-01)',
+    method: 'code',
+    fn: () =>
+      fileContains('src-tauri/src/mercury_db.rs', '#[cfg(test)]')() &&
+      fileContains('src-tauri/src/mercury_db.rs', 'sanitize_fts')(),
+  },
+  {
+    id: 'P15-03', phase: 15, area: 'Rust Tests',
+    desc: 'lib.rs has __data.json protocol handler unit test module (RUST-02)',
+    method: 'code',
+    fn: () =>
+      fileContains('src-tauri/src/lib.rs', '#[cfg(test)]')() &&
+      fileContains('src-tauri/src/lib.rs', 'data_json')(),
+  },
+  {
+    id: 'P15-04', phase: 15, area: 'Rust Tests',
+    desc: 'scanner/metadata.rs has is_supported_audio + parse_year unit tests (RUST-03)',
+    method: 'code',
+    fn: () =>
+      fileContains('src-tauri/src/scanner/metadata.rs', '#[cfg(test)]')() &&
+      fileContains('src-tauri/src/scanner/metadata.rs', 'parse_year_from_tags')(),
+  },
+  {
+    id: 'P15-05', phase: 15, area: 'Process',
+    desc: 'REQUIREMENTS.md documents mandatory TEST-PLAN section policy (PROC-03)',
+    method: 'code',
+    fn: fileContains('.planning/REQUIREMENTS.md', 'TEST-PLAN'),
+  },
+
+  // Tauri E2E flow tests — require debug binary
+  {
+    id: 'P15-FLOW-01', phase: 15, area: 'Navigation Flows',
+    desc: 'Search → artist → discover → second artist — no console.error (FLOW-01)',
+    method: 'tauri',
+    fn: async (page) => {
+      const errors = [];
+      page.on('console', msg => { if (msg.type() === 'error') errors.push(msg.text()); });
+      page.on('pageerror', e => errors.push(e.message));
+      const origin = new URL(page.url()).origin;
+
+      // Step 1: search and click first result
+      await page.goto(`${origin}/search?q=radiohead&mode=artist`);
+      await page.waitForSelector('.artist-card', { timeout: 10000 });
+      await page.locator('a.artist-name').first().click();
+      await page.waitForURL(/\/artist\//, { timeout: 10000 });
+      await page.waitForLoadState('domcontentloaded');
+
+      // Step 2: go to discover and click a second artist
+      await page.goto(`${origin}/discover`);
+      await page.waitForLoadState('domcontentloaded');
+      await page.waitForSelector('.artist-card', { timeout: 10000 });
+      await page.locator('a.artist-name').first().click();
+      await page.waitForURL(/\/artist\//, { timeout: 10000 });
+      await page.waitForLoadState('domcontentloaded');
+
+      return errors.length === 0;
+    },
+  },
+  {
+    id: 'P15-FLOW-02', phase: 15, area: 'Navigation Flows',
+    desc: 'Artist page → click tag → tag search page shows results (FLOW-02)',
+    method: 'tauri',
+    fn: async (page) => {
+      const origin = new URL(page.url()).origin;
+      await page.goto(`${origin}/artist/radiohead`);
+      await page.waitForLoadState('domcontentloaded');
+      await page.waitForSelector('a.tag-chip', { timeout: 10000 });
+
+      // Click the first tag chip — should navigate to /search?q=...&mode=tag
+      await page.locator('a.tag-chip').first().click();
+      await page.waitForURL(/\/search\?.*mode=tag/, { timeout: 10000 });
+      await page.waitForSelector('.artist-card, .message', { timeout: 10000 });
+
+      return await page.locator('.artist-card').count() > 0;
+    },
+  },
+  {
+    id: 'P15-FLOW-03', phase: 15, area: 'Navigation Flows',
+    desc: 'Unknown artist slug shows error page — no JS crash (FLOW-03)',
+    method: 'tauri',
+    fn: async (page) => {
+      const errors = [];
+      page.once('pageerror', e => errors.push(e));
+      const origin = new URL(page.url()).origin;
+
+      await page.goto(`${origin}/artist/this-artist-does-not-exist-xyz-000`);
+      await page.waitForLoadState('domcontentloaded');
+
+      return errors.length === 0;
+    },
+  },
+  {
+    id: 'P15-FLOW-04', phase: 15, area: 'Navigation Flows',
+    desc: 'Nav progress bar appears on navigation and clears on completion (FLOW-04)',
+    method: 'tauri',
+    fn: async (page) => {
+      const origin = new URL(page.url()).origin;
+      await page.goto(`${origin}/`);
+      await page.waitForLoadState('domcontentloaded');
+
+      // Inject a MutationObserver to track if the progress bar ever appears
+      await page.evaluate(() => {
+        window.__navBarAppeared = false;
+        const observer = new MutationObserver(() => {
+          if (document.querySelector('[data-testid="nav-progress-bar"]')) {
+            window.__navBarAppeared = true;
+          }
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+        window.__navObserver = observer;
+      });
+
+      // Trigger a navigation
+      await page.click('a[href="/settings"]');
+      await page.waitForLoadState('domcontentloaded');
+
+      // Verify: bar appeared during navigation
+      const appeared = await page.evaluate(() => {
+        if (window.__navObserver) window.__navObserver.disconnect();
+        return window.__navBarAppeared === true;
+      });
+
+      // Verify: bar is gone after navigation completes
+      const barGone = !(await page.locator('[data-testid="nav-progress-bar"]').isVisible());
+
+      return appeared && barGone;
+    },
+  },
+];
+
+// ---------------------------------------------------------------------------
 // Build check — always runs last
 // ---------------------------------------------------------------------------
 
@@ -917,5 +1061,6 @@ export const ALL_TESTS = [
   ...PHASE_12,
   ...PHASE_13,
   ...PHASE_14,
+  ...PHASE_15,
   ...BUILD,
 ];

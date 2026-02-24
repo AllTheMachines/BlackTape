@@ -7,35 +7,31 @@ A comprehensive guide to how Mercury works, how its parts connect, and how data 
 ## Table of Contents
 
 1. [System Overview](#system-overview)
-2. [Dual Runtime Architecture](#dual-runtime-architecture)
-3. [Directory Structure](#directory-structure)
-4. [Data Model](#data-model)
-5. [Database Layer](#database-layer)
-6. [Search System](#search-system)
-7. [Artist Pages & External APIs](#artist-pages--external-apis)
-8. [Embed System](#embed-system)
-9. [Local Music Player](#local-music-player)
-10. [Discovery Bridge](#discovery-bridge)
-11. [Discovery Engine](#discovery-engine)
-12. [Knowledge Base](#knowledge-base)
-13. [Underground Aesthetic](#underground-aesthetic)
-14. [Community Foundation](#community-foundation-phase-9)
-15. [Communication Layer](#communication-layer-phase-10)
-16. [Scene Building](#scene-building)
-17. [Curator / Blog Tools](#curator--blog-tools)
-18. [Build System](#build-system)
-19. [Configuration Reference](#configuration-reference)
-20. [AI Subsystem](#ai-subsystem)
-21. [Module Dependency Map](#module-dependency-map)
+2. [Directory Structure](#directory-structure)
+3. [Data Model](#data-model)
+4. [Database Layer](#database-layer)
+5. [Search System](#search-system)
+6. [Artist Pages & External APIs](#artist-pages--external-apis)
+7. [Embed System](#embed-system)
+8. [Local Music Player](#local-music-player)
+9. [Discovery Bridge](#discovery-bridge)
+10. [Discovery Engine](#discovery-engine)
+11. [Knowledge Base](#knowledge-base)
+12. [Underground Aesthetic](#underground-aesthetic)
+13. [Community Foundation](#community-foundation-phase-9)
+14. [Communication Layer](#communication-layer-phase-10)
+15. [Scene Building](#scene-building)
+16. [Curator / Blog Tools](#curator--blog-tools)
+17. [Build System](#build-system)
+18. [Configuration Reference](#configuration-reference)
+19. [AI Subsystem](#ai-subsystem)
+20. [Module Dependency Map](#module-dependency-map)
 
 ---
 
 ## System Overview
 
-Mercury is a music discovery engine that runs on two platforms from a single codebase:
-
-- **Web** — SvelteKit on Cloudflare Pages + D1 (SQLite). Server-rendered, publicly accessible.
-- **Desktop** — SvelteKit inside Tauri 2.0 (Rust). Client-rendered SPA with local SQLite, local audio playback, and a folder scanner.
+Mercury is a music discovery engine for the desktop. It runs as a Tauri 2.0 application — a SvelteKit SPA rendered inside a Rust/WebView2 shell.
 
 The core principle is **"the internet is the database"**: Mercury stores only a search index locally (artist names, tags, countries). Everything else — releases, cover art, streaming links, bios — is fetched live from public APIs (MusicBrainz, Wikipedia, Cover Art Archive). Audio is never hosted; it's always embedded from where it already lives (Bandcamp, Spotify, SoundCloud, YouTube).
 
@@ -70,87 +66,6 @@ The core principle is **"the internet is the database"**: Mercury stores only a 
 
 ---
 
-## Dual Runtime Architecture
-
-### How It Works
-
-SvelteKit serves as the shared UI framework. At build time, an environment variable determines which adapter and runtime path to use:
-
-| Aspect | Web | Desktop |
-|--------|-----|---------|
-| Adapter | `adapter-cloudflare` | `adapter-static` (SPA fallback) |
-| SSR | Enabled | Disabled (`ssr = false`) |
-| Database | Cloudflare D1 | Local SQLite via `tauri-plugin-sql` |
-| API calls | Server routes (`+page.server.ts`) | Client-side fetch + Tauri IPC |
-| Audio | Embedded iframes (Bandcamp, etc.) | HTML5 Audio + asset protocol |
-| Detection | `isTauri()` returns `false` | `isTauri()` returns `true` |
-
-### Platform Detection
-
-```typescript
-// src/lib/platform.ts
-export function isTauri(): boolean {
-    return typeof window !== 'undefined'
-        && window.__TAURI_INTERNALS__ !== undefined;
-}
-```
-
-Tauri 2.0 injects `__TAURI_INTERNALS__` into the webview. This check is zero-import (no `@tauri-apps/api` needed) and works at any point in the component lifecycle.
-
-### SSR Toggle
-
-```typescript
-// src/routes/+layout.ts
-export const ssr = import.meta.env.VITE_TAURI !== '1';
-```
-
-Vite replaces `import.meta.env.VITE_TAURI` at compile time. When building for Tauri, `VITE_TAURI=1` is set, making `ssr = false` — the entire app becomes a client-rendered SPA.
-
-### Adapter Selection
-
-```javascript
-// svelte.config.js
-const isDesktop = process.env.TAURI_ENV === '1';
-const adapter = isDesktop
-    ? adapterStatic({ fallback: 'index.html' })
-    : adapterCloudflare({ ... });
-```
-
-### Universal Load Functions
-
-Each page has up to two load functions:
-
-- **`+page.server.ts`** — Runs on the Cloudflare server (web only). Accesses D1 via `platform.env.DB`.
-- **`+page.ts`** — Runs everywhere. In Tauri mode, takes over entirely. In web mode, passes through server data.
-
-```typescript
-// src/routes/search/+page.ts
-export const load: PageLoad = async ({ url, data }) => {
-    if (!isTauri()) {
-        return { ...data, localTracks: [] };  // Web: use server data
-    }
-    // Desktop: query local database directly
-    const provider = await getProvider();
-    const results = await searchArtists(provider, q);
-    // ...
-};
-```
-
-### Dynamic Imports
-
-All Tauri-specific dependencies use dynamic imports to avoid breaking the web build:
-
-```typescript
-// Only loaded when running inside Tauri
-const { invoke } = await import('@tauri-apps/api/core');
-const { convertFileSrc } = await import('@tauri-apps/api/core');
-const { open } = await import('@tauri-apps/plugin-dialog');
-```
-
-This ensures `@tauri-apps/*` packages are tree-shaken from the Cloudflare bundle.
-
----
-
 ## Directory Structure
 
 ```
@@ -158,13 +73,12 @@ Mercury/
 ├── src/                          # SvelteKit frontend
 │   ├── lib/
 │   │   ├── config.ts             # Project name (single variable for renaming)
-│   │   ├── platform.ts           # isTauri() detection
+│   │   ├── platform.ts           # isTauri() — Tauri webview detection via __TAURI_INTERNALS__
 │   │   ├── bio.ts                # Wikipedia bio fetcher
 │   │   ├── styles/theme.css      # CSS custom properties (dark theme)
 │   │   ├── db/                   # Database abstraction layer
-│   │   │   ├── provider.ts       # DbProvider interface + factory
-│   │   │   ├── d1-provider.ts    # Cloudflare D1 implementation
-│   │   │   ├── tauri-provider.ts # Tauri SQLite implementation
+│   │   │   ├── provider.ts       # DbProvider interface + TauriProvider factory
+│   │   │   ├── tauri-provider.ts # Tauri SQLite implementation (tauri-plugin-sql)
 │   │   │   └── queries.ts        # All SQL queries (FTS5 search, tag search, lookup)
 │   │   ├── embeds/               # Platform embed logic
 │   │   │   ├── types.ts          # Platform types, link structures
@@ -224,7 +138,7 @@ Mercury/
 │   │       └── LinerNotes.svelte
 │   └── routes/
 │       ├── +layout.svelte        # Root layout (header, nav, player)
-│       ├── +layout.ts            # SSR toggle
+│       ├── +layout.ts            # SSR disabled via VITE_TAURI=1 (SPA mode)
 │       ├── +page.svelte          # Landing page
 │       ├── search/               # Search results
 │       ├── artist/[slug]/        # Artist detail page
@@ -232,21 +146,17 @@ Mercury/
 │       ├── library/              # Local music library (Tauri only)
 │       ├── explore/              # NL explore page (Tauri only)
 │       ├── settings/             # Settings page (Tauri only)
-│       ├── discover/             # Tag intersection browsing (web + Tauri)
-│       ├── crate/                # Crate digging mode (Tauri only)
-│       ├── style-map/            # Style Map visualization (web + Tauri)
-│       ├── kb/                   # Knowledge Base (web + Tauri)
+│       ├── discover/             # Tag intersection browsing
+│       ├── crate/                # Crate digging mode
+│       ├── style-map/            # Style Map visualization
+│       ├── kb/                   # Knowledge Base
 │       │   ├── +page.svelte      # KB landing + genre graph
 │       │   └── genre/[slug]/     # Genre/scene detail page
-│       ├── time-machine/         # Year browser (web + Tauri)
-│       └── api/                  # Server-side API routes (web only)
-│           ├── search/
-│           ├── soundcloud-oembed/
-│           ├── genres/           # Genre graph data
-│           ├── time-machine/     # Year-based artist data
-│           └── artist/[mbid]/
-│               ├── links/
-│               └── releases/
+│       ├── time-machine/         # Year browser
+│       └── api/                  # Utility server routes
+│           ├── soundcloud-oembed/# SoundCloud oEmbed proxy (CORS workaround)
+│           ├── unfurl/           # Mercury URL unfurl for Nostr comms
+│           └── rss/collection/[id]/ # Collection RSS feed
 ├── src-tauri/                    # Tauri/Rust backend
 │   ├── Cargo.toml
 │   ├── tauri.conf.json
@@ -381,7 +291,7 @@ Separate database managed by Rust (rusqlite). Stores metadata from the user's lo
 
 ### Why Two Databases?
 
-- **mercury.db** is managed by `tauri-plugin-sql` (via sqlx) — used for the 2.8M-artist discovery index. Shared schema with Cloudflare D1.
+- **mercury.db** is managed by `tauri-plugin-sql` (via sqlx) — used for the 2.8M-artist discovery index.
 - **library.db** is managed by `rusqlite` — used for local track metadata written by the Rust scanner.
 
 They use different SQLite bindings because both link against `libsqlite3-sys`. Using the same version (0.28) of that C library avoids linker conflicts. The two databases serve fundamentally different purposes and never interact at the SQL level.
@@ -392,7 +302,7 @@ They use different SQLite bindings because both link against `libsqlite3-sys`. U
 
 ### DbProvider Interface
 
-All database queries go through an abstract interface, allowing the same query code to work with both Cloudflare D1 and local SQLite:
+All database queries go through an abstract interface:
 
 ```typescript
 // src/lib/db/provider.ts
@@ -402,9 +312,7 @@ export interface DbProvider {
 }
 ```
 
-### Implementations
-
-**D1Provider** (`d1-provider.ts`) — Wraps Cloudflare's D1 binding. Created in `+page.server.ts` routes from `platform.env.DB`.
+### Implementation
 
 **TauriProvider** (`tauri-provider.ts`) — Wraps `@tauri-apps/plugin-sql`. Lazy singleton — database connection opens on first query. Opens `mercury.db` from the app data directory (`%APPDATA%/com.mercury.app/` on Windows).
 
@@ -412,11 +320,10 @@ export interface DbProvider {
 
 ```typescript
 export async function getProvider(): Promise<DbProvider> {
-    // Returns TauriProvider in desktop, throws in web (D1Provider created explicitly)
+    // Returns TauriProvider singleton. Uses dynamic import to defer
+    // loading @tauri-apps/api until the first DB query.
 }
 ```
-
-The factory uses dynamic imports to avoid loading `@tauri-apps/api` in the web build.
 
 ### Query Functions
 
@@ -435,24 +342,12 @@ FTS5 search uses the porter stemmer and unicode61 tokenizer. Exact name matches 
 
 ## Search System
 
-### Data Flow: Web
+### Data Flow
 
 ```
 User types query
     → SearchBar.svelte calls goto('/search?q=...')
-    → SvelteKit fetches +page.server.ts via __data.json
-    → Server queries D1 via D1Provider
-    → +page.ts passes server data through
-    → +page.svelte renders ArtistCard grid
-```
-
-### Data Flow: Desktop
-
-```
-User types query
-    → SearchBar.svelte calls goto('/search?q=...')
-    → +page.ts detects isTauri()
-    → Queries local mercury.db via TauriProvider
+    → +page.ts queries local mercury.db via TauriProvider
     → Also queries library.db for local track matches
     → +page.svelte renders "Your Library" section + ArtistCard grid
 ```
@@ -478,10 +373,10 @@ Artist pages combine local index data with live API calls:
 
 ### MusicBrainz API Calls
 
-Made via server routes (web) or client-side fetch (desktop):
+Made client-side from `+page.ts` (best-effort — page renders from local DB data alone if any fetch fails):
 
-- **`/api/artist/[mbid]/releases`** — Fetches release groups with types (Album, EP, Single). Cover art URLs constructed from Cover Art Archive (`https://coverartarchive.org/release-group/{mbid}/front-250`). Streaming links extracted from release-level URL relationships.
-- **`/api/artist/[mbid]/links`** — Fetches artist-level URL relationships. Categorized by MB relationship type (streaming, social, official, info, support) with domain-based fallback.
+- **Releases** — `GET https://musicbrainz.org/ws/2/release-group?artist={mbid}&inc=url-rels&type=album|single|ep`. Cover art URLs constructed from Cover Art Archive (`https://coverartarchive.org/release-group/{mbid}/front-250`). Streaming links extracted from release-level URL relationships.
+- **Links** — `GET https://musicbrainz.org/ws/2/artist/{mbid}?inc=url-rels`. Categorized by MB relationship type (streaming, social, official, info, support) with domain-based fallback.
 
 ### Link Categorization
 
@@ -512,7 +407,7 @@ The first available platform in this order becomes the auto-playing embed on the
 |----------|--------|-------|
 | Bandcamp | URL detection | Looks for `*.bandcamp.com` or `/album/` patterns |
 | Spotify | URL transform | `open.spotify.com/artist/X` → embed iframe URL |
-| SoundCloud | oEmbed API | Proxied through `/api/soundcloud-oembed` to avoid CORS |
+| SoundCloud | oEmbed API | Routed through local `/api/soundcloud-oembed` server route to avoid CORS |
 | YouTube | URL transform | `youtube.com/watch?v=X` → embed iframe URL |
 
 Each platform module exports functions to detect URLs and generate embed-ready URLs or HTML.
@@ -652,7 +547,7 @@ Tag state lives entirely in the URL. This makes discover pages shareable and boo
 
 ### Components
 
-- **`TagFilter.svelte`** — Renders the tag chip cloud. Active tags shown in a separate "Filtering by:" row above the cloud. Chips for tags not yet active are disabled at 5-tag max (D1 bound parameter limit). `toggleTag()` handles add/remove via `goto()`.
+- **`TagFilter.svelte`** — Renders the tag chip cloud. Active tags shown in a separate "Filtering by:" row above the cloud. Chips for tags not yet active are disabled at 5-tag max (dynamic JOIN limit). `toggleTag()` handles add/remove via `goto()`.
 - **`ArtistCard.svelte`** — Reused from search page. Displays artist name (link), country, and top 5 tags as `TagChip` components.
 - **`UniquenessScore.svelte`** — Small pill badge rendered in the artist page header. Maps a raw decimal score (0.0001–0.01+ range) to four human-readable tiers: Very Niche, Niche, Eclectic, Mainstream. Badge hidden when score is null (artists with no tags). Sits in the `artist-name-row` alongside the artist name and FavoriteButton.
 
@@ -660,14 +555,8 @@ Tag state lives entirely in the URL. This makes discover pages shareable and boo
 
 ```
 URL ?tags param
-    │
-    ├── Web (SSR via D1)
-    │   ├── +page.server.ts → D1Provider → getPopularTags(100) + getArtistsByTagIntersection | getDiscoveryRankedArtists
-    │   └── +page.ts → passes server data through unchanged
-    │
-    └── Desktop (Tauri SPA)
-        ├── +page.server.ts → not executed (ssr=false)
-        └── +page.ts → isTauri() → getProvider() → TauriProvider → same query functions
+    └── +page.ts → getProvider() → TauriProvider
+            → getPopularTags(100) + getArtistsByTagIntersection | getDiscoveryRankedArtists
 ```
 
 ### Query Functions (queries.ts)
@@ -677,15 +566,15 @@ URL ?tags param
 | `getPopularTags(db, limit)` | Top tags from `tag_stats` by `artist_count DESC` |
 | `getArtistsByTagIntersection(db, tags, limit)` | AND-logic multi-tag filter, niche-first. Dynamic JOIN per tag. Capped at 5 tags. |
 | `getDiscoveryRankedArtists(db, limit)` | Composite score: rarity + recency + active status |
-| `getArtistUniquenessScore(db, artistId)` | Per-artist uniqueness badge score — average inverse tag popularity, scaled. Works on both D1 and TauriProvider. |
+| `getArtistUniquenessScore(db, artistId)` | Per-artist uniqueness badge score — average inverse tag popularity, scaled. |
 | `getCrateDigArtists(db, filters, limit)` | Random artist sampling with filters. Rowid-based for O(limit) performance. |
 | `getStyleMapData(db, tagLimit)` | Top-N tags as nodes + co-occurrence pairs as edges for style map visualization. |
 
-The tag intersection uses dynamic JOIN construction — one `JOIN artist_tags` per tag, with the tag value as a bound parameter. This avoids SQL injection while staying within D1's bound parameter limits.
+The tag intersection uses dynamic JOIN construction — one `JOIN artist_tags` per tag, with the tag value as a bound parameter. This avoids SQL injection and is capped at 5 tags.
 
 ### Style Map (`/style-map`)
 
-A force-directed graph visualization of how music genres relate to each other. Available on both web and desktop.
+A force-directed graph visualization of how music genres relate to each other.
 
 **How it works:**
 
@@ -719,9 +608,7 @@ layoutNodes = settled;
 
 ```
 /style-map
-    ├── Web: +page.server.ts → D1Provider → getStyleMapData(50)
-    │         +page.ts → passes server data through
-    └── Desktop: +page.ts → isTauri() → TauriProvider → getStyleMapData(50)
+    └── +page.ts → TauriProvider → getStyleMapData(50)
 ```
 
 ### Crate Digging Mode (`/crate`)
@@ -730,9 +617,7 @@ Tauri-only route for serendipitous discovery. Displays 20 random artists from th
 
 ### Navigation
 
-- **Web:** Header shows `Discover` and `Style Map` links only. These are the two discovery features that work on both platforms.
-- **Tauri:** Header shows `Discover`, `Style Map`, `Dig`, `Library`, `Explore`, `Settings`. The `Dig` link leads to `/crate` (Tauri-only). All links use the same `.nav-link` CSS class.
-- **Route availability:** `/discover` — web + Tauri; `/style-map` — web + Tauri; `/crate` — Tauri only (shows desktop-only fallback on web).
+The header shows `Discover`, `Style Map`, `Dig`, `Library`, `Explore`, `Settings`. The `Dig` link leads to `/crate`. All links use the same `.nav-link` CSS class.
 
 ### Anti-Patterns (Avoided)
 
@@ -741,7 +626,7 @@ Tauri-only route for serendipitous discovery. Displays 20 random artists from th
 | `ORDER BY RANDOM()` on artists table | O(total_rows) — catastrophic at 2.8M rows | Rowid-based random sampling: `a.id > randomStart` with wrap-around fallback |
 | On-demand co-occurrence JOIN | `JOIN artist_tags at2 ON at.tag = at2.tag` across 672K rows at query time | Pre-computed `tag_cooccurrence` table in pipeline |
 | D3 DOM manipulation inside Svelte | `on('tick')` callback would trigger 500+ reactive state updates during layout | Headless `simulation.tick(500)` — no reactive wiring, single assignment after stop |
-| Subquery array parameters for style map edges | D1 has bound parameter limits — passing tag arrays as params fails at scale | Subquery IN for edge filtering avoids the parameter count limit |
+| Subquery array parameters for style map edges | Passing large tag arrays as params fails at scale | Subquery IN for edge filtering avoids the parameter count issue |
 
 ---
 
@@ -773,7 +658,7 @@ Source attribution is shown as a small badge or tooltip — no hard tabs between
 | Component | Purpose |
 |-----------|---------|
 | `GenreGraph.svelte` | D3 force-directed graph of genre relationships. Headless `tick(300)` pattern (same as StyleMap — no `on('tick')` wiring). Three node types: genre (circle, accent), scene (diamond, warm-orange), city (dashed circle, teal). Subgenre edges 0.4 strength/solid; influenced_by 0.15 strength/dashed. |
-| `SceneMap.svelte` | Leaflet map showing the geographic origin of a scene. Dynamically imported inside `onMount` to avoid SSR `window is not defined` error. Leaflet CSS injected via `document.head` link rather than Vite dynamic import (works across web and Tauri). |
+| `SceneMap.svelte` | Leaflet map showing the geographic origin of a scene. Dynamically imported inside `onMount` (Leaflet requires the DOM). Leaflet CSS injected via `document.head` link rather than Vite dynamic import. |
 | `LinerNotes.svelte` | Expandable release credits panel on release pages. Collapsed by default — zero network cost on page load. On expand, lazy-fetches MusicBrainz release-group browse endpoint. Shows artist credits, label info, catalog numbers, and per-track recording credits. |
 | `GenreGraphEvolution.svelte` | Time-animated genre graph on the Time Machine page. Uses `from_id`/`to_id` fields (not D3's mutated `.source`/`.target`) for O(1) edge filtering via `Set<number>`. |
 
@@ -829,13 +714,13 @@ The following patterns were discovered and explicitly avoided during Phase 7:
 |---|---|---|
 | Geocoding at runtime | Nominatim rate limit: 1 req/sec. Runtime calls would add 1+ second latency per scene page load | Nominatim called at pipeline build time — coordinates baked into `genres.origin_lat/lng` |
 | Full genre graph at once | 2000+ genres renders as an illegible hairball | `getGenreSubgraph` always uses `LIMIT 30` neighbors — always a neighborhood, never a global view |
-| Leaflet top-level import | `import L from 'leaflet'` causes SSR `window is not defined` crash | `await import('leaflet')` inside `onMount` — SceneMap is always client-side |
+| Leaflet top-level import | `import L from 'leaflet'` requires the DOM to be ready | `await import('leaflet')` inside `onMount` — Leaflet only loads after component mount |
 
 ---
 
 ## Underground Aesthetic
 
-Phase 8 adds three subsystems to the Tauri desktop app: a taste-based OKLCH theme engine, a resizable panel workspace layout, and a streaming platform preference. All three are Tauri-only; the web path is unchanged.
+Phase 8 adds three subsystems: a taste-based OKLCH theme engine, a resizable panel workspace layout, and a streaming platform preference.
 
 ### Theme Engine
 
@@ -896,7 +781,7 @@ $effect: tasteProfile.isLoaded && themeState.mode === 'taste'
     → updateThemeFromTaste(tasteProfile.tags) → recompute + reapply
 ```
 
-**Web:** No runtime theming. `theme.css` OKLCH values serve as the fixed defaults. The engine never runs on web.
+Theme engine only runs in Tauri. `theme.css` OKLCH values serve as the static defaults when no palette is applied.
 
 ### Panel Layout
 
@@ -941,7 +826,7 @@ Two components respect the preference:
 
 **Artist page Listen On bar** — `sortedStreamingLinks` derived: link whose `label.toLowerCase()` includes the platform string sorts to the front. Label-based matching handles variants ('Spotify', 'Spotify (streaming)').
 
-The server-side page data stays neutral — sorting happens client-side only, so web and API consumers are unaffected.
+Sorting happens client-side only in the `+page.ts` load function.
 
 **Settings page** — `src/routes/settings/+page.svelte` is the full configuration interface for all three Phase 8 subsystems. New sections appear above the existing AI Settings section:
 
@@ -955,7 +840,7 @@ All changes apply immediately (live preview) and persist to `taste.db` via the e
 
 | Anti-pattern | Why avoided | Alternative used |
 |---|---|---|
-| Applying PanelLayout on web | Breaks single-column responsive layout | `{#if tauriMode}` gate in root layout — web path is completely unchanged |
+| Applying PanelLayout unconditionally | Some pages need simple single-column layout | `{#if tauriMode}` gate in root layout — gated on the Tauri context check |
 | Overriding `--text-*` in OKLCH palette | Hue-dependent text lightness breaks WCAG AA contrast | Text colors excluded from `TASTE_PALETTE_KEYS` — stay at fixed achromatic lightness |
 | Storing layout template in both localStorage and taste.db | Causes drift between two sources of truth | PaneForge uses localStorage for panel _sizes_ (fine, read by PaneForge directly); template _selection_ goes in taste.db only |
 | Duplicating layout template state in settings | Two separate `$state` variables go out of sync | `layoutState` shared module exports a single reactive object imported by both root layout and settings |
@@ -1057,7 +942,7 @@ src/lib/components/chat/
 └── ModerationQueue.svelte   # Room owner flag review panel
 
 src/routes/api/
-└── unfurl/+server.ts        # POST — server-side OG metadata fetch for Mercury URLs
+└── unfurl/+server.ts        # POST — OG metadata fetch for Mercury URL previews in comms
 ```
 
 ### Identity
@@ -1143,7 +1028,6 @@ Scenes are NEVER sorted by listener count. This prevents popular scenes from alw
 
 - `/scenes` — Scene directory with two-tier display
 - `/scenes/[slug]` — Scene detail: artists, listener count, tags, async AI description
-- `/api/scenes` — Web API: proto-scenes from `tag_cooccurrence` (D1 snapshot for web browsing without taste profile)
 
 ### Anti-Patterns
 
@@ -1153,7 +1037,7 @@ Scenes are NEVER sorted by listener count. This prevents popular scenes from alw
 | Detect scenes on every page load | Expensive multi-join queries; cache in taste.db instead |
 | Tag co-occurrence only (no listener validation) | Tag overlap without shared listeners is coincidence, not scene |
 | Block page render on AI description | AI generation takes 2-10s; async slot pattern used (effectiveBio model) |
-| Web path running client-side detection | taste.db is Tauri-only; web gets tag_cooccurrence snapshot from D1 |
+| Running scene detection on every page load | Expensive multi-join queries; cache in taste.db instead |
 
 ---
 
@@ -1169,41 +1053,29 @@ Embed snippet generation: `src/lib/curator/embed-snippet.ts` — `generateEmbedS
 
 QR code generation: `src/lib/curator/qr.ts` — `generateQrSvg(url, dark?)` wraps the `qrcode` npm package, returns SVG string for inline rendering via `{@html}`. Client-side only (dynamic import).
 
-### RSS/Atom Feeds
+### RSS Feed
 
-All feed types served as `+server.ts` routes returning `application/rss+xml` or `application/atom+xml`. Format negotiated by `?format=atom` URL param or `Accept` header. Uses the `feed` npm package (not hand-rolled XML — handles character escaping for artist names with `&`, `<`, quotes).
+One RSS route remains: `/api/rss/collection/[id]` — exports a user's collection as an RSS/Atom feed. Format negotiated by `?format=atom` URL param or `Accept` header. Uses the `feed` npm package (not hand-rolled XML — handles character escaping for artist names with `&`, `<`, quotes).
 
-| Feed | Route | Items |
-|------|-------|-------|
-| Artist | `/api/rss/artist/[slug]` | Single item: current artist profile state |
-| Tag | `/api/rss/tag/[tag]` | Artists tagged with this tag (top 50 by count) |
-| Collection | `/api/rss/collection/[id]` | Empty on web (collections are Tauri-only) |
-| Curator | `/api/rss/curator/[handle]` | Artists featured by this curator |
-| New & Rising | `/api/rss/new-rising` | Gaining-traction niche artists |
-
-Artist and tag RSS feeds are informational snapshots (not event-driven) — artist profiles don't have change history. The value is "subscribe to this niche tag" for discovery.
-
-RssButton component: `src/lib/components/RssButton.svelte` — renders the standard RSS orange icon as an anchor. Placed on artist pages, discover page, and New & Rising page.
+RssButton component: `src/lib/components/RssButton.svelte` — renders the standard RSS orange icon as an anchor.
 
 ### Curator Attribution
 
-D1 table: `curator_features (id, artist_mbid, curator_handle, featured_at, source)` with `UNIQUE(artist_mbid, curator_handle)` to deduplicate.
+mercury.db table: `curator_features (id, artist_mbid, curator_handle, featured_at, source)` with `UNIQUE(artist_mbid, curator_handle)` to deduplicate.
 
 Attribution trigger: when a blogger includes `data-curator="[handle]"` in the script-tag embed snippet, `embed.js` fires a GET to `/api/curator-feature?artist=[mbid]&curator=[handle]`. Input validation: handle must match `/^[\w\-\.]{1,50}$/`, MBID must match UUID format. Returns 200 regardless of outcome (fire-and-forget).
 
-Display: artist page `+page.server.ts` queries curator_features (wrapped in try/catch — table may not exist on older DB versions). Renders as "Discovered by @handle" list linking to `/new-rising?curator=[handle]`.
+Display: artist page `+page.ts` queries curator_features from local mercury.db (wrapped in try/catch — table may not exist on older DB versions). Renders as "Discovered by @handle" list linking to `/new-rising?curator=[handle]`.
 
 ### New & Rising Page
 
-Public page at `/new-rising` — no auth required, web and Tauri.
+`/new-rising` — queries local mercury.db directly from `+page.ts`.
 
 Two views:
 - **Newly Active**: `WHERE begin_year >= (currentYear - 1) AND ended = 0` — proxy for "recently active" (no `added_at` column in artists table). Ordered by begin_year DESC.
 - **Gaining Traction**: same recency filter, ordered by average tag rarity (`AVG(1.0 / NULLIF(tag_stats.artist_count, 0))`) — surfaces niche artists accumulating unique tag combinations.
 
 Curator filter: `/new-rising?curator=[handle]` shows a third tab with artists featured by that curator (from curator_features table).
-
-RSS feed at `/api/rss/new-rising` serves the Gaining Traction list — the most useful subscription for a blogger who wants to discover artists worth writing about.
 
 ### Anti-Patterns (Curator / Blog Tools)
 
@@ -1212,7 +1084,6 @@ RSS feed at `/api/rss/new-rising` serves the Gaining Traction list — the most 
 | Hand-rolled RSS XML | Artist names with `&`, `<`, `'` break feed parsers | Always use `feed` npm package |
 | Root layout in /embed/* routes | Mercury nav/player/chat break the iframe card | `/embed/+layout.svelte` via `+layout@.svelte` breaks out of root layout |
 | `prefers-color-scheme` via postMessage | Unnecessary — iframe reads OS preference directly | `window.matchMedia` inside the embed page |
-| `prerender = true` on RSS routes | Stale feeds baked at build time | Dynamic routes only — D1 queried on each request |
 | Blocking artist page on curator attribution | Attribution load failure breaks core page | try/catch with empty array fallback |
 | Using `MBID` from embed URL client-side | embed.js only knows the slug from the URL path | `/api/curator-feature` accepts `slug` as alternative to MBID for lookups |
 
@@ -1220,41 +1091,27 @@ RSS feed at `/api/rss/new-rising` serves the Gaining Traction list — the most 
 
 ## Build System
 
-### Web Build
+### Development
 
 ```bash
-npm run build          # Builds with adapter-cloudflare
+npm run dev            # Vite dev server (SvelteKit SPA, no Rust)
+cargo tauri dev        # Starts Vite dev server + compiles Rust in debug mode
 npm run check          # TypeScript + Svelte validation
 ```
 
-Deployed to Cloudflare Pages. D1 database handles search queries server-side.
-
-### Desktop Build
+### Production Build
 
 ```bash
-npm run build:desktop  # TAURI_ENV=1 VITE_TAURI=1 vite build
-cargo tauri build      # Compiles Rust + bundles NSIS installer
+cargo tauri build      # Compiles Rust + runs SvelteKit build + bundles NSIS installer
 ```
 
-Or for development:
+### Build Pipeline
 
-```bash
-cargo tauri dev        # Starts Vite dev server + compiles Rust in debug mode
-```
-
-### Build Adapter Selection
-
-```
-TAURI_ENV=1  → adapter-static (SPA with index.html fallback)
-(default)    → adapter-cloudflare (SSR on Cloudflare Workers)
-```
-
-### Tauri Build Pipeline
-
-1. `beforeBuildCommand` runs `npx cross-env TAURI_ENV=1 VITE_TAURI=1 npm run build`
-2. SvelteKit outputs static files to `build/`
-3. Tauri compiles Rust code, bundles with the static frontend
-4. NSIS installer created for Windows distribution
+1. `beforeBuildCommand` in `tauri.conf.json` runs `npx cross-env TAURI_ENV=1 VITE_TAURI=1 npm run build`
+   - `VITE_TAURI=1` disables SSR in `+layout.ts` — the app becomes a client-rendered SPA
+   - `adapter-static` outputs static files with `index.html` fallback to `build/`
+2. Tauri compiles Rust code, bundles with the static frontend
+3. NSIS installer created for Windows distribution
 
 ### Signing
 
@@ -1269,10 +1126,12 @@ The app uses Tauri's updater plugin with a minisign key pair:
 
 ### Environment Variables
 
-| Variable | Where | Purpose |
-|----------|-------|---------|
-| `VITE_TAURI=1` | Vite/SvelteKit | Disables SSR, enables Tauri code paths |
-| `TAURI_ENV=1` | svelte.config.js | Selects adapter-static over adapter-cloudflare |
+Both are set automatically by Tauri's `beforeBuildCommand` / `beforeDevCommand` in `tauri.conf.json`:
+
+| Variable | Purpose |
+|----------|---------|
+| `VITE_TAURI=1` | Disables SSR in `+layout.ts` — makes the app a client-rendered SPA |
+| `TAURI_ENV=1` | Set at build time (legacy; `svelte.config.js` always uses `adapter-static` now) |
 
 ### Key Config Files
 
@@ -1281,7 +1140,7 @@ The app uses Tauri's updater plugin with a minisign key pair:
 | `src/lib/config.ts` | Project name + tagline. THE single variable for renaming. |
 | `src-tauri/tauri.conf.json` | Window size, security, build commands, updater |
 | `src-tauri/capabilities/default.json` | Tauri permission grants (dialog, SQL, etc.) |
-| `svelte.config.js` | Adapter selection (Cloudflare vs static) |
+| `svelte.config.js` | Always `adapter-static` with `index.html` fallback |
 | `src/lib/styles/theme.css` | All CSS custom properties (colors, spacing, typography) |
 
 ### CSS Custom Properties (theme.css)
@@ -1299,7 +1158,7 @@ The entire visual system is driven by CSS custom properties. Key groups:
 
 ## AI Subsystem
 
-The AI subsystem adds local intelligence to Mercury Desktop. It is entirely opt-in — disabled by default, with no impact on users who don't enable it. The web build has no AI components.
+The AI subsystem adds local intelligence to Mercury Desktop. It is entirely opt-in — disabled by default, with no impact on users who don't enable it.
 
 ### Architecture Overview
 
@@ -1395,7 +1254,7 @@ Phase 8 added these keys:
 
 ### Why Three Databases?
 
-- **mercury.db** — Discovery index (2.8M artists). Managed by `tauri-plugin-sql` (sqlx). Shared schema with Cloudflare D1.
+- **mercury.db** — Discovery index (2.8M artists). Managed by `tauri-plugin-sql` (sqlx).
 - **library.db** — Local audio file metadata. Managed by `rusqlite`.
 - **taste.db** — AI settings, taste profile, embeddings. Managed by `rusqlite`.
 
@@ -1490,7 +1349,7 @@ Tags tracked by source: `library`, `favorite`, `manual`. Recomputation clears co
   ┌──────────────────────┐  ┌─────────────────────┐  ┌──────────┐
   │    db/ module         │  │  library/ module     │  │ ai/ Rust │
   │  provider → queries   │  │  scanner → store     │  │ sidecar  │
-  │  D1 or TauriProvider  │  │  types → matching    │  │ taste_db │
+  │  TauriProvider        │  │  types → matching    │  │ taste_db │
   └──────────┬───────────┘  └──────────┬──────────┘  │ embed    │
              │                         │              │ download │
              ▼                         ▼              └────┬─────┘
@@ -1517,8 +1376,8 @@ Tags tracked by source: `library`, `favorite`, `manual`. Recomputation clears co
 5. **`library/`** imports from `player/` (to set queue on track click) and from `db/` (for artist matching)
 6. **`ai/`** is imported by explore page, artist page components, and settings page. Module-level singleton via `getAiProvider()`
 7. **`taste/`** imports from `ai/` (for embeddings), `db/` (for artist lookup), and `library/` (for signal computation). Imported by artist page and settings page
-8. **Tauri dependencies** are always dynamically imported — never at the top level
+8. **Tauri dependencies** (`@tauri-apps/*`) are always dynamically imported — never at the top level, to allow deferred loading after Tauri initializes
 
 ---
 
-*Last updated: 2026-02-23 — After Phase 12 Plan 4 (Curator / Blog Tools — embed widgets, RSS feeds, curator attribution, New & Rising page) completion.*
+*Last updated: 2026-02-24 — After Phase 14 (full web/Cloudflare purge — Tauri-desktop-only codebase).*

@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // Baseline (Phase 13, 2026-02-24): 63 passing (62 code + 1 build), 30 skipped — exits 0
 // Phase 14 adds: method: 'tauri' block — connects to running Tauri app via CDP
+// Phase 15 adds: cargo test section for Rust unit tests (skipped with --code-only)
 /**
  * Mercury Test Suite
  *
@@ -52,6 +53,20 @@ async function runBuildCheck() {
       shell: true,
     });
     proc.on('close', (code) => resolve(code === 0));
+  });
+}
+
+async function runCargoTests() {
+  return new Promise((resolve) => {
+    const proc = spawn('cargo', ['test', '--manifest-path', 'src-tauri/Cargo.toml'], {
+      cwd: process.cwd(),
+      stdio: ['ignore', 'pipe', 'pipe'],
+      shell: true,
+    });
+    let output = '';
+    proc.stdout.on('data', d => { output += d; });
+    proc.stderr.on('data', d => { output += d; });
+    proc.on('close', (code) => resolve({ passed: code === 0, output }));
   });
 }
 
@@ -121,7 +136,29 @@ async function main() {
   }
 
   // ---------------------------------------------------------------------------
-  // 3. Tauri E2E tests (Playwright CDP — requires debug binary)
+  // 3. Rust unit tests (cargo test — skipped with --code-only)
+  // ---------------------------------------------------------------------------
+
+  if (!codeOnly) {
+    header('Rust Unit Tests (cargo test)');
+    process.stdout.write(' ◆  Running cargo test ... ');
+    const cargoResult = await runCargoTests();
+    log(cargoResult.passed ? PASS : FAIL);
+    if (!cargoResult.passed) {
+      cargoResult.output.split('\n').slice(-20).forEach(line => {
+        if (line.trim()) log(`    ${line}`);
+      });
+    }
+    results.push({
+      id: 'RUST-ALL', phase: 15, area: 'Rust',
+      desc: 'cargo test — all Rust unit tests pass',
+      passed: cargoResult.passed,
+      error: cargoResult.passed ? null : 'cargo test failed — see output above',
+    });
+  }
+
+  // ---------------------------------------------------------------------------
+  // 4. Tauri E2E tests (Playwright CDP — requires debug binary)
   // ---------------------------------------------------------------------------
 
   if (tauriTests.length > 0 && !codeOnly) {

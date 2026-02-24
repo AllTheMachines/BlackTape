@@ -26,6 +26,21 @@ pub fn is_supported_audio(path: &Path) -> bool {
         .unwrap_or(false)
 }
 
+/// Extract a year from tag metadata strings. Prefers the Year tag; falls back to the
+/// first 4 characters of RecordingDate (handles "2023-06-20" → 2023).
+pub(crate) fn parse_year_from_tags(
+    year_str: Option<&str>,
+    recording_date_str: Option<&str>,
+) -> Option<u32> {
+    year_str
+        .and_then(|s| s.parse::<u32>().ok())
+        .or_else(|| {
+            recording_date_str
+                .and_then(|s| s.get(..4))
+                .and_then(|s| s.parse::<u32>().ok())
+        })
+}
+
 pub fn read_track_metadata(path: &Path) -> Option<TrackMetadata> {
     let tagged_file = lofty::read_from_path(path).ok()?;
 
@@ -42,14 +57,10 @@ pub fn read_track_metadata(path: &Path) -> Option<TrackMetadata> {
     let track_number = tag.track();
     let disc_number = tag.disk();
     let genre = tag.genre().map(|s| s.to_string());
-    let year = tag
-        .get_string(ItemKey::Year)
-        .and_then(|s| s.parse::<u32>().ok())
-        .or_else(|| {
-            tag.get_string(ItemKey::RecordingDate)
-                .and_then(|s| s.get(..4))
-                .and_then(|s| s.parse::<u32>().ok())
-        });
+    let year = parse_year_from_tags(
+        tag.get_string(ItemKey::Year),
+        tag.get_string(ItemKey::RecordingDate),
+    );
     let duration_secs = tagged_file.properties().duration().as_secs_f64();
 
     // Normalize path to forward slashes for cross-platform consistency
@@ -67,4 +78,83 @@ pub fn read_track_metadata(path: &Path) -> Option<TrackMetadata> {
         duration_secs,
         path: normalized_path,
     })
+}
+
+// ---------------------------------------------------------------------------
+// RUST-03: Unit tests for scanner metadata helpers
+// ---------------------------------------------------------------------------
+
+#[cfg(test)]
+mod tests {
+    use super::{is_supported_audio, parse_year_from_tags, SUPPORTED_EXTENSIONS};
+    use std::path::Path;
+
+    #[test]
+    fn all_supported_extensions_recognized() {
+        for ext in SUPPORTED_EXTENSIONS {
+            let path_str = format!("track.{}", ext);
+            let path = Path::new(&path_str);
+            assert!(
+                is_supported_audio(path),
+                "Expected .{} to be a supported audio format",
+                ext
+            );
+        }
+    }
+
+    #[test]
+    fn unsupported_extensions_rejected() {
+        assert!(!is_supported_audio(Path::new("image.jpg")));
+        assert!(!is_supported_audio(Path::new("doc.pdf")));
+        assert!(!is_supported_audio(Path::new("script.py")));
+        assert!(!is_supported_audio(Path::new("archive.zip")));
+    }
+
+    #[test]
+    fn no_extension_rejected() {
+        assert!(!is_supported_audio(Path::new("trackfile")));
+    }
+
+    #[test]
+    fn extension_check_is_case_insensitive() {
+        assert!(is_supported_audio(Path::new("track.MP3")));
+        assert!(is_supported_audio(Path::new("track.FLAC")));
+    }
+
+    #[test]
+    fn year_from_year_tag() {
+        assert_eq!(parse_year_from_tags(Some("2023"), None), Some(2023));
+    }
+
+    #[test]
+    fn year_from_recording_date_prefix() {
+        assert_eq!(parse_year_from_tags(None, Some("2001-06-20")), Some(2001));
+    }
+
+    #[test]
+    fn year_tag_takes_precedence_over_recording_date() {
+        assert_eq!(
+            parse_year_from_tags(Some("2023"), Some("2019-01-01")),
+            Some(2023)
+        );
+    }
+
+    #[test]
+    fn invalid_year_strings_return_none() {
+        assert_eq!(parse_year_from_tags(Some("not-a-year"), None), None);
+        assert_eq!(parse_year_from_tags(None, Some("no-date-here")), None);
+    }
+
+    #[test]
+    fn both_none_returns_none() {
+        assert_eq!(parse_year_from_tags(None, None), None);
+    }
+
+    #[test]
+    fn short_recording_date_handled_gracefully() {
+        // "20" is only 2 chars, can't extract a 4-char year prefix
+        assert_eq!(parse_year_from_tags(None, Some("20")), None);
+        // "2023" exactly 4 chars → valid
+        assert_eq!(parse_year_from_tags(None, Some("2023")), Some(2023));
+    }
 }

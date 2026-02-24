@@ -334,3 +334,64 @@ fn sanitize_fts(query: &str) -> String {
         .collect();
     terms.join(" ")
 }
+
+// ---------------------------------------------------------------------------
+// RUST-01: Unit tests for sanitize_fts
+// ---------------------------------------------------------------------------
+
+#[cfg(test)]
+mod tests {
+    use super::sanitize_fts;
+
+    #[test]
+    fn empty_input_returns_empty() {
+        assert_eq!(sanitize_fts(""), "");
+    }
+
+    #[test]
+    fn whitespace_only_returns_empty() {
+        assert_eq!(sanitize_fts("   "), "");
+    }
+
+    #[test]
+    fn single_word_wrapped_as_prefix_token() {
+        assert_eq!(sanitize_fts("radiohead"), "\"radiohead\"*");
+    }
+
+    #[test]
+    fn multi_word_each_wrapped_separately() {
+        assert_eq!(sanitize_fts("aphex twin"), "\"aphex\"* \"twin\"*");
+    }
+
+    #[test]
+    fn special_chars_stripped_not_spaced() {
+        // +, (, ), * removed — adjacent chars join without a space
+        assert_eq!(sanitize_fts("(test)"), "\"test\"*");
+        // + is stripped so "aphex+twin" becomes "aphextwin"
+        assert_eq!(sanitize_fts("aphex+twin"), "\"aphextwin\"*");
+    }
+
+    #[test]
+    fn hyphens_preserved() {
+        let result = sanitize_fts("post-rock");
+        assert!(result.contains("post-rock"), "expected hyphen preserved, got: {}", result);
+    }
+
+    #[test]
+    fn apostrophes_preserved() {
+        let result = sanitize_fts("o'malley");
+        assert!(result.contains("o'malley"), "expected apostrophe preserved, got: {}", result);
+    }
+
+    #[test]
+    fn fts5_operators_neutralized_by_quoting() {
+        // "OR" keyword should become a quoted literal, not an FTS5 operator
+        let result = sanitize_fts("OR");
+        assert_eq!(result, "\"OR\"*");
+    }
+
+    #[test]
+    fn leading_and_trailing_spaces_trimmed() {
+        assert_eq!(sanitize_fts("  boards  "), "\"boards\"*");
+    }
+}

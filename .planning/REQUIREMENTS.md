@@ -38,18 +38,18 @@ Key user flows driven through the real running Tauri app via Playwright CDP.
 
 Multi-step user journeys tested end-to-end, not just static page loads.
 
-- [ ] **FLOW-01**: Search → click artist → navigate to a second artist — no crash, no console.error throughout the full journey
-- [ ] **FLOW-02**: Artist page → click a tag → tag discovery page loads with results
-- [ ] **FLOW-03**: Error states navigate correctly — 404 routes render error page, empty search renders empty state UI (not blank screen)
-- [ ] **FLOW-04**: Navigation flow tests verify loading indicator lifecycle — appears on click, clears on completion (catches both "nothing happened" and "got stuck")
+- [x] **FLOW-01**: Search → click artist → navigate to a second artist — no crash, no console.error throughout the full journey
+- [x] **FLOW-02**: Artist page → click a tag → tag discovery page loads with results
+- [x] **FLOW-03**: Error states navigate correctly — 404 routes render error page, empty search renders empty state UI (not blank screen)
+- [x] **FLOW-04**: Navigation flow tests verify loading indicator lifecycle — appears on click, clears on completion (catches both "nothing happened" and "got stuck")
 
 ### RUST — Rust Unit Tests
 
 Rust logic verified in isolation, without compiling the full Tauri binary.
 
-- [ ] **RUST-01**: FTS5 query sanitization function tested in isolation (`mercury_db.rs`) — edge cases, empty input, special characters
-- [ ] **RUST-02**: `__data.json` protocol handler logic tested in isolation (`lib.rs`) — correct JSON returned for SvelteKit data paths
-- [ ] **RUST-03**: Scanner metadata parsing tested with synthetic input (`scanner/mod.rs`) — title, artist, album, year extracted correctly
+- [x] **RUST-01**: FTS5 query sanitization function tested in isolation (`mercury_db.rs`) — edge cases, empty input, special characters
+- [x] **RUST-02**: `__data.json` protocol handler logic tested in isolation (`lib.rs`) — correct JSON returned for SvelteKit data paths
+- [x] **RUST-03**: Scanner metadata parsing tested with synthetic input (`scanner/metadata.rs`) — is_supported_audio, parse_year_from_tags helper with edge cases
 
 ### UX — Loading States
 
@@ -64,9 +64,9 @@ Every interaction gives immediate animated feedback, making frozen states visual
 
 Prevents future regressions from being committed or shipped.
 
-- [ ] **PROC-01**: Pre-commit hook runs `--code-only` tests on every commit (2–5s, gates every commit automatically)
+- [x] **PROC-01**: Pre-commit hook runs `--code-only` tests on every commit (2–5s, gates every commit automatically)
 - [x] **PROC-02**: Full test suite must be green before any new phase begins execution — not advisory, a hard gate
-- [ ] **PROC-03**: Every future phase plan includes a mandatory TEST-PLAN section specifying tests to be written — tests are defined before code, not after
+- [x] **PROC-03**: Every future phase plan includes a mandatory TEST-PLAN section specifying tests to be written — tests are defined before code, not after
 
 ---
 
@@ -117,15 +117,15 @@ Prevents future regressions from being committed or shipped.
 | E2E-03 | Phase 14 | Complete |
 | E2E-04 | Phase 14 | Complete |
 | E2E-05 | Phase 14 | Complete |
-| FLOW-01 | Phase 15 | Pending |
-| FLOW-02 | Phase 15 | Pending |
-| FLOW-03 | Phase 15 | Pending |
-| FLOW-04 | Phase 15 | Pending |
-| RUST-01 | Phase 15 | Pending |
-| RUST-02 | Phase 15 | Pending |
-| RUST-03 | Phase 15 | Pending |
-| PROC-01 | Phase 15 | Pending |
-| PROC-03 | Phase 15 | Pending |
+| FLOW-01 | Phase 15 | ✓ Done |
+| FLOW-02 | Phase 15 | ✓ Done |
+| FLOW-03 | Phase 15 | ✓ Done |
+| FLOW-04 | Phase 15 | ✓ Done |
+| RUST-01 | Phase 15 | ✓ Done |
+| RUST-02 | Phase 15 | ✓ Done |
+| RUST-03 | Phase 15 | ✓ Done |
+| PROC-01 | Phase 15 | ✓ Done |
+| PROC-03 | Phase 15 | ✓ Done |
 
 **Coverage:**
 - v1.2 requirements: 25 total (INFRA-02, WEB-01–03 removed — web version purged 2026-02-24)

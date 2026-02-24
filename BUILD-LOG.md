@@ -4611,3 +4611,77 @@ Files added: 2 (new-rising/+page.ts, embed/+page.ts)
 
 > **Commit ee987c3** (2026-02-24 02:20) — wip: auto-save
 > Files changed: 2
+
+> **Commit 41ff2b7** (2026-02-24 02:20) — wip: auto-save
+> Files changed: 1
+
+---
+
+## Entry 035 — 2026-02-24 — ARCHITECTURE.md Purge (Deferred from Last Session)
+
+With the web version gone, ARCHITECTURE.md was still describing a dual-platform codebase. Full rewrite to reflect Tauri-desktop-only reality.
+
+### What Changed
+
+- **Removed entire "Dual Runtime Architecture" section** — platform detection table, SSR toggle explanation, adapter selection conditional, `+page.server.ts` vs `+page.ts` pattern docs, dynamic import rationale. All gone.
+- **System Overview** — "runs on two platforms" → "music discovery engine for the desktop"
+- **Directory structure** — removed `d1-provider.ts`; simplified `routes/api/` to the three server routes that still exist (soundcloud-oembed, unfurl, rss/collection)
+- **Database Layer** — removed D1Provider docs; factory now documented as returning TauriProvider only
+- **Search System** — removed "Data Flow: Web" section; single data flow diagram for desktop
+- **Artist Pages** — MusicBrainz calls now described as client-side direct fetch (not proxied via server routes)
+- **Discovery Engine** — removed web branch from all data flow diagrams; removed "Web: shows Discover and Style Map only" navigation note; removed D1 bound parameter framing
+- **Knowledge Base** — removed SSR crash note from SceneMap; updated Leaflet import rationale
+- **Build System** — removed web build section; simplified to desktop build pipeline only
+- **Config Reference** — `TAURI_ENV` noted as legacy (still set by Tauri but `svelte.config.js` always uses `adapter-static` now); corrected `svelte.config.js` purpose description
+- **Curator/Blog Tools** — removed deleted RSS feed routes; updated curator attribution to reflect local DB query instead of `+page.server.ts`
+- **Scene Building** — removed `/api/scenes` web route
+- **Module Dependency Map** — `D1 or TauriProvider` → `TauriProvider`
+- **Scattered cleanup** — removed "web + Tauri", "Tauri only", "web only" platform labels where they implied a web path still existed
+
+---
+
+## Entry 036 — 2026-02-24 — Phase 15: Navigation Flows + Rust Unit Tests
+
+v1.2 Phase 15 complete. All 9 requirements done: FLOW-01–04, RUST-01–03, PROC-01, PROC-03.
+
+### PROC-01: Pre-commit Hook
+
+`.githooks/pre-commit` created — runs `node tools/test-suite/run.mjs --code-only` before every commit. `core.hooksPath` was already pointing to `.githooks` (set in Phase 14). 2–5s gate on every commit.
+
+### RUST-01: FTS5 Sanitization Tests (`mercury_db.rs`)
+
+9 unit tests for `sanitize_fts()` — empty input, whitespace-only, single word, multi-word, special char stripping, hyphen/apostrophe preservation, FTS5 operator neutralization.
+
+### RUST-02: Protocol Handler Tests (`lib.rs`)
+
+4 unit tests verifying the `__data.json` fallback detection logic — HTML fallback detected, real JSON responses pass through, invalid paths ignored. Plus a structural test that the constant empty-data body is valid SvelteKit JSON.
+
+### RUST-03: Scanner Metadata Tests (`scanner/metadata.rs`)
+
+Extracted `parse_year_from_tags(year_str, recording_date_str)` helper from `read_track_metadata`. 10 unit tests: all 8 supported extensions recognized, unsupported rejected, case-insensitive check, year from Year tag, year from RecordingDate prefix, precedence, invalid input, short date edge case.
+
+### FLOW-01–04: Tauri E2E Tests (`manifest.mjs`)
+
+4 multi-step navigation flow tests added to the Tauri CDP test suite:
+- **FLOW-01**: Full multi-step journey (search → artist → discover → second artist) with console.error capture
+- **FLOW-02**: Artist page → tag chip → tag search results
+- **FLOW-03**: Invalid artist slug shows error page, no JS crash
+- **FLOW-04**: Nav progress bar appears during navigation, clears on completion (MutationObserver pattern)
+
+### PROC-03: TEST-PLAN Policy
+
+Documented in REQUIREMENTS.md. Code check P15-05 verifies the policy exists. Every future phase plan must include a TEST-PLAN section.
+
+### Run.mjs: Cargo Test Section
+
+New `runCargoTests()` function + "Rust Unit Tests" section in the test runner. Runs `cargo test` when not in `--code-only` mode. Results feed into the pass/fail summary.
+
+### Final State
+
+```
+npm run check:    0 errors, 8 pre-existing warnings
+--code-only:      72 passing (was 67 — +5 P15 code checks)
+cargo test:       23 passing, 0 failing
+REQUIREMENTS.md:  FLOW-01–04, RUST-01–03, PROC-01, PROC-03 → all ✓
+ROADMAP.md:       Phase 15 ✓
+```

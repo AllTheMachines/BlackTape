@@ -1,0 +1,6 @@
+#!/bin/sh
+# Pre-commit hook: run code-only tests (2-5s) before every commit.
+# Blocks the commit if any code check fails.
+# Added: Phase 15 (PROC-01)
+
+node tools/test-suite/run.mjs --code-only
