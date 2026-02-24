@@ -83,7 +83,11 @@ Full archive: `.planning/milestones/v1.2-ROADMAP.md`
   2. User can share any artist or scene page to Mastodon via a pre-populated share link (URL-scheme only)
   3. User can view Mercury's own Ko-fi, GitHub Sponsors, and Open Collective links in the About screen
   4. User can open a backer credits screen listing Mercury supporters fetched from a Nostr list event
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 16-01-PLAN.md — Artist support links section (SUST-01) + Mastodon share button on artist and scene pages (SUST-02)
+- [ ] 16-02-PLAN.md — About screen support section (SUST-03) + Backer credits /backers route with Nostr fetch (SUST-04)
 
 ### Phase 17: Artist Stats Dashboard
 **Goal**: Users can see how discoverable any artist is within Mercury's index and how much they personally engage with them
