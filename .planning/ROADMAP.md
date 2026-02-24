@@ -220,7 +220,7 @@ Runs alongside everything else. Not blocking any phase. Rolls out in stages as f
 | 14. Tauri E2E Testing | v1.2 | done | Complete | 2026-02-24 |
 | 15. Navigation Flows + Rust Unit Tests | v1.2 | done | Complete | 2026-02-24 |
 | 16. Sustainability Links | 2/2 | Complete    | 2026-02-24 | - |
-| 17. Artist Stats Dashboard | v1.3 | 0/TBD | Not started | - |
+| 17. Artist Stats Dashboard | 1/2 | In Progress|  | - |
 | 18. AI Auto-News | v1.3 | 0/TBD | Not started | - |
 | 19. Static Site Generator | v1.3 | 0/TBD | Not started | - |
 | 20. Listening Rooms | v1.3 | 0/TBD | Not started | - |

@@ -9,10 +9,10 @@ See: .planning/PROJECT.md (updated 2026-02-24 after v1.3 milestone started)
 
 ## Current Position
 
-Phase: 16 of 21 (Sustainability Links)
-Plan: 02 of 02 complete
-Status: Phase 16 complete — ready for Phase 17
-Last activity: 2026-02-24 — Phase 16 Plans 01 + 02 complete (Sustainability Links)
+Phase: 17 of 21 (Artist Stats Dashboard)
+Plan: 01 of 02 complete
+Status: Phase 17 in progress — Plan 01 complete (building blocks), Plan 02 pending (wire into artist page)
+Last activity: 2026-02-24 — Phase 17 Plan 01 complete (Rust visit tracking, tag distribution query, ArtistStats component)
 
 Progress: [█░░░░░░░░░] 17% (v1.3 — 1/6 phases complete)
 
@@ -28,7 +28,7 @@ Progress: [█░░░░░░░░░] 17% (v1.3 — 1/6 phases complete)
 | Phase | Plans | Status |
 |-------|-------|--------|
 | 16. Sustainability Links | 2 | Complete |
-| 17. Artist Stats Dashboard | TBD | Not started |
+| 17. Artist Stats Dashboard | 2 | Plan 01/02 complete |
 | 18. AI Auto-News | TBD | Not started |
 | 19. Static Site Generator | TBD | Not started |
 | 20. Listening Rooms | TBD | Not started |
@@ -48,6 +48,9 @@ Progress: [█░░░░░░░░░] 17% (v1.3 — 1/6 phases complete)
 - backer credits Nostr event kind: kind:30000 with `d` tag (NIP-51 addressable list) — confirmed and implemented in Phase 16 Plan 02
 - MERCURY_PUBKEY stored as empty string placeholder in config.ts — fills in when Mercury Nostr identity keypair is generated
 - Backer names stored directly as 'name' tags on kind:30000 event — no kind:0 profile fetch, single relay round-trip
+- Stats tab tier vocabulary locked: Common/Niche/Rare/Ultra Rare — distinct from UniquenessScore badge (Very Niche/Niche/Eclectic/Mainstream)
+- Artist visit tracking is fully silent — stored in taste.db artist_visits table, never surfaced in UI, reserved for future local recommendations
+- Bar chart in ArtistStats sorts by count (MusicBrainz votes) DESC; rarest tag identified by artist_count ASC (distribution[0])
 
 ### Pending Todos
 None
@@ -60,6 +63,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-24
-Stopped at: Completed 16-01-PLAN.md — artist Support section + Mastodon share buttons on artist and scene pages
+Stopped at: Completed 17-01-PLAN.md — Rust visit tracking, tag distribution query, ArtistStats.svelte component
 Resume file: None
-Next: Phase 17 (Artist Stats Dashboard)
+Next: Phase 17 Plan 02 — wire ArtistStats into artist page +page.svelte, add Stats tab, call record_artist_visit on load
