@@ -240,5 +240,5 @@ Runs alongside everything else. Not blocking any phase. Rolls out in stages as f
 | 17. Artist Stats Dashboard | 2/2 | Complete    | 2026-02-24 | - |
 | 18. AI Auto-News | 5/5 | Complete    | 2026-02-24 | - |
 | 19. Static Site Generator | 3/3 | Complete    | 2026-02-24 | - |
-| 20. Listening Rooms | 3/3 | Complete   | 2026-02-24 | - |
+| 20. Listening Rooms | 3/3 | Complete    | 2026-02-24 | - |
 | 21. ActivityPub Outbound | v1.3 | 0/TBD | Not started | - |
