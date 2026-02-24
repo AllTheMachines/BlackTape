@@ -5686,3 +5686,29 @@ Phase 21 — the last phase of v1.3 The Open Network — is done.
 
 > **Commit 02776a1** (2026-02-24 21:04) — wip: auto-save
 > Files changed: 1
+
+> **Commit bd3a815** (2026-02-24 21:16) — auto-save: 4 files @ 21:16
+> Files changed: 4
+
+> **Commit 037ab10** (2026-02-24 21:24) — fix: 111/111 tests passing — debug divs, test SPA timing, ArtistStats silent fail
+> Files changed: 2
+
+## Entry 030 — 2026-02-24 — Test Suite: 111/111 Passing
+
+Resumed from HANDOFF and discovered v1.3 was already fully complete (all 6 phases shipped in prior session). Ran the full test suite: 104/111 passing, 7 failures.
+
+**Root causes identified and fixed:**
+
+| Test | Root Cause | Fix |
+|------|-----------|-----|
+| P14-05 | `locator('nav')` matched 3 nav elements (layout header, footer, LeftSidebar) | `.first()` |
+| P14-06/07/08 | `waitForLoadState('domcontentloaded')` fires immediately in SPA — checks before Svelte renders | `waitForURL` + `waitFor` |
+| P14-15 | `input[type=search]` strict mode: ControlBar + SearchBar both match | `.first()` |
+| P15-FLOW-01 | `ArtistStats.svelte` emitting `console.error` on DB failure; test caught it | Silent fail in ArtistStats + test uses `pageerror` only |
+| P15-FLOW-04 | SPA navigation timing — `domcontentloaded` fires before URL changes | `waitForURL` |
+| P18-12 | Hardcoded `tauri://localhost` in test (ERR_ABORTED on direct goto) | `${origin}` |
+| Settings page | Two leftover debug `<div>` elements from Phase 21 dev | Removed |
+
+Final result: **111/111 passing, 0 failures, 38 skipped** (desktop-only).
+
+**Key lesson:** SvelteKit SPA navigation does not re-fire `domcontentloaded`. Always use `waitForURL()` + element `waitFor()` for Tauri E2E tests — not `waitForLoadState('domcontentloaded')` after link clicks.
