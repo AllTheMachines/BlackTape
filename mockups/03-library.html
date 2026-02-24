@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Mercury — Library</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* ── Library-page specific ── */
+    .library-layout {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    /* Album list (left pane) */
+    .album-pane {
+      background: var(--bg-1);
+      border-right: 1px solid var(--b-1);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .album-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--b-1);
+      flex-shrink: 0;
+    }
+    .scan-badge {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-left: auto;
+      font-size: 9px;
+      color: var(--t-3);
+    }
+    .scan-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: #4caf50;
+      flex-shrink: 0;
+    }
+    .album-list {
+      flex: 1;
+      overflow-y: auto;
+    }
+    .album-row {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      height: 52px;
+      padding: 0 10px;
+      border-bottom: 1px solid var(--b-0);
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+    .album-row:hover { background: #181818; }
+    .album-row.selected {
+      background: #1e1e1e;
+      border-left: 2px solid var(--acc);
+      padding-left: 8px;
+    }
+    .album-thumb {
+      width: 36px; height: 36px;
+      border-radius: var(--r);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 7px;
+      font-weight: 700;
+      color: var(--t-3);
+      letter-spacing: 0.04em;
+      border: 1px solid var(--b-1);
+    }
+    .album-row-info { min-width: 0; }
+    .album-row-title {
+      font-size: 11px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .album-row.selected .album-row-title { color: var(--t-1); }
+    .album-row-meta {
+      font-size: 10px;
+      color: var(--t-3);
+      margin-top: 1px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Tracklist (right pane) */
+    .tracklist-pane {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--bg-2);
+    }
+    .release-header {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--b-1);
+      background: var(--bg-2);
+      flex-shrink: 0;
+    }
+    .release-cover {
+      width: 80px; height: 80px;
+      border-radius: var(--r);
+      border: 1px solid var(--b-2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--t-3);
+      letter-spacing: 0.04em;
+      flex-shrink: 0;
+    }
+    .release-details { min-width: 0; flex: 1; }
+    .release-title {
+      font-size: 18px;
+      font-weight: 300;
+      color: var(--t-1);
+      letter-spacing: 0.01em;
+    }
+    .release-artist {
+      font-size: 12px;
+      color: var(--acc);
+      margin-top: 3px;
+      font-weight: 500;
+    }
+    .release-meta-row {
+      font-size: 10px;
+      color: var(--t-3);
+      margin-top: 4px;
+      display: flex;
+      gap: 8px;
+    }
+    .release-actions {
+      display: flex;
+      gap: 5px;
+      margin-top: 10px;
+    }
+
+    .tracklist-scroll {
+      flex: 1;
+      overflow-y: auto;
+    }
+    .tracklist-head {
+      display: flex;
+      align-items: center;
+      height: 28px;
+      padding: 0 20px;
+      border-bottom: 1px solid var(--b-1);
+      background: var(--bg-1);
+      flex-shrink: 0;
+    }
+    .tracklist-col-num {
+      width: 36px;
+      text-align: right;
+      padding-right: 10px;
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--t-3);
+      flex-shrink: 0;
+    }
+    .tracklist-col-title {
+      flex: 1;
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--t-3);
+    }
+    .tracklist-col-dur {
+      width: 44px;
+      text-align: right;
+      padding-right: 12px;
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--t-3);
+      flex-shrink: 0;
+    }
+    .tracklist-col-act {
+      width: 84px;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── TOPBAR ── -->
+  <div class="topbar">
+    <div class="btn-icon">←</div>
+    <span class="topbar-logo">Mercury</span>
+    <div class="topbar-crumb">
+      <span class="topbar-crumb-cur">Library</span>
+    </div>
+    <div class="topbar-right">
+      <div class="search-wrap">
+        <input class="search-input" type="text" placeholder="Search library…">
+      </div>
+      <div class="btn-icon" title="Chat">💬</div>
+      <div class="ai-pill"><div class="ai-dot"></div> AI</div>
+    </div>
+  </div>
+
+  <!-- ── SIDEBAR ── -->
+  <div class="sidebar">
+    <div class="sidebar-head">Mercury</div>
+
+    <div class="nav-group">
+      <div class="nav-lbl">Discovery</div>
+      <div class="nav-item"><span class="nav-ico">◈</span> Discover</div>
+      <div class="nav-item"><span class="nav-ico">◉</span> Artist</div>
+      <div class="nav-item"><span class="nav-ico">◫</span> Style Map</div>
+      <div class="nav-item"><span class="nav-ico">◎</span> Knowledge Base</div>
+      <div class="nav-item"><span class="nav-ico">◷</span> Time Machine</div>
+      <div class="nav-item"><span class="nav-ico">▣</span> Crate Dig</div>
+      <div class="nav-item"><span class="nav-ico">◌</span> Explore</div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-lbl">Community</div>
+      <div class="nav-item"><span class="nav-ico">◐</span> Scenes</div>
+      <div class="nav-item"><span class="nav-ico">↑</span> New &amp; Rising</div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-lbl">Your Library</div>
+      <div class="nav-item active"><span class="nav-ico">▤</span> Library</div>
+      <div class="nav-item"><span class="nav-ico">♥</span> Favorites</div>
+      <div class="nav-item"><span class="nav-ico">▨</span> Shelves</div>
+    </div>
+
+    <div class="nav-group" style="margin-top: auto; border-top: 1px solid var(--b-0);">
+      <div class="nav-item"><span class="nav-ico">◍</span> Profile</div>
+      <div class="nav-item"><span class="nav-ico">⚙</span> Settings</div>
+    </div>
+  </div>
+
+  <!-- ── MAIN ── -->
+  <div class="main">
+    <div class="library-layout">
+
+      <!-- Album List Pane -->
+      <div class="album-pane">
+        <div class="album-toolbar">
+          <button class="btn sm">+ Add Folder</button>
+          <div class="select-wrap" style="position:relative; display:flex; align-items:center;">
+            <select style="appearance:none; height:22px; padding:0 20px 0 7px; background:var(--bg-4); border:1px solid var(--b-2); border-radius:var(--r); font-size:10px; font-family:inherit; color:var(--t-2); outline:none;">
+              <option>A–Z</option>
+              <option>By Year</option>
+              <option>By Artist</option>
+            </select>
+            <span style="position:absolute; right:6px; font-size:9px; color:var(--t-3); pointer-events:none;">▾</span>
+          </div>
+          <div class="scan-badge">
+            <div class="scan-dot"></div>
+            <span>487 tracks</span>
+          </div>
+        </div>
+
+        <div class="album-list">
+
+          <div class="album-row">
+            <div class="album-thumb" style="background:#101418;">AMP</div>
+            <div class="album-row-info">
+              <div class="album-row-title">Amiina</div>
+              <div class="album-row-meta">Puzzle · 2007 · 10 tracks</div>
+            </div>
+          </div>
+
+          <div class="album-row">
+            <div class="album-thumb" style="background:#141014;">BST</div>
+            <div class="album-row-info">
+              <div class="album-row-title">Belong</div>
+              <div class="album-row-meta">October Language · 2006 · 8 tracks</div>
+            </div>
+          </div>
+
+          <div class="album-row">
+            <div class="album-thumb" style="background:#181818;">ERT</div>
+            <div class="album-row-info">
+              <div class="album-row-title">Earth</div>
+              <div class="album-row-meta">The Bees Made Honey… · 2008 · 8 tracks</div>
+            </div>
+          </div>
+
+          <div class="album-row">
+            <div class="album-thumb" style="background:#141814;">GY!BE</div>
+            <div class="album-row-info">
+              <div class="album-row-title">Godspeed You! Black Emperor</div>
+              <div class="album-row-meta">Lift Your Skinny Fists… · 2000 · 4 tracks</div>
+            </div>
+          </div>
+
+          <div class="album-row">
+            <div class="album-thumb" style="background:#101418;">GRP</div>
+            <div class="album-row-info">
+              <div class="album-row-title">Grouper</div>
+              <div class="album-row-meta">Dragging a Dead Deer · 2008 · 9 tracks</div>
+            </div>
+          </div>
+
+          <div class="album-row selected">
+            <div class="album-thumb" style="background:#1c1618;">SOTL</div>
+            <div class="album-row-info">
+              <div class="album-row-title">Stars of the Lid</div>
+              <div class="album-row-meta">And Their Refinement… · 2007 · 9 tracks</div>
+            </div>
+          </div>
+
+          <div class="album-row">
+            <div class="album-thumb" style="background:#1a1010;">THK</div>
+            <div class="album-row-info">
+              <div class="album-row-title">Tim Hecker</div>
+              <div class="album-row-meta">Ravedeath, 1972 · 2011 · 11 tracks</div>
+            </div>
+          </div>
+
+          <div class="album-row">
+            <div class="album-thumb" style="background:#0f1218;">WIL</div>
+            <div class="album-row-info">
+              <div class="album-row-title">William Basinski</div>
+              <div class="album-row-meta">Disintegration Loops · 2002 · 4 tracks</div>
+            </div>
+          </div>
+
+          <div class="album-row">
+            <div class="album-thumb" style="background:#121812;">YMO</div>
+            <div class="album-row-info">
+              <div class="album-row-title">Yellow Magic Orchestra</div>
+              <div class="album-row-meta">BGM · 1981 · 11 tracks</div>
+            </div>
+          </div>
+
+        </div>
+      </div><!-- /album-pane -->
+
+      <!-- Tracklist Pane -->
+      <div class="tracklist-pane">
+
+        <!-- Release header -->
+        <div class="release-header">
+          <div class="release-cover" style="background:#1c1618;">SOTL</div>
+          <div class="release-details">
+            <div class="release-title">And Their Refinement of the Decline</div>
+            <div class="release-artist">Stars of the Lid</div>
+            <div class="release-meta-row">
+              <span>2007</span>
+              <span>·</span>
+              <span>Double Album</span>
+              <span>·</span>
+              <span>9 tracks</span>
+              <span>·</span>
+              <span>2h 24m</span>
+              <span>·</span>
+              <span class="source-badge">Local</span>
+            </div>
+            <div class="release-actions">
+              <button class="btn accent">▶ Play Album</button>
+              <button class="btn">+ Queue All</button>
+              <button class="btn">↑ Share</button>
+              <button class="btn ghost" style="margin-left:auto;">View on MusicBrainz ↗</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Column headers -->
+        <div class="tracklist-head">
+          <div class="tracklist-col-num">#</div>
+          <div class="tracklist-col-title">Title</div>
+          <div class="tracklist-col-dur">Time</div>
+          <div class="tracklist-col-act"></div>
+        </div>
+
+        <!-- Tracks -->
+        <div class="tracklist-scroll">
+
+          <div class="track-row" style="padding: 0 20px;">
+            <div class="tr-num">1</div>
+            <div class="tr-title">Dungtitled (In A Major)</div>
+            <div class="tr-dur">17:42</div>
+            <div class="tr-actions">
+              <button class="btn sm">▶ Play</button>
+              <button class="btn sm">+ Queue</button>
+            </div>
+          </div>
+
+          <div class="track-row playing" style="padding: 0 20px;">
+            <div class="tr-num">▶</div>
+            <div class="tr-title">The Lonely People Are All Asleep</div>
+            <div class="tr-dur">14:22</div>
+            <div class="tr-actions">
+              <button class="btn sm">▶ Play</button>
+              <button class="btn sm">+ Queue</button>
+            </div>
+          </div>
+
+          <div class="track-row" style="padding: 0 20px;">
+            <div class="tr-num">3</div>
+            <div class="tr-title">Articulate Silences Pt. 1</div>
+            <div class="tr-dur">7:18</div>
+            <div class="tr-actions">
+              <button class="btn sm">▶ Play</button>
+              <button class="btn sm">+ Queue</button>
+            </div>
+          </div>
+
+          <div class="track-row" style="padding: 0 20px;">
+            <div class="tr-num">4</div>
+            <div class="tr-title">Articulate Silences Pt. 2</div>
+            <div class="tr-dur">6:44</div>
+            <div class="tr-actions">
+              <button class="btn sm">▶ Play</button>
+              <button class="btn sm">+ Queue</button>
+            </div>
+          </div>
+
+          <div class="track-row" style="padding: 0 20px;">
+            <div class="tr-num">5</div>
+            <div class="tr-title">A Meaningful Moment Through a Meaning (Less) Process</div>
+            <div class="tr-dur">18:09</div>
+            <div class="tr-actions">
+              <button class="btn sm">▶ Play</button>
+              <button class="btn sm">+ Queue</button>
+            </div>
+          </div>
+
+          <div class="track-row" style="padding: 0 20px;">
+            <div class="tr-num">6</div>
+            <div class="tr-title">The Ritual of the Blood Eagle</div>
+            <div class="tr-dur">14:58</div>
+            <div class="tr-actions">
+              <button class="btn sm">▶ Play</button>
+              <button class="btn sm">+ Queue</button>
+            </div>
+          </div>
+
+          <div class="track-row" style="padding: 0 20px;">
+            <div class="tr-num">7</div>
+            <div class="tr-title">Even If You're Never Awake</div>
+            <div class="tr-dur">16:22</div>
+            <div class="tr-actions">
+              <button class="btn sm">▶ Play</button>
+              <button class="btn sm">+ Queue</button>
+            </div>
+          </div>
+
+          <div class="track-row" style="padding: 0 20px;">
+            <div class="tr-num">8</div>
+            <div class="tr-title">December Hunting for Vegetarian Fuckface</div>
+            <div class="tr-dur">7:12</div>
+            <div class="tr-actions">
+              <button class="btn sm">▶ Play</button>
+              <button class="btn sm">+ Queue</button>
+            </div>
+          </div>
+
+          <div class="track-row" style="padding: 0 20px;">
+            <div class="tr-num">9</div>
+            <div class="tr-title">Requiem for Dying Mothers, Pt. 1</div>
+            <div class="tr-dur">8:17</div>
+            <div class="tr-actions">
+              <button class="btn sm">▶ Play</button>
+              <button class="btn sm">+ Queue</button>
+            </div>
+          </div>
+
+          <div class="track-row" style="padding: 0 20px;">
+            <div class="tr-num">10</div>
+            <div class="tr-title">Requiem for Dying Mothers, Pt. 2</div>
+            <div class="tr-dur">7:44</div>
+            <div class="tr-actions">
+              <button class="btn sm">▶ Play</button>
+              <button class="btn sm">+ Queue</button>
+            </div>
+          </div>
+
+          <div class="track-row" style="padding: 0 20px;">
+            <div class="tr-num">11</div>
+            <div class="tr-title">Les Étoiles de Valériane</div>
+            <div class="tr-dur">5:51</div>
+            <div class="tr-actions">
+              <button class="btn sm">▶ Play</button>
+              <button class="btn sm">+ Queue</button>
+            </div>
+          </div>
+
+          <div class="track-row" style="padding: 0 20px;">
+            <div class="tr-num">12</div>
+            <div class="tr-title">Bells of the Higherline</div>
+            <div class="tr-dur">9:33</div>
+            <div class="tr-actions">
+              <button class="btn sm">▶ Play</button>
+              <button class="btn sm">+ Queue</button>
+            </div>
+          </div>
+
+        </div>
+      </div><!-- /tracklist-pane -->
+
+    </div><!-- /library-layout -->
+  </div><!-- /main -->
+
+  <!-- ── PLAYER BAR ── -->
+  <div class="player">
+    <div class="p-art" style="background:#1c1618;color:#3a2828;">SOTL</div>
+    <div class="p-info">
+      <div class="p-track">The Lonely People Are All Asleep</div>
+      <div class="p-artist">Stars of the Lid · And Their Refinement of the Decline</div>
+    </div>
+    <div class="p-controls">
+      <div class="p-btn">⏮</div>
+      <div class="p-btn play">▶</div>
+      <div class="p-btn">⏭</div>
+    </div>
+    <div class="p-prog">
+      <span class="p-time">3:14</span>
+      <div class="p-bar">
+        <div class="p-fill" style="width:28%"></div>
+        <div class="p-thumb" style="left:28%"></div>
+      </div>
+      <span class="p-time r">14:22</span>
+    </div>
+    <div class="p-right">
+      <div class="p-btn">≡</div>
+      <div class="p-btn">🔊</div>
+      <div class="vol-bar"><div class="vol-fill"></div></div>
+    </div>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Mercury — Knowledge Base: Post-Rock</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* ── Genre-page specific ── */
+    .genre-header {
+      padding: 18px 20px 16px;
+      border-bottom: 1px solid var(--b-1);
+      background: var(--bg-2);
+    }
+    .genre-type-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      height: 18px;
+      padding: 0 7px;
+      background: var(--bg-4);
+      border: 1px solid var(--b-2);
+      border-radius: var(--r);
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--t-3);
+    }
+    .genre-type-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .genre-type-dot.genre { background: #666; }
+    .genre-type-dot.scene { background: #c4824a; }
+    .genre-type-dot.city  { background: #4a8fa0; }
+
+    .genre-name {
+      font-size: 28px;
+      font-weight: 300;
+      letter-spacing: 0.02em;
+      color: var(--t-1);
+      margin-top: 6px;
+    }
+    .genre-meta {
+      font-size: 11px;
+      color: var(--t-3);
+      margin-top: 5px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .meta-sep { color: var(--b-3); }
+
+    .wiki-panel {
+      background: var(--bg-3);
+      border: 1px solid var(--b-2);
+      border-radius: var(--r);
+      overflow: hidden;
+    }
+    .wiki-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--b-1);
+      background: var(--bg-4);
+    }
+    .wiki-body {
+      padding: 14px;
+      font-size: 12px;
+      line-height: 1.8;
+      color: var(--t-2);
+    }
+    .wiki-body p + p { margin-top: 10px; }
+
+    .key-artists-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 6px;
+    }
+    .key-artist-card {
+      background: var(--bg-3);
+      border: 1px solid var(--b-2);
+      border-radius: var(--r);
+      padding: 9px 10px;
+      cursor: pointer;
+      transition: border-color 0.1s, background 0.1s;
+    }
+    .key-artist-card:hover { border-color: var(--b-3); background: #1d1d1d; }
+    .ka-name { font-size: 11px; font-weight: 500; }
+    .ka-meta { font-size: 10px; color: var(--t-3); margin-top: 1px; }
+
+    .related-genres {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+    .genre-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      height: 24px;
+      padding: 0 9px;
+      background: var(--bg-3);
+      border: 1px solid var(--b-2);
+      border-radius: var(--r);
+      font-size: 11px;
+      color: var(--t-2);
+      cursor: pointer;
+      transition: border-color 0.1s, color 0.1s;
+    }
+    .genre-chip:hover { border-color: var(--b-3); color: var(--t-1); }
+
+    .map-placeholder {
+      background: var(--bg-3);
+      border: 1px solid var(--b-2);
+      border-radius: var(--r);
+      height: 180px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      color: var(--t-3);
+    }
+    .map-placeholder-icon {
+      font-size: 28px;
+      opacity: 0.3;
+    }
+    .map-placeholder-lbl {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      opacity: 0.5;
+    }
+
+    .legend {
+      display: flex;
+      gap: 12px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 9px;
+      color: var(--t-3);
+    }
+    .legend-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── TOPBAR ── -->
+  <div class="topbar">
+    <div class="btn-icon">←</div>
+    <span class="topbar-logo">Mercury</span>
+    <div class="topbar-crumb">
+      <span>Knowledge Base</span>
+      <span class="topbar-crumb-sep">/</span>
+      <span>Genres</span>
+      <span class="topbar-crumb-sep">/</span>
+      <span class="topbar-crumb-cur">Post-Rock</span>
+    </div>
+    <div class="topbar-right">
+      <div class="search-wrap">
+        <input class="search-input" type="text" placeholder="Search artists, tags…">
+      </div>
+      <div class="btn-icon" title="Chat">💬</div>
+      <div class="ai-pill"><div class="ai-dot"></div> AI</div>
+    </div>
+  </div>
+
+  <!-- ── SIDEBAR ── -->
+  <div class="sidebar">
+    <div class="sidebar-head">Mercury</div>
+
+    <div class="nav-group">
+      <div class="nav-lbl">Discovery</div>
+      <div class="nav-item"><span class="nav-ico">◈</span> Discover</div>
+      <div class="nav-item"><span class="nav-ico">◉</span> Artist</div>
+      <div class="nav-item"><span class="nav-ico">◫</span> Style Map</div>
+      <div class="nav-item active"><span class="nav-ico">◎</span> Knowledge Base</div>
+      <div class="nav-item"><span class="nav-ico">◷</span> Time Machine</div>
+      <div class="nav-item"><span class="nav-ico">▣</span> Crate Dig</div>
+      <div class="nav-item"><span class="nav-ico">◌</span> Explore</div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-lbl">Community</div>
+      <div class="nav-item"><span class="nav-ico">◐</span> Scenes</div>
+      <div class="nav-item"><span class="nav-ico">↑</span> New &amp; Rising</div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-lbl">Your Library</div>
+      <div class="nav-item"><span class="nav-ico">▤</span> Library</div>
+      <div class="nav-item"><span class="nav-ico">♥</span> Favorites</div>
+      <div class="nav-item"><span class="nav-ico">▨</span> Shelves</div>
+    </div>
+
+    <div class="nav-group" style="margin-top: auto; border-top: 1px solid var(--b-0);">
+      <div class="nav-item"><span class="nav-ico">◍</span> Profile</div>
+      <div class="nav-item"><span class="nav-ico">⚙</span> Settings</div>
+    </div>
+  </div>
+
+  <!-- ── MAIN ── -->
+  <div class="main">
+
+    <!-- Genre Header -->
+    <div class="genre-header">
+      <div class="genre-type-badge">
+        <div class="genre-type-dot genre"></div>
+        Genre
+      </div>
+      <h1 class="genre-name">Post-Rock</h1>
+      <div class="genre-meta">
+        <span>Origin: United Kingdom</span>
+        <span class="meta-sep">·</span>
+        <span>Coined 1994 (Simon Reynolds)</span>
+        <span class="meta-sep">·</span>
+        <span>Peak: 1990s–2000s</span>
+        <span class="meta-sep">·</span>
+        <span>4,812 artists in Mercury</span>
+      </div>
+      <div class="btn-row" style="margin-top:10px;">
+        <button class="btn sm">◈ Browse Artists</button>
+        <button class="btn sm">◌ Explore</button>
+        <button class="btn sm">◷ Timeline</button>
+        <button class="btn ghost sm" style="margin-left:auto;">Edit on Wikipedia ↗</button>
+      </div>
+    </div>
+
+    <!-- Wikipedia Description -->
+    <div class="sec">
+      <div class="sec-bar">
+        <span class="sec-lbl">About</span>
+        <div style="display:flex; gap:5px; align-items:center;">
+          <span class="source-badge">Wikipedia</span>
+        </div>
+      </div>
+      <div class="sec-body">
+        <div class="wiki-panel">
+          <div class="wiki-head">
+            <span style="font-size:10px; font-weight:600; color:var(--t-3);">Wikipedia — Post-rock</span>
+            <div style="display:flex; gap:4px;">
+              <button class="btn sm ghost">Read full article ↗</button>
+            </div>
+          </div>
+          <div class="wiki-body">
+            <p>Post-rock is a type of experimental rock music that uses traditional rock instruments to achieve non-traditional sonic results. The term was coined by music critic Simon Reynolds in a 1994 article for Mojo magazine, in which he used it to describe Bark Psychosis's album <em>Hex</em>.</p>
+            <p>Post-rock bands typically employ electric guitar, bass, and drums in ways that diverge from traditional rock song structures — avoiding verse-chorus forms in favour of long, instrumental compositions that evolve gradually through texture, dynamics, and atmosphere. Lyrics are absent or minimal. The influence of ambient, jazz, electronic, and classical music is pronounced.</p>
+            <p>Key early acts include Talk Talk, Slint, Bark Psychosis, and Tortoise. The genre flourished in the late 1990s and early 2000s with groups like Godspeed You! Black Emperor, Explosions in the Sky, and Mogwai.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Key Artists -->
+    <div class="sec">
+      <div class="sec-bar">
+        <span class="sec-lbl">Key Artists</span>
+        <button class="btn sm">Browse all 4,812 →</button>
+      </div>
+      <div class="sec-body">
+        <div class="key-artists-grid">
+          <div class="key-artist-card">
+            <div class="ka-name">Godspeed You! Black Emperor</div>
+            <div class="ka-meta">Canada · 1994</div>
+          </div>
+          <div class="key-artist-card">
+            <div class="ka-name">Mogwai</div>
+            <div class="ka-meta">United Kingdom · 1995</div>
+          </div>
+          <div class="key-artist-card">
+            <div class="ka-name">Explosions in the Sky</div>
+            <div class="ka-meta">United States · 1999</div>
+          </div>
+          <div class="key-artist-card">
+            <div class="ka-name">Tortoise</div>
+            <div class="ka-meta">United States · 1990</div>
+          </div>
+          <div class="key-artist-card">
+            <div class="ka-name">Slint</div>
+            <div class="ka-meta">United States · 1986</div>
+          </div>
+          <div class="key-artist-card">
+            <div class="ka-name">Bark Psychosis</div>
+            <div class="ka-meta">United Kingdom · 1986</div>
+          </div>
+          <div class="key-artist-card">
+            <div class="ka-name">Sigur Rós</div>
+            <div class="ka-meta">Iceland · 1994</div>
+          </div>
+          <div class="key-artist-card">
+            <div class="ka-name">Do Make Say Think</div>
+            <div class="ka-meta">Canada · 1995</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Related Genres -->
+    <div class="sec">
+      <div class="sec-bar">
+        <span class="sec-lbl">Related</span>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#666;"></div> Genre</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#c4824a;"></div> Scene</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#4a8fa0;"></div> City</div>
+        </div>
+      </div>
+      <div class="sec-body">
+        <div class="related-genres">
+          <div class="genre-chip"><div class="genre-type-dot genre"></div> Ambient</div>
+          <div class="genre-chip"><div class="genre-type-dot genre"></div> Drone</div>
+          <div class="genre-chip"><div class="genre-type-dot genre"></div> Slowcore</div>
+          <div class="genre-chip"><div class="genre-type-dot genre"></div> Math Rock</div>
+          <div class="genre-chip"><div class="genre-type-dot genre"></div> Shoegaze</div>
+          <div class="genre-chip"><div class="genre-type-dot genre"></div> Krautrock</div>
+          <div class="genre-chip"><div class="genre-type-dot genre"></div> Experimental Rock</div>
+          <div class="genre-chip"><div class="genre-type-dot scene"></div> Chicago Underground</div>
+          <div class="genre-chip"><div class="genre-type-dot scene"></div> Constellation Records</div>
+          <div class="genre-chip"><div class="genre-type-dot scene"></div> Glasgow Scene</div>
+          <div class="genre-chip"><div class="genre-type-dot city"></div> Glasgow</div>
+          <div class="genre-chip"><div class="genre-type-dot city"></div> Montreal</div>
+          <div class="genre-chip"><div class="genre-type-dot city"></div> Chicago</div>
+          <div class="genre-chip"><div class="genre-type-dot city"></div> Austin, TX</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Genre Map -->
+    <div class="sec">
+      <div class="sec-bar">
+        <span class="sec-lbl">Genre Map</span>
+        <span style="font-size:10px; color:var(--t-3);">Coming soon</span>
+      </div>
+      <div class="sec-body">
+        <div class="map-placeholder">
+          <div class="map-placeholder-icon">◫</div>
+          <div class="map-placeholder-lbl">Visual genre map</div>
+          <div style="font-size:10px; color:var(--t-3); opacity:0.5;">See how post-rock connects to other genres</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+
+  <!-- ── PLAYER BAR ── -->
+  <div class="player">
+    <div class="p-art" style="background:#141814;color:#2a302a;">GY!B</div>
+    <div class="p-info">
+      <div class="p-track">The Dead Flag Blues</div>
+      <div class="p-artist">Godspeed You! Black Emperor · F♯ A♯ ∞</div>
+    </div>
+    <div class="p-controls">
+      <div class="p-btn">⏮</div>
+      <div class="p-btn play">▶</div>
+      <div class="p-btn">⏭</div>
+    </div>
+    <div class="p-prog">
+      <span class="p-time">4:07</span>
+      <div class="p-bar">
+        <div class="p-fill" style="width:18%"></div>
+        <div class="p-thumb" style="left:18%"></div>
+      </div>
+      <span class="p-time r">22:58</span>
+    </div>
+    <div class="p-right">
+      <div class="p-btn">≡</div>
+      <div class="p-btn">🔊</div>
+      <div class="vol-bar"><div class="vol-fill"></div></div>
+    </div>
+  </div>
+
+</body>
+</html>

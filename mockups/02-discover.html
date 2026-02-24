@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Mercury — Discover</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* ── Discover-page specific ── */
+    .discover-layout {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 196px 1fr;
+      grid-template-rows: 1fr;
+      min-height: 0;
+      overflow: hidden;
+    }
+    .filter-panel {
+      background: var(--bg-1);
+      border-right: 1px solid var(--b-1);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+    .filter-head {
+      padding: 10px 12px 8px;
+      border-bottom: 1px solid var(--b-1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .filter-head-lbl {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--t-3);
+    }
+    .filter-section {
+      border-bottom: 1px solid var(--b-0);
+      padding: 8px 0;
+    }
+    .filter-section-lbl {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--t-3);
+      padding: 3px 12px 6px;
+    }
+    .filter-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 3px;
+      padding: 0 10px;
+    }
+    .filter-country {
+      padding: 0 10px;
+    }
+    .results-pane {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .results-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-bottom: 1px solid var(--b-1);
+      background: var(--bg-2);
+      flex-shrink: 0;
+    }
+    .results-count {
+      font-size: 10px;
+      color: var(--t-3);
+      flex-shrink: 0;
+    }
+    .results-count strong { color: var(--t-2); font-weight: 600; }
+    .select-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .select-wrap select {
+      appearance: none;
+      height: 24px;
+      padding: 0 22px 0 8px;
+      background: var(--bg-4);
+      border: 1px solid var(--b-2);
+      border-radius: var(--r);
+      font-size: 10px;
+      font-family: inherit;
+      color: var(--t-2);
+      cursor: pointer;
+      outline: none;
+    }
+    .select-wrap::after {
+      content: '▾';
+      position: absolute;
+      right: 7px;
+      font-size: 9px;
+      color: var(--t-3);
+      pointer-events: none;
+    }
+    .view-toggle {
+      display: flex;
+      border: 1px solid var(--b-2);
+      border-radius: var(--r);
+      overflow: hidden;
+    }
+    .view-btn {
+      width: 26px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: var(--t-3);
+      cursor: pointer;
+      background: var(--bg-4);
+      border: none;
+      border-right: 1px solid var(--b-2);
+      transition: background 0.1s, color 0.1s;
+    }
+    .view-btn:last-child { border-right: none; }
+    .view-btn.active { background: var(--bg-6); color: var(--t-1); }
+    .view-btn:hover:not(.active) { background: var(--bg-5); color: var(--t-2); }
+    .results-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px 16px;
+    }
+    .artist-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 8px;
+    }
+    .active-filters {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      flex: 1;
+      flex-wrap: wrap;
+    }
+    .active-filter-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      height: 20px;
+      padding: 0 7px;
+      background: var(--acc-bg);
+      border: 1px solid var(--b-acc);
+      border-radius: var(--r);
+      font-size: 10px;
+      color: var(--acc);
+      cursor: pointer;
+    }
+    .active-filter-chip .x {
+      font-size: 9px;
+      opacity: 0.6;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── TOPBAR ── -->
+  <div class="topbar">
+    <div class="btn-icon">←</div>
+    <span class="topbar-logo">Mercury</span>
+    <div class="topbar-crumb">
+      <span class="topbar-crumb-cur">Discover</span>
+    </div>
+    <div class="topbar-right">
+      <div class="search-wrap">
+        <input class="search-input" type="text" placeholder="Search artists, tags…">
+      </div>
+      <div class="btn-icon" title="Chat">💬</div>
+      <div class="ai-pill"><div class="ai-dot"></div> AI</div>
+    </div>
+  </div>
+
+  <!-- ── SIDEBAR ── -->
+  <div class="sidebar">
+    <div class="sidebar-head">Mercury</div>
+
+    <div class="nav-group">
+      <div class="nav-lbl">Discovery</div>
+      <div class="nav-item active"><span class="nav-ico">◈</span> Discover</div>
+      <div class="nav-item"><span class="nav-ico">◉</span> Artist</div>
+      <div class="nav-item"><span class="nav-ico">◫</span> Style Map</div>
+      <div class="nav-item"><span class="nav-ico">◎</span> Knowledge Base</div>
+      <div class="nav-item"><span class="nav-ico">◷</span> Time Machine</div>
+      <div class="nav-item"><span class="nav-ico">▣</span> Crate Dig</div>
+      <div class="nav-item"><span class="nav-ico">◌</span> Explore</div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-lbl">Community</div>
+      <div class="nav-item"><span class="nav-ico">◐</span> Scenes</div>
+      <div class="nav-item"><span class="nav-ico">↑</span> New &amp; Rising</div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-lbl">Your Library</div>
+      <div class="nav-item"><span class="nav-ico">▤</span> Library</div>
+      <div class="nav-item"><span class="nav-ico">♥</span> Favorites</div>
+      <div class="nav-item"><span class="nav-ico">▨</span> Shelves</div>
+    </div>
+
+    <div class="nav-group" style="margin-top: auto; border-top: 1px solid var(--b-0);">
+      <div class="nav-item"><span class="nav-ico">◍</span> Profile</div>
+      <div class="nav-item"><span class="nav-ico">⚙</span> Settings</div>
+    </div>
+  </div>
+
+  <!-- ── MAIN ── -->
+  <div class="main">
+    <div class="discover-layout">
+
+      <!-- Filter Panel -->
+      <div class="filter-panel">
+        <div class="filter-head">
+          <span class="filter-head-lbl">Filters</span>
+          <button class="btn ghost sm">Clear</button>
+        </div>
+
+        <div class="filter-section">
+          <div class="filter-section-lbl">Genre / Style</div>
+          <div class="filter-tags">
+            <div class="tag active">ambient</div>
+            <div class="tag active">drone</div>
+            <div class="tag">post-rock</div>
+            <div class="tag">shoegaze</div>
+            <div class="tag">experimental</div>
+            <div class="tag">noise</div>
+            <div class="tag">folk</div>
+            <div class="tag">electronic</div>
+            <div class="tag">jazz</div>
+            <div class="tag">neoclassical</div>
+            <div class="tag">slowcore</div>
+            <div class="tag">krautrock</div>
+            <div class="tag">minimalist</div>
+            <div class="tag">industrial</div>
+            <div class="tag">post-punk</div>
+            <div class="tag">math rock</div>
+            <div class="tag">emo</div>
+            <div class="tag">doom</div>
+          </div>
+        </div>
+
+        <div class="filter-section">
+          <div class="filter-section-lbl">Country</div>
+          <div class="filter-country">
+            <div class="filter-tags" style="gap:3px;">
+              <div class="tag">US</div>
+              <div class="tag">GB</div>
+              <div class="tag">DE</div>
+              <div class="tag">JP</div>
+              <div class="tag">NO</div>
+              <div class="tag">IS</div>
+              <div class="tag">AU</div>
+              <div class="tag">CA</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="filter-section">
+          <div class="filter-section-lbl">Uniqueness</div>
+          <div style="padding: 0 12px; display:flex; flex-direction:column; gap:4px;">
+            <div style="display:flex; align-items:center; gap:6px;">
+              <div class="tag active">Rare</div>
+              <div class="tag">Uncommon</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <div class="tag">Common</div>
+              <div class="tag">Popular</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="filter-section">
+          <div class="filter-section-lbl">Era</div>
+          <div class="filter-tags">
+            <div class="tag">1970s</div>
+            <div class="tag">1980s</div>
+            <div class="tag active">1990s</div>
+            <div class="tag">2000s</div>
+            <div class="tag">2010s</div>
+            <div class="tag">2020s</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Results Pane -->
+      <div class="results-pane">
+
+        <!-- Toolbar -->
+        <div class="results-toolbar">
+          <span class="results-count"><strong>312</strong> artists</span>
+
+          <div class="active-filters">
+            <div class="active-filter-chip">ambient <span class="x">×</span></div>
+            <div class="active-filter-chip">drone <span class="x">×</span></div>
+            <div class="active-filter-chip">Rare <span class="x">×</span></div>
+            <div class="active-filter-chip">1990s <span class="x">×</span></div>
+          </div>
+
+          <div style="margin-left:auto; display:flex; gap:6px; align-items:center;">
+            <div class="select-wrap">
+              <select>
+                <option>Sort: Uniqueness</option>
+                <option>Sort: A–Z</option>
+                <option>Sort: Recently Added</option>
+                <option>Sort: Tag Count</option>
+              </select>
+            </div>
+            <div class="view-toggle">
+              <div class="view-btn active">▦</div>
+              <div class="view-btn">≡</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Artist Grid -->
+        <div class="results-scroll">
+          <div class="artist-grid">
+
+            <div class="artist-card">
+              <div class="a-art" style="background:#121c20;">SOTL</div>
+              <div class="a-info">
+                <div class="a-name">Stars of the Lid</div>
+                <div class="a-meta">United States · 1993</div>
+                <div class="a-tags">
+                  <div class="tag">ambient</div>
+                  <div class="tag">drone</div>
+                  <div class="tag">orchestral</div>
+                </div>
+                <div class="a-score">
+                  <span>94</span>
+                  <div class="score-bar"><div class="score-fill" style="width:94%"></div></div>
+                  <div class="unique-badge" style="margin-left:0; font-size:9px; padding:1px 5px;">Rare</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="artist-card">
+              <div class="a-art" style="background:#1a1210;">BVN</div>
+              <div class="a-info">
+                <div class="a-name">Belong</div>
+                <div class="a-meta">United States · 2003</div>
+                <div class="a-tags">
+                  <div class="tag">ambient</div>
+                  <div class="tag">drone</div>
+                  <div class="tag">shoegaze</div>
+                </div>
+                <div class="a-score">
+                  <span>88</span>
+                  <div class="score-bar"><div class="score-fill" style="width:88%"></div></div>
+                  <div class="unique-badge" style="margin-left:0; font-size:9px; padding:1px 5px;">Rare</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="artist-card">
+              <div class="a-art" style="background:#101418;">KAL</div>
+              <div class="a-info">
+                <div class="a-name">Grouper</div>
+                <div class="a-meta">United States · 2005</div>
+                <div class="a-tags">
+                  <div class="tag">ambient</div>
+                  <div class="tag">folk</div>
+                  <div class="tag">drone</div>
+                </div>
+                <div class="a-score">
+                  <span>91</span>
+                  <div class="score-bar"><div class="score-fill" style="width:91%"></div></div>
+                  <div class="unique-badge" style="margin-left:0; font-size:9px; padding:1px 5px;">Rare</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="artist-card">
+              <div class="a-art" style="background:#141814;">GY!BE</div>
+              <div class="a-info">
+                <div class="a-name">Godspeed You! Black Emperor</div>
+                <div class="a-meta">Canada · 1994</div>
+                <div class="a-tags">
+                  <div class="tag">post-rock</div>
+                  <div class="tag">drone</div>
+                  <div class="tag">experimental</div>
+                </div>
+                <div class="a-score">
+                  <span>82</span>
+                  <div class="score-bar"><div class="score-fill" style="width:82%"></div></div>
+                  <div class="unique-badge" style="margin-left:0; font-size:9px; padding:1px 5px;">Rare</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="artist-card">
+              <div class="a-art" style="background:#1a1020;">SUN</div>
+              <div class="a-info">
+                <div class="a-name">Sunno)))</div>
+                <div class="a-meta">United States · 1998</div>
+                <div class="a-tags">
+                  <div class="tag">drone</div>
+                  <div class="tag">doom</div>
+                  <div class="tag">experimental</div>
+                </div>
+                <div class="a-score">
+                  <span>79</span>
+                  <div class="score-bar"><div class="score-fill" style="width:79%"></div></div>
+                  <div class="unique-badge" style="margin-left:0; font-size:9px; padding:1px 5px;">Uncommon</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="artist-card">
+              <div class="a-art" style="background:#181818;">EAP</div>
+              <div class="a-info">
+                <div class="a-name">Earth</div>
+                <div class="a-meta">United States · 1990</div>
+                <div class="a-tags">
+                  <div class="tag">drone</div>
+                  <div class="tag">ambient</div>
+                  <div class="tag">doom</div>
+                </div>
+                <div class="a-score">
+                  <span>76</span>
+                  <div class="score-bar"><div class="score-fill" style="width:76%"></div></div>
+                  <div class="unique-badge" style="margin-left:0; font-size:9px; padding:1px 5px;">Uncommon</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="artist-card">
+              <div class="a-art" style="background:#101a18;">TAL</div>
+              <div class="a-info">
+                <div class="a-name">Loscil</div>
+                <div class="a-meta">Canada · 2001</div>
+                <div class="a-tags">
+                  <div class="tag">ambient</div>
+                  <div class="tag">electronic</div>
+                  <div class="tag">drone</div>
+                </div>
+                <div class="a-score">
+                  <span>87</span>
+                  <div class="score-bar"><div class="score-fill" style="width:87%"></div></div>
+                  <div class="unique-badge" style="margin-left:0; font-size:9px; padding:1px 5px;">Rare</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="artist-card">
+              <div class="a-art" style="background:#1c1410;">TIN</div>
+              <div class="a-info">
+                <div class="a-name">Tim Hecker</div>
+                <div class="a-meta">Canada · 2001</div>
+                <div class="a-tags">
+                  <div class="tag">ambient</div>
+                  <div class="tag">noise</div>
+                  <div class="tag">electronic</div>
+                </div>
+                <div class="a-score">
+                  <span>85</span>
+                  <div class="score-bar"><div class="score-fill" style="width:85%"></div></div>
+                  <div class="unique-badge" style="margin-left:0; font-size:9px; padding:1px 5px;">Rare</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div><!-- /results-pane -->
+    </div><!-- /discover-layout -->
+  </div><!-- /main -->
+
+  <!-- ── PLAYER BAR ── -->
+  <div class="player">
+    <div class="p-art" style="background:#121c20;color:#1e3040;">SOTL</div>
+    <div class="p-info">
+      <div class="p-track">The Lonely People Are All Asleep</div>
+      <div class="p-artist">Stars of the Lid · And Their Refinement of the Decline</div>
+    </div>
+    <div class="p-controls">
+      <div class="p-btn">⏮</div>
+      <div class="p-btn play">▶</div>
+      <div class="p-btn">⏭</div>
+    </div>
+    <div class="p-prog">
+      <span class="p-time">3:14</span>
+      <div class="p-bar">
+        <div class="p-fill" style="width:28%"></div>
+        <div class="p-thumb" style="left:28%"></div>
+      </div>
+      <span class="p-time r">14:22</span>
+    </div>
+    <div class="p-right">
+      <div class="p-btn">≡</div>
+      <div class="p-btn">🔊</div>
+      <div class="vol-bar"><div class="vol-fill"></div></div>
+    </div>
+  </div>
+
+</body>
+</html>

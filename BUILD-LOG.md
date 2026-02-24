@@ -5877,3 +5877,67 @@ Full document at `UX-AUDIT.md`. This becomes source of truth for v1.4 planning.
 
 > **Commit 9676a56** (2026-02-24 23:22) — wip: auto-save
 > Files changed: 1
+
+> **Commit 706d3f4** (2026-02-24 23:37) — wip: auto-save
+
+---
+
+## Entry 028 — 2026-02-24 — UI Redesign Mockups
+
+### Context
+
+After the UX audit, the scope of the interface problem became clear: Mercury's current UI reads as "black with white text links." Every interactive element is just text. There are no visual affordances, no sense of panel hierarchy, no spatial structure. It works but it doesn't *feel* like software.
+
+The direction: redesign toward a structured desktop application aesthetic. Reference was Audirvana Studio — that level of visual clarity: defined panels, bordered controls, layered depth.
+
+### Design System Decisions
+
+Created `mockups/styles.css` as a shared design system for all mockup pages:
+
+**Color model: Layered dark greys**
+- bg-0 (`#080808`) — window base/chrome
+- bg-1 (`#0f0f0f`) — sidebar, topbar, player bar
+- bg-2 (`#141414`) — main content area
+- bg-3 (`#1a1a1a`) — cards, elevated panels
+- bg-4 (`#212121`) — controls, inputs at rest
+- bg-5 (`#292929`) — hover state
+- bg-6 (`#323232`) — active/pressed
+
+**Key constraints:**
+- `border-radius: 2px` — square everything, no pills
+- Every interactive element has a visible background + 1px border
+- 1px borders separate every panel (`--b-1: #202020`)
+- Single accent color: warm amber (`#c4a55a`) — used sparingly
+
+<!-- decision: Square UI direction, amber accent, layered grey depth model -->
+Rejected pill-shaped buttons and the current ghost-link approach. Every button must have a visible background. The visual hierarchy should be immediately readable without hover state — depth from color layers, not shadows. Amber reserved for active states, playing items, and navigation selection indicator.
+<!-- /decision -->
+
+### Mockups Built
+
+All 4 pages complete in `mockups/`:
+
+**01-artist.html — Stars of the Lid**
+The most complex page. Establishes the full shell: topbar with crumb trail + search, sidebar with nav groups, scrollable main area, persistent player bar. Artist header has name + uniqueness badge, meta row, action buttons, tag chips, Listen On bar, tab navigation. Body sections: About (Wikipedia), Members (MusicBrainz), Discography grid (album art cards with hover play), Links (grouped by category), Discovered By.
+
+**02-discover.html — Tag filter + artist grid**
+Split layout within main: narrow filter panel (196px, bg-1) + results pane (flex). Filter panel has Genre/Style tags (many, some active with amber), Country chips, Uniqueness tier, Era filter. Results toolbar shows active filter chips (dismissable), sort dropdown, grid/list toggle. Artist cards show cover art placeholder, name, country, tag chips, uniqueness score bar.
+
+**03-library.html — Two-pane local library**
+Album list (left, 240px): toolbar with Add Folder + sort + scan status badge, scrollable album rows with thumbnail + name + year + track count, selected state (amber left border). Tracklist (right): release header with cover art + full metadata + action buttons ("Play Album", "+ Queue All"), column-headed track rows with # / title / duration / [▶ Play][+ Queue] actions (visible on hover). Playing track highlighted in amber.
+
+**04-genre.html — Knowledge Base: Post-Rock**
+Single-column scrollable layout. Genre type badge (color-coded dot: grey=genre, orange=scene, teal=city) + large light-weight name heading + meta row. Wikipedia panel with internal header + "Read full article ↗". Key Artists grid (8 cards, click through to artist pages). Related Genres chips with type dots per category. Genre Map placeholder panel with icon + "coming soon" label.
+
+### What These Establish
+
+The mockups are the contract for the actual implementation sprint. Key UI patterns now defined in CSS:
+- `.btn`, `.btn.sm`, `.btn.accent`, `.btn.ghost`, `.btn.active`
+- `.tag`, `.tag.active`
+- `.nav-item`, `.nav-item.active` (left border indicator)
+- `.sec`, `.sec-bar`, `.sec-body` (section scaffolding)
+- `.artist-card`, `.release-card`, `.track-row`, `.track-row.playing`
+- `.source-badge` (Wikipedia / MusicBrainz attribution chips)
+
+Next step: review mockups in browser, make any adjustments, then map each visual pattern to the corresponding Svelte component for implementation.
+> Files changed: 4
