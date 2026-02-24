@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-02-24 after v1.3 milestone started)
 ## Current Position
 
 Phase: 18 of 21 (AI Auto-News)
-Plan: 02 of TBD complete
-Status: Phase 18 IN PROGRESS — Plan 02 done (AI_PROVIDERS, extended AiState, artistSummaryFromReleases prompt)
-Last activity: 2026-02-24 — Phase 18 Plan 02 complete (TypeScript AI infrastructure layer)
+Plan: 04 of TBD complete
+Status: Phase 18 IN PROGRESS — Plan 04 done (AiSettings UI with provider selector and auto-generate toggle)
+Last activity: 2026-02-24 — Phase 18 Plan 04 complete (AiSettings.svelte UI extension)
 
 Progress: [██░░░░░░░░] 33% (v1.3 — 2/6 phases partially complete)
 
@@ -29,7 +29,7 @@ Progress: [██░░░░░░░░] 33% (v1.3 — 2/6 phases partially co
 |-------|-------|--------|
 | 16. Sustainability Links | 2 | Complete |
 | 17. Artist Stats Dashboard | 2 | Complete |
-| 18. AI Auto-News | TBD | In progress (Plans 01-02 complete) |
+| 18. AI Auto-News | TBD | In progress (Plans 01-03 complete) |
 | 19. Static Site Generator | TBD | Not started |
 | 20. Listening Rooms | TBD | Not started |
 | 21. ActivityPub Outbound | TBD | Not started |
@@ -60,6 +60,10 @@ Progress: [██░░░░░░░░] 33% (v1.3 — 2/6 phases partially co
 - Anthropic routed via aimlapi (not direct) — RemoteAiProvider uses Bearer auth only; Anthropic direct requires x-api-key header which is not supported
 - artistSummaryFromReleases named distinctly from PROMPTS.artistSummary — prevents confusion between release-data and tag-based prompt paths
 - AI_PROVIDERS affiliate URL hardcoded as constant (not env var) — Tauri desktop has no env var pattern; badge visible before click (full transparency)
+- ArtistSummary section hidden via {#if summaryText || isGenerating} — zero DOM footprint until content exists
+- Background stale-refresh is fire-and-forget (not awaited) — showing old text immediately is better UX than blocking
+- Silent fail in ArtistSummary means empty catch blocks — no error UI per spec, reverts to last cached state
+- [Phase 18-ai-auto-news]: openUrl via @tauri-apps/plugin-shell not @tauri-apps/plugin-opener — project already uses plugin-shell for Spotify auth; no new packages needed
 
 ### Pending Todos
 None
@@ -72,6 +76,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-24
-Stopped at: Completed 18-02-PLAN.md — AI_PROVIDERS config, extended AiState, artistSummaryFromReleases prompt function
+Stopped at: Completed 18-03-PLAN.md — ArtistSummary.svelte component with full state machine
 Resume file: None
-Next: Phase 18 Plan 03 — ArtistSummary component
+Next: Phase 18 Plan 04 — AiSettings UI (provider selector + auto-generate toggle — partially pre-built in wip commit)

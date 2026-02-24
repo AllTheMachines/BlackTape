@@ -5144,3 +5144,37 @@ All 92 tests passing. Plan 03 (ArtistSummary component) and Plan 04 (AI Settings
 
 > **Commit 8f5cc35** (2026-02-24 13:23) — docs(18-01): complete AI summary cache backend plan
 > Files changed: 1
+
+> **Commit a745071** (2026-02-24 13:24) — wip: auto-save
+> Files changed: 1
+
+## Entry — 2026-02-24 — Phase 18 Plan 03: ArtistSummary Component
+
+Built `ArtistSummary.svelte` — the visual centrepiece of Phase 18. Self-contained component that handles the full AI summary lifecycle:
+
+- **Hidden state:** Section not rendered until `summaryText` is non-null or `isGenerating` is true — zero DOM footprint when AI is not configured
+- **Generating state:** Spinner animation with "Generating..." text while AI call is in flight
+- **Cached state:** Summary text with [AI] badge, relative timestamp ("Generated today" / "N days ago"), and regenerate button
+- **Stale-refresh:** Shows cached text immediately, triggers background refresh (fire-and-forget — intentionally not awaited per spec)
+- **Silent fail:** On any API error, reverts to last cached text or stays hidden — no error UI ever surfaces
+
+The component follows the established `onMount IIFE` pattern from `ArtistStats.svelte`. Reads cache on mount, decides whether to auto-generate based on `aiState.autoGenerateOnVisit`. All `invoke()` calls are lazily imported (project convention). `npm run check` 0 errors, 92/92 tests passing.
+
+> **Commit f848cb6** (2026-02-24 13:27) — feat(18-03): create ArtistSummary.svelte with full state machine and cache logic
+> Files changed: 1
+
+## Entry — 2026-02-24 — Phase 18 Plan 04: AI Settings UI
+
+Extended `AiSettings.svelte` with the two Phase 18 user controls:
+
+1. **AI Summary Provider section** — Renders all three `AI_PROVIDERS` as clickable option buttons. The aimlapi option shows an inline "Recommended — affiliate link" badge visible before any click (full transparency). Selecting a provider saves `selected_provider_name` to taste.db and pre-fills `api_base_url` (and `api_model` if empty). When aimlapi is selected, a "Get API key" button opens the affiliate URL.
+2. **Auto-generate on Artist Visit toggle** — Checkbox wired to `aiState.autoGenerateOnVisit`, saves `auto_generate_on_visit` on change. The opt-in is visible and clear.
+
+<!-- decision: openUrl via plugin-shell not plugin-opener -->
+Plan referenced `@tauri-apps/plugin-opener` but project already uses `@tauri-apps/plugin-shell` with `open()` for the Spotify auth URL. Used the existing pattern — no new packages.
+<!-- /decision -->
+
+All 92 tests passing. Phase 18 UI layer complete — Plans 01–04 done.
+
+> **Commit f831d6f** (2026-02-24 13:27) — feat(18-04): extend AiSettings with provider selector and auto-generate toggle
+> Files changed: 1
