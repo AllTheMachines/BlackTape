@@ -2,19 +2,18 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-02-23 after v1.2 milestone start)
+See: .planning/PROJECT.md (updated 2026-02-24 after v1.2 milestone complete)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** v1.2 Zero-Click Confidence — test automation milestone. Phases 13–15.
+**Current focus:** v1.2 archived — planning next milestone (v1.3: Interoperability, Listening Rooms, Artist Tools)
 
 ## Current Position
 
-Phase: 13-foundation-fixes
-Plan: 03 complete (3/3 plans)
-Status: Phase 13 complete — nav-progress.svelte.ts created, NProgress animation in layout, all 70 test suite checks pass (7 new P13-xx all green), PROC-02 gate holds at exit 0.
-Last activity: 2026-02-24 — Phase 13 Plan 03 complete.
+Phase: milestone-complete
+Status: v1.2 Zero-Click Confidence archived. 25/25 requirements satisfied. 72 code/build tests + 22 Rust unit tests passing. Pre-commit gate active. Ready for v1.3 planning.
+Last activity: 2026-02-24 — v1.2 milestone archived.
 
-Progress: [███░░░░░░░] v1.2 — Phase 13 complete (3/3 plans)
+Progress: [██████████] v1.2 COMPLETE — all 3 phases done (Phases 13–15)
 
 ## Performance Metrics
 

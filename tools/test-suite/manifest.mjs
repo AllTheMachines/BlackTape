@@ -925,9 +925,9 @@ export const PHASE_15 = [
   },
   {
     id: 'P15-05', phase: 15, area: 'Process',
-    desc: 'REQUIREMENTS.md documents mandatory TEST-PLAN section policy (PROC-03)',
+    desc: 'PROCESS.md documents mandatory TEST-PLAN section policy (PROC-03)',
     method: 'code',
-    fn: fileContains('.planning/REQUIREMENTS.md', 'TEST-PLAN'),
+    fn: fileContains('.planning/PROCESS.md', 'TEST-PLAN'),
   },
 
   // Tauri E2E flow tests — require debug binary

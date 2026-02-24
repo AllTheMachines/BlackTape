@@ -4,13 +4,14 @@
 
 Mercury is a desktop app that becomes a place. The internet is where it gets information. Your machine is where everything lives. The community lives everywhere.
 
-Build order: data pipeline → web gateway → desktop app → local player → AI → discovery mechanics → knowledge base → underground aesthetic → community foundation → communication → scene building → curator tools → interoperability → listening rooms → artist tools. Phase 0 (sustainability) runs in parallel with everything.
+Build order: data pipeline → desktop app → local player → AI → discovery mechanics → knowledge base → underground aesthetic → community foundation → communication → scene building → curator tools → interoperability → listening rooms → artist tools. Phase 0 (sustainability) runs in parallel with everything.
 
 ## Milestones
 
 - ✅ **v1.0 MVP** — Phases 1–10.1 (shipped 2026-02-23)
-- ✅ **v1.1** — Phases 11–12 complete; Phases 13–15 deferred to v1.3
-- 📋 **v1.2** — Phases 13–15 (Zero-Click Confidence — test automation)
+- ✅ **v1.1 Scene Building + Curator Tools** — Phases 11–12 (shipped 2026-02-23)
+- ✅ **v1.2 Zero-Click Confidence** — Phases 13–15 (shipped 2026-02-24)
+- 📋 **v1.3** — Interoperability, Listening Rooms, Artist Tools (planned)
 
 ## Phases
 
@@ -38,113 +39,31 @@ Full archive: `.planning/milestones/v1.0-ROADMAP.md`
 </details>
 
 <details>
-<summary>✅ v1.1 Scene Building + Curator Tools — Phases 11–12 COMPLETE (13–15 deferred to v1.3)</summary>
+<summary>✅ v1.1 Scene Building + Curator Tools (Phases 11–12) — SHIPPED 2026-02-23</summary>
 
-- [x] **Phase 11: Scene Building** — AI scene detection, label collectives, community-driven creation tools (completed 2026-02-23)
-- [x] **Phase 12: Curator / Blog Tools** — Embeddable widgets, attribution, RSS, blog revival (completed 2026-02-23)
-- [x] **Phase 13: Interoperability** — [DEFERRED to v1.3] ActivityPub, Fediverse federation, RSS for everything (completed 2026-02-24)
-- [ ] **Phase 14: Listening Rooms** — [DEFERRED to v1.3] Shared real-time listening with synchronized embeds
-- [ ] **Phase 15: Artist Tools** — [DEFERRED to v1.3] Claiming, dashboard, auto-news, self-hosted site generator
+- [x] **Phase 11: Scene Building** — AI scene detection, scene directory, follow/suggest/vote interactions (4/4 plans, completed 2026-02-23)
+- [x] **Phase 12: Curator / Blog Tools** — RSS feeds, embeddable widgets, curator attribution, New & Rising page (4/4 plans, completed 2026-02-23)
+
+Note: Original Phases 13–15 (Interoperability, Listening Rooms, Artist Tools) deferred — became v1.3 Phases 16–18.
 
 </details>
 
-### 📋 v1.2 — Zero-Click Confidence
+<details>
+<summary>✅ v1.2 Zero-Click Confidence (Phases 13–15) — SHIPPED 2026-02-24</summary>
 
-- [x] **Phase 13: Foundation Fixes** — Repair active defects in test infrastructure; add console capture, fix false-green exit codes, eliminate flaky timing, add coverage gaps from Phases 11–12 (completed 2026-02-24)
-- [x] **Phase 14: Tauri E2E Testing** — Key user flows proven end-to-end via Playwright CDP — from app launch through search, navigation, and artist discovery
-- [x] **Phase 15: Navigation Flows + Rust Unit Tests** — Multi-step user journeys tested end-to-end; Rust logic verified in isolation; pre-commit gate and phase test template locked in
+- [x] **Phase 13: Foundation Fixes** — Console capture, data-ready signals on D3, NProgress navigation indicator (3/3 plans, completed 2026-02-24)
+- [x] **Phase 14: Tauri E2E Testing** — Playwright CDP runner, fixture DB (15 artists), 12 E2E tests (completed 2026-02-24)
+- [x] **Phase 15: Navigation Flows + Rust Unit Tests** — 4 flow tests, 22 Rust unit tests, pre-commit hook (completed 2026-02-24)
 
----
+Full archive: `.planning/milestones/v1.2-ROADMAP.md`
 
-## Phase Details (v1.1)
+</details>
 
-### Phase 11: Scene Building
-**Goal**: AI detects emerging scenes from collective listening + tag patterns. Scenes surface in a dedicated directory with anti-rich-get-richer tiering. Users can follow scenes and suggest artists. No creation tools ship this phase — scenes emerge automatically.
-**Depends on**: Phase 10 (communication), Phase 5 (AI for scene detection)
-**Requirements**: COMM-07, COMM-08
-**Success Criteria**:
-  1. AI scene awareness — detects emerging scenes from collective listening patterns
-  2. Label collectives — skipped (deferred: too vague without organic community)
-  3. Community-requested creation tools — feature request vote counter ships; actual tools come later
-  4. The underground is alive — scenes exist in Mercury that exist nowhere else
-**Plans**: 4 plans
+### 📋 v1.3 — [TBD]
 
-Plans:
-- [x] 11-01-PLAN.md — taste.db schema (4 scene tables) + 8 Tauri commands
-- [x] 11-02-PLAN.md — scene detection algorithm module + AI description prompt
-- [x] 11-03-PLAN.md — /scenes directory and /scenes/[slug] detail routes
-- [x] 11-04-PLAN.md — follow/suggest/feature-request interactions + nav + web API + docs
-
-### Phase 12: Curator / Blog Tools
-**Goal**: Bring music blogs back to life. Give bloggers tools and an audience.
-**Depends on**: Phase 6 (discovery), Phase 9 (community foundation)
-**Requirements**: BLOG-01, BLOG-02, BLOG-03
-**Success Criteria**:
-  1. Embeddable widgets (artist cards, search results, curated lists, entire collections)
-  2. Attribution: "discovered via [curator]" links — curators get credit
-  3. RSS feeds for every artist page, user collection, tag, and curator
-  4. First access for curators — early visibility into emerging artists and new additions
-  5. Embeddable collections on external websites
-  6. QR codes for any collection or curated list
-  7. A music blogger has reason to write again
-**Plans**: 4 plans
-
-Plans:
-- [x] 12-01-PLAN.md — Install feed+qrcode deps + 4 RSS/Atom feed endpoints + RssButton component
-- [x] 12-02-PLAN.md — Embed layout + artist/collection embed routes + embed snippet UI + QR code
-- [x] 12-03-PLAN.md — Curator attribution: D1 table, /api/curator-feature, artist page display
-- [x] 12-04-PLAN.md — New & Rising page + /api/rss/new-rising feed + ARCHITECTURE.md + user-manual.md docs
-
----
-
-## Phase Details (v1.2)
-
-### Phase 13: Foundation Fixes
-**Goal**: The test suite can be trusted as a gate — silent crashes are detected, flaky D3 timing is eliminated, and the Tauri desktop gets an animated navigation progress indicator.
-**Depends on**: Nothing (first v1.2 phase — repairs existing infrastructure)
-**Requirements**: INFRA-01, INFRA-03, INFRA-04, UX-01, UX-02, UX-03, UX-04, PROC-02
-**Note**: WEB-01, WEB-02, WEB-03, INFRA-02 are out of scope — Mercury is Tauri-desktop-only; web/Playwright/wrangler infrastructure is being removed.
-**Success Criteria**:
-  1. The web.mjs runner captures console.error and pageerror events per test — silent JS crashes can no longer pass undetected
-  2. All 23 Playwright web tests removed from manifest; `--code-only` suite exits 0 — PROC-02 gate established
-  3. D3 animation components signal completion via `data-ready` attribute — no more hardcoded waitForTimeout delays
-  4. New Phase 13 manifest checks use fileContains/fileExists not CSS class selectors — test-stable assertions
-  5. Tauri desktop shows an animated NProgress-style top-bar progress indicator on every navigation and data load; bar always animated (never frozen), clears automatically on completion
-**Plans**: 3 plans
-
-Plans:
-- [x] 13-01-PLAN.md — Remove web tests from manifest + fix console.error capture in web runner (PROC-02 baseline)
-- [ ] 13-02-PLAN.md — Add data-ready signals to D3 components + Phase 13 manifest code checks (INFRA-03, INFRA-04)
-- [ ] 13-03-PLAN.md — Tauri navigation progress bar: nav-progress.svelte.ts + layout integration (UX-01–UX-04)
-
-### Phase 14: Tauri E2E Testing
-**Goal**: Key user flows in the Tauri desktop app are proven to work end-to-end using Playwright CDP — from app launch through search, navigation, and artist discovery. No user flow can silently break.
-**Depends on**: Phase 13 (foundation clean — nav progress bar, data-ready signals)
-**Requirements**: E2E-01, E2E-02, E2E-03, E2E-04, E2E-05
-**Success Criteria**:
-  1. `node tools/test-suite/run.mjs --phase 14` drives the real Tauri app via Playwright CDP and exits 0 with all smoke tests passing
-  2. App launch smoke tests pass: window appears, homepage renders, Settings and About pages load — no console.error on any route
-  3. Search flow: typing "radiohead" returns results from seeded fixture DB; clicking through lands on the artist page with correct title and tags
-  4. Discovery flow: Discover page loads tag list; clicking "electronic" returns filtered results
-  5. Error paths: unknown routes show 404 UI; empty search shows empty state
-**Plans**: 3 plans
-
-Plans:
-- [x] 14-01-PLAN.md — Tauri CDP runner (setup/teardown/runTauriTest) + run.mjs tauri session block
-- [x] 14-02-PLAN.md — Fixture DB seed script (15 artists, FTS5, tag_stats)
-- [x] 14-03-PLAN.md — PHASE_14 manifest (3 code + 12 tauri tests) + docs + roadmap/requirements updates
-
-### Phase 15: Navigation Flows + Rust Unit Tests
-**Goal**: Multi-step user journeys are tested end-to-end with console error capture active; Rust logic is verified in isolation without compiling the full Tauri binary; a pre-commit gate and mandatory test-plan template prevent future regressions from shipping.
-**Depends on**: Phase 13 (console capture active — flow test failures are visible), Phase 14 (Tauri E2E runner active — CDP driver available)
-**Requirements**: FLOW-01, FLOW-02, FLOW-03, FLOW-04, RUST-01, RUST-02, RUST-03, PROC-01, PROC-03
-**Success Criteria**:
-  1. The full search → artist → second artist journey runs headlessly with no console.error at any step — navigation state corruption is caught automatically
-  2. Artist page → tag click → tag discovery page flow runs headlessly and confirms results render — the core discovery mechanic is end-to-end verified
-  3. 404 routes render the error page and empty search renders the empty state UI — error paths are tested, not just the happy path
-  4. `cargo test` in `src-tauri/` passes with unit tests for FTS5 query sanitization, the `__data.json` protocol handler, and scanner metadata parsing — Rust logic is verified in isolation without a full binary compile
-  5. Every commit runs `--code-only` tests automatically via pre-commit hook and exits non-zero on failure — regressions cannot be committed silently
-**Plans**: TBD
+- [ ] **Phase 16: Interoperability** — ActivityPub, Fediverse federation, RSS for everything
+- [ ] **Phase 17: Listening Rooms** — Shared real-time listening with synchronized embeds
+- [ ] **Phase 18: Artist Tools** — Claiming, dashboard, auto-news, self-hosted site generator
 
 ---
 
@@ -183,15 +102,13 @@ Runs alongside everything else. Not blocking any phase. Rolls out in stages as f
 
 | Feature | Why Deferred | Revisit When |
 |---------|-------------|-------------|
-| Interoperability (ActivityPub, Fediverse) | Test infrastructure takes priority in v1.2; complex protocol work needs a clean foundation | v1.3 |
-| Listening Rooms (shared real-time playback) | Test infrastructure takes priority in v1.2 | v1.3 |
-| Artist Tools (claiming, dashboard, site generator) | Test infrastructure takes priority in v1.2 | v1.3 |
+| Web search / Cloudflare D1 | Pivoted to Tauri-desktop-only (2026-02-24) — maintenance overhead, no offline-first, no AI | Desktop is the product; web may return as read-only |
+| API Contract Layer | Replaced by Tauri E2E — more value to test the actual running app first | v1.3 |
 | Cross-platform playlist sync | Platform ToS risks, fragile APIs | Core product is solid, legal clarity exists |
 | Remote streaming (phone ← home) | NAT traversal, relay servers, infrastructure complexity | Desktop + player mature, users ask for it |
 | Database diff-based updates | Full replacement is simpler; diff sizes unknown until MusicBrainz weekly dump testing | Full replacement feels too large for users |
 | Licensing model | Open source vs source-available vs custom — depends on sustainability trajectory | When sustainability model is clearer |
 | Writing/discussion features | Community should ask for creation tools, not have them imposed | Phase 11+ if community requests |
-| API Contract Layer (Phase 14 original) | Replaced by Tauri E2E — more value to test the actual running app first | v1.3 |
 
 ## Progress
 
@@ -214,6 +131,9 @@ Runs alongside everything else. Not blocking any phase. Rolls out in stages as f
 | 10.1. Communication Hotfixes | v1.0 | 2/2 | Complete | 2026-02-23 |
 | 11. Scene Building | v1.1 | 4/4 | Complete | 2026-02-23 |
 | 12. Curator / Blog Tools | v1.1 | 4/4 | Complete | 2026-02-23 |
-| 13. Foundation Fixes | 3/3 | Complete    | 2026-02-24 | - |
-| 14. Tauri E2E Testing | v1.2 | 3/3 | Complete | 2026-02-24 |
-| 15. Navigation Flows + Rust Unit Tests | v1.2 | 0/TBD | Not started | - |
+| 13. Foundation Fixes | v1.2 | 3/3 | Complete | 2026-02-24 |
+| 14. Tauri E2E Testing | v1.2 | done | Complete | 2026-02-24 |
+| 15. Navigation Flows + Rust Unit Tests | v1.2 | done | Complete | 2026-02-24 |
+| 16. Interoperability | v1.3 | 0/TBD | Not started | - |
+| 17. Listening Rooms | v1.3 | 0/TBD | Not started | - |
+| 18. Artist Tools | v1.3 | 0/TBD | Not started | - |

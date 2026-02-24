@@ -2,23 +2,13 @@
 
 ## What This Is
 
-A music discovery engine that indexes 2.8M+ artists from open databases, lets you explore through atomic tags, and embeds players from wherever the music already lives — Bandcamp, Spotify, SoundCloud, YouTube. Runs as a Tauri desktop app with a local SQLite database (offline-first) and a Cloudflare-hosted web gateway. Not a platform. Not a streaming service. A search engine that becomes an ecosystem.
+A music discovery engine that indexes 2.8M+ artists from open databases, lets you explore through atomic tags, and embeds players from wherever the music already lives — Bandcamp, Spotify, SoundCloud, YouTube. Runs as a Tauri desktop app with a local SQLite database (offline-first). Not a platform. Not a streaming service. A search engine that becomes an ecosystem.
 
-v1.0 shipped: data pipeline → web gateway → desktop app → local music player → client-side AI → tag discovery engine → knowledge base → underground aesthetic → community foundation → encrypted communication layer.
+v1.0 shipped: data pipeline → desktop app → local music player → client-side AI → tag discovery engine → knowledge base → underground aesthetic → community foundation → encrypted communication layer.
 
-v1.1 shipped (partial): scene building → curator/blog tools. Phases 13–15 (Interoperability, Listening Rooms, Artist Tools) deferred — test infrastructure prioritized first.
+v1.1 shipped: scene building → curator/blog tools.
 
-## Current Milestone: v1.2 — Zero-Click Confidence
-
-**Goal:** Make every feature, route, and user flow verifiable without manual intervention — I can prove the whole app works without Steve clicking a single button.
-
-**Target features:**
-- Console error capture on every Playwright test (silent crashes auto-detected)
-- Navigation flow tests: full user journeys, not just static page loads
-- API contract tests: every endpoint validated for response shape
-- Tauri-specific coverage: protocol handler, navigation, local DB queries
-- Phase test templates: tests written before code, required for every future phase
-- Pre-phase gate: full suite must be green before any new phase executes
+v1.2 shipped: test automation complete — Playwright CDP E2E runner, Rust unit tests, pre-commit gate. Web gateway removed — Tauri-desktop-only confirmed.
 
 ## Core Value
 
@@ -29,7 +19,7 @@ Uniqueness is rewarded — the more niche you are, the more discoverable you bec
 ### Validated
 
 - ✓ Data pipeline ingests MusicBrainz dumps into SQLite + FTS5 (2.8M artists) — v1.0
-- ✓ Search 2.8M artists instantly from web and offline desktop — v1.0
+- ✓ Search 2.8M artists instantly from offline desktop — v1.0
 - ✓ Artist profile pages with embedded players (Bandcamp, Spotify, SoundCloud, YouTube) — v1.0
 - ✓ Tag display, tag-click navigation, tag intersection discovery — v1.0
 - ✓ Desktop app with local SQLite (offline search), torrent distribution, auto-updater — v1.0
@@ -47,13 +37,18 @@ Uniqueness is rewarded — the more niche you are, the more discoverable you bec
 - ✓ Collections / shelves — save artists and releases, multiple named shelves — v1.0
 - ✓ Taste Fingerprint — generative D3 constellation unique to each user — v1.0
 - ✓ Communication layer — NIP-17 encrypted DMs, NIP-28 scene rooms, ephemeral sessions — v1.0
+- ✓ AI scene detection + scene directory with follow/suggest/vote interactions — v1.1
+- ✓ Embeddable curator widgets, QR codes, RSS/Atom feeds for every page — v1.1
+- ✓ Curator attribution + New & Rising first-discovery signals — v1.1
+- ✓ Zero-click confidence — Playwright CDP E2E runner wired to live Tauri app, 22 Rust unit tests, pre-commit gate — v1.2
+- ✓ `data-ready` signals on all D3 force simulations — deterministic test assertions — v1.2
+- ✓ NProgress-style navigation progress indicator with startProgress/completeProgress API — v1.2
 
 ### Active
 
-- [ ] **v1.2** Complete test automation — zero-click confidence, every feature provably working
-- [ ] Interoperability — ActivityPub, Fediverse federation (deferred to v1.3+)
-- [ ] Listening rooms — shared real-time synchronized playback (deferred to v1.3+)
-- [ ] Artist tools — claiming, dashboard, auto-news, self-hosted site generator (deferred to v1.3+)
+- [ ] Interoperability — ActivityPub, Fediverse federation (v1.3)
+- [ ] Listening rooms — shared real-time synchronized playback (v1.3)
+- [ ] Artist tools — claiming, dashboard, auto-news, self-hosted site generator (v1.3)
 - [ ] Sustainability infrastructure — sponsors, Ko-fi, Patreon, backer credits
 
 ### Out of Scope
@@ -70,12 +65,18 @@ Uniqueness is rewarded — the more niche you are, the more discoverable you bec
 
 **Steve** — musician (Theatre of Delays, Spenza, Raw Stevens, Vox Sola), label co-founder (Vakant, Kwik Snax), 30 years of electronic music. This comes from lived frustration, not market analysis. Posted about this on Reddit 10 years ago.
 
-**v1.0 shipped 2026-02-23.** Codebase: ~24,100 LOC TypeScript/Svelte + Rust across 456 files. 15 phases, 71 plans, 299 git commits in 9 days.
+**v1.0 shipped 2026-02-23.** Codebase grew to ~24,582 LOC TypeScript/Svelte + Rust.
 
-**Tech stack:** SvelteKit (Svelte 5) + Tauri 2.0 + SQLite + FTS5 + Cloudflare Pages + D1. Client-side AI via llama.cpp sidecar (Qwen2.5 3B) + Nomic Embed. Nostr (NDK) for communications.
+**v1.1 shipped 2026-02-23.** Phases 11–12: scene building + curator tools.
+
+**v1.2 shipped 2026-02-24.** Test automation milestone complete:
+- Test suite: 72 code/build checks + 22 Rust unit tests + 12 Tauri E2E tests (requires running app)
+- Pre-commit gate: `--code-only` runs 2–5s on every commit
+- Web gateway removed — Tauri-desktop-only (all web tests removed from suite)
+
+**Tech stack:** SvelteKit (Svelte 5) + Tauri 2.0 + SQLite + FTS5. Client-side AI via llama.cpp sidecar (Qwen2.5 3B) + Nomic Embed. Nostr (NDK) for communications.
 
 **Known deployment steps before public launch:**
-- Replace `wrangler.jsonc` placeholder D1 database ID with real Cloudflare D1 database
 - Replace auto-updater endpoint placeholder in `tauri.conf.json`
 
 Pre-project research (2026-02-14) saved in ControlCenter:
@@ -84,7 +85,7 @@ Pre-project research (2026-02-14) saved in ControlCenter:
 
 ## Constraints
 
-- **$0 infrastructure**: Cloudflare free tier (Pages + D1). No hosting costs.
+- **$0 infrastructure**: No hosting costs (desktop-only, no server).
 - **No audio**: Never host audio. Embed from artist platforms only.
 - **Open source always**: No decisions that lock into proprietary ecosystems.
 - **Codename**: "Mercury" is temporary. Name lives in `src/lib/config.ts` only.
@@ -106,6 +107,10 @@ Pre-project research (2026-02-14) saved in ControlCenter:
 | OKLCH theming | Perceptually uniform — taste hue shifts don't change apparent brightness | ✓ Good |
 | Phase 8 before community | Vibe has to be right before people arrive | ✓ Good |
 | Pseudonymous identity | Music speaks, not bios. Local-first, no central account | ✓ Good |
+| Tauri-desktop-only (web removed) | Maintenance overhead of dual platform outweighed benefits; desktop is the product; AI only runs locally | ✓ Good |
+| Playwright CDP for Tauri E2E | Direct browser protocol (CDP), no extra test framework; Playwright already in codebase | ✓ Good |
+| Rust unit test helper extraction | `parse_year_from_tags` extracted to enable isolated testing without full Tauri binary compile | ✓ Good |
+| Phases 14–15 outside GSD workflow | Speed over process — test infra sprint; accepted tech debt (no VERIFICATION.md/SUMMARY.md) | ⚠️ Revisit (use GSD for v1.3) |
 
 ---
-*Last updated: 2026-02-23 after v1.2 milestone start (test infrastructure)*
+*Last updated: 2026-02-24 after v1.2 milestone (Zero-Click Confidence)*
