@@ -29,7 +29,7 @@ Progress: [██░░░░░░░░] 33% (v1.3 — 2/6 phases partially co
 |-------|-------|--------|
 | 16. Sustainability Links | 2 | Complete |
 | 17. Artist Stats Dashboard | 2 | Complete |
-| 18. AI Auto-News | TBD | In progress (Plans 01-03 complete) |
+| 18. AI Auto-News | TBD | In progress (Plans 01-04 complete) |
 | 19. Static Site Generator | TBD | Not started |
 | 20. Listening Rooms | TBD | Not started |
 | 21. ActivityPub Outbound | TBD | Not started |
@@ -76,6 +76,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-24
-Stopped at: Completed 18-03-PLAN.md — ArtistSummary.svelte component with full state machine
+Stopped at: Completed 18-04-PLAN.md — AiSettings.svelte provider selector and auto-generate toggle
 Resume file: None
-Next: Phase 18 Plan 04 — AiSettings UI (provider selector + auto-generate toggle — partially pre-built in wip commit)
+Next: Phase 18 Plan 05 or integration — wire ArtistSummary into artist page

@@ -5178,3 +5178,6 @@ All 92 tests passing. Phase 18 UI layer complete — Plans 01–04 done.
 
 > **Commit f831d6f** (2026-02-24 13:27) — feat(18-04): extend AiSettings with provider selector and auto-generate toggle
 > Files changed: 1
+
+> **Commit 68b79d0** (2026-02-24 13:30) — docs(18-03): complete ArtistSummary component plan — state machine, cache, all UI states
+> Files changed: 4
