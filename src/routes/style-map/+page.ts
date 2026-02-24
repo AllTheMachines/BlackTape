@@ -1,11 +1,6 @@
 import type { PageLoad } from './$types';
-import { isTauri } from '$lib/platform';
 
-export const load: PageLoad = async ({ data }) => {
-	if (!isTauri()) {
-		return { ...data }; // Web: server data already loaded
-	}
-
+export const load: PageLoad = async () => {
 	try {
 		const { getProvider } = await import('$lib/db/provider');
 		const { getStyleMapData } = await import('$lib/db/queries');

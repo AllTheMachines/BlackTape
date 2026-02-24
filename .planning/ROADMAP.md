@@ -51,7 +51,7 @@ Full archive: `.planning/milestones/v1.0-ROADMAP.md`
 ### 📋 v1.2 — Zero-Click Confidence
 
 - [x] **Phase 13: Foundation Fixes** — Repair active defects in test infrastructure; add console capture, fix false-green exit codes, eliminate flaky timing, add coverage gaps from Phases 11–12 (completed 2026-02-24)
-- [ ] **Phase 14: Tauri E2E Testing** — Key user flows proven end-to-end via Playwright CDP — from app launch through search, navigation, and artist discovery
+- [x] **Phase 14: Tauri E2E Testing** — Key user flows proven end-to-end via Playwright CDP — from app launch through search, navigation, and artist discovery
 - [ ] **Phase 15: Navigation Flows + Rust Unit Tests** — Multi-step user journeys tested end-to-end; Rust logic verified in isolation; pre-commit gate and phase test template locked in
 
 ---

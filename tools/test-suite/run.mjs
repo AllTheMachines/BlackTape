@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Baseline (Phase 13, 2026-02-24): 63 passing (62 code + 1 build), 0 web, 30 skipped — exits 0
+// Baseline (Phase 13, 2026-02-24): 63 passing (62 code + 1 build), 30 skipped — exits 0
 // Phase 14 adds: method: 'tauri' block — connects to running Tauri app via CDP
 /**
  * Mercury Test Suite
@@ -7,19 +7,15 @@
  * Usage:
  *   node tools/test-suite/run.mjs            — run all tests
  *   node tools/test-suite/run.mjs --phase 6  — run only Phase 6 tests
- *   node tools/test-suite/run.mjs --web-only  — skip code checks
  *   node tools/test-suite/run.mjs --code-only — skip browser tests
  *   node tools/test-suite/run.mjs --fast      — skip slow visual tests (style-map, etc.)
  *
  * Exit codes: 0 = all passed, 1 = failures, 2 = setup error
  */
 
-import { createRequire } from 'module';
 import { spawn } from 'child_process';
 import path from 'path';
-const require = createRequire(import.meta.url);
 import { ALL_TESTS } from './manifest.mjs';
-import { runWebTests } from './runners/web.mjs';
 
 // ---------------------------------------------------------------------------
 // Args
@@ -27,7 +23,6 @@ import { runWebTests } from './runners/web.mjs';
 
 const args = process.argv.slice(2);
 const phaseFilter = args.includes('--phase') ? Number(args[args.indexOf('--phase') + 1]) : null;
-const webOnly = args.includes('--web-only');
 const codeOnly = args.includes('--code-only');
 const fast = args.includes('--fast');
 
@@ -47,19 +42,6 @@ function header(title) {
   log(SEP);
   log(` ${title}`);
   log(SEP);
-}
-
-// No web tests currently — wrangler check is dormant
-function checkWrangler() {
-  return new Promise((resolve) => {
-    const http = require('http');
-    const req = http.get('http://localhost:8788/', (res) => {
-      resolve(res.statusCode === 200);
-      res.resume();
-    });
-    req.setTimeout(5000, () => { req.destroy(); resolve(false); });
-    req.on('error', () => resolve(false));
-  });
 }
 
 async function runBuildCheck() {
@@ -86,20 +68,17 @@ async function main() {
   // Filter tests
   let tests = ALL_TESTS.filter(t => {
     if (phaseFilter && t.phase !== phaseFilter && t.phase !== 0) return false;
-    if (webOnly && t.method !== 'web') return false;
     if (codeOnly && t.method !== 'code') return false;
-    // Previously slow web tests — now all skip; filter is harmless but kept for reference
     if (fast && ['P6-05', 'P7-01', 'P7-02'].includes(t.id)) return false;
     return true;
   });
 
-  const webTests = tests.filter(t => t.method === 'web');
   const codeTests = tests.filter(t => t.method === 'code');
   const buildTests = tests.filter(t => t.method === 'build');
   const tauriTests = tests.filter(t => t.method === 'tauri');
   const skipTests = tests.filter(t => t.method === 'skip');
 
-  log(` Tests: ${webTests.length} web, ${codeTests.length} code, ${tauriTests.length} tauri, ${skipTests.length} skipped`);
+  log(` Tests: ${codeTests.length} code, ${tauriTests.length} tauri, ${skipTests.length} skipped`);
   if (phaseFilter) log(` Filter: Phase ${phaseFilter} only`);
   log('');
 
@@ -142,32 +121,7 @@ async function main() {
   }
 
   // ---------------------------------------------------------------------------
-  // 3. Web tests (Playwright)
-  // ---------------------------------------------------------------------------
-
-  if (webTests.length > 0 && !codeOnly) {
-    header('Web Tests (Playwright)');
-
-    const wranglerUp = await checkWrangler();
-    if (!wranglerUp) {
-      log(' ⚠  Wrangler dev server not running on :8788');
-      log('    Start it with: npx wrangler pages dev .svelte-kit/cloudflare --port 8788');
-      log('    Skipping all web tests.');
-      webTests.forEach(t => results.push({ ...t, passed: null, error: 'Dev server not running' }));
-    } else {
-      log(' ◆  Browser: launching Chromium headless');
-      const webResults = await runWebTests(webTests);
-      for (const r of webResults) {
-        const icon = r.passed ? PASS : FAIL;
-        log(` ${icon}  [${r.id}] ${r.desc}`);
-        if (!r.passed && r.error) log(`       Error: ${r.error}`);
-        results.push(r);
-      }
-    }
-  }
-
-  // ---------------------------------------------------------------------------
-  // 4. Tauri E2E tests (Playwright CDP — requires debug binary)
+  // 3. Tauri E2E tests (Playwright CDP — requires debug binary)
   // ---------------------------------------------------------------------------
 
   if (tauriTests.length > 0 && !codeOnly) {

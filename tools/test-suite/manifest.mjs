@@ -3,15 +3,15 @@
  *
  * Rules:
  *   - Add tests here after every phase. Never remove.
- *   - method 'web'  → reserved for future use — currently all converted to skip (Tauri-desktop-only)
- *   - method 'code' → File existence / grep check (no browser needed)
- *   - method 'skip' → Cannot be automated (audio, OS dialogs, file pickers, web-only checks)
+ *   - method 'code'  → File existence / grep check (no browser needed)
+ *   - method 'tauri' → Playwright CDP test against running Tauri debug binary
+ *   - method 'skip'  → Cannot be automated (audio, OS dialogs, file pickers)
  *
  * Test object shape:
  *   { id, phase, area, desc, method }
- *   + web:  { url, fn: async (page) => boolean }  [reserved, none currently active]
- *   + code: { fn: () => boolean }
- *   + skip: { reason: string }
+ *   + code:  { fn: () => boolean }
+ *   + tauri: { fn: async (page) => boolean }
+ *   + skip:  { reason: string }
  */
 
 import { fileExists, fileContains, anyFileContains } from './runners/code.mjs';
@@ -590,20 +590,20 @@ export const PHASE_12 = [
   {
     id: 'P12-01', phase: 12, area: 'RSS',
     desc: 'RSS artist feed route exists',
-    method: 'code',
-    fn: fileExists('src/routes/api/rss/artist/[slug]/+server.ts'),
+    method: 'skip',
+    reason: 'Web-only API endpoints removed — Mercury is Tauri-desktop-only',
   },
   {
     id: 'P12-02', phase: 12, area: 'RSS',
     desc: 'RSS tag feed route exists',
-    method: 'code',
-    fn: fileExists('src/routes/api/rss/tag/[tag]/+server.ts'),
+    method: 'skip',
+    reason: 'Web-only API endpoints removed — Mercury is Tauri-desktop-only',
   },
   {
     id: 'P12-03', phase: 12, area: 'RSS',
     desc: 'RSS new-rising feed route exists',
-    method: 'code',
-    fn: fileExists('src/routes/api/rss/new-rising/+server.ts'),
+    method: 'skip',
+    reason: 'Web-only API endpoints removed — Mercury is Tauri-desktop-only',
   },
   {
     id: 'P12-04', phase: 12, area: 'RSS',
@@ -644,8 +644,8 @@ export const PHASE_12 = [
   {
     id: 'P12-10', phase: 12, area: 'Curator',
     desc: '/api/curator-feature attribution endpoint exists',
-    method: 'code',
-    fn: fileExists('src/routes/api/curator-feature/+server.ts'),
+    method: 'skip',
+    reason: 'Web-only API endpoints removed — Mercury is Tauri-desktop-only',
   },
   {
     id: 'P12-11', phase: 12, area: 'New & Rising',
@@ -656,8 +656,8 @@ export const PHASE_12 = [
   {
     id: 'P12-12', phase: 12, area: 'New & Rising',
     desc: '/api/new-rising endpoint exists',
-    method: 'code',
-    fn: fileExists('src/routes/api/new-rising/+server.ts'),
+    method: 'skip',
+    reason: 'Web-only API endpoints removed — Mercury is Tauri-desktop-only',
   },
 ];
 

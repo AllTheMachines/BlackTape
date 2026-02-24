@@ -4,7 +4,7 @@
 	import BuyOnBar from '$lib/components/BuyOnBar.svelte';
 	import LinerNotes from '$lib/components/LinerNotes.svelte';
 	import { isTauri } from '$lib/platform';
-	import type { ReleaseDetail } from './+page.server';
+	import type { ReleaseDetail } from './+page';
 
 	let { data } = $props();
 

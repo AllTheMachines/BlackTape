@@ -1,33 +1,47 @@
 /**
- * Universal load for the release detail page.
- *
- * Web (SSR): data from +page.server.ts — returned unchanged.
- * Tauri desktop: fetches MusicBrainz directly, builds buy links
- *   WITHOUT affiliate coding (no server env in Tauri context).
- *   Links still function as useful search fallbacks.
+ * Load function for the release detail page — Tauri desktop only.
+ * Fetches MusicBrainz directly. Buy links built without affiliate coding
+ * (no server env in Tauri context) — links still work as search fallbacks.
  */
 
-import { isTauri } from '$lib/platform';
 import type { PageLoad } from './$types';
-import type { ReleaseDetail, Track, Credit } from './+page.server';
 
 const USER_AGENT = 'Mercury/0.1.0 (https://github.com/user/mercury)';
 
-export const load: PageLoad = async ({ params, data, fetch }) => {
-	// Web SSR: server data is already complete
-	if (!isTauri()) {
-		return data;
-	}
+export interface Track {
+	position: number;
+	number: string;
+	title: string;
+	/** Duration in milliseconds, or null if unknown. */
+	length: number | null;
+}
 
-	// Tauri: fetch release data from MusicBrainz directly
+export interface Credit {
+	name: string;
+	role: string;
+}
+
+export interface ReleaseDetail {
+	releaseGroupMbid: string;
+	title: string;
+	year: number | null;
+	type: string;
+	coverArtUrl: string;
+	artistName: string;
+	artistSlug: string;
+	tracks: Track[];
+	credits: Credit[];
+	buyLinks: import('$lib/affiliates/types').BuyLink[];
+}
+
+export const load: PageLoad = async ({ params, fetch }) => {
 	const { mbid, slug } = params;
-
 	let release: ReleaseDetail | null = null;
 
 	try {
 		const mbUrl = `https://musicbrainz.org/ws/2/release?release-group=${mbid}&inc=recordings+artist-credits+media+artist-rels&limit=1&fmt=json`;
 		const resp = await fetch(mbUrl, {
-			headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' },
+			headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' }
 		});
 
 		if (resp.ok) {
@@ -66,7 +80,7 @@ export const load: PageLoad = async ({ params, data, fetch }) => {
 							position: track.position,
 							number: track.number,
 							title: track.title,
-							length: track.length ?? null,
+							length: track.length ?? null
 						});
 					}
 				}
@@ -78,7 +92,6 @@ export const load: PageLoad = async ({ params, data, fetch }) => {
 					}
 				}
 
-				// Detect Bandcamp URL from release relations
 				let bandcampUrl: string | null = null;
 				for (const r of rel.relations ?? []) {
 					if (r['target-type'] === 'url' && r.url?.resource) {
@@ -91,19 +104,18 @@ export const load: PageLoad = async ({ params, data, fetch }) => {
 					}
 				}
 
-				const artistName = rel['artist-credit']?.[0]?.artist?.name
-					?? rel['artist-credit']?.[0]?.name
-					?? '';
+				const artistName =
+					rel['artist-credit']?.[0]?.artist?.name ??
+					rel['artist-credit']?.[0]?.name ??
+					'';
 
 				const year = rel.date ? parseInt(rel.date.substring(0, 4), 10) || null : null;
 
-				// Build buy links WITHOUT affiliate IDs — no server env in Tauri
-				// Links still work as useful (non-coded) search fallbacks
 				const { buildBuyLinks } = await import('$lib/affiliates/construct');
 				const buyLinks = buildBuyLinks(artistName, rel.title, bandcampUrl, {
 					amazonTag: null,
 					appleToken: null,
-					appleCampaign: null,
+					appleCampaign: null
 				});
 
 				release = {
@@ -116,13 +128,12 @@ export const load: PageLoad = async ({ params, data, fetch }) => {
 					artistSlug: slug,
 					tracks,
 					credits,
-					buyLinks,
+					buyLinks
 				};
 			}
 		}
 	} catch (err) {
-		console.error('Release fetch error (Tauri):', err);
-		// release remains null — page handles gracefully
+		console.error('Release fetch error:', err);
 	}
 
 	return { release, slug, mbid };

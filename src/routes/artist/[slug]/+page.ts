@@ -1,31 +1,18 @@
 /**
- * Universal load function for the artist page.
+ * Load function for the artist page — Tauri desktop only.
  *
- * Coexists with +page.server.ts:
- * - Web (SSR): data comes from +page.server.ts, returned unchanged.
- * - Desktop (Tauri SPA, ssr=false): queries local SQLite for artist data,
- *   fetches links/releases/bio from MusicBrainz and Wikipedia client-side.
- *
- * All external API calls are best-effort: the artist page renders from
- * local DB data alone (name, tags, country) if any fetch fails.
- *
- * Dynamic imports keep Tauri dependencies out of the web bundle.
+ * Queries local SQLite for artist data, fetches links/releases/bio from
+ * MusicBrainz and Wikipedia client-side. All external API calls are
+ * best-effort: the page renders from local DB data alone if any fetch fails.
  */
 
-import { isTauri } from '$lib/platform';
 import { error } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
 import type { PlatformLinks, CategorizedLinks, ReleaseGroup } from '$lib/embeds/types';
 
 const USER_AGENT = 'Mercury/0.1.0 (https://github.com/user/mercury)';
 
-export const load: PageLoad = async ({ params, data, fetch }) => {
-	// Web SSR: data comes from +page.server.ts
-	if (!isTauri()) {
-		return data;
-	}
-
-	// Tauri desktop: query local database + fetch external data
+export const load: PageLoad = async ({ params, fetch }) => {
 	const { getProvider } = await import('$lib/db/provider');
 	const { getArtistBySlug, getArtistUniquenessScore } = await import('$lib/db/queries');
 
@@ -37,8 +24,6 @@ export const load: PageLoad = async ({ params, data, fetch }) => {
 		throw error(404, 'Artist not found');
 	}
 
-	// Fetch uniqueness score — wrapped in try/catch: tag_stats may not exist
-	// in older local DBs that predate Phase 6 pipeline additions.
 	let uniquenessData = null;
 	try {
 		uniquenessData = await getArtistUniquenessScore(provider, artist.id);
@@ -46,7 +31,6 @@ export const load: PageLoad = async ({ params, data, fetch }) => {
 		// tag_stats table missing — badge simply won't render
 	}
 
-	// Initialize empty external data -- populated by best-effort fetches below
 	let links: PlatformLinks = {
 		bandcamp: [],
 		spotify: [],
@@ -66,17 +50,10 @@ export const load: PageLoad = async ({ params, data, fetch }) => {
 	let releases: ReleaseGroup[] = [];
 	let bio: string | null = null;
 
-	// Fetch external data (best-effort -- artist page renders from DB data alone on failure)
 	try {
-		// --- Links from MusicBrainz ---
 		const mbLinksResponse = await fetch(
 			`https://musicbrainz.org/ws/2/artist/${artist.mbid}?inc=url-rels&fmt=json`,
-			{
-				headers: {
-					'User-Agent': USER_AGENT,
-					Accept: 'application/json'
-				}
-			}
+			{ headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' } }
 		);
 
 		if (mbLinksResponse.ok) {
@@ -101,7 +78,6 @@ export const load: PageLoad = async ({ params, data, fetch }) => {
 						if (seen.has(url)) continue;
 						seen.add(url);
 
-						// Legacy format (for backward compat with existing component)
 						try {
 							const hostname = new URL(url).hostname;
 							if (hostname.includes('bandcamp.com')) links.bandcamp.push(url);
@@ -116,7 +92,6 @@ export const load: PageLoad = async ({ params, data, fetch }) => {
 							links.other.push(url);
 						}
 
-						// Categorized format
 						const category = rel.type ? categorizeByRelationType(rel.type) : 'other';
 						const platform = detectPlatform(url);
 						const finalCategory = platform ? 'streaming' : category;
@@ -129,16 +104,10 @@ export const load: PageLoad = async ({ params, data, fetch }) => {
 		console.error('Links fetch error:', err);
 	}
 
-	// --- Releases from MusicBrainz ---
 	try {
 		const mbReleasesResponse = await fetch(
 			`https://musicbrainz.org/ws/2/release-group?artist=${artist.mbid}&inc=url-rels&type=album|single|ep&fmt=json&limit=50`,
-			{
-				headers: {
-					'User-Agent': USER_AGENT,
-					Accept: 'application/json'
-				}
-			}
+			{ headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' } }
 		);
 
 		if (mbReleasesResponse.ok) {
@@ -162,20 +131,16 @@ export const load: PageLoad = async ({ params, data, fetch }) => {
 					const dateStr = rg['first-release-date'];
 					const year = dateStr ? parseInt(dateStr.substring(0, 4), 10) || null : null;
 
-					// Extract streaming links from URL relationships
 					const releaseLinks: import('$lib/embeds/types').ReleaseLink[] = [];
 					if (rg.relations) {
 						for (const rel of rg.relations) {
 							if (rel['target-type'] === 'url' && rel.url?.resource) {
 								const platform = detectPlatform(rel.url.resource);
-								if (platform) {
-									releaseLinks.push({ url: rel.url.resource, platform });
-								}
+								if (platform) releaseLinks.push({ url: rel.url.resource, platform });
 							}
 						}
 					}
 
-					// Normalize type
 					let type: ReleaseGroup['type'] = 'Other';
 					if (rg['primary-type'] === 'Album') type = 'Album';
 					else if (rg['primary-type'] === 'EP') type = 'EP';
@@ -191,7 +156,6 @@ export const load: PageLoad = async ({ params, data, fetch }) => {
 					};
 				});
 
-				// Sort by year descending (newest first), nulls last
 				releases.sort((a, b) => {
 					if (a.year === null && b.year === null) return 0;
 					if (a.year === null) return 1;
@@ -204,7 +168,6 @@ export const load: PageLoad = async ({ params, data, fetch }) => {
 		console.error('Releases fetch error:', err);
 	}
 
-	// --- Wikipedia bio ---
 	try {
 		if (links.wikipedia.length > 0) {
 			const { fetchWikipediaBio } = await import('$lib/bio');
@@ -214,6 +177,22 @@ export const load: PageLoad = async ({ params, data, fetch }) => {
 		console.error('Bio fetch error:', err);
 	}
 
+	// Load curator attribution from local DB
+	let curators: Array<{ curator_handle: string; featured_at: number }> = [];
+	try {
+		curators = await provider.all<{ curator_handle: string; featured_at: number }>(
+			`SELECT curator_handle, MIN(featured_at) as featured_at
+       FROM curator_features
+       WHERE artist_mbid = ?
+       GROUP BY curator_handle
+       ORDER BY featured_at ASC
+       LIMIT 10`,
+			artist.mbid
+		);
+	} catch {
+		// curator_features may not exist on older DB versions — degrade gracefully
+	}
+
 	return {
 		artist,
 		links,
@@ -221,6 +200,7 @@ export const load: PageLoad = async ({ params, data, fetch }) => {
 		releases,
 		bio,
 		uniquenessScore: uniquenessData?.uniqueness_score ?? null,
-		uniquenessTagCount: uniquenessData?.tag_count ?? 0
+		uniquenessTagCount: uniquenessData?.tag_count ?? 0,
+		curators
 	};
 };

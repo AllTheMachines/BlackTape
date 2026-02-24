@@ -10,10 +10,9 @@ Read `PROJECT.md` for the full vision, architecture, and research context.
 
 ## Tech Stack
 
-- **Frontend:** SvelteKit (Svelte 5, TypeScript)
-- **Search index:** SQLite + FTS5
-- **Web hosting:** Cloudflare Pages + D1 (free tier)
-- **Desktop:** Tauri 2.0 (future, reads same SQLite locally)
+- **Frontend:** SvelteKit (Svelte 5, TypeScript) — Tauri desktop only, adapter-static SPA
+- **Search index:** SQLite + FTS5 (local, via tauri-plugin-sql)
+- **Desktop:** Tauri 2.0 (Rust shell, WebView2 on Windows)
 - **Data pipeline:** Node.js scripts that process MusicBrainz/Discogs dumps
 - **Distribution:** Database file distributed via torrent/download
 

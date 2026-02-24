@@ -1,29 +1,31 @@
 /**
- * Universal load function for the search page.
+ * Load function for the search page — Tauri desktop only.
  *
- * Coexists with +page.server.ts:
- * - Web (SSR): SvelteKit runs +page.server.ts on the server, passes its
- *   return value as `data`. This function returns it unchanged.
- * - Desktop (Tauri SPA, ssr=false): +page.server.ts is not executed.
- *   This function detects Tauri and queries the local SQLite database.
- *   Also searches the local music library for matching tracks.
- *
- * Dynamic imports keep Tauri dependencies out of the web bundle.
+ * export const prerender = true causes adapter-static to generate a static
+ * __data.json at build time. Without it, SvelteKit client-side navigation
+ * fetches __data.json at runtime — Tauri returns index.html as fallback
+ * and SvelteKit crashes on JSON.parse('<!doctype html>').
+ * The pre-rendered file has empty results; +page.ts then runs and does
+ * the actual invoke() search.
  */
 
-import { isTauri } from '$lib/platform';
 import type { PageLoad } from './$types';
 import type { ArtistResult } from '$lib/db/queries';
 import type { LocalTrack } from '$lib/library/types';
 
-export const load: PageLoad = async ({ url, data }) => {
-	// Web SSR: data comes from +page.server.ts — no local library
-	if (!isTauri()) {
-		return { ...data, localTracks: [] as LocalTrack[] };
-	}
+export const prerender = true;
 
-	const q = url.searchParams.get('q')?.trim() ?? '';
-	const mode = url.searchParams.get('mode') === 'tag' ? 'tag' : 'artist';
+export const load: PageLoad = async ({ url }) => {
+	// During prerendering url.searchParams is unavailable — return empty placeholder.
+	// At runtime in Tauri the actual search runs via the Tauri commands below.
+	let q = '';
+	let mode: 'artist' | 'tag' = 'artist';
+	try {
+		q = url.searchParams.get('q')?.trim() ?? '';
+		mode = url.searchParams.get('mode') === 'tag' ? 'tag' : 'artist';
+	} catch {
+		return { results: [] as ArtistResult[], query: '', mode: 'artist' as const, matchedTag: null as string | null, error: false, localTracks: [] as LocalTrack[] };
+	}
 
 	if (!q) {
 		return {
@@ -36,8 +38,6 @@ export const load: PageLoad = async ({ url, data }) => {
 		};
 	}
 
-	// Everything inside try/catch — an unhandled error here would crash the
-	// page (no +error.svelte), unmounting the layout and killing audio playback.
 	try {
 		const { getProvider } = await import('$lib/db/provider');
 		const { searchArtists, searchByTag } = await import('$lib/db/queries');
@@ -46,7 +46,6 @@ export const load: PageLoad = async ({ url, data }) => {
 		const results =
 			mode === 'tag' ? await searchByTag(provider, q) : await searchArtists(provider, q);
 
-		// Also search local library tracks
 		let localTracks: LocalTrack[] = [];
 		try {
 			const { getLibraryTracks } = await import('$lib/library/scanner');

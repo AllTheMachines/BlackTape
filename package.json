@@ -19,8 +19,6 @@
 		"test:seed-db": "node tools/test-suite/fixtures/seed-test-db.mjs"
 	},
 	"devDependencies": {
-		"@cloudflare/workers-types": "^4.20260214.0",
-		"@sveltejs/adapter-cloudflare": "^7.2.7",
 		"@sveltejs/kit": "^2.50.2",
 		"@sveltejs/vite-plugin-svelte": "^6.2.4",
 		"@tauri-apps/cli": "^2.10.0",

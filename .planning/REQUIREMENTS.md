@@ -12,7 +12,6 @@
 Fix the active defects in the existing test infrastructure before expanding coverage. Every new test written before these are fixed inherits the defects.
 
 - [x] **INFRA-01**: Console errors auto-detected on every Playwright test — silent JS crashes auto-fail the suite (no more Radiohead scenarios passing silently)
-- [ ] **INFRA-02**: Test suite exits with code 1 when wrangler is not running — pre-phase gate cannot give a false green on a broken environment
 - [x] **INFRA-03**: D3 animation tests use `data-ready` signals instead of hardcoded `waitForTimeout` — flaky timing-dependent tests eliminated
 - [x] **INFRA-04**: New tests use `data-testid` attributes instead of CSS class selectors — tests survive style refactors
 
@@ -34,14 +33,6 @@ Key user flows driven through the real running Tauri app via Playwright CDP.
 - [x] **E2E-03**: App launch smoke tests pass — window title, homepage, Settings and About pages load without error
 - [x] **E2E-04**: Search → artist page flow passes with fixture DB — "radiohead" returns results, clicking navigates to `/artist/radiohead` with correct name and tags
 - [x] **E2E-05**: Discovery flow (tag filter) and error paths (unknown route, empty search) pass
-
-### WEB — Coverage Gaps
-
-Pages that shipped in Phases 11–12 with zero Playwright browser coverage.
-
-- [ ] **WEB-01**: `/scenes` page has a Playwright web test verifying it loads and renders content
-- [ ] **WEB-02**: `/new-rising` page has a Playwright web test verifying it loads and renders content
-- [ ] **WEB-03**: Tauri `__data.json` protocol handler has an automated code check (the specific fix that solved the Radiohead navigation crash)
 
 ### FLOW — Navigation Flows
 
