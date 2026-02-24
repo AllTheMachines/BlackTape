@@ -9,6 +9,7 @@
 	} from '$lib/ai/state.svelte';
 	import { MODELS, downloadModel, checkModelExists } from '$lib/ai/model-manager';
 	import type { DownloadProgressEvent } from '$lib/ai/model-manager';
+	import { AI_PROVIDERS, getProviderById } from '$lib/ai/providers';
 
 	let generationExists = $state(false);
 	let embeddingExists = $state(false);
@@ -148,6 +149,38 @@
 	let totalModelSize = $derived(
 		Object.values(MODELS).reduce((sum, m) => sum + m.sizeBytes, 0)
 	);
+
+	let selectedProvider = $derived(
+		AI_PROVIDERS.find(p => p.id === aiState.selectedProviderName) ?? null
+	);
+
+	async function handleProviderSelect(providerId: string) {
+		const provider = getProviderById(providerId);
+		if (!provider) return;
+		await saveAiSetting('selected_provider_name', providerId);
+		// Pre-fill model with provider default only if model field is empty
+		if (!aiState.apiModel) {
+			remoteModel = provider.defaultModel;
+			await saveAiSetting('api_model', provider.defaultModel);
+		}
+		// Pre-fill base URL from provider config
+		remoteBaseUrl = provider.baseUrl;
+		await saveAiSetting('api_base_url', provider.baseUrl);
+	}
+
+	async function handleAutoGenerateToggle() {
+		const newVal = !aiState.autoGenerateOnVisit;
+		await saveAiSetting('auto_generate_on_visit', String(newVal));
+	}
+
+	async function openAffiliateUrl(url: string) {
+		try {
+			const { open } = await import('@tauri-apps/plugin-shell');
+			await open(url);
+		} catch {
+			// Silent — fallback to copy-paste instructions
+		}
+	}
 </script>
 
 {#if !loaded}
@@ -329,6 +362,52 @@
 			{/if}
 		</div>
 	{/if}
+
+	<!-- AI Auto-News: Provider Selection -->
+	<section class="settings-section">
+		<h3 class="settings-section-title">AI Summary Provider</h3>
+		<p class="settings-hint">Choose which AI provider generates artist summaries. A provider must be selected and API key entered for summaries to work.</p>
+
+		<div class="provider-list">
+			{#each AI_PROVIDERS as provider (provider.id)}
+				<button
+					class="provider-option"
+					class:provider-option--selected={aiState.selectedProviderName === provider.id}
+					onclick={() => handleProviderSelect(provider.id)}
+				>
+					<span class="provider-label">{provider.label}</span>
+					{#if provider.badge}
+						<span class="provider-badge">{provider.badge}</span>
+					{/if}
+				</button>
+			{/each}
+		</div>
+
+		{#if selectedProvider}
+			<p class="provider-instructions">{selectedProvider.instructions}</p>
+			{#if selectedProvider.affiliateUrl}
+				<button
+					class="provider-affiliate-btn"
+					onclick={() => openAffiliateUrl(selectedProvider!.affiliateUrl!)}
+				>
+					Get API key &#8599;
+				</button>
+			{/if}
+		{/if}
+	</section>
+
+	<!-- AI Auto-News: Auto-generate toggle -->
+	<section class="settings-section">
+		<h3 class="settings-section-title">Auto-generate on Artist Visit</h3>
+		<label class="settings-toggle-row">
+			<input
+				type="checkbox"
+				checked={aiState.autoGenerateOnVisit}
+				onchange={handleAutoGenerateToggle}
+			/>
+			<span>Automatically generate AI summaries when visiting artist pages (requires API key configured above)</span>
+		</label>
+	</section>
 {/if}
 
 <style>
@@ -713,5 +792,108 @@
 	.btn-small {
 		padding: 6px 10px;
 		font-size: 0.75rem;
+	}
+
+	/* AI Summary Provider */
+	.settings-section-title {
+		font-size: 0.9rem;
+		font-weight: 600;
+		color: var(--text-primary);
+		margin: 0 0 var(--space-xs);
+	}
+
+	.settings-hint {
+		font-size: 0.8rem;
+		color: var(--text-secondary);
+		margin: 0 0 var(--space-sm);
+		line-height: 1.5;
+	}
+
+	.provider-list {
+		display: flex;
+		flex-direction: column;
+		gap: 0.4rem;
+		margin: 0.5rem 0;
+	}
+
+	.provider-option {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.5rem 0.75rem;
+		background: var(--bg-elevated);
+		border: 1px solid var(--border-subtle);
+		border-radius: var(--card-radius);
+		cursor: pointer;
+		text-align: left;
+		transition: border-color 0.15s;
+		font-size: 0.875rem;
+		font-family: var(--font-sans);
+		color: var(--text-primary);
+	}
+
+	.provider-option:hover {
+		border-color: var(--border-default);
+	}
+
+	.provider-option--selected {
+		border-color: var(--border-hover);
+		background: var(--bg-hover);
+	}
+
+	.provider-label {
+		flex: 1;
+	}
+
+	.provider-badge {
+		font-size: 0.65rem;
+		font-weight: 600;
+		padding: 0.1em 0.45em;
+		border-radius: 3px;
+		background: var(--bg-hover);
+		border: 1px solid var(--border-default);
+		color: var(--text-secondary);
+		opacity: 0.8;
+		white-space: nowrap;
+	}
+
+	.provider-instructions {
+		font-size: 0.8rem;
+		color: var(--text-secondary);
+		margin: 0.4rem 0;
+		line-height: 1.5;
+	}
+
+	.provider-affiliate-btn {
+		display: inline-block;
+		padding: 0.3rem 0.75rem;
+		font-size: 0.8rem;
+		border: 1px solid var(--border-default);
+		border-radius: var(--card-radius);
+		background: none;
+		cursor: pointer;
+		color: var(--text-primary);
+		font-family: var(--font-sans);
+		transition: border-color 0.15s, color 0.15s;
+		margin-bottom: 0.25rem;
+	}
+
+	.provider-affiliate-btn:hover {
+		border-color: var(--border-hover);
+	}
+
+	.settings-toggle-row {
+		display: flex;
+		align-items: flex-start;
+		gap: 0.5rem;
+		font-size: 0.875rem;
+		cursor: pointer;
+		color: var(--text-primary);
+	}
+
+	.settings-toggle-row input[type="checkbox"] {
+		margin-top: 0.2rem;
+		flex-shrink: 0;
+		accent-color: var(--text-accent);
 	}
 </style>
