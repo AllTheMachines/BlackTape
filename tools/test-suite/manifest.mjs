@@ -1332,6 +1332,121 @@ export const PHASE_19 = [
 ];
 
 // ---------------------------------------------------------------------------
+// PHASE 20 — Listening Rooms
+// ---------------------------------------------------------------------------
+
+export const PHASE_20 = [
+  {
+    id: 'P20-01', phase: 20, area: 'Listening Rooms',
+    desc: 'listening-room.svelte.ts module exists',
+    method: 'code',
+    fn: () => fileExists('src/lib/comms/listening-room.svelte.ts'),
+  },
+  {
+    id: 'P20-02', phase: 20, area: 'Listening Rooms',
+    desc: 'listening-room.svelte.ts exports roomState',
+    method: 'code',
+    fn: () => fileContains('src/lib/comms/listening-room.svelte.ts', 'roomState'),
+  },
+  {
+    id: 'P20-03', phase: 20, area: 'Listening Rooms',
+    desc: 'listening-room.svelte.ts exports openRoom',
+    method: 'code',
+    fn: () => fileContains('src/lib/comms/listening-room.svelte.ts', 'openRoom'),
+  },
+  {
+    id: 'P20-04', phase: 20, area: 'Listening Rooms',
+    desc: 'listening-room.svelte.ts exports checkActiveRoom (scene discovery)',
+    method: 'code',
+    fn: () => fileContains('src/lib/comms/listening-room.svelte.ts', 'checkActiveRoom'),
+  },
+  {
+    id: 'P20-05', phase: 20, area: 'Listening Rooms',
+    desc: 'listening-room.svelte.ts uses kind:30311 for room lifecycle (addressable, reliable tag filter)',
+    method: 'code',
+    fn: () => fileContains('src/lib/comms/listening-room.svelte.ts', '30311'),
+  },
+  {
+    id: 'P20-06', phase: 20, area: 'Listening Rooms',
+    desc: 'listening-room.svelte.ts uses kind:20010 for video sync',
+    method: 'code',
+    fn: () => fileContains('src/lib/comms/listening-room.svelte.ts', '20010'),
+  },
+  {
+    id: 'P20-07', phase: 20, area: 'Listening Rooms',
+    desc: 'listening-room.svelte.ts uses kind:20012 for presence heartbeat',
+    method: 'code',
+    fn: () => fileContains('src/lib/comms/listening-room.svelte.ts', '20012'),
+  },
+  {
+    id: 'P20-08', phase: 20, area: 'Listening Rooms',
+    desc: '/room/[channelId] route page exists',
+    method: 'code',
+    fn: () => fileExists('src/routes/room/[channelId]/+page.svelte'),
+  },
+  {
+    id: 'P20-09', phase: 20, area: 'Listening Rooms',
+    desc: 'Room page contains keyed iframe block for video URL sync',
+    method: 'code',
+    fn: () => fileContains('src/routes/room/[channelId]/+page.svelte', 'activeVideoUrl'),
+  },
+  {
+    id: 'P20-10', phase: 20, area: 'Listening Rooms',
+    desc: 'Room page has host-controls testid',
+    method: 'code',
+    fn: () => fileContains('src/routes/room/[channelId]/+page.svelte', 'data-testid="host-controls"'),
+  },
+  {
+    id: 'P20-11', phase: 20, area: 'Listening Rooms',
+    desc: 'Room page has guest-controls testid',
+    method: 'code',
+    fn: () => fileContains('src/routes/room/[channelId]/+page.svelte', 'data-testid="guest-controls"'),
+  },
+  {
+    id: 'P20-12', phase: 20, area: 'Listening Rooms',
+    desc: 'Room page has room-queue testid',
+    method: 'code',
+    fn: () => fileContains('src/routes/room/[channelId]/+page.svelte', 'data-testid="room-queue"'),
+  },
+  {
+    id: 'P20-13', phase: 20, area: 'Listening Rooms',
+    desc: 'Room page has room-participants testid',
+    method: 'code',
+    fn: () => fileContains('src/routes/room/[channelId]/+page.svelte', 'data-testid="room-participants"'),
+  },
+  {
+    id: 'P20-14', phase: 20, area: 'Listening Rooms',
+    desc: 'Room page uses generateAvatarSvg for participant avatars',
+    method: 'code',
+    fn: () => fileContains('src/routes/room/[channelId]/+page.svelte', 'generateAvatarSvg'),
+  },
+  {
+    id: 'P20-15', phase: 20, area: 'Listening Rooms',
+    desc: 'Scene page calls checkActiveRoom for room discovery',
+    method: 'code',
+    fn: () => fileContains('src/routes/scenes/[slug]/+page.svelte', 'checkActiveRoom'),
+  },
+  {
+    id: 'P20-16', phase: 20, area: 'Listening Rooms',
+    desc: 'Scene page has room-indicator testid',
+    method: 'code',
+    fn: () => fileContains('src/routes/scenes/[slug]/+page.svelte', 'data-testid="room-indicator"'),
+  },
+  {
+    id: 'P20-17', phase: 20, area: 'Listening Rooms',
+    desc: 'Scene page has room-join-btn testid',
+    method: 'code',
+    fn: () => fileContains('src/routes/scenes/[slug]/+page.svelte', 'data-testid="room-join-btn"'),
+  },
+  {
+    id: 'P20-18', phase: 20, area: 'Listening Rooms',
+    desc: '[skip] Full room interaction requires two live Tauri instances with Nostr relay connectivity',
+    method: 'skip',
+    reason: 'requires two running Tauri desktop instances connected to live Nostr relays — cannot be headlessly automated',
+  },
+];
+
+// ---------------------------------------------------------------------------
 // Build check — always runs last
 // ---------------------------------------------------------------------------
 
@@ -1366,5 +1481,6 @@ export const ALL_TESTS = [
   ...PHASE_17,
   ...PHASE_18,
   ...PHASE_19,
+  ...PHASE_20,
   ...BUILD,
 ];
