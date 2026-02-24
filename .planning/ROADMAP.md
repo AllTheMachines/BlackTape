@@ -118,7 +118,7 @@ Plans:
 - [ ] 18-02-PLAN.md — TS AI infrastructure: providers.ts + state.svelte.ts extension + prompts.ts new function
 - [ ] 18-03-PLAN.md — ArtistSummary.svelte component (all states: hidden, generating, cached, stale-refresh)
 - [ ] 18-04-PLAN.md — AiSettings.svelte extension: provider selector + affiliate badge + auto-generate toggle
-- [ ] 18-05-PLAN.md — Artist page wiring + test suite manifest Phase 18 entries
+- [x] 18-05-PLAN.md — Artist page wiring + test suite manifest Phase 18 entries (completed 2026-02-24)
 
 ### Phase 19: Static Site Generator
 **Goal**: Any artist page in Mercury can be exported as a self-contained HTML file the artist can host anywhere with zero Mercury dependency
@@ -228,7 +228,7 @@ Runs alongside everything else. Not blocking any phase. Rolls out in stages as f
 | 15. Navigation Flows + Rust Unit Tests | v1.2 | done | Complete | 2026-02-24 |
 | 16. Sustainability Links | 2/2 | Complete    | 2026-02-24 | - |
 | 17. Artist Stats Dashboard | 2/2 | Complete    | 2026-02-24 | - |
-| 18. AI Auto-News | 5/5 | Complete   | 2026-02-24 | - |
+| 18. AI Auto-News | 5/5 | Complete    | 2026-02-24 | - |
 | 19. Static Site Generator | v1.3 | 0/TBD | Not started | - |
 | 20. Listening Rooms | v1.3 | 0/TBD | Not started | - |
 | 21. ActivityPub Outbound | v1.3 | 0/TBD | Not started | - |
