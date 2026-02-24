@@ -1,55 +1,72 @@
 # Work Handoff - 2026-02-24
 
 ## Current Task
-Mid `/gsd:complete-milestone v1.2` — audit done, archiving not yet run.
+Milestone v1.3 "The Open Network" fully planned — ready to execute Phase 16.
 
 ## Context
-Mercury v1.2 "Zero-Click Confidence" is complete (Phases 13–15). All 25 requirements satisfied. Running the complete-milestone workflow to archive the milestone and prepare for v1.3.
+v1.2 Zero-Click Confidence shipped this morning (test suite, pre-commit gate). Just completed the full `/gsd:new-milestone` workflow: questioning → 4-agent parallel research → requirements → roadmap. Everything is committed, tests green, ready to build.
 
 ## Progress
 
 ### Completed
-- Phase 15 (Navigation Flows + Rust Unit Tests) — committed `f6479af`
-- ARCHITECTURE.md purge (all web/Cloudflare refs removed) — same commit
-- `/gsd:audit-milestone` run — `.planning/v1.2-MILESTONE-AUDIT.md` created, status: tech_debt (all reqs met, no blockers)
-- User confirmed: proceed with `/gsd:complete-milestone v1.2`
+- v1.3 scope defined: Sustainability Links, Artist Stats, AI Auto-News, Static Site Generator, Listening Rooms, ActivityPub Outbound
+- 4-agent parallel research completed (STACK.md, FEATURES.md, ARCHITECTURE.md, PITFALLS.md, SUMMARY.md)
+- REQUIREMENTS.md written: 21 requirements across 6 categories (SUST, STAT, NEWS, SITE, ROOM, APUB)
+- ROADMAP.md created: Phases 16–21, all 21 requirements mapped, traceability filled
+- PROJECT.md updated with v1.3 Current Milestone section
+- STATE.md reset for new milestone
+- BUILD-LOG.md updated (Entry 029)
+- All commits clean, 72/72 tests passing
 
 ### In Progress
-- `/gsd:complete-milestone v1.2` — paused after audit, before archiving
+- Nothing. Planning complete, nothing started yet.
 
-### Remaining (complete-milestone steps)
-1. Gather stats (git range, LOC, timeline)
-2. Extract accomplishments from Phase 13 SUMMARY.md files
-3. Run `node gsd-tools.cjs milestone complete "v1.2" --name "Zero-Click Confidence"` (archives roadmap + requirements, creates MILESTONES.md entry)
-4. PROJECT.md full evolution review:
-   - Remove "Cloudflare-hosted web gateway" from "What This Is" — web purged
-   - Update tech stack: SvelteKit + Tauri 2.0 + SQLite (no Cloudflare)
-   - Move `v1.2 Complete test automation` from Active → Validated
-   - Update Context: "pure Tauri desktop app", remove web deployment steps
-   - Update "Last updated" footer
-5. Reorganize ROADMAP.md — Phase 13–15 collapsed under v1.2 `<details>` block
-6. Delete `.planning/REQUIREMENTS.md`
-7. Commit: `chore: complete v1.2 milestone`
-8. Tag: `git tag -a v1.2 -m "v1.2 Zero-Click Confidence"`
+### Remaining
+- Execute Phases 16–21
 
 ## Key Decisions
-- Audit status: tech_debt (not gaps_found) — all 25 requirements satisfied, debt is missing VERIFICATION.md for Phases 14+15
-- Branching strategy: "none" — skip branch handling
-- gsd-tools `milestone_version` showed "v1.0" (tool parsing issue) — use `--name` flag explicitly
+
+**Listening Rooms:** YouTube-only jukebox model. Host picks track, guests load same embed URL. Guests can suggest tracks. Host approves. No position-level sync (Bandcamp/Spotify iframe APIs don't allow it). Coordinated via Nostr NIP-28 extension (new kind:10311 event).
+
+**ActivityPub:** Static file export only — user generates actor.json/webfinger.json/outbox.json and self-hosts. No live serving from Tauri (no public IP, no server). v1.4 will add serverless inbox via Cloudflare Worker.
+
+**Critical pitfall discovered:** `+server.ts` routes are dead in the built Tauri binary (adapter-static = pure SPA). Never add +server.ts for in-app use. All data goes through `+page.ts` direct fetch or Tauri `invoke()`.
+
+**Artist support links already implemented:** `categorize.ts` already maps MusicBrainz 'patronage'/'crowdfunding' to 'support' category. Phase 16 is visual polish, not new code.
+
+**New Rust crates for v1.3:** axum ^0.8, tower ^0.5, rsa ^0.9, sha2 ^0.10, minijinja ^2.0. Zero new npm packages.
 
 ## Relevant Files
-- `.planning/v1.2-MILESTONE-AUDIT.md` — audit report (just created, not committed)
-- `.planning/ROADMAP.md` — needs Phase 13–15 collapsed + v1.2 milestone entry
-- `.planning/REQUIREMENTS.md` — will be deleted after archiving
-- `.planning/PROJECT.md` — needs full evolution review (remove web/Cloudflare content)
+
+- `.planning/ROADMAP.md` — Full roadmap, Phases 16–21
+- `.planning/REQUIREMENTS.md` — 21 requirements with traceability
+- `.planning/PROJECT.md` — Updated with v1.3 Current Milestone section
+- `.planning/STATE.md` — Reset, current phase: Not started
+- `.planning/research/SUMMARY.md` — Research synthesis, key findings, phase rationale
+- `.planning/research/PITFALLS.md` — 11 pitfalls, especially +server.ts dead code and AP constraints
+- `src/lib/embeds/categorize.ts` — Artist support links already implemented here
+- `BUILD-LOG.md` — Entry 029 documents all planning decisions
 
 ## Git Status
-Only `.planning/v1.2-MILESTONE-AUDIT.md` is new and uncommitted. BUILD-LOG.md has auto-save entry (minor).
+All clean. Last commit: `1db7a20` — "docs: log milestone v1.3 planning session (Entry 029)"
+
+## Roadmap Summary
+
+| Phase | Name | Requirements | Risk |
+|-------|------|--------------|------|
+| 16 | Sustainability Links | SUST-01–04 | LOW — standard patterns, skip research |
+| 17 | Artist Stats Dashboard | STAT-01–02 | LOW — pure SQLite reads |
+| 18 | AI Auto-News | NEWS-01–03 | LOW — extends existing AI sidecar |
+| 19 | Static Site Generator | SITE-01–04 | MEDIUM — new minijinja Rust dep |
+| 20 | Listening Rooms | ROOM-01–05 | MEDIUM — new Nostr event schema |
+| 21 | ActivityPub Outbound | APUB-01–03 | MEDIUM-HIGH — AP spec compliance |
+
+Phases 16–18: skip research-phase, go straight to `/gsd:plan-phase`.
+Phases 19–21: run `/gsd:discuss-phase` or `/gsd:plan-phase` with research flag.
 
 ## Next Steps
-1. `/resume` to restore context
-2. Continue `/gsd:complete-milestone v1.2` from "gather stats" step
-3. Follow the remaining steps above in order
+1. `/clear` to free context
+2. `/gsd:plan-phase 16` — Sustainability Links (zero new architecture, immediate value)
 
 ## Resume Command
 After running `/clear`, run `/resume` to continue.
