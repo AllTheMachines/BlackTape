@@ -5176,6 +5176,19 @@ Plan referenced `@tauri-apps/plugin-opener` but project already uses `@tauri-app
 
 All 92 tests passing. Phase 18 UI layer complete — Plans 01–04 done.
 
+## Entry — 2026-02-24 — Phase 18 Plan 05: Wire ArtistSummary Into Artist Page
+
+The final Phase 18 wiring plan. ArtistSummary.svelte has been live in the codebase since Plan 03 but invisible — it wasn't imported or rendered anywhere. This plan drops it into the artist page and locks it down with test manifest entries.
+
+**Two tasks:**
+1. Import `ArtistSummary` into `src/routes/artist/[slug]/+page.svelte` and render it in the overview tab above the discography section with all four props: `artistMbid`, `artistName`, `artistTags`, `releases`
+2. Add `PHASE_18` array to `tools/test-suite/manifest.mjs` — 12 entries (P18-01 through P18-12) covering every Phase 18 artifact; P18-12 is a `tauri` method for the live page check
+
+**Result:** 103 code checks passing (was 92). Phase 18 is complete. Any future regression of AI summary infrastructure will be caught at commit time.
+
+> **Commit ca606c0** (2026-02-24 13:32) — feat(18-05): wire ArtistSummary into artist page overview tab
+> Files changed: 1
+
 > **Commit f831d6f** (2026-02-24 13:27) — feat(18-04): extend AiSettings with provider selector and auto-generate toggle
 > Files changed: 1
 
@@ -5187,3 +5200,15 @@ All 92 tests passing. Phase 18 UI layer complete — Plans 01–04 done.
 
 > **Commit 3185efd** (2026-02-24 13:31) — wip: auto-save
 > Files changed: 1
+
+> **Commit b6c4d90** (2026-02-24 13:31) — wip: auto-save
+> Files changed: 1
+
+> **Commit ca606c0** (2026-02-24 13:32) — feat(18-05): wire ArtistSummary into artist page overview tab
+> Files changed: 1
+
+> **Commit ca1daf3** (2026-02-24 13:33) — feat(18-05): add PHASE_18 entries to test suite manifest
+> Files changed: 1
+
+> **Commit 69e52a4** (2026-02-24 13:35) — docs(18-05): complete wire-artist-summary plan
+> Files changed: 3
