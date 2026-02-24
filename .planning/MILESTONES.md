@@ -23,3 +23,13 @@
 
 ---
 
+
+## v1.2 Zero-Click Confidence (Shipped: 2026-02-24)
+
+**Phases completed:** 3 phases, 11 plans, 0 tasks
+
+**Key accomplishments:**
+- (none recorded)
+
+---
+
