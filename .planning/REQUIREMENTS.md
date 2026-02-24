@@ -9,8 +9,8 @@
 
 Connect Mercury to the open web's funding ecosystem and make the project's own sustainability visible.
 
-- [ ] **SUST-01**: User can see Patreon/Ko-fi/crowdfunding links for artists on artist pages, visually distinguished from info/social links
-- [ ] **SUST-02**: User can share any artist or scene page to the Fediverse via a pre-populated Mastodon share link (URL-scheme only, no AP protocol)
+- [x] **SUST-01**: User can see Patreon/Ko-fi/crowdfunding links for artists on artist pages, visually distinguished from info/social links
+- [x] **SUST-02**: User can share any artist or scene page to the Fediverse via a pre-populated Mastodon share link (URL-scheme only, no AP protocol)
 - [x] **SUST-03**: User can view Mercury project funding links (Ko-fi, GitHub Sponsors, Open Collective) in the About screen
 - [x] **SUST-04**: User can view a backer credits screen listing Mercury supporters, fetched from a Nostr list event
 
@@ -96,8 +96,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SUST-01 | Phase 16 | Pending |
-| SUST-02 | Phase 16 | Pending |
+| SUST-01 | Phase 16 | Complete |
+| SUST-02 | Phase 16 | Complete |
 | SUST-03 | Phase 16 | Complete |
 | SUST-04 | Phase 16 | Complete |
 | STAT-01 | Phase 17 | Pending |

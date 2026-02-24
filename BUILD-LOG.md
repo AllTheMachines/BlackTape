@@ -4909,3 +4909,12 @@ Plan 03 will be the final plan in Phase 16 (if any remain) or Phase 17 begins �
 
 > **Commit 382ee4e** (2026-02-24 10:51) — feat(16-01): add Support section and Mastodon share button to artist page
 > Files changed: 1
+
+> **Commit 7c01210** (2026-02-24 10:53) — feat(16-02): create /backers route with Nostr kind:30000 backer credits fetch
+> Files changed: 2
+
+> **Commit 14eeade** (2026-02-24 10:53) — feat(16-01): add Mastodon share button to scene page
+> Files changed: 1
+
+> **Commit b3075c4** (2026-02-24 10:55) — docs(16-02): complete sustainability links plan 02 — support section + backers route
+> Files changed: 4
