@@ -134,7 +134,7 @@ Plans:
 Plans:
 - [ ] 19-01-PLAN.md — Rust site_gen.rs backend (HTML generation, cover downloads, XSS escape) + dialog:allow-save capability
 - [ ] 19-02-PLAN.md — SiteGenDialog.svelte component (5-state machine: confirming/picking/generating/success/error)
-- [ ] 19-03-PLAN.md — lib.rs registration + artist page "Export site" button wiring + test manifest Phase 19 entries
+- [x] 19-03-PLAN.md — lib.rs registration + artist page "Export site" button wiring + test manifest Phase 19 entries (completed 2026-02-24)
 
 ### Phase 20: Listening Rooms
 **Goal**: Users can host or join a synchronized listening room where the host controls which YouTube video plays for all participants
@@ -234,6 +234,6 @@ Runs alongside everything else. Not blocking any phase. Rolls out in stages as f
 | 16. Sustainability Links | 2/2 | Complete    | 2026-02-24 | - |
 | 17. Artist Stats Dashboard | 2/2 | Complete    | 2026-02-24 | - |
 | 18. AI Auto-News | 5/5 | Complete    | 2026-02-24 | - |
-| 19. Static Site Generator | 3/3 | Complete   | 2026-02-24 | - |
+| 19. Static Site Generator | 3/3 | Complete    | 2026-02-24 | - |
 | 20. Listening Rooms | v1.3 | 0/TBD | Not started | - |
 | 21. ActivityPub Outbound | v1.3 | 0/TBD | Not started | - |
