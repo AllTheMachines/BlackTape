@@ -5968,3 +5968,6 @@ Next step: review mockups in browser, make any adjustments, then map each visual
 
 > **Commit fdbe805** (2026-02-24 23:59) — docs: create milestone v1.4 roadmap (5 phases)
 > Files changed: 3
+
+> **Commit d491ce3** (2026-02-24 23:59) — wip: auto-save
+> Files changed: 2
