@@ -4782,3 +4782,53 @@ Tag: v1.2
 
 > **Commit 608615d** (2026-02-24 09:31) — docs: complete v1.3 project research — synthesize SUMMARY.md
 > Files changed: 2
+
+> **Commit 7ee6f1c** (2026-02-24 09:46) — auto-save: 1 files @ 09:46
+> Files changed: 1
+
+> **Commit 143f06b** (2026-02-24 09:48) — docs: define milestone v1.3 requirements (21 requirements)
+> Files changed: 1
+
+> **Commit d56db73** (2026-02-24 10:01) — docs: create milestone v1.3 roadmap (6 phases, 21 requirements)
+> Files changed: 3
+
+## Entry 029 — 2026-02-24 — Milestone v1.3: The Open Network
+
+### Context
+
+v1.2 Zero-Click Confidence shipped this morning. Test suite green. Pre-commit gate active. Time to plan what comes next.
+
+Ran through the full `/gsd:new-milestone` workflow — questioning, 4-agent parallel research, requirements definition, roadmap creation.
+
+### Key Planning Decisions
+
+**ActivityPub scoped to static export only.** Wanted full Fediverse federation — artists and scenes followable from Mastodon. Research revealed the hard blocker: Mercury is a Tauri desktop app with no public IP, no stable domain, no always-on server. WebFinger requires dynamic HTTP query-parameter handling. True AP federation requires an always-on inbox. The $0/no-server constraint means v1.3 delivers static JSON-LD export files the user self-hosts — fully Mastodon-compatible for follows, zero infrastructure cost. Live inbox is v1.4 territory (serverless Worker).
+
+**Listening rooms are YouTube jukebox, not synchronized audio.** The original vision was "listen together synchronized." Research surfaced the iframe API limitation: Bandcamp has no postMessage API, Spotify requires Premium OAuth for embed control. Position-level sync across four platforms is technically impossible without hosting. So: listening rooms are a jukebox model. Host picks the YouTube video, guests load the same embed URL. Guests can suggest tracks, host approves. Track-switch sync is the primitive — not timestamp sync. Steve's instinct to go YouTube-only was right; it has the widest catalog and an actual embed API.
+
+> "this can be become a jukebox thing where people can add new tracks but the host decides if they are going to be played"
+
+**Artist support links already implemented.** Biggest surprise from research: `categorize.ts` already maps MusicBrainz `patronage` and `crowdfunding` relationship types to a `support` category, and the artist page already renders all link categories. The "sustainability" feature is visual polish, not new code.
+
+**+server.ts routes are dead in the built Tauri binary.** Critical pitfall surfaced: SvelteKit's adapter-static produces a pure SPA. Any `+server.ts` route silently returns the index.html fallback in the built app. Works in `npm run dev`, passes `npm run build`, invisible until runtime. All in-app data must go through `+page.ts` direct fetch or Tauri `invoke()` — never `+server.ts`.
+
+### v1.3 Roadmap: 6 Phases
+
+| Phase | Name | Goal |
+|-------|------|------|
+| 16 | Sustainability Links | Artist support links, share-to-Fediverse, Mercury funding screen, backer credits |
+| 17 | Artist Stats Dashboard | Discoverability stats + personal visit count per artist |
+| 18 | AI Auto-News | MusicBrainz-grounded AI summary on artist pages |
+| 19 | Static Site Generator | Export self-contained HTML artist page for self-hosting |
+| 20 | Listening Rooms | YouTube jukebox via Nostr NIP-28 extension |
+| 21 | ActivityPub Outbound | Static AP actor export for Fediverse presence |
+
+21 requirements across 6 categories (SUST, STAT, NEWS, SITE, ROOM, APUB). Phases 16–18 can go straight to planning (standard patterns). Phases 19–21 warrant research/discussion sessions first.
+
+### New Stack (Rust-only)
+
+Five new Rust crates: `axum ^0.8` (embedded HTTP for future AP serving), `tower ^0.5` (axum middleware), `rsa ^0.9` (AP HTTP signatures), `sha2 ^0.10` (AP digest headers), `minijinja ^2.0` (HTML template engine for site generator). Zero new npm packages.
+
+### What's Next
+
+`/gsd:plan-phase 16` — Sustainability Links is the opener. Zero new architecture, immediate value, validates the link pipeline before anything else depends on it.
