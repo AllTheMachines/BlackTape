@@ -5469,3 +5469,41 @@ Phase 19 is verified. Ready for Phase 20.
 
 > **Commit 10dbf09** (2026-02-24 17:29) — wip: auto-save
 > Files changed: 1
+
+> **Commit 5298936** (2026-02-24 17:46) — auto-save: 1 files @ 17:46
+> Files changed: 1
+
+
+## Entry — 2026-02-24 — Phase 20 Plan 01: Listening Room Data Layer
+
+Phase 20 kicks off with the data layer — the Nostr state machine that all other Phase 20 plans will import.
+
+### What Was Built
+
+**`src/lib/comms/listening-room.svelte.ts`** (644 lines) — the complete room state machine:
+- `roomState` $state object: isInRoom, isHost, channelSlug, hostPubkey, activeVideoUrl, queue, participants, myPendingSuggestionId
+- Full public API: openRoom, joinRoom, leaveRoom, setActiveVideo, submitSuggestion, retractSuggestion, approveQueueItem, rejectQueueItem, checkActiveRoom
+- kind:30311 addressable event for room lifecycle (open/close) — diverged from STATE.md's kind:10311 per RESEARCH.md Pitfall 3
+- kind:20010/20011/20012 ephemeral events for video sync, jukebox queue, presence heartbeat
+- 30s heartbeat timer + 10s presence cleanup (75s TTL — tolerates one missed heartbeat)
+- participants stored as `Record<string, RoomParticipant>` not `Map` — Svelte 5 $state tracks plain objects deeply
+
+**`src/routes/room/[channelId]/+page.svelte`** — route shell with all imports established for Plan 02.
+
+<!-- decision: kind:30311 for room lifecycle instead of kind:10311 -->
+Diverged from STATE.md's `kind:10311` choice. Research found that relay tag filter reliability is NOT guaranteed for replaceable events (10000-19999 range) — some relays don't index them by `#t` tag. Used `kind:30311` (addressable, 30000-39999) with `d: 'mercury-room-'+channelSlug` tag instead. `#d` tag filtering is spec-guaranteed for addressable events on all compliant relays.
+<!-- /decision -->
+
+### Auto-Fix Applied
+Task 2 had a TypeScript error: `$page.params.channelId` typed as `string | undefined` but `checkActiveRoom()` expects `string`. Fixed with a `if (channelId)` guard (Rule 1 — bug fix). npm run check: 0 errors after fix.
+
+### Test Suite
+92/92 code checks pass. 0 failures. TypeScript build clean.
+
+Commits: ca81a2b (listening-room.svelte.ts), de1437f (route shell)
+
+> **Commit ca81a2b** (2026-02-24 17:57) — feat(20-01): create listening-room.svelte.ts state machine and Nostr I/O
+> Files changed: 1
+
+> **Commit de1437f** (2026-02-24 17:58) — feat(20-01): scaffold /room/[channelId] route page shell
+> Files changed: 1

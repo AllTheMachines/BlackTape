@@ -42,11 +42,11 @@ Export a self-contained artist page anyone can host anywhere — no Mercury depe
 
 Synchronized YouTube listening with a jukebox model — host decides what plays, guests can suggest.
 
-- [ ] **ROOM-01**: User can create a listening room associated with a Nostr scene channel
-- [ ] **ROOM-02**: Host can set the active YouTube video that all room participants see loaded in their player
-- [ ] **ROOM-03**: Guests can suggest YouTube videos to the room's jukebox queue
-- [ ] **ROOM-04**: Host can approve a suggestion from the queue, making it the active video for all participants
-- [ ] **ROOM-05**: User can see the list of current participants in a room
+- [x] **ROOM-01**: User can create a listening room associated with a Nostr scene channel
+- [x] **ROOM-02**: Host can set the active YouTube video that all room participants see loaded in their player
+- [x] **ROOM-03**: Guests can suggest YouTube videos to the room's jukebox queue
+- [x] **ROOM-04**: Host can approve a suggestion from the queue, making it the active video for all participants
+- [x] **ROOM-05**: User can see the list of current participants in a room
 
 ### APUB — ActivityPub Outbound
 
@@ -109,11 +109,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SITE-02 | Phase 19 | Complete |
 | SITE-03 | Phase 19 | Complete |
 | SITE-04 | Phase 19 | Complete |
-| ROOM-01 | Phase 20 | Pending |
-| ROOM-02 | Phase 20 | Pending |
-| ROOM-03 | Phase 20 | Pending |
-| ROOM-04 | Phase 20 | Pending |
-| ROOM-05 | Phase 20 | Pending |
+| ROOM-01 | Phase 20 | Complete |
+| ROOM-02 | Phase 20 | Complete |
+| ROOM-03 | Phase 20 | Complete |
+| ROOM-04 | Phase 20 | Complete |
+| ROOM-05 | Phase 20 | Complete |
 | APUB-01 | Phase 21 | Pending |
 | APUB-02 | Phase 21 | Pending |
 | APUB-03 | Phase 21 | Pending |

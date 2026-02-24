@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-24 after v1.3 milestone started)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** v1.3 The Open Network — Phase 19: Static Site Generator COMPLETE
+**Current focus:** v1.3 The Open Network — Phase 20: Listening Rooms (Plan 01 complete)
 
 ## Current Position
 
-Phase: 19 of 21 (Static Site Generator)
-Plan: 03 of 03 complete
-Status: Phase 19 COMPLETE — all 3 plans done (Rust backend + SiteGenDialog + wiring)
-Last activity: 2026-02-24 — Phase 19 Plan 03 complete (lib.rs wiring + artist page + test manifest)
+Phase: 20 of 21 (Listening Rooms)
+Plan: 01 of TBD complete
+Status: Phase 20 in progress — Plan 01 done (listening-room.svelte.ts state machine + /room/[channelId] route shell)
+Last activity: 2026-02-24 — Phase 20 Plan 01 complete (Nostr room state machine + route scaffold)
 
-Progress: [████░░░░░░] 44% (v1.3 — 3/6 phases complete)
+Progress: [████░░░░░░] 44% (v1.3 — 3/6 phases complete, Phase 20 started)
 
 ## Performance Metrics
 
@@ -31,7 +31,7 @@ Progress: [████░░░░░░] 44% (v1.3 — 3/6 phases complete)
 | 17. Artist Stats Dashboard | 2 | Complete |
 | 18. AI Auto-News | 5 | Complete |
 | 19. Static Site Generator | 3 | Complete |
-| 20. Listening Rooms | TBD | Not started |
+| 20. Listening Rooms | TBD | In progress (1 done) |
 | 21. ActivityPub Outbound | TBD | Not started |
 
 ## Accumulated Context
@@ -40,7 +40,7 @@ Progress: [████░░░░░░] 44% (v1.3 — 3/6 phases complete)
 - v1.3 phase order: risk escalation (LOW → MEDIUM-HIGH); Phases 16–18 skip research-phase, Phases 19–21 need research-phase during planning
 - AP scoped to static JSON-LD export only — Tauri desktop cannot serve a live AP inbox (no public IP, no inbound ports)
 - Listening room sync means "everyone loads the same embed URL" — position-level sync across iframe APIs is not achievable
-- AI auto-news prompt must include actual MusicBrainz release data as context — free-form generation explicitly prohibited (hallucination guard)
+- AI auto-news prompt must include actual MusicBrainz release data as context — free-free generation explicitly prohibited (hallucination guard)
 - New Rust deps (minijinja, rsa, sha2) are additive and low-risk; axum/tower held for future live-server scenario
 - Zero new npm packages needed for v1.3 — confirmed by codebase inspection in research phase
 - Artist support links (`support` category) already implemented in `categorize.ts` — Phase 16 is rendering what already exists
@@ -76,17 +76,20 @@ Progress: [████░░░░░░] 44% (v1.3 — 3/6 phases complete)
 - [Phase 19-01]: Generated site CSS uses hex/RGB not OKLCH — WebView2 supports OKLCH but generated sites open in users' own browsers
 - [Phase 19-03]: Export site button placed after Mastodon share link in artist-name-row — consistent with other Tauri-only button placement
 - [Phase 19-03]: SiteGenDialog placed at end of artist-page div outside tab sections — overlays full page regardless of active tab
+- [Phase 20-01]: kind:30311 (addressable) used instead of STATE.md's kind:10311 (replaceable) — #d tag filter reliability is spec-guaranteed for addressable events; replaceable event tag filter behavior varies by relay implementation
+- [Phase 20-01]: participants as Record<string, RoomParticipant> not Map — Svelte 5 $state tracks plain object mutations but not Map.set() mutations
+- [Phase 20-01]: Heartbeat TTL: 30s interval, 75s expiry window (2.5x) — tolerates exactly one missed heartbeat before dropping participant
 
 ### Pending Todos
 None
 
 ### Blockers/Concerns
-- [Phase 20] kind:10311 relay propagation latency: needs empirical validation with Mercury's relay pool during implementation
+- [Phase 20] kind:10311 relay propagation latency concern resolved — using kind:30311 (addressable) instead; #d tag filter is relay-spec-guaranteed
 - [Phase 21] AP JSON-LD output must be validated against a live Mastodon instance before Phase 21 ships — mandatory integration test
 
 ## Session Continuity
 
 Last session: 2026-02-24
-Stopped at: Completed 19-03-PLAN.md — Phase 19 Static Site Generator complete (all 3 plans done)
+Stopped at: Completed 20-01-PLAN.md — listening-room.svelte.ts state machine + /room/[channelId] route shell
 Resume file: None
-Next: Phase 20 — Listening Rooms
+Next: Phase 20 Plan 02 — Room UI
