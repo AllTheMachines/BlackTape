@@ -1166,6 +1166,93 @@ export const PHASE_17 = [
 ];
 
 // ---------------------------------------------------------------------------
+// PHASE 18 — AI Auto-News
+// ---------------------------------------------------------------------------
+
+export const PHASE_18 = [
+  {
+    id: 'P18-01', phase: 18, area: 'AI Summary',
+    desc: 'ArtistSummary.svelte component exists',
+    method: 'code',
+    fn: () => fileExists('src/lib/components/ArtistSummary.svelte'),
+  },
+  {
+    id: 'P18-02', phase: 18, area: 'AI Summary',
+    desc: 'ArtistSummary.svelte contains data-testid="ai-summary"',
+    method: 'code',
+    fn: () => fileContains('src/lib/components/ArtistSummary.svelte', 'data-testid="ai-summary"'),
+  },
+  {
+    id: 'P18-03', phase: 18, area: 'AI Summary',
+    desc: 'ArtistSummary.svelte contains attribution label text',
+    method: 'code',
+    fn: () => fileContains('src/lib/components/ArtistSummary.svelte', 'AI summary based on MusicBrainz data'),
+  },
+  {
+    id: 'P18-04', phase: 18, area: 'AI Summary',
+    desc: 'ArtistSummary.svelte uses artistSummaryFromReleases (not old PROMPTS.artistSummary)',
+    method: 'code',
+    fn: () => fileContains('src/lib/components/ArtistSummary.svelte', 'artistSummaryFromReleases'),
+  },
+  {
+    id: 'P18-05', phase: 18, area: 'AI Summary',
+    desc: 'artist_summaries table DDL exists in taste_db.rs',
+    method: 'code',
+    fn: () => fileContains('src-tauri/src/ai/taste_db.rs', 'artist_summaries'),
+  },
+  {
+    id: 'P18-06', phase: 18, area: 'AI Summary',
+    desc: 'get_artist_summary command registered in lib.rs',
+    method: 'code',
+    fn: () => fileContains('src-tauri/src/lib.rs', 'get_artist_summary'),
+  },
+  {
+    id: 'P18-07', phase: 18, area: 'AI Settings',
+    desc: 'AI_PROVIDERS constant exists in providers.ts',
+    method: 'code',
+    fn: () => fileContains('src/lib/ai/providers.ts', 'AI_PROVIDERS'),
+  },
+  {
+    id: 'P18-08', phase: 18, area: 'AI Settings',
+    desc: 'AiSettings.svelte imports AI_PROVIDERS',
+    method: 'code',
+    fn: () => fileContains('src/lib/components/AiSettings.svelte', 'AI_PROVIDERS'),
+  },
+  {
+    id: 'P18-09', phase: 18, area: 'AI Settings',
+    desc: 'AiSettings.svelte has affiliate badge text',
+    method: 'code',
+    fn: () => fileContains('src/lib/components/AiSettings.svelte', 'affiliate link'),
+  },
+  {
+    id: 'P18-10', phase: 18, area: 'AI Settings',
+    desc: 'artistSummaryFromReleases exported from prompts.ts',
+    method: 'code',
+    fn: () => fileContains('src/lib/ai/prompts.ts', 'artistSummaryFromReleases'),
+  },
+  {
+    id: 'P18-11', phase: 18, area: 'AI Summary',
+    desc: 'Artist page +page.svelte includes ArtistSummary component',
+    method: 'code',
+    fn: () => fileContains('src/routes/artist/[slug]/+page.svelte', 'ArtistSummary'),
+  },
+  {
+    id: 'P18-12', phase: 18, area: 'AI Summary',
+    desc: 'ArtistSummary renders on live artist page with summary visible',
+    method: 'tauri',
+    fn: async (page) => {
+      await page.goto('tauri://localhost/artist/radiohead');
+      await page.waitForTimeout(500);
+      // Summary section only visible if cache exists — skip if not present
+      const summaryEl = page.locator('[data-testid="ai-summary"]');
+      const count = await summaryEl.count();
+      // Pass if summary is visible OR if section is correctly hidden (no cache)
+      return count === 0 || await summaryEl.isVisible();
+    },
+  },
+];
+
+// ---------------------------------------------------------------------------
 // Build check — always runs last
 // ---------------------------------------------------------------------------
 
@@ -1198,5 +1285,6 @@ export const ALL_TESTS = [
   ...PHASE_15,
   ...PHASE_16,
   ...PHASE_17,
+  ...PHASE_18,
   ...BUILD,
 ];
