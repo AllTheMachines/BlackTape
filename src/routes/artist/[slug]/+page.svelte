@@ -138,6 +138,21 @@
 		LINK_CATEGORY_ORDER.some(cat => data.categorizedLinks[cat].length > 0)
 	);
 
+	/** Mastodon share URL — pre-encoded to avoid encodeURIComponent in template. */
+	let mastodonShareUrl = $derived(
+		`https://sharetomastodon.github.io/?text=${encodeURIComponent(`${data.artist.name} on Mercury — mercury://artist/${data.artist.mbid}`)}`
+	);
+
+	/** Icon prefix for funding platform links. */
+	function supportIcon(label: string): string {
+		const l = label.toLowerCase();
+		if (l.includes('patreon')) return '♥ ';
+		if (l.includes('ko-fi') || l.includes('kofi')) return '☕ ';
+		if (l.includes('kickstarter')) return '🚀 ';
+		if (l.includes('opencollective') || l.includes('open collective')) return '♦ ';
+		return '♡ ';
+	}
+
 	/** Open the chat overlay in rooms view for this artist's primary tag. */
 	function openRoomsForArtist() {
 		chatState.view = 'rooms';
@@ -243,6 +258,14 @@
 					{/if}
 				</div>
 			{/if}
+			<a
+				href={mastodonShareUrl}
+				target="_blank"
+				rel="noopener noreferrer"
+				class="share-mastodon-btn"
+				aria-label="Share on Mastodon"
+				title="Share on Mastodon"
+			>↑</a>
 		</div>
 
 		{#if headerMeta()}

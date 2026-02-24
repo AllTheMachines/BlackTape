@@ -37,6 +37,18 @@
 		<p>Artist data comes from <a href="https://musicbrainz.org" target="_blank" rel="noopener">MusicBrainz</a> (2.6M+ artists, CC0 public domain) and genre/scene data from <a href="https://www.wikidata.org" target="_blank" rel="noopener">Wikidata</a>. Release data fetched live from the MusicBrainz API. No proprietary data, no locked-in sources.</p>
 	</section>
 
+	<section id="support" class="about-section about-support-section">
+		<h2>Support</h2>
+		<p>Mercury runs on no ads, no tracking, no VC money — just people who care about music.</p>
+		<div class="support-links-row">
+			<!-- TODO: Replace placeholder URLs with real account URLs when Mercury's accounts are created -->
+			<a href="https://ko-fi.com/mercury" target="_blank" rel="noopener noreferrer" class="support-link-item">Ko-fi</a>
+			<a href="https://github.com/sponsors/mercury" target="_blank" rel="noopener noreferrer" class="support-link-item">GitHub Sponsors</a>
+			<a href="https://opencollective.com/mercury" target="_blank" rel="noopener noreferrer" class="support-link-item">Open Collective</a>
+		</div>
+		<a href="/backers" class="view-backers-link">View backers →</a>
+	</section>
+
 	<div class="about-ctas">
 		<a href="/" class="cta-primary">Start discovering &rarr;</a>
 		<a href="https://github.com/[your-repo]" target="_blank" rel="noopener" class="cta-secondary">GitHub</a>
@@ -135,5 +147,40 @@
 	.cta-secondary:hover {
 		color: var(--text-secondary);
 		border-color: var(--text-muted);
+	}
+
+	.support-links-row {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-sm, 0.5rem);
+		margin-top: var(--space-sm, 0.5rem);
+		margin-bottom: var(--space-sm, 0.5rem);
+	}
+
+	.support-link-item {
+		font-size: 0.85rem;
+		color: var(--text-accent);
+		text-decoration: none;
+		padding: 0.25rem 0.6rem;
+		border: 1px solid color-mix(in srgb, var(--text-accent) 40%, transparent);
+		border-radius: 4px;
+		transition: background 0.15s, color 0.15s;
+	}
+
+	.support-link-item:hover {
+		background: color-mix(in srgb, var(--text-accent) 15%, transparent);
+	}
+
+	.view-backers-link {
+		font-size: 0.85rem;
+		color: var(--text-muted);
+		text-decoration: none;
+		display: inline-block;
+		margin-top: var(--space-xs, 0.25rem);
+	}
+
+	.view-backers-link:hover {
+		color: var(--text-secondary);
+		text-decoration: underline;
 	}
 </style>
