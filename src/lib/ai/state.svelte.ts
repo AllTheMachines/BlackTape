@@ -24,6 +24,8 @@ export interface AiState {
 	generationReady: boolean;
 	embeddingReady: boolean;
 	error: string | null;
+	autoGenerateOnVisit: boolean; // opt-in: auto-generate AI summary on artist page visit
+	selectedProviderName: string; // 'aimlapi' | 'openai' | 'anthropic' | ''
 }
 
 /** Global reactive AI state. */
@@ -38,7 +40,9 @@ export const aiState: AiState = $state({
 	downloadingModel: '',
 	generationReady: false,
 	embeddingReady: false,
-	error: null
+	error: null,
+	autoGenerateOnVisit: false,
+	selectedProviderName: ''
 });
 
 /** Dynamically import Tauri invoke to avoid breaking web builds. */
@@ -61,6 +65,8 @@ export async function loadAiSettings(): Promise<void> {
 		aiState.apiKey = settings['api_key'] || '';
 		aiState.apiBaseUrl = settings['api_base_url'] || '';
 		aiState.apiModel = settings['api_model'] || '';
+		aiState.autoGenerateOnVisit = settings['auto_generate_on_visit'] === 'true';
+		aiState.selectedProviderName = settings['selected_provider_name'] || '';
 
 		if (!aiState.enabled) {
 			aiState.status = 'disabled';
@@ -94,6 +100,12 @@ export async function saveAiSetting(key: string, value: string): Promise<void> {
 				break;
 			case 'api_model':
 				aiState.apiModel = value;
+				break;
+			case 'auto_generate_on_visit':
+				aiState.autoGenerateOnVisit = value === 'true';
+				break;
+			case 'selected_provider_name':
+				aiState.selectedProviderName = value;
 				break;
 		}
 	} catch (err) {
