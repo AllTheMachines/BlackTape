@@ -4416,3 +4416,9 @@ PROC-02 gate is solid. Phase 13 is done.
 <!-- decision: NProgress two-phase animation: loading-advance (0→80% ease-out) + .completing (snap 100% + fade) — directional progress with graceful completion signal -->
 Phase 13 complete. Moving to Phase 14.
 <!-- /decision -->
+
+> **Commit 6d3eceb** (2026-02-24 01:11) — docs(13-03): complete foundation-fixes plan 03 — nav progress bar
+> Files changed: 5
+
+> **Commit 47be760** (2026-02-24 01:15) — docs(phase-13): complete phase execution
+> Files changed: 2
