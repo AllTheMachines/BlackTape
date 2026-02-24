@@ -5,21 +5,21 @@
 See: .planning/PROJECT.md (updated 2026-02-24 after v1.3 milestone started)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** v1.3 The Open Network — Phase 19: Static Site Generator
+**Current focus:** v1.3 The Open Network — Phase 19: Static Site Generator COMPLETE
 
 ## Current Position
 
 Phase: 19 of 21 (Static Site Generator)
-Plan: 02 of TBD complete
-Status: Phase 19 IN PROGRESS — Plan 02 done (SiteGenDialog.svelte component with 5-state machine)
-Last activity: 2026-02-24 — Phase 19 Plan 02 complete (SiteGenDialog.svelte implemented)
+Plan: 03 of 03 complete
+Status: Phase 19 COMPLETE — all 3 plans done (Rust backend + SiteGenDialog + wiring)
+Last activity: 2026-02-24 — Phase 19 Plan 03 complete (lib.rs wiring + artist page + test manifest)
 
-Progress: [███░░░░░░░] 38% (v1.3 — 2.5/6 phases partially complete)
+Progress: [████░░░░░░] 44% (v1.3 — 3/6 phases complete)
 
 ## Performance Metrics
 
 **Velocity (v1.0–v1.2 reference):**
-- Total plans completed: 71+
+- Total plans completed: 74+
 - Average duration: ~5 min/plan
 - Trend: Stable
 
@@ -30,7 +30,7 @@ Progress: [███░░░░░░░] 38% (v1.3 — 2.5/6 phases partially 
 | 16. Sustainability Links | 2 | Complete |
 | 17. Artist Stats Dashboard | 2 | Complete |
 | 18. AI Auto-News | 5 | Complete |
-| 19. Static Site Generator | TBD | In progress (plan 02 done) |
+| 19. Static Site Generator | 3 | Complete |
 | 20. Listening Rooms | TBD | Not started |
 | 21. ActivityPub Outbound | TBD | Not started |
 
@@ -74,6 +74,8 @@ Progress: [███░░░░░░░] 38% (v1.3 — 2.5/6 phases partially 
 - [Phase 19-01]: generate_artist_site downloads covers sequentially (not parallel) — avoids Cover Art Archive rate-limiting
 - [Phase 19-01]: open_in_explorer uses std::process::Command — avoids plugin-shell Windows path-with-spaces bug (GitHub #6431)
 - [Phase 19-01]: Generated site CSS uses hex/RGB not OKLCH — WebView2 supports OKLCH but generated sites open in users' own browsers
+- [Phase 19-03]: Export site button placed after Mastodon share link in artist-name-row — consistent with other Tauri-only button placement
+- [Phase 19-03]: SiteGenDialog placed at end of artist-page div outside tab sections — overlays full page regardless of active tab
 
 ### Pending Todos
 None
@@ -85,6 +87,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-24
-Stopped at: Completed 19-02-PLAN.md — SiteGenDialog.svelte component with 5-state machine implemented
+Stopped at: Completed 19-03-PLAN.md — Phase 19 Static Site Generator complete (all 3 plans done)
 Resume file: None
-Next: Phase 19 Plan 03 — wire SiteGenDialog into artist page + add test manifest entries
+Next: Phase 20 — Listening Rooms

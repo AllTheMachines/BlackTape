@@ -5381,3 +5381,35 @@ All 92 existing tests still pass. Zero new errors or warnings introduced (3 a11y
 
 > **Commit 19f8f46** (2026-02-24 16:33) — feat(19-01): add dialog:allow-save to capabilities
 > Files changed: 1
+
+> **Commit 9f5f49a** (2026-02-24 16:37) — docs(19-01): complete static site generator rust backend plan
+> Files changed: 5
+
+> **Commit 4ea0418** (2026-02-24 16:38) — feat(19-03): register site_gen module and commands in lib.rs
+> Files changed: 1
+
+> **Commit 5c0a890** (2026-02-24 16:39) — feat(19-03): add Export site button and SiteGenDialog to artist page
+> Files changed: 1
+
+> **Commit 5edfef8** (2026-02-24 16:40) — feat(19-03): add Phase 19 test manifest entries
+> Files changed: 1
+
+## Entry — 2026-02-24 — Phase 19 Plan 03: Static Site Generator Complete
+
+The final wiring plan. Plans 01 and 02 built the implementation — Plan 03 makes it live.
+
+Three changes, all straightforward:
+
+1. **lib.rs**: Added `mod site_gen;` module declaration and registered `site_gen::generate_artist_site` and `site_gen::open_in_explorer` in the `tauri::generate_handler![]`. `cargo check` passes.
+
+2. **+page.svelte**: Imported `SiteGenDialog`, added `showSiteGen = $state(false)`, added an "Export site" button in the artist-name-row (Tauri-gated, `data-testid="export-site-btn"`), and added the `<SiteGenDialog>` conditional render at the end of the artist-page container — outside all tab content so it overlays the full page regardless of active tab.
+
+3. **manifest.mjs**: Added `PHASE_19` array with 12 entries (P19-01 through P19-12): 11 code checks covering site_gen.rs, capabilities/default.json, SiteGenDialog.svelte, lib.rs, and the artist page; P19-12 marked as skip (requires OS folder picker + running desktop app). All 11 code checks pass.
+
+Phase 19: Static Site Generator — fully complete across all 3 plans.
+- 803 lines of Rust (site_gen.rs) — HTML generation, XSS protection, cover art download, open_in_explorer
+- 373 lines of Svelte (SiteGenDialog.svelte) — 5-state dialog machine
+- 3 files wired (lib.rs, +page.svelte, manifest.mjs) — zero new packages added
+
+Test suite now at 114 code checks. 0 failures.
+
