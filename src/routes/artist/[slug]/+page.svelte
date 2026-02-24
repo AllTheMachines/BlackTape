@@ -8,6 +8,7 @@
 	import AiRecommendations from '$lib/components/AiRecommendations.svelte';
 	import RssButton from '$lib/components/RssButton.svelte';
 	import ArtistStats from '$lib/components/ArtistStats.svelte';
+	import ArtistSummary from '$lib/components/ArtistSummary.svelte';
 	import { LINK_CATEGORY_ORDER, LINK_CATEGORY_LABELS } from '$lib/embeds/types';
 	import { isTauri } from '$lib/platform';
 	import { streamingPref } from '$lib/theme/preferences.svelte';
@@ -377,6 +378,13 @@
 	<!-- Tab content -->
 	{#if activeTab === 'overview'}
 		<div data-testid="tab-content-overview">
+			<ArtistSummary
+				artistMbid={data.artist.mbid}
+				artistName={data.artist.name}
+				artistTags={data.artist.tags ?? ''}
+				releases={data.releases}
+			/>
+
 			<!-- Discography -->
 			{#if data.releases.length > 0}
 				<section class="discography">
