@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-02-24 after v1.3 milestone started)
 ## Current Position
 
 Phase: 17 of 21 (Artist Stats Dashboard)
-Plan: 01 of 02 complete
-Status: Phase 17 in progress — Plan 01 complete (building blocks), Plan 02 pending (wire into artist page)
-Last activity: 2026-02-24 — Phase 17 Plan 01 complete (Rust visit tracking, tag distribution query, ArtistStats component)
+Plan: 02 of 02 complete
+Status: Phase 17 COMPLETE — both plans done (building blocks + artist page integration)
+Last activity: 2026-02-24 — Phase 17 Plan 02 complete (Stats tab UI, ArtistStats integration, visit tracking, Phase 16+17 test entries)
 
 Progress: [█░░░░░░░░░] 17% (v1.3 — 1/6 phases complete)
 
@@ -28,7 +28,7 @@ Progress: [█░░░░░░░░░] 17% (v1.3 — 1/6 phases complete)
 | Phase | Plans | Status |
 |-------|-------|--------|
 | 16. Sustainability Links | 2 | Complete |
-| 17. Artist Stats Dashboard | 2 | Plan 01/02 complete |
+| 17. Artist Stats Dashboard | 2 | Complete |
 | 18. AI Auto-News | TBD | Not started |
 | 19. Static Site Generator | TBD | Not started |
 | 20. Listening Rooms | TBD | Not started |
@@ -51,6 +51,9 @@ Progress: [█░░░░░░░░░] 17% (v1.3 — 1/6 phases complete)
 - Stats tab tier vocabulary locked: Common/Niche/Rare/Ultra Rare — distinct from UniquenessScore badge (Very Niche/Niche/Eclectic/Mainstream)
 - Artist visit tracking is fully silent — stored in taste.db artist_visits table, never surfaced in UI, reserved for future local recommendations
 - Bar chart in ArtistStats sorts by count (MusicBrainz votes) DESC; rarest tag identified by artist_count ASC (distribution[0])
+- Stats tab state is pure Svelte $state (no URL persistence) — switching tabs never causes navigation
+- Visit tracking IIFE placed before collections IIFE in onMount for import error isolation
+- Phase 16 manifest entries use nostr.svelte.ts in comms (not a dedicated nostr module), MERCURY_PUBKEY in /backers
 
 ### Pending Todos
 None
@@ -63,6 +66,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-24
-Stopped at: Completed 17-01-PLAN.md — Rust visit tracking, tag distribution query, ArtistStats.svelte component
+Stopped at: Completed 17-02-PLAN.md — Stats tab UI, ArtistStats integration, visit tracking, Phase 16+17 test entries
 Resume file: None
-Next: Phase 17 Plan 02 — wire ArtistStats into artist page +page.svelte, add Stats tab, call record_artist_visit on load
+Next: Phase 18 — AI Auto-News

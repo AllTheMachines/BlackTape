@@ -4991,3 +4991,64 @@ Both tasks complete. `cargo test` 24/24 passed. `npm run check` 0 errors.
 ### Next
 
 Plan 02 wires ArtistStats.svelte into the artist page +page.svelte — adds the Stats tab to the tab bar and calls `record_artist_visit` on page load.
+
+> **Commit 7f46158** (2026-02-24 11:54) — feat(17-01): add ArtistTagStat interface, getArtistTagDistribution query, and ArtistStats component
+> Files changed: 3
+
+> **Commit e065078** (2026-02-24 11:57) — docs(17-01): complete artist-stats-dashboard plan 01 — Rust visit tracking + ArtistStats component
+> Files changed: 3
+
+---
+
+## Entry — 2026-02-24 — Phase 17 Plan 02: Wire Stats Tab Into Artist Page
+
+### What Was Built
+
+The final integration step for the Artist Stats Dashboard. `+page.svelte` now has a two-tab UI (Overview | Stats) and calls `record_artist_visit` silently on every page load.
+
+**Two tasks:**
+1. `+page.svelte` — tab bar, ArtistStats import, visit tracking in onMount
+2. Test suite manifest — Phase 16 (P16-01 to P16-04) and Phase 17 (P17-01 to P17-18) entries
+
+### Integration Architecture
+
+The tab bar sits between the always-visible artist header and the tab content area. The "Listen On" streaming bar also stays outside the tab conditional — always visible. Everything else (discography, links, AI recs, embed widget) moves into the Overview tab div. Stats tab contains only the ArtistStats component.
+
+```
+artist-header (always visible)
+listen-on bar (always visible)
+artist-tab-bar (Overview | Stats)
+{#if activeTab === 'overview'}
+  discography, links, support, AI recs, embed widget
+{:else}
+  ArtistStats component
+{/if}
+```
+
+### Visit Tracking
+
+Fire-and-forget pattern in `onMount`, inside the `if (!tauriMode) return` guard. Placed BEFORE the collections async IIFE so any import error for `@tauri-apps/api/core` is fully isolated:
+
+```typescript
+(async () => {
+  try {
+    const { invoke } = await import('@tauri-apps/api/core');
+    await invoke('record_artist_visit', { artistMbid: data.artist.mbid });
+  } catch {
+    // Silent — visit tracking is best-effort
+  }
+})();
+```
+
+### Phase 17 Complete
+
+All building blocks from Plan 01 (Rust backend, TypeScript query, ArtistStats.svelte) are now wired into the artist page. Phase 17 Artist Stats Dashboard is done.
+
+- `npm run check` — 579 files, 0 errors
+- Test suite — 92 code checks, 0 failures (20 new Phase 16+17 entries all pass)
+
+> **Commit ed46bab** (2026-02-24 12:02) — feat(17-02): add Stats tab, ArtistStats integration, visit tracking
+> Files changed: 1
+
+> **Commit b1a3e87** (2026-02-24 12:05) — chore(17-02): add Phase 16 + 17 test entries to manifest
+> Files changed: 1
