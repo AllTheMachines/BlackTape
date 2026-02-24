@@ -7,6 +7,7 @@
 	import UniquenessScore from '$lib/components/UniquenessScore.svelte';
 	import AiRecommendations from '$lib/components/AiRecommendations.svelte';
 	import RssButton from '$lib/components/RssButton.svelte';
+	import ArtistStats from '$lib/components/ArtistStats.svelte';
 	import { LINK_CATEGORY_ORDER, LINK_CATEGORY_LABELS } from '$lib/embeds/types';
 	import { isTauri } from '$lib/platform';
 	import { streamingPref } from '$lib/theme/preferences.svelte';
@@ -19,6 +20,7 @@
 	let { data } = $props();
 
 	let tauriMode = $state(false);
+	let activeTab = $state<'overview' | 'stats'>('overview');
 
 	/** Save to Shelf state (Tauri-only) */
 	let savedInCollections = $state<string[]>([]);
@@ -76,6 +78,16 @@
 	onMount(() => {
 		tauriMode = isTauri();
 		if (!tauriMode) return;
+
+		// Silent visit tracking — best-effort, never shown in UI
+		(async () => {
+			try {
+				const { invoke } = await import('@tauri-apps/api/core');
+				await invoke('record_artist_visit', { artistMbid: data.artist.mbid });
+			} catch {
+				// Silent — visit tracking is best-effort
+			}
+		})();
 
 		(async () => {
 			// Load collections for Save to Shelf dropdown
@@ -200,7 +212,7 @@
 </svelte:head>
 
 <div class="artist-page">
-	<!-- Header -->
+	<!-- Header — always visible regardless of active tab -->
 	<header class="artist-header">
 		<div class="artist-name-row">
 			<h1 class="artist-name">{data.artist.name}</h1>
@@ -327,7 +339,7 @@
 		{/if}
 	</header>
 
-	<!-- Listen On -->
+	<!-- Listen On — always visible regardless of active tab -->
 	{#if sortedStreamingLinks.length > 0}
 		<section class="listen-on">
 			<span class="listen-label">Listen on</span>
@@ -346,147 +358,176 @@
 		</section>
 	{/if}
 
-	<!-- Discography -->
-	{#if data.releases.length > 0}
-		<section class="discography">
-			<h2 class="section-title">Discography</h2>
+	<!-- Tab bar -->
+	<div class="artist-tab-bar" data-testid="artist-tabs">
+		<button
+			class="artist-tab"
+			class:active={activeTab === 'overview'}
+			onclick={() => activeTab = 'overview'}
+			data-testid="tab-overview"
+		>Overview</button>
+		<button
+			class="artist-tab"
+			class:active={activeTab === 'stats'}
+			onclick={() => activeTab = 'stats'}
+			data-testid="tab-stats"
+		>Stats</button>
+	</div>
 
-			<div class="releases-grid">
-				{#each visibleReleases as release (release.mbid)}
-					<ReleaseCard {release} artistSlug={data.artist.slug} onplayinline={handlePlayInline} />
-				{/each}
-			</div>
+	<!-- Tab content -->
+	{#if activeTab === 'overview'}
+		<div data-testid="tab-content-overview">
+			<!-- Discography -->
+			{#if data.releases.length > 0}
+				<section class="discography">
+					<h2 class="section-title">Discography</h2>
 
-			{#if data.releases.length > 50 && !showAllReleases}
-				<button class="show-more" onclick={() => showAllReleases = true}>
-					Show all {data.releases.length} releases
-				</button>
-			{/if}
+					<div class="releases-grid">
+						{#each visibleReleases as release (release.mbid)}
+							<ReleaseCard {release} artistSlug={data.artist.slug} onplayinline={handlePlayInline} />
+						{/each}
+					</div>
 
-			{#if inlinePlayerHtml}
-				<div class="inline-player">
-					{@html inlinePlayerHtml}
-				</div>
-			{/if}
-		</section>
-	{/if}
+					{#if data.releases.length > 50 && !showAllReleases}
+						<button class="show-more" onclick={() => showAllReleases = true}>
+							Show all {data.releases.length} releases
+						</button>
+					{/if}
 
-	<!-- Categorized Links -->
-	{#if hasAnyLinks}
-		<section class="links-section">
-			<h2 class="section-title">Links</h2>
-
-			{#each LINK_CATEGORY_ORDER as category}
-				{#if category !== 'support'}
-					{@const links = data.categorizedLinks[category]}
-					{#if links.length > 0}
-						<div class="link-group">
-							<h3 class="link-group-title">{LINK_CATEGORY_LABELS[category]}</h3>
-							<div class="link-list">
-								{#each links as link}
-									<a
-										href={link.url}
-										target="_blank"
-										rel="noopener noreferrer"
-										class="cat-link"
-									>
-										{link.label}
-									</a>
-								{/each}
-							</div>
+					{#if inlinePlayerHtml}
+						<div class="inline-player">
+							{@html inlinePlayerHtml}
 						</div>
 					{/if}
-				{/if}
-			{/each}
-		</section>
-	{/if}
-
-	<!-- Support links (artist funding) -->
-	{#if data.categorizedLinks.support.length > 0}
-		<section class="support-section">
-			<h2 class="section-title">Support</h2>
-			<div class="support-links">
-				{#each data.categorizedLinks.support as link}
-					<a
-						href={link.url}
-						target="_blank"
-						rel="noopener noreferrer"
-						class="support-link"
-					>
-						{supportIcon(link.label)}{link.label}
-					</a>
-				{/each}
-			</div>
-		</section>
-	{/if}
-
-	<!-- AI Recommendations -->
-	<AiRecommendations
-		artistName={data.artist.name}
-		artistTags={data.artist.tags || ''}
-		artistMbid={data.artist.mbid}
-	/>
-
-	<!-- Embed Widget UI -->
-	<section class="embed-section">
-		<button class="embed-toggle" onclick={() => (showEmbed = !showEmbed)}>
-			{showEmbed ? 'Hide embed' : '</> Embed this artist'}
-		</button>
-
-		{#if showEmbed}
-			<div class="embed-panel">
-				<div class="embed-mode-row">
-					<button
-						class="mode-btn"
-						class:active={embedMode === 'iframe'}
-						onclick={() => (embedMode = 'iframe')}
-					>iframe</button>
-					<button
-						class="mode-btn"
-						class:active={embedMode === 'script'}
-						onclick={() => (embedMode = 'script')}
-					>script tag</button>
-				</div>
-
-				{#if embedMode === 'script'}
-				<div class="embed-curator-row">
-					<label for="curator-handle" class="embed-curator-label">Your blog handle (optional)</label>
-					<input
-						id="curator-handle"
-						type="text"
-						class="embed-curator-input"
-						bind:value={curatorHandle}
-						placeholder="e.g. myblog"
-						maxlength="50"
-					/>
-					{#if curatorHandle.trim()}
-						<span class="embed-curator-hint">data-curator will appear in snippet</span>
-					{/if}
-				</div>
+				</section>
 			{/if}
 
-			<pre class="embed-code"><code>{embedMode === 'iframe' ? snippets.iframe : snippets.scriptTag}</code></pre>
+			<!-- Categorized Links -->
+			{#if hasAnyLinks}
+				<section class="links-section">
+					<h2 class="section-title">Links</h2>
 
-				<div class="embed-actions">
-					<button
-						class="embed-action-btn"
-						onclick={() => {
-							navigator.clipboard.writeText(embedMode === 'iframe' ? snippets.iframe : snippets.scriptTag);
-						}}
-					>Copy</button>
-					<button class="embed-action-btn" onclick={handleQrClick}>
-						{showQr ? 'Hide QR' : 'QR Code'}
-					</button>
-				</div>
+					{#each LINK_CATEGORY_ORDER as category}
+						{#if category !== 'support'}
+							{@const links = data.categorizedLinks[category]}
+							{#if links.length > 0}
+								<div class="link-group">
+									<h3 class="link-group-title">{LINK_CATEGORY_LABELS[category]}</h3>
+									<div class="link-list">
+										{#each links as link}
+											<a
+												href={link.url}
+												target="_blank"
+												rel="noopener noreferrer"
+												class="cat-link"
+											>
+												{link.label}
+											</a>
+										{/each}
+									</div>
+								</div>
+							{/if}
+						{/if}
+					{/each}
+				</section>
+			{/if}
 
-				{#if showQr && qrSvg}
-					<div class="qr-wrapper">
-						{@html qrSvg}
+			<!-- Support links (artist funding) -->
+			{#if data.categorizedLinks.support.length > 0}
+				<section class="support-section">
+					<h2 class="section-title">Support</h2>
+					<div class="support-links">
+						{#each data.categorizedLinks.support as link}
+							<a
+								href={link.url}
+								target="_blank"
+								rel="noopener noreferrer"
+								class="support-link"
+							>
+								{supportIcon(link.label)}{link.label}
+							</a>
+						{/each}
+					</div>
+				</section>
+			{/if}
+
+			<!-- AI Recommendations -->
+			<AiRecommendations
+				artistName={data.artist.name}
+				artistTags={data.artist.tags || ''}
+				artistMbid={data.artist.mbid}
+			/>
+
+			<!-- Embed Widget UI -->
+			<section class="embed-section">
+				<button class="embed-toggle" onclick={() => (showEmbed = !showEmbed)}>
+					{showEmbed ? 'Hide embed' : '</> Embed this artist'}
+				</button>
+
+				{#if showEmbed}
+					<div class="embed-panel">
+						<div class="embed-mode-row">
+							<button
+								class="mode-btn"
+								class:active={embedMode === 'iframe'}
+								onclick={() => (embedMode = 'iframe')}
+							>iframe</button>
+							<button
+								class="mode-btn"
+								class:active={embedMode === 'script'}
+								onclick={() => (embedMode = 'script')}
+							>script tag</button>
+						</div>
+
+						{#if embedMode === 'script'}
+						<div class="embed-curator-row">
+							<label for="curator-handle" class="embed-curator-label">Your blog handle (optional)</label>
+							<input
+								id="curator-handle"
+								type="text"
+								class="embed-curator-input"
+								bind:value={curatorHandle}
+								placeholder="e.g. myblog"
+								maxlength="50"
+							/>
+							{#if curatorHandle.trim()}
+								<span class="embed-curator-hint">data-curator will appear in snippet</span>
+							{/if}
+						</div>
+					{/if}
+
+					<pre class="embed-code"><code>{embedMode === 'iframe' ? snippets.iframe : snippets.scriptTag}</code></pre>
+
+						<div class="embed-actions">
+							<button
+								class="embed-action-btn"
+								onclick={() => {
+									navigator.clipboard.writeText(embedMode === 'iframe' ? snippets.iframe : snippets.scriptTag);
+								}}
+							>Copy</button>
+							<button class="embed-action-btn" onclick={handleQrClick}>
+								{showQr ? 'Hide QR' : 'QR Code'}
+							</button>
+						</div>
+
+						{#if showQr && qrSvg}
+							<div class="qr-wrapper">
+								{@html qrSvg}
+							</div>
+						{/if}
 					</div>
 				{/if}
-			</div>
-		{/if}
-	</section>
+			</section>
+		</div>
+	{:else}
+		<div data-testid="tab-content-stats">
+			<ArtistStats
+				artistId={data.artist.id}
+				score={data.uniquenessScore}
+				tagCount={data.uniquenessTagCount}
+			/>
+		</div>
+	{/if}
 </div>
 
 <style>
@@ -660,6 +701,37 @@
 		background: color-mix(in srgb, var(--link-color) 10%, var(--bg-hover));
 		border-color: var(--link-color);
 		text-decoration: none;
+	}
+
+	/* ── Tab bar ───────────────────────────────────────── */
+	.artist-tab-bar {
+		display: flex;
+		gap: 0;
+		border-bottom: 1px solid var(--border, #333);
+		margin-bottom: 1.5rem;
+	}
+
+	.artist-tab {
+		background: none;
+		border: none;
+		border-bottom: 2px solid transparent;
+		padding: 0.5rem 1.25rem;
+		cursor: pointer;
+		color: var(--text-muted, #888);
+		font-size: 0.875rem;
+		font-weight: 500;
+		letter-spacing: 0.02em;
+		margin-bottom: -1px;
+		transition: color 0.15s, border-color 0.15s;
+	}
+
+	.artist-tab.active {
+		color: var(--text, #e0e0e0);
+		border-bottom-color: var(--accent, #7c6af7);
+	}
+
+	.artist-tab:hover:not(.active) {
+		color: var(--text-secondary, #bbb);
 	}
 
 	/* ── Section titles ────────────────────────────────── */
