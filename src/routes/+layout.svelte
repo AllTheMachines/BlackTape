@@ -114,7 +114,7 @@
 	></div>
 {/if}
 
-<header>
+<header class:hidden={tauriMode}>
 	{#if canGoBack}
 		<button class="back-btn" onclick={() => history.back()} title="Go back" aria-label="Go back">
 			<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -237,6 +237,10 @@
 		padding: 0 var(--space-lg);
 		background: var(--bg-surface);
 		border-bottom: 1px solid var(--border-subtle);
+	}
+
+	header.hidden {
+		display: none;
 	}
 
 	.back-btn {
