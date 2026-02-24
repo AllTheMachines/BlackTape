@@ -6098,3 +6098,41 @@ Test suite: 100/100 code checks passing.
 
 > **Commit 8ea85f4** (2026-02-25 00:44) — docs(23-02): complete chrome-surfaces plan
 > Files changed: 4
+
+> **Commit 6d0049c** (2026-02-25 00:46) — auto-save: 2 files @ 00:46
+> Files changed: 2
+
+> **Commit 4d3a83c** (2026-02-25 00:48) — docs(phase-23): complete phase execution
+> Files changed: 2
+
+## Entry 027 — 2026-02-25 — PHASE 23 COMPLETE: Design System Foundation
+
+### Context
+
+Phase 23 is done. The v1.4 design system is fully in place — tokens, titlebar, chrome surfaces, and global interactive elements all match the mockup spec.
+
+### What Was Built
+
+**Plan 01 — Design Tokens + Custom Titlebar**
+- 25 CSS custom properties in `theme.css`: full `--bg-0..bg-6`, `--b-0..b-acc`, `--t-1..t-3`, `--acc/acc-bg/acc-bg-h`, `--sidebar/topbar/player`, `--r`
+- `Titlebar.svelte`: drag region, minimize/maximize/close via `getCurrentWindow`, amber logo, all design-token colors
+- `tauri.conf.json`: `"decorations": false` — native OS chrome gone
+
+**Plan 02 — Chrome Surfaces (ControlBar, LeftSidebar, Player)**
+- ControlBar: 42px topbar, `--bg-1` background, `--b-1` border, square search/select/inputs
+- LeftSidebar: three grouped nav sections with 9px uppercase labels, 28px items, 2px amber left border on active
+- Player: filled 24×24 transport buttons, 28×28 amber play button, `--acc` seek/volume
+- Layout: old `<header>` hidden in Tauri mode — ControlBar is the topbar now
+
+**Plan 03 — Tag Chips + Global Elements**
+- `TagChip.svelte`: 22px height, 2px radius, `--bg-4/--b-2/--t-3` default, `--acc-bg/--b-acc/--acc` active state
+- `theme.css`: 130-line global base for `button/.btn`, `.btn-icon`, `.btn-accent`, `.btn-ghost`, `input/select/textarea`, `.badge`, `.tab-bar/.tab`
+- `TagFilter.svelte`: fully migrated off old token names
+
+### Outcome — Phase 23 Complete ✓
+
+**Verification: PASSED** — 5/5 must-haves. All 5 DSYS requirements satisfied.
+
+The entire app now has a consistent design language. Every panel border is `--b-1` (1px, #202020). Every surface is `--bg-1` (#0f0f0f). Every interactive element is `--bg-4` (#212121) with `--b-2` border and 2px square radius. Amber (`--acc` #c4a55a) appears at exactly the right moments: active nav, play button, tag chip selection, focus rings.
+
+**Test suite: 100/100 code checks passing.** Phase 23 added 11 new P23 tests (P23-01 through P23-11).
