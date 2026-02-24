@@ -129,7 +129,12 @@ Plans:
   2. Generated site displays artist bio, top tags, discography with release covers, and platform buy/stream links
   3. Generated site renders correctly in a browser with no internet connection and no Mercury running
   4. Artist names and bio text containing HTML special characters or markup do not produce script injection in the generated output
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 19-01-PLAN.md — Rust site_gen.rs backend (HTML generation, cover downloads, XSS escape) + dialog:allow-save capability
+- [ ] 19-02-PLAN.md — SiteGenDialog.svelte component (5-state machine: confirming/picking/generating/success/error)
+- [ ] 19-03-PLAN.md — lib.rs registration + artist page "Export site" button wiring + test manifest Phase 19 entries
 
 ### Phase 20: Listening Rooms
 **Goal**: Users can host or join a synchronized listening room where the host controls which YouTube video plays for all participants
