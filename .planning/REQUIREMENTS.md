@@ -52,7 +52,7 @@ Synchronized YouTube listening with a jukebox model — host decides what plays,
 
 Static ActivityPub actor export — generate files the user self-hosts, making their Mercury curation followable from Mastodon.
 
-- [ ] **APUB-01**: User can configure an ActivityPub actor identity (handle, display name, hosting URL) in Settings
+- [x] **APUB-01**: User can configure an ActivityPub actor identity (handle, display name, hosting URL) in Settings
 - [x] **APUB-02**: User can export AP actor files (actor.json, webfinger.json, outbox.json) to a local directory for self-hosting
 - [x] **APUB-03**: Exported AP actor is valid and followable from Mastodon/Fediverse instances when uploaded to the configured hosting URL
 
@@ -114,7 +114,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ROOM-03 | Phase 20 | Complete |
 | ROOM-04 | Phase 20 | Complete |
 | ROOM-05 | Phase 20 | Complete |
-| APUB-01 | Phase 21 | Pending |
+| APUB-01 | Phase 21 | Complete |
 | APUB-02 | Phase 21 | Complete |
 | APUB-03 | Phase 21 | Complete |
 

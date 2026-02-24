@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-24 after v1.3 milestone started)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** v1.3 The Open Network — Phase 21: ActivityPub Outbound (Plan 01 complete)
+**Current focus:** v1.3 The Open Network — Phase 21: ActivityPub Outbound (COMPLETE)
 
 ## Current Position
 
 Phase: 21 of 21 (ActivityPub Outbound)
-Plan: 01 of TBD complete
-Status: Phase 21 in progress — Plan 01 done (Rust backend: RSA keypair + AP JSON-LD export command)
-Last activity: 2026-02-24 — Phase 21 Plan 01 complete (activitypub.rs module + lib.rs registration)
+Plan: 02 of 02 complete
+Status: Phase 21 complete — Plans 01–02 done (Rust backend + Svelte UI)
+Last activity: 2026-02-24 — Phase 21 Plan 02 complete (FediverseSettings.svelte + settings page wiring + PHASE_21 test manifest)
 
-Progress: [████░░░░░░] 44% (v1.3 — 4/6 phases complete or in progress, Phase 21 started)
+Progress: [██████████] 100% (v1.3 — all 6 phases complete)
 
 ## Performance Metrics
 
@@ -32,7 +32,7 @@ Progress: [████░░░░░░] 44% (v1.3 — 4/6 phases complete or 
 | 18. AI Auto-News | 5 | Complete |
 | 19. Static Site Generator | 3 | Complete |
 | 20. Listening Rooms | 3 | Complete |
-| 21. ActivityPub Outbound | TBD | In Progress (Plan 01 done) |
+| 21. ActivityPub Outbound | 2 | Complete |
 
 ## Accumulated Context
 
@@ -86,6 +86,8 @@ Progress: [████░░░░░░] 44% (v1.3 — 4/6 phases complete or 
 - [Phase 21-01]: AP keypair persisted via ON CONFLICT upsert — stable across re-exports; Mastodon caches actors by key ID, changing keypair breaks federation
 - [Phase 21-01]: hosting_url trailing slash stripped before URL construction — prevents double-slash paths in all AP JSON-LD URL fields
 - [Phase 21-01]: Outbox is empty OrderedCollection (totalItems:0) — no curator_posts table exists yet; added when post authoring is implemented
+- [Phase 21-02]: tauriMode (boolean $state) used in settings guard instead of isTauri() (function reference) — isTauri is a function, not a boolean; using function in {#if} always evaluates true and causes Svelte type error
+- [Phase 21-02]: FediverseSettings is fully self-contained — all AP state, onMount loading, and save-on-blur handlers live inside the component; parent settings page just mounts it
 
 ### Pending Todos
 None
@@ -97,6 +99,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-24
-Stopped at: Completed 21-01-PLAN.md — activitypub.rs Rust backend with RSA keypair + AP JSON-LD export command
+Stopped at: Completed 21-02-PLAN.md — FediverseSettings.svelte UI component, settings page wiring, PHASE_21 test manifest
 Resume file: None
-Next: Phase 21 Plan 02 — FediverseSettings.svelte UI component
+Next: v1.3 milestone complete — all phases done

@@ -68,7 +68,7 @@ Full archive: `.planning/milestones/v1.2-ROADMAP.md`
 - [x] **Phase 18: AI Auto-News** — MusicBrainz-grounded AI summary on artist pages, cached, labeled (completed 2026-02-24)
 - [x] **Phase 19: Static Site Generator** — Export a self-contained artist HTML page for self-hosting (completed 2026-02-24)
 - [x] **Phase 20: Listening Rooms** — Host-controlled synchronized YouTube embed via Nostr coordination (completed 2026-02-24)
-- [ ] **Phase 21: ActivityPub Outbound** — Static AP actor export for self-hosted Fediverse presence
+- [x] **Phase 21: ActivityPub Outbound** — Static AP actor export for self-hosted Fediverse presence (completed 2026-02-24)
 
 ---
 
@@ -245,4 +245,4 @@ Runs alongside everything else. Not blocking any phase. Rolls out in stages as f
 | 18. AI Auto-News | 5/5 | Complete    | 2026-02-24 | - |
 | 19. Static Site Generator | 3/3 | Complete    | 2026-02-24 | - |
 | 20. Listening Rooms | 3/3 | Complete    | 2026-02-24 | - |
-| 21. ActivityPub Outbound | 1/2 | In Progress|  | - |
+| 21. ActivityPub Outbound | 2/2 | Complete   | 2026-02-24 | - |

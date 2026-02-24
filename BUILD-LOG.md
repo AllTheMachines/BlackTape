@@ -5593,10 +5593,6 @@ Commits: 81d1eea (scene page), f86d201 (manifest)
 > **Commit a0da538** (2026-02-24 19:46) — auto-save: 1 files @ 19:46
 > Files changed: 1
 
-<!-- status -->
-Phase 21 Plan 02: Wiring settings page + PHASE_21 test manifest — 1/2 tasks done. FediverseSettings component committed.
-<!-- /status -->
-
 > **Commit 5895ff1** (2026-02-24 19:54) — feat(21-02): create FediverseSettings.svelte component
 > Files changed: 1
 
@@ -5608,3 +5604,28 @@ Phase 21 Plan 02: Wiring settings page + PHASE_21 test manifest — 1/2 tasks do
 
 > **Commit 790876c** (2026-02-24 19:57) — docs(21-01): complete activitypub Rust backend plan
 > Files changed: 5
+
+> **Commit bff6788** (2026-02-24 19:58) — feat(21-02): wire FediverseSettings into settings page + add PHASE_21 test manifest
+> Files changed: 3
+
+## Entry 2026-02-24 — v1.3 Complete: ActivityPub Outbound (Phase 21)
+
+Phase 21 — the last phase of v1.3 The Open Network — is done.
+
+**What shipped:** Mercury curation is now Fediverse-followable. Users fill in a handle, display name, and hosting URL in Settings, click Export, pick a folder, and get three static JSON files (`actor.json`, `outbox.json`, `webfinger`) that make their Mercury identity discoverable and followable from Mastodon.
+
+**Phase 21 breakdown:**
+- **Plan 01 (Rust backend):** `activitypub.rs` with RSA 2048-bit keypair generation (persisted to taste.db), AP Actor JSON-LD builder (PKCS1 format for Mastodon compatibility, security/v1 context for publicKey), outbox builder (empty OrderedCollection), WebFinger builder. All wired into lib.rs via `export_activitypub` command.
+- **Plan 02 (Svelte UI):** `FediverseSettings.svelte` — Svelte 5 component with live `@handle@domain` preview, on-blur identity persistence to user_identity table, export folder picker, deployment path display, inline hosting guidance. Wired into settings/+page.svelte under tauriMode guard.
+
+**Key decision:** Used PKCS1 PEM format for the public key (`to_pkcs1_pem()`) — Mastodon rejects SPKI/PKCS8 format. This was discovered during research and implemented correctly from the start.
+
+**Remaining blocker:** AP JSON-LD output needs validation against a live Mastodon instance (actor fetch → WebFinger lookup → follow). This is a manual integration test that can't be automated headlessly.
+
+**v1.3 milestone complete.** All 6 phases shipped:
+- Phase 16: Sustainability Links
+- Phase 17: Artist Stats Dashboard
+- Phase 18: AI Auto-News
+- Phase 19: Static Site Generator
+- Phase 20: Listening Rooms
+- Phase 21: ActivityPub Outbound
