@@ -5818,3 +5818,38 @@ After adding PHASE_22's 37 new tests, the suite had 13 E2E failures. Debugged an
 
 > **Commit 8bccc5d** (2026-02-24 22:35) — wip: auto-save
 > Files changed: 2
+
+> **Commit 557967c** (2026-02-24 22:35) — wip: auto-save
+> Files changed: 1
+
+## Entry — 2026-02-24 — Full UX Audit: Every Room, Every Button
+
+Before planning v1.4, did a full walk of the entire app from the perspective of a music nerd who digs deep. Read every route, every component, every interaction. The result is `UX-AUDIT.md` — a comprehensive document covering all 24 routes.
+
+**Key findings:**
+
+The bones are right. The tag system, uniqueness score, curator/embed loop, "internet is the database" architecture — all sound. But the app is seven powerful discovery tools that don't know they're in the same building.
+
+**Highest-priority gaps:**
+- Artist page is missing MusicBrainz relationship data: band members, influenced-by, labels, lineup history. Core information for a music nerd, already in the data source.
+- Credits on release pages aren't linked — clicking a producer's name should go to their artist page.
+- Discography needs filter by type (albums/EPs/singles) and sort by date.
+- Search has no autocomplete and can't search by anything except artist name or exact tag.
+- The seven discovery tools are islands — no cross-linking, no sense of being one system.
+
+**Interaction issues caught:**
+- "Scene rooms for {tag} →" opens chat without pre-filtering — raises an expectation it can't fulfill
+- Mastodon share button is just "↑" with no visible label (only tooltip on hover)
+- "Explore {genre} in Discover" link appears twice on every KB genre page
+- Country filter on Crate Digging requires ISO 2-char code — user shouldn't need to know these
+- Explore page requires AI enabled but shows as a normal nav item when it isn't
+
+**What's missing that a music nerd would want:**
+- Label pages (ECM, Rough Trade, Warp — labels have strong identities)
+- "How do these two artists connect?" AI mode
+- Track-level search and linking (can't search by song title)
+- Personal geographic music map (where in the world is your taste from?)
+- Timeline on genre pages (when was this genre most active, decade by decade)
+- Public/shareable shelves
+
+Full document at `UX-AUDIT.md`. This becomes source of truth for v1.4 planning.
