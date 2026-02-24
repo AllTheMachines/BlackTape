@@ -24,6 +24,7 @@
 	import { subscribeToIncomingDMs } from '$lib/comms/dms.svelte.js';
 	import { totalUnread, chatState, openChat } from '$lib/comms/notifications.svelte.js';
 	import ChatOverlay from '$lib/components/chat/ChatOverlay.svelte';
+	import { navProgress } from '$lib/nav-progress.svelte';
 
 	let { children } = $props();
 
@@ -99,8 +100,13 @@
 	{@render children()}
 {:else}
 
-{#if $navigating}
-	<div class="loading-bar" aria-hidden="true"></div>
+{#if $navigating || (tauriMode && navProgress.active)}
+	<div
+		class="loading-bar"
+		class:completing={tauriMode && navProgress.completing}
+		data-testid="nav-progress-bar"
+		aria-hidden="true"
+	></div>
 {/if}
 
 <header>
@@ -404,32 +410,29 @@
 		color: var(--text-secondary);
 	}
 
+	/* Phase 1: advance from 0% to ~80% while loading (NProgress style) */
 	.loading-bar {
 		position: fixed;
 		top: 0;
 		left: 0;
-		width: 100%;
 		height: 2px;
 		z-index: 200;
 		background: var(--text-accent);
-		animation: loading-slide 1.2s ease-in-out infinite;
+		width: 0%;
+		animation: loading-advance 3s ease-out forwards;
+		pointer-events: none;
 	}
 
-	@keyframes loading-slide {
-		0% {
-			transform: scaleX(0);
-			transform-origin: left;
-		}
-		50% {
-			transform: scaleX(1);
-			transform-origin: left;
-		}
-		50.01% {
-			transform-origin: right;
-		}
-		100% {
-			transform: scaleX(0);
-			transform-origin: right;
-		}
+	/* Phase 2: snap to 100%, then fade out */
+	.loading-bar.completing {
+		animation: none;
+		width: 100% !important;
+		opacity: 0;
+		transition: width 0.1s ease-out, opacity 0.2s ease-out 0.1s;
+	}
+
+	@keyframes loading-advance {
+		from { width: 0%; }
+		to   { width: 80%; }
 	}
 </style>
