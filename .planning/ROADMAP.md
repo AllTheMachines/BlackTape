@@ -34,7 +34,12 @@
   3. Topbar, sidebar, and player bar are visually distinct, each separated by a 1px border
   4. The sidebar shows a left amber border on the active nav item and uses section labels to group navigation
   5. The app's dark grey palette is layered (panels sit on panels) with consistent amber accent throughout
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 23-01-PLAN.md — Design tokens in theme.css + custom Tauri titlebar
+- [ ] 23-02-PLAN.md — App chrome: ControlBar, LeftSidebar, Player bar
+- [ ] 23-03-PLAN.md — TagChip spec + global button/input/badge base styles
 
 ### Phase 24: Artist Page
 **Goal**: The artist page is a fully redesigned, information-rich view — relationships from MusicBrainz, linked credits, filterable discography, and a fixed share button label
