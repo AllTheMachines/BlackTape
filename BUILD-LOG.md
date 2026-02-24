@@ -5287,3 +5287,12 @@ The final Phase 18 wiring plan. ArtistSummary.svelte has been live in the codeba
 
 > **Commit 06a52fe** (2026-02-24 14:52) — wip: auto-save
 > Files changed: 1
+
+> **Commit b0ecb94** (2026-02-24 14:55) — wip: auto-save
+> Files changed: 1
+
+> **Commit 3ce5e13** (2026-02-24 15:03) — wip: 18-ai-auto-news paused — phase complete, moving to Phase 19
+> Files changed: 1
+
+> **Commit 77230a7** (2026-02-24 15:04) — docs: update HANDOFF.md for Phase 19 start
+> Files changed: 1
