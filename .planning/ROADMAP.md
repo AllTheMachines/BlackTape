@@ -146,7 +146,12 @@ Plans:
   3. Guests can submit YouTube video suggestions to a visible jukebox queue
   4. Host can approve a suggestion from the queue, making it the active video for all participants
   5. User can see the list of current participants in a room
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 20-01-PLAN.md — listening-room.svelte.ts state machine (Nostr I/O, all event kinds) + /room/[channelId] route scaffold
+- [ ] 20-02-PLAN.md — Full room UI (YouTube player, host/guest controls, jukebox queue, participant list)
+- [ ] 20-03-PLAN.md — Scene page room indicator (Room active / Start room) + test manifest Phase 20 entries
 
 ### Phase 21: ActivityPub Outbound
 **Goal**: Users can configure and export a valid ActivityPub actor as static files they self-host, making their Mercury curation followable from Mastodon
