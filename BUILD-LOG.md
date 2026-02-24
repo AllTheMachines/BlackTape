@@ -4892,6 +4892,20 @@ The backer list is published to Nostr (kind:30000 NIP-51 addressable list, `d` t
 - Retry pattern on error state: loading → error → retry resets to loading, re-runs the full fetch flow.
 - Support section placed before the CTA buttons, after Mission and Data Sources. Natural reading flow: understand the project → understand how to support it → go discover music.
 
-<!-- status -->
-Phase 16 Plan 02 — 1/2 tasks done. Task 1: MERCURY_PUBKEY added to config, Support section added to About page with 3 funding links + backers link. Running check: 0 errors. Now building /backers route.
-<!-- /status -->
+### What Was Shipped
+
+Both tasks complete. `npm run check` passes with 0 errors.
+
+- **`src/lib/config.ts`** — `MERCURY_PUBKEY` constant added (empty string placeholder)
+- **`src/routes/about/+page.svelte`** — Support section added with mission copy, Ko-fi / GitHub Sponsors / Open Collective links, and "View backers →" link to `/backers`
+- **`src/routes/backers/+page.svelte`** — New route. State machine: loading → loaded/empty/error. MERCURY_PUBKEY gate (empty → "Backer credits coming soon"). NDK fetch: kind:30000, authors filter, `#d: backers`. Name extraction from tags. Retry button in error state. CTA "Want to be listed? Support Mercury →" back to About#support.
+
+### Next
+
+Plan 03 will be the final plan in Phase 16 (if any remain) or Phase 17 begins — Artist Stats Dashboard.
+
+> **Commit afbf6b5** (2026-02-24 10:51) — feat(16-02): add MERCURY_PUBKEY to config and Support section to About page
+> Files changed: 1
+
+> **Commit 382ee4e** (2026-02-24 10:51) — feat(16-01): add Support section and Mastodon share button to artist page
+> Files changed: 1
