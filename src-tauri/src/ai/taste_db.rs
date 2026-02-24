@@ -112,6 +112,12 @@ pub fn init_taste_db(app_data_dir: &Path) -> Result<Connection, String> {
             vote_count INTEGER NOT NULL DEFAULT 0,
             last_voted INTEGER NOT NULL
         );
+
+        CREATE TABLE IF NOT EXISTS artist_visits (
+            artist_mbid TEXT PRIMARY KEY,
+            visit_count INTEGER NOT NULL DEFAULT 0,
+            last_visited INTEGER NOT NULL
+        );
         ",
     )
     .map_err(|e| format!("Failed to create taste.db tables: {}", e))?;
@@ -1123,4 +1129,93 @@ pub fn upvote_feature_request(
         .map_err(|e| format!("Failed to get vote count: {}", e))?;
 
     Ok(count)
+}
+
+/// Record a visit to an artist page. Inserts with visit_count=1 or increments on conflict.
+/// Stored in taste.db (local only — never surfaced in the UI, reserved for future use).
+#[tauri::command]
+pub fn record_artist_visit(
+    artist_mbid: String,
+    state: tauri::State<'_, TasteDbState>,
+) -> Result<(), String> {
+    let conn = state.0.lock().map_err(|e| format!("Lock error: {}", e))?;
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_secs() as i64;
+    conn.execute(
+        "INSERT INTO artist_visits (artist_mbid, visit_count, last_visited) VALUES (?1, 1, ?2)
+         ON CONFLICT(artist_mbid) DO UPDATE SET
+           visit_count = visit_count + 1,
+           last_visited = excluded.last_visited",
+        params![artist_mbid, now],
+    ).map_err(|e| format!("Failed to record artist visit: {}", e))?;
+    Ok(())
+}
+
+// ---------------------------------------------------------------------------
+// Unit tests
+// ---------------------------------------------------------------------------
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rusqlite::Connection;
+
+    fn make_test_conn() -> Connection {
+        let conn = Connection::open_in_memory().expect("failed to open in-memory db");
+        conn.execute_batch(
+            "CREATE TABLE IF NOT EXISTS artist_visits (
+                artist_mbid TEXT PRIMARY KEY,
+                visit_count INTEGER NOT NULL DEFAULT 0,
+                last_visited INTEGER NOT NULL
+            );",
+        )
+        .expect("failed to create artist_visits table");
+        conn
+    }
+
+    #[test]
+    fn record_artist_visit_inserts_and_increments() {
+        let conn = make_test_conn();
+        let now: i64 = 1_000_000;
+
+        // First visit — should insert with visit_count = 1
+        conn.execute(
+            "INSERT INTO artist_visits (artist_mbid, visit_count, last_visited) VALUES (?1, 1, ?2)
+             ON CONFLICT(artist_mbid) DO UPDATE SET
+               visit_count = visit_count + 1,
+               last_visited = excluded.last_visited",
+            params!["test-mbid-001", now],
+        )
+        .expect("first insert failed");
+
+        let count: i64 = conn
+            .query_row(
+                "SELECT visit_count FROM artist_visits WHERE artist_mbid = ?1",
+                params!["test-mbid-001"],
+                |row| row.get(0),
+            )
+            .expect("first select failed");
+        assert_eq!(count, 1, "expected visit_count = 1 after first visit");
+
+        // Second visit — ON CONFLICT should increment to 2
+        conn.execute(
+            "INSERT INTO artist_visits (artist_mbid, visit_count, last_visited) VALUES (?1, 1, ?2)
+             ON CONFLICT(artist_mbid) DO UPDATE SET
+               visit_count = visit_count + 1,
+               last_visited = excluded.last_visited",
+            params!["test-mbid-001", now + 60],
+        )
+        .expect("second insert failed");
+
+        let count2: i64 = conn
+            .query_row(
+                "SELECT visit_count FROM artist_visits WHERE artist_mbid = ?1",
+                params!["test-mbid-001"],
+                |row| row.get(0),
+            )
+            .expect("second select failed");
+        assert_eq!(count2, 2, "expected visit_count = 2 after second visit");
+    }
 }
