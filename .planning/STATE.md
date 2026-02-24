@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-24 after v1.3 milestone started)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** v1.3 The Open Network — Phase 16: Sustainability Links
+**Current focus:** v1.3 The Open Network — Phase 18: AI Auto-News
 
 ## Current Position
 
-Phase: 17 of 21 (Artist Stats Dashboard)
-Plan: 02 of 02 complete
-Status: Phase 17 COMPLETE — both plans done (building blocks + artist page integration)
-Last activity: 2026-02-24 — Phase 17 Plan 02 complete (Stats tab UI, ArtistStats integration, visit tracking, Phase 16+17 test entries)
+Phase: 18 of 21 (AI Auto-News)
+Plan: 02 of TBD complete
+Status: Phase 18 IN PROGRESS — Plan 02 done (AI_PROVIDERS, extended AiState, artistSummaryFromReleases prompt)
+Last activity: 2026-02-24 — Phase 18 Plan 02 complete (TypeScript AI infrastructure layer)
 
-Progress: [█░░░░░░░░░] 17% (v1.3 — 1/6 phases complete)
+Progress: [██░░░░░░░░] 33% (v1.3 — 2/6 phases partially complete)
 
 ## Performance Metrics
 
@@ -29,7 +29,7 @@ Progress: [█░░░░░░░░░] 17% (v1.3 — 1/6 phases complete)
 |-------|-------|--------|
 | 16. Sustainability Links | 2 | Complete |
 | 17. Artist Stats Dashboard | 2 | Complete |
-| 18. AI Auto-News | TBD | Not started |
+| 18. AI Auto-News | TBD | In progress (Plans 01-02 complete) |
 | 19. Static Site Generator | TBD | Not started |
 | 20. Listening Rooms | TBD | Not started |
 | 21. ActivityPub Outbound | TBD | Not started |
@@ -54,6 +54,12 @@ Progress: [█░░░░░░░░░] 17% (v1.3 — 1/6 phases complete)
 - Stats tab state is pure Svelte $state (no URL persistence) — switching tabs never causes navigation
 - Visit tracking IIFE placed before collections IIFE in onMount for import error isolation
 - Phase 16 manifest entries use nostr.svelte.ts in comms (not a dedicated nostr module), MERCURY_PUBKEY in /backers
+- artist_summaries uses artist_mbid TEXT PRIMARY KEY — one row per artist, INSERT OR REPLACE for re-generation
+- get_artist_summary returns Option<ArtistSummaryRow> (None = cache miss) — cache miss is not an error
+- AI summary timestamps captured in Rust via SystemTime::now() — consistent with other taste.db timestamp patterns
+- Anthropic routed via aimlapi (not direct) — RemoteAiProvider uses Bearer auth only; Anthropic direct requires x-api-key header which is not supported
+- artistSummaryFromReleases named distinctly from PROMPTS.artistSummary — prevents confusion between release-data and tag-based prompt paths
+- AI_PROVIDERS affiliate URL hardcoded as constant (not env var) — Tauri desktop has no env var pattern; badge visible before click (full transparency)
 
 ### Pending Todos
 None
@@ -66,6 +72,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-24
-Stopped at: Completed 17-02-PLAN.md — Stats tab UI, ArtistStats integration, visit tracking, Phase 16+17 test entries
+Stopped at: Completed 18-02-PLAN.md — AI_PROVIDERS config, extended AiState, artistSummaryFromReleases prompt function
 Resume file: None
-Next: Phase 18 — AI Auto-News
+Next: Phase 18 Plan 03 — ArtistSummary component

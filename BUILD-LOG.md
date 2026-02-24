@@ -5091,3 +5091,32 @@ All building blocks from Plan 01 (Rust backend, TypeScript query, ArtistStats.sv
 
 > **Commit c8a8c8c** (2026-02-24 13:16) — auto-save: 1 files @ 13:16
 > Files changed: 1
+
+> **Commit 1f44098** (2026-02-24 13:19) — wip: auto-save
+> Files changed: 1
+
+## Entry — 2026-02-24 — Phase 18 Plan 02: AI TypeScript Infrastructure
+
+<!-- decision: Anthropic via aimlapi for standard Bearer auth -->
+Direct Anthropic API uses `x-api-key` header, not Bearer. RemoteAiProvider only supports Bearer auth. Rather than special-casing the header, Anthropic users route through aimlapi — label makes this explicit: "Anthropic (via aimlapi)". Same base URL as the recommended aimlapi option, different model defaults.
+<!-- /decision -->
+
+Built the complete TypeScript layer for Phase 18 AI Auto-News in two tasks:
+
+1. **`providers.ts`** — New file. `AI_PROVIDERS` constant with three entries: aimlapi (affiliate badge + URL), OpenAI, Anthropic-via-aimlapi. Includes `getProviderById()` helper.
+2. **`state.svelte.ts`** — Extended `AiState` interface with `autoGenerateOnVisit` + `selectedProviderName`. Both fields initialized, loaded from taste.db in `loadAiSettings()`, and saved in `saveAiSetting()` switch.
+3. **`prompts.ts`** — Added `artistSummaryFromReleases()` — takes artist name, release array, and tags; slices to 20 releases; returns `{system, user}` strings grounded strictly in the provided data. Deliberately named differently from `PROMPTS.artistSummary` (tag-based) to prevent confusion.
+
+All 92 tests passing. Plan 03 (ArtistSummary component) and Plan 04 (AI Settings UI) can now import from these modules.
+
+> **Commit 403efba** (2026-02-24 13:20) — feat(18-02): add AI_PROVIDERS config and extend AiState with Phase 18 fields
+> Files changed: 2
+
+> **Commit f573b86** (2026-02-24 13:20) — feat(18-02): add artistSummaryFromReleases prompt function to prompts.ts
+> Files changed: 1
+
+> **Commit 69d5915** (2026-02-24 13:20) — feat(18-01): add artist_summaries DDL and get/save commands to taste_db.rs
+> Files changed: 1
+
+> **Commit b6b5a16** (2026-02-24 13:21) — feat(18-01): register get_artist_summary and save_artist_summary in invoke_handler
+> Files changed: 1

@@ -25,9 +25,9 @@ Give users insight into how discoverable any artist is within Mercury's index.
 
 AI-generated artist summaries grounded in MusicBrainz catalog data — no hallucinations, clearly labeled.
 
-- [ ] **NEWS-01**: User can see a 2-3 sentence AI-generated summary on artist pages derived from MusicBrainz release data (albums, years, genres)
-- [ ] **NEWS-02**: AI-generated content is visibly labeled as "AI summary based on MusicBrainz data" — never presented as editorial or news
-- [ ] **NEWS-03**: AI summary is cached per artist in taste.db and regenerated on demand by the user
+- [x] **NEWS-01**: User can see a 2-3 sentence AI-generated summary on artist pages derived from MusicBrainz release data (albums, years, genres)
+- [x] **NEWS-02**: AI-generated content is visibly labeled as "AI summary based on MusicBrainz data" — never presented as editorial or news
+- [x] **NEWS-03**: AI summary is cached per artist in taste.db and regenerated on demand by the user
 
 ### SITE — Static Site Generator
 
@@ -102,9 +102,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SUST-04 | Phase 16 | Complete |
 | STAT-01 | Phase 17 | Complete |
 | STAT-02 | Phase 17 | Complete |
-| NEWS-01 | Phase 18 | Pending |
-| NEWS-02 | Phase 18 | Pending |
-| NEWS-03 | Phase 18 | Pending |
+| NEWS-01 | Phase 18 | Complete |
+| NEWS-02 | Phase 18 | Complete |
+| NEWS-03 | Phase 18 | Complete |
 | SITE-01 | Phase 19 | Pending |
 | SITE-02 | Phase 19 | Pending |
 | SITE-03 | Phase 19 | Pending |
