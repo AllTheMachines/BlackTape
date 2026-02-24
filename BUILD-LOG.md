@@ -4715,3 +4715,43 @@ ROADMAP.md:       Phase 15 ✓
 
 > **Commit ba7fd01** (2026-02-24 08:46) — auto-save: 6 files @ 08:46
 > Files changed: 6
+
+> **Commit 9b0086f** (2026-02-24 08:54) — chore: complete v1.2 milestone — archive Zero-Click Confidence
+> Files changed: 28
+
+---
+
+## Entry 037 — 2026-02-24 — v1.2 Milestone Complete
+
+**v1.2 Zero-Click Confidence is shipped and archived.**
+
+Three phases. One sprint. The entire test infrastructure went from "trust me it works" to "here's proof."
+
+### What Shipped
+
+- **Phase 13**: Console error capture on every test. D3 `data-ready` signals (no more `waitForTimeout` guessing). NProgress navigation indicator — amber bar, 0→80%→snap-to-100%+fade, 180ms minimum.
+- **Phase 14**: Playwright CDP wired to the live Tauri WebView2 binary. Seeded fixture DB (15 known artists). 12 E2E tests from window load through search, artist nav, discovery, 404 paths.
+- **Phase 15**: 4 multi-step flow tests with console capture active. 22 Rust unit tests (FTS5 sanitizer, `__data.json` handler, scanner metadata). Pre-commit hook — every commit gets `--code-only` before it lands.
+
+### What Was Archived
+
+- `.planning/milestones/v1.2-ROADMAP.md` — full phase history
+- `.planning/milestones/v1.2-REQUIREMENTS.md` — all 25 requirements + traceability
+- `.planning/milestones/v1.2-MILESTONE-AUDIT.md` — audit report (25/25, tech debt noted)
+- `.planning/milestones/v1.2-phases/13-foundation-fixes/` — Phase 13 plan/summary artifacts
+- `REQUIREMENTS.md` deleted — fresh slate for v1.3
+- `PROCESS.md` created — cross-milestone process standards (TEST-PLAN, pre-commit gate, phase gate)
+
+### Bonus Fix
+
+The pre-commit hook caught a real regression during the milestone commit: P15-05 was checking `REQUIREMENTS.md` for the TEST-PLAN policy, but we'd just deleted it. Fixed: moved the policy to `.planning/PROCESS.md` (permanent home across milestones), updated manifest. 72/72 passing.
+
+### State
+
+```
+v1.0 ✅ · v1.1 ✅ · v1.2 ✅ · v1.3 📋
+Test suite: 72 code/build checks + 22 Rust unit tests
+Tag: v1.2
+```
+
+**Next:** `/gsd:new-milestone` — plan v1.3 (Interoperability, Listening Rooms, Artist Tools — Phases 16–18)
