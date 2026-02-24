@@ -118,6 +118,12 @@ pub fn init_taste_db(app_data_dir: &Path) -> Result<Connection, String> {
             visit_count INTEGER NOT NULL DEFAULT 0,
             last_visited INTEGER NOT NULL
         );
+
+        CREATE TABLE IF NOT EXISTS artist_summaries (
+            artist_mbid TEXT PRIMARY KEY,
+            summary     TEXT NOT NULL,
+            generated_at INTEGER NOT NULL
+        );
         ",
     )
     .map_err(|e| format!("Failed to create taste.db tables: {}", e))?;
@@ -135,6 +141,8 @@ pub fn init_taste_db(app_data_dir: &Path) -> Result<Connection, String> {
         ("local_gen_model_status", "none"),
         ("local_embed_model_status", "none"),
         ("private_listening", "false"),
+        ("auto_generate_on_visit", "false"),
+        ("selected_provider_name", ""),
     ];
 
     for (key, value) in &defaults {
@@ -1150,6 +1158,48 @@ pub fn record_artist_visit(
            last_visited = excluded.last_visited",
         params![artist_mbid, now],
     ).map_err(|e| format!("Failed to record artist visit: {}", e))?;
+    Ok(())
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ArtistSummaryRow {
+    pub summary: String,
+    pub generated_at: i64,
+}
+
+/// Get a cached AI summary for an artist, or None if not cached.
+#[tauri::command]
+pub fn get_artist_summary(
+    artist_mbid: String,
+    state: tauri::State<'_, TasteDbState>,
+) -> Option<ArtistSummaryRow> {
+    let conn = state.0.lock().ok()?;
+    conn.query_row(
+        "SELECT summary, generated_at FROM artist_summaries WHERE artist_mbid = ?1",
+        params![artist_mbid],
+        |row| Ok(ArtistSummaryRow {
+            summary: row.get(0)?,
+            generated_at: row.get(1)?,
+        }),
+    ).ok()
+}
+
+/// Insert or replace an AI summary for an artist with the current Unix timestamp.
+#[tauri::command]
+pub fn save_artist_summary(
+    artist_mbid: String,
+    summary: String,
+    state: tauri::State<'_, TasteDbState>,
+) -> Result<(), String> {
+    let conn = state.0.lock().map_err(|e| format!("Lock error: {}", e))?;
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_secs() as i64;
+    conn.execute(
+        "INSERT OR REPLACE INTO artist_summaries (artist_mbid, summary, generated_at) VALUES (?1, ?2, ?3)",
+        params![artist_mbid, summary, now],
+    ).map_err(|e| e.to_string())?;
     Ok(())
 }
 
