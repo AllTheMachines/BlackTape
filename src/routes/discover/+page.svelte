@@ -1,12 +1,81 @@
 <script lang="ts">
 	import ArtistCard from '$lib/components/ArtistCard.svelte';
-	import TagFilter from '$lib/components/TagFilter.svelte';
-	import RssButton from '$lib/components/RssButton.svelte';
 	import type { PageData } from './$types';
 	import { PROJECT_NAME } from '$lib/config';
-	import { openChat, chatState } from '$lib/comms/notifications.svelte.js';
+	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
+	import { get } from 'svelte/store';
 
 	let { data }: { data: PageData } = $props();
+
+	// Era decade options
+	const ERA_OPTIONS = ['60s', '70s', '80s', '90s', '00s', '10s', '20s'];
+	const MAX_TAGS = 5;
+
+	// Country debounce timer
+	let countryTimer: ReturnType<typeof setTimeout> | null = null;
+
+	function buildUrl(overrides: { tags?: string[]; country?: string; era?: string }) {
+		const currentUrl = get(page).url;
+		const params = new URLSearchParams(currentUrl.searchParams);
+
+		const newTags = overrides.tags !== undefined ? overrides.tags : data.tags;
+		const newCountry = overrides.country !== undefined ? overrides.country : data.country;
+		const newEra = overrides.era !== undefined ? overrides.era : data.era;
+
+		if (newTags.length > 0) {
+			params.set('tags', newTags.join(','));
+		} else {
+			params.delete('tags');
+		}
+
+		if (newCountry) {
+			params.set('country', newCountry);
+		} else {
+			params.delete('country');
+		}
+
+		if (newEra) {
+			params.set('era', newEra);
+		} else {
+			params.delete('era');
+		}
+
+		const str = params.toString();
+		return str ? `?${str}` : '/discover';
+	}
+
+	function toggleTag(tag: string) {
+		const current = data.tags;
+		let updated: string[];
+		if (current.includes(tag)) {
+			updated = current.filter((t) => t !== tag);
+		} else if (current.length < MAX_TAGS) {
+			updated = [...current, tag];
+		} else {
+			return;
+		}
+		goto(buildUrl({ tags: updated }), { keepFocus: true, noScroll: true });
+	}
+
+	function onCountryInput(e: Event) {
+		const value = (e.target as HTMLInputElement).value;
+		if (countryTimer) clearTimeout(countryTimer);
+		countryTimer = setTimeout(() => {
+			goto(buildUrl({ country: value }), { keepFocus: true, noScroll: true });
+		}, 300);
+	}
+
+	function toggleEra(era: string) {
+		const newEra = data.era === era ? '' : era;
+		goto(buildUrl({ era: newEra }), { keepFocus: true, noScroll: true });
+	}
+
+	function clearAllFilters() {
+		goto('/discover', { keepFocus: true, noScroll: true });
+	}
+
+	let hasActiveFilters = $derived(data.tags.length > 0 || !!data.country || !!data.era);
 </script>
 
 <svelte:head>
@@ -14,108 +83,345 @@
 </svelte:head>
 
 <div class="discover-page">
-	<div class="discover-header">
-		<h1 class="page-title">Discover</h1>
-		<p class="page-desc">
-			{#if data.tags.length > 0}
-				Showing {data.artists.length} artists tagged with {data.tags.join(' + ')}
+	<div class="discover-layout">
+		<!-- Left filter panel -->
+		<aside class="discover-filter-panel">
+			<h2 class="filter-heading">Filters</h2>
+
+			<!-- Genre / Tag cloud -->
+			<div class="filter-section">
+				<span class="filter-label">Genre / Tag</span>
+				<div class="tag-cloud">
+					{#each data.popularTags.slice(0, 50) as { tag, artist_count }}
+						{@const isActive = data.tags.includes(tag)}
+						{@const isDisabled = !isActive && data.tags.length >= MAX_TAGS}
+						<button
+							class="tag-chip"
+							class:active={isActive}
+							class:disabled={isDisabled}
+							onclick={() => toggleTag(tag)}
+							disabled={isDisabled}
+							title="{artist_count.toLocaleString()} artists"
+						>
+							{tag}
+						</button>
+					{/each}
+				</div>
+			</div>
+
+			<!-- Country -->
+			<div class="filter-section">
+				<label class="filter-label" for="country-input">Country</label>
+				<input
+					id="country-input"
+					type="text"
+					class="country-input"
+					placeholder="e.g. GB, US, JP"
+					value={data.country}
+					oninput={onCountryInput}
+				/>
+			</div>
+
+			<!-- Era -->
+			<div class="filter-section">
+				<span class="filter-label">Era</span>
+				<div class="era-pills">
+					{#each ERA_OPTIONS as era}
+						<button
+							class="era-pill"
+							class:active={data.era === era}
+							onclick={() => toggleEra(era)}
+						>
+							{era}
+						</button>
+					{/each}
+				</div>
+			</div>
+		</aside>
+
+		<!-- Right results column -->
+		<div class="discover-results">
+			<!-- Active filter chips toolbar -->
+			<div class="results-toolbar">
+				<div class="active-chips">
+					{#each data.tags as tag}
+						<button class="filter-chip active" onclick={() => toggleTag(tag)}>
+							{tag} <span class="chip-remove">×</span>
+						</button>
+					{/each}
+					{#if data.country}
+						<button class="filter-chip active" onclick={() => goto(buildUrl({ country: '' }), { keepFocus: true, noScroll: true })}>
+							Country: {data.country} <span class="chip-remove">×</span>
+						</button>
+					{/if}
+					{#if data.era}
+						<button class="filter-chip active" onclick={() => goto(buildUrl({ era: '' }), { keepFocus: true, noScroll: true })}>
+							Era: {data.era} <span class="chip-remove">×</span>
+						</button>
+					{/if}
+				</div>
+				<div class="toolbar-right">
+					<span class="result-count">{data.artists.length} artists</span>
+					{#if hasActiveFilters}
+						<button class="clear-all-btn" onclick={clearAllFilters}>Clear all</button>
+					{/if}
+				</div>
+			</div>
+
+			<!-- Results grid or empty state -->
+			{#if data.artists.length === 0}
+				<div class="empty-state">
+					<p>No artists found with these filters.</p>
+					<button class="clear-filters-btn" onclick={clearAllFilters}>Clear filters</button>
+				</div>
 			{:else}
-				Niche artists surface first. The more specific your taste, the rarer the discovery.
-			{/if}
-		</p>
-	</div>
-
-	<TagFilter tags={data.popularTags} activeTags={data.tags} />
-
-	{#if data.tags.length > 0}
-		<div class="discover-actions">
-			<button
-				onclick={() => { chatState.view = 'rooms'; openChat('rooms'); }}
-				class="discover-rooms-btn"
-				title="Find scene rooms for these tags"
-			>
-				Scene rooms for this vibe &rarr;
-			</button>
-			{#if data.tags.length === 1}
-				<RssButton href="/api/rss/tag/{encodeURIComponent(data.tags[0])}" label="RSS feed for {data.tags[0]}" />
+				<div class="artist-grid">
+					{#each data.artists as artist}
+						<ArtistCard {artist} />
+					{/each}
+				</div>
 			{/if}
 		</div>
-	{/if}
-
-	<section class="results">
-		{#if data.artists.length === 0}
-			<p class="empty-state">No artists found with these tags. Try removing one.</p>
-		{:else}
-			<div class="artist-grid">
-				{#each data.artists as artist}
-					<ArtistCard {artist} />
-				{/each}
-			</div>
-		{/if}
-	</section>
+	</div>
 </div>
 
 <style>
 	.discover-page {
-		max-width: 1200px;
-		margin: 0 auto;
-		padding: var(--space-xl) var(--space-lg);
+		padding: var(--space-lg);
+		height: 100%;
+		overflow: hidden;
 	}
 
-	.discover-header {
-		margin-bottom: var(--space-lg);
+	.discover-layout {
+		display: grid;
+		grid-template-columns: 220px 1fr;
+		gap: var(--space-lg);
+		height: 100%;
 	}
 
-	.page-title {
-		font-size: 1.5rem;
+	/* ---- Filter panel ---- */
+	.discover-filter-panel {
+		border-right: 1px solid var(--border-subtle, var(--b-1));
+		padding-right: var(--space-md);
+		overflow-y: auto;
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-lg);
+	}
+
+	.filter-heading {
+		font-size: 0.75rem;
 		font-weight: 600;
-		color: var(--text-primary);
-		margin: 0 0 var(--space-xs);
-	}
-
-	.page-desc {
-		font-size: 0.875rem;
-		color: var(--text-muted);
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--t-3);
 		margin: 0;
 	}
 
-	.discover-actions {
+	.filter-section {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-xs);
+	}
+
+	.filter-label {
+		font-size: 0.7rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--t-3);
+	}
+
+	/* Tag cloud in filter panel */
+	.tag-cloud {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 4px;
+	}
+
+	.tag-chip {
+		display: inline-flex;
+		align-items: center;
+		height: 20px;
+		padding: 0 6px;
+		background: var(--bg-4);
+		border: 1px solid var(--b-2);
+		border-radius: var(--r);
+		font-size: 10px;
+		color: var(--t-3);
+		cursor: pointer;
+		white-space: nowrap;
+		transition: border-color 0.1s, color 0.1s;
+	}
+
+	.tag-chip:hover:not(:disabled) {
+		border-color: var(--acc);
+		color: var(--t-2);
+	}
+
+	.tag-chip.active {
+		background: var(--acc-bg);
+		border-color: var(--b-acc);
+		color: var(--acc);
+	}
+
+	.tag-chip.disabled {
+		opacity: 0.35;
+		cursor: not-allowed;
+	}
+
+	/* Country input */
+	.country-input {
+		width: 100%;
+		box-sizing: border-box;
+		font-size: 0.8rem;
+		padding: 4px 8px;
+	}
+
+	/* Era pills */
+	.era-pills {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 4px;
+	}
+
+	.era-pill {
+		display: inline-flex;
+		align-items: center;
+		height: 22px;
+		padding: 0 8px;
+		background: var(--bg-4);
+		border: 1px solid var(--b-2);
+		border-radius: var(--r);
+		font-size: 10px;
+		color: var(--t-3);
+		cursor: pointer;
+		transition: border-color 0.1s, color 0.1s;
+	}
+
+	.era-pill:hover {
+		border-color: var(--acc);
+		color: var(--t-2);
+	}
+
+	.era-pill.active {
+		background: var(--acc-bg);
+		border-color: var(--b-acc);
+		color: var(--acc);
+	}
+
+	/* ---- Results column ---- */
+	.discover-results {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-md);
+		overflow-y: auto;
+	}
+
+	/* Toolbar */
+	.results-toolbar {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		flex-wrap: wrap;
+		gap: var(--space-xs);
+		padding-bottom: var(--space-xs);
+		border-bottom: 1px solid var(--b-1);
+	}
+
+	.active-chips {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-xs);
+	}
+
+	.filter-chip {
+		display: inline-flex;
+		align-items: center;
+		gap: 3px;
+		height: 22px;
+		padding: 0 7px;
+		background: var(--acc-bg);
+		border: 1px solid var(--b-acc);
+		border-radius: var(--r);
+		font-size: 10px;
+		color: var(--acc);
+		cursor: pointer;
+		transition: opacity 0.1s;
+	}
+
+	.filter-chip:hover {
+		opacity: 0.8;
+	}
+
+	.chip-remove {
+		font-size: 0.85rem;
+		margin-left: 1px;
+		opacity: 0.8;
+	}
+
+	.toolbar-right {
 		display: flex;
 		align-items: center;
 		gap: var(--space-sm);
-		margin-top: var(--space-md);
 	}
 
-	.discover-rooms-btn {
-		background: none;
-		border: 1px solid var(--border-default);
-		border-radius: 6px;
-		padding: 5px 10px;
-		cursor: pointer;
-		color: var(--text-muted);
+	.result-count {
 		font-size: 0.75rem;
-		transition: border-color 0.15s, color 0.15s;
+		color: var(--t-3);
 	}
 
-	.discover-rooms-btn:hover {
-		border-color: var(--text-accent);
-		color: var(--text-accent);
+	.clear-all-btn {
+		font-size: 0.7rem;
+		color: var(--t-3);
+		background: none;
+		border: 1px solid var(--b-2);
+		border-radius: var(--r);
+		padding: 2px 8px;
+		cursor: pointer;
+		transition: border-color 0.1s, color 0.1s;
 	}
 
-	.results {
-		margin-top: var(--space-xl);
+	.clear-all-btn:hover {
+		border-color: var(--acc);
+		color: var(--acc);
 	}
 
+	/* Artist grid */
 	.artist-grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+		grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
 		gap: var(--space-md);
 	}
 
+	/* Empty state */
 	.empty-state {
-		color: var(--text-muted);
-		font-size: 0.875rem;
-		text-align: center;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: var(--space-md);
 		padding: var(--space-2xl);
+		text-align: center;
+	}
+
+	.empty-state p {
+		font-size: 0.875rem;
+		color: var(--t-3);
+		margin: 0;
+	}
+
+	.clear-filters-btn {
+		font-size: 0.8rem;
+		color: var(--acc);
+		background: var(--acc-bg);
+		border: 1px solid var(--b-acc);
+		border-radius: var(--r);
+		padding: 5px 12px;
+		cursor: pointer;
+		transition: opacity 0.15s;
+	}
+
+	.clear-filters-btn:hover {
+		opacity: 0.8;
 	}
 </style>
