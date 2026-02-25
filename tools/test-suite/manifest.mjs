@@ -2368,6 +2368,110 @@ export const PHASE_25 = [
 ];
 
 // ---------------------------------------------------------------------------
+// PHASE 26 — Discover + Cross-Linking + Crate Fix
+// ---------------------------------------------------------------------------
+
+export const PHASE_26 = [
+  {
+    id: 'P26-01', phase: 26, area: 'Discover',
+    desc: 'Discover page has a filter panel (discover-filter-panel or discover-layout class)',
+    method: 'code',
+    fn: () => fileContains('src/routes/discover/+page.svelte', 'discover-filter-panel')() ||
+              fileContains('src/routes/discover/+page.svelte', 'discover-layout')(),
+  },
+  {
+    id: 'P26-02', phase: 26, area: 'Discover',
+    desc: 'Discover +page.ts reads country from URL params',
+    method: 'code',
+    fn: () => fileContains('src/routes/discover/+page.ts', 'country')(),
+  },
+  {
+    id: 'P26-03', phase: 26, area: 'Discover',
+    desc: 'Discover +page.ts reads era from URL params',
+    method: 'code',
+    fn: () => fileContains('src/routes/discover/+page.ts', 'era')(),
+  },
+  {
+    id: 'P26-04', phase: 26, area: 'Discover',
+    desc: 'queries.ts exports getDiscoveryArtists function',
+    method: 'code',
+    fn: () => fileContains('src/lib/db/queries.ts', 'getDiscoveryArtists')(),
+  },
+  {
+    id: 'P26-05', phase: 26, area: 'Discover',
+    desc: 'ArtistResult interface has uniqueness_score field',
+    method: 'code',
+    fn: () => fileContains('src/lib/db/queries.ts', 'uniqueness_score')(),
+  },
+  {
+    id: 'P26-06', phase: 26, area: 'Discover',
+    desc: 'ArtistCard renders a uniqueness score bar',
+    method: 'code',
+    fn: () => fileContains('src/lib/components/ArtistCard.svelte', 'uniqueness-bar')(),
+  },
+  {
+    id: 'P26-07', phase: 26, area: 'Discover',
+    desc: 'Discover page layout renders with filter panel and artist grid',
+    method: 'skip',
+    reason: 'Requires running desktop app — visual layout check',
+  },
+  {
+    id: 'P26-08', phase: 26, area: 'Cross-Linking',
+    desc: 'Artist page links to Style Map with ?tag= param',
+    method: 'code',
+    fn: () => fileContains('src/routes/artist/[slug]/+page.svelte', 'style-map?tag=')(),
+  },
+  {
+    id: 'P26-09', phase: 26, area: 'Cross-Linking',
+    desc: 'Style Map +page.ts reads ?tag= from URL params',
+    method: 'code',
+    fn: () => fileContains('src/routes/style-map/+page.ts', 'tag')(),
+  },
+  {
+    id: 'P26-10', phase: 26, area: 'Cross-Linking',
+    desc: 'Scene page links to KB genre page',
+    method: 'code',
+    fn: () => fileContains('src/routes/scenes/[slug]/+page.svelte', '/kb/genre/')(),
+  },
+  {
+    id: 'P26-11', phase: 26, area: 'Cross-Linking',
+    desc: 'Crate Dig result has Style Map cross-link',
+    method: 'code',
+    fn: () => fileContains('src/routes/crate/+page.svelte', 'style-map?tag=')(),
+  },
+  {
+    id: 'P26-12', phase: 26, area: 'Cross-Linking',
+    desc: 'Time Machine has Discover era cross-link',
+    method: 'code',
+    fn: () => fileContains('src/routes/time-machine/+page.svelte', 'discover?era=')(),
+  },
+  {
+    id: 'P26-13', phase: 26, area: 'Cross-Linking',
+    desc: 'Cross-links visible in desktop app with secondary text style',
+    method: 'skip',
+    reason: 'Requires running desktop app — visual verification',
+  },
+  {
+    id: 'P26-14', phase: 26, area: 'Crate Fix',
+    desc: 'Crate Dig country input no longer asks for raw ISO code',
+    method: 'code',
+    fn: () => !fileContains('src/routes/crate/+page.svelte', 'Country code (e.g. US, GB)')(),
+  },
+  {
+    id: 'P26-15', phase: 26, area: 'Crate Fix',
+    desc: 'Crate Dig has COUNTRIES list with named country options',
+    method: 'code',
+    fn: () => fileContains('src/routes/crate/+page.svelte', 'COUNTRIES')(),
+  },
+  {
+    id: 'P26-16', phase: 26, area: 'Crate Fix',
+    desc: 'Crate Dig country filter shows dropdown of country names in desktop app',
+    method: 'skip',
+    reason: 'Requires running desktop app — UI dropdown verification',
+  },
+];
+
+// ---------------------------------------------------------------------------
 // Build check — always runs last
 // ---------------------------------------------------------------------------
 
@@ -2408,5 +2512,6 @@ export const ALL_TESTS = [
   ...PHASE_23,
   ...PHASE_24,
   ...PHASE_25,
+  ...PHASE_26,
   ...BUILD,
 ];
