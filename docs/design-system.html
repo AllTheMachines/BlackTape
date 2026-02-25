@@ -1,0 +1,1847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mercury — Design System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   MERCURY DESIGN SYSTEM — ACTUAL TOKEN VALUES
+   Source of truth for all UI decisions.
+   ============================================================ */
+
+:root {
+  /* --- Backgrounds --- */
+  --bg-0: #080808;
+  --bg-1: #0f0f0f;
+  --bg-2: #141414;
+  --bg-3: #1a1a1a;
+  --bg-4: #212121;
+  --bg-5: #292929;
+  --bg-6: #323232;
+
+  /* --- Borders --- */
+  --b-0: #161616;
+  --b-1: #202020;
+  --b-2: #2c2c2c;
+  --b-3: #3a3a3a;
+  --b-acc: rgba(196, 165, 90, 0.3);
+
+  /* --- Text --- */
+  --t-1: #e0e0e0;
+  --t-2: #888888;
+  --t-3: #464646;
+
+  /* --- Accent (Warm Amber) --- */
+  --acc: #c4a55a;
+  --acc-bg: rgba(196, 165, 90, 0.10);
+  --acc-bg-h: rgba(196, 165, 90, 0.18);
+
+  /* --- Semantic --- */
+  --link-color: #5b9bd5;
+  --tag-bg: #0f1520;
+  --tag-text: #5b9bd5;
+  --tag-border: #1d2d45;
+
+  /* --- Platform Colors --- */
+  --bandcamp-color: #1da0c3;
+  --spotify-color:  #1db954;
+  --soundcloud-color: #ff5500;
+  --youtube-color: #ff0000;
+
+  /* --- Player --- */
+  --player-bg: #060606;
+  --player-border: #0f0f0f;
+  --progress-color: #5b9bd5;
+  --progress-bg: #141414;
+
+  /* --- Typography --- */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Cascadia Code', 'JetBrains Mono', 'Fira Code', monospace;
+
+  /* --- Spacing --- */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+
+  /* --- Radius --- */
+  --r: 2px;
+  --card-radius: 6px;
+  --input-radius: 6px;
+
+  /* --- Layout --- */
+  --sidebar: 192px;
+  --topbar: 42px;
+  --player-height: 72px;
+  --header-height: 48px;
+  --max-width: 1200px;
+}
+
+/* ============================================================
+   DASHBOARD BASE
+   ============================================================ */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  background: var(--bg-0);
+  color: var(--t-1);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+a { color: var(--link-color); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ---- Layout ---- */
+.ds-shell {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  min-height: 100vh;
+}
+
+/* ---- Sidebar Nav ---- */
+.ds-nav {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  background: var(--bg-1);
+  border-right: 1px solid var(--b-1);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.ds-nav-header {
+  padding: 20px 16px 16px;
+  border-bottom: 1px solid var(--b-1);
+}
+
+.ds-nav-wordmark {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--acc);
+}
+
+.ds-nav-subtitle {
+  font-size: 10px;
+  color: var(--t-3);
+  margin-top: 2px;
+  letter-spacing: 0.04em;
+}
+
+.ds-nav ul { list-style: none; padding: 8px 0; }
+
+.ds-nav-section-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--t-3);
+  padding: 12px 16px 4px;
+}
+
+.ds-nav a {
+  display: block;
+  padding: 6px 16px;
+  font-size: 12px;
+  color: var(--t-2);
+  border-left: 2px solid transparent;
+  transition: color 0.12s, border-color 0.12s, background 0.12s;
+}
+
+.ds-nav a:hover {
+  color: var(--t-1);
+  background: var(--bg-3);
+  text-decoration: none;
+  border-left-color: var(--b-3);
+}
+
+.ds-nav a.active {
+  color: var(--acc);
+  border-left-color: var(--acc);
+  background: var(--acc-bg);
+}
+
+/* ---- Main Content ---- */
+.ds-main {
+  padding: 40px 48px;
+  max-width: 960px;
+}
+
+/* ---- Section ---- */
+.ds-section {
+  margin-bottom: 64px;
+  scroll-margin-top: 32px;
+}
+
+.ds-section-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--b-1);
+}
+
+.ds-section-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--t-1);
+  letter-spacing: -0.01em;
+}
+
+.ds-section-badge {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--t-3);
+  background: var(--bg-3);
+  border: 1px solid var(--b-2);
+  border-radius: 3px;
+  padding: 2px 6px;
+}
+
+.ds-subsection {
+  margin-bottom: 32px;
+}
+
+.ds-subsection-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--t-3);
+  margin-bottom: 12px;
+}
+
+/* ---- Utility ---- */
+.ds-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.ds-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+.ds-grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+.ds-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.ds-col { display: flex; flex-direction: column; gap: 12px; }
+
+code {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--acc);
+  background: var(--acc-bg);
+  border: 1px solid var(--b-acc);
+  border-radius: 3px;
+  padding: 1px 5px;
+}
+
+/* ============================================================
+   SECTION 1 — BRAND OVERVIEW
+   ============================================================ */
+
+.brand-logo-block {
+  width: 100%;
+  height: 120px;
+  background: var(--bg-2);
+  border: 1px dashed var(--b-2);
+  border-radius: var(--card-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--t-3);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  margin-bottom: 20px;
+}
+
+.brand-logo-wordmark {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--acc);
+}
+
+.brand-meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.brand-meta-card {
+  background: var(--bg-2);
+  border: 1px solid var(--b-1);
+  border-radius: var(--card-radius);
+  padding: 16px;
+}
+
+.brand-meta-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--t-3);
+  margin-bottom: 8px;
+}
+
+.brand-meta-value {
+  font-size: 12px;
+  color: var(--t-2);
+  line-height: 1.5;
+}
+
+.brand-tone-pill {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 500;
+  padding: 3px 8px;
+  border-radius: 3px;
+  background: var(--bg-4);
+  border: 1px solid var(--b-2);
+  color: var(--t-2);
+  margin: 3px 3px 3px 0;
+}
+
+/* ============================================================
+   SECTION 2 — TYPOGRAPHY
+   ============================================================ */
+
+.type-specimen {
+  background: var(--bg-2);
+  border: 1px solid var(--b-1);
+  border-radius: var(--card-radius);
+  padding: 20px 24px;
+  margin-bottom: 8px;
+}
+
+.type-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--b-1);
+}
+
+.type-meta span {
+  font-size: 10px;
+  color: var(--t-3);
+  font-family: var(--font-mono);
+}
+
+.type-h1 { font-size: 32px; font-weight: 700; color: var(--t-1); letter-spacing: -0.02em; line-height: 1.2; }
+.type-h2 { font-size: 22px; font-weight: 600; color: var(--t-1); letter-spacing: -0.01em; line-height: 1.3; }
+.type-h3 { font-size: 16px; font-weight: 500; color: var(--t-1); line-height: 1.4; }
+.type-body { font-size: 13px; font-weight: 400; color: var(--t-1); line-height: 1.6; }
+.type-small { font-size: 11px; font-weight: 400; color: var(--t-2); line-height: 1.5; }
+.type-label { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--t-3); }
+.type-mono { font-family: var(--font-mono); font-size: 12px; color: var(--acc); line-height: 1.5; }
+
+.font-card {
+  background: var(--bg-2);
+  border: 1px solid var(--b-1);
+  border-radius: var(--card-radius);
+  padding: 20px;
+}
+
+.font-name { font-size: 20px; font-weight: 600; color: var(--t-1); margin-bottom: 4px; }
+.font-stack { font-size: 10px; color: var(--t-3); font-family: var(--font-mono); margin-bottom: 12px; }
+.font-weights { display: flex; flex-direction: column; gap: 4px; }
+.font-weight-row { display: flex; align-items: baseline; gap: 10px; }
+.font-weight-num { font-size: 10px; color: var(--t-3); font-family: var(--font-mono); width: 32px; }
+.font-weight-sample { color: var(--t-2); font-size: 14px; }
+
+/* ============================================================
+   SECTION 3 — COLOR PALETTE
+   ============================================================ */
+
+.color-swatch {
+  border-radius: var(--card-radius);
+  overflow: hidden;
+  border: 1px solid var(--b-1);
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.color-swatch:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.4); }
+
+.color-swatch-block {
+  height: 64px;
+  width: 100%;
+}
+
+.color-swatch-info {
+  background: var(--bg-2);
+  padding: 8px 10px;
+}
+
+.color-swatch-name {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--t-1);
+  margin-bottom: 2px;
+}
+
+.color-swatch-hex {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--t-3);
+  margin-bottom: 2px;
+}
+
+.color-swatch-var {
+  font-size: 9px;
+  font-family: var(--font-mono);
+  color: var(--acc);
+  opacity: 0.8;
+}
+
+.color-row-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--t-3);
+  margin: 20px 0 8px;
+}
+
+.bg-scale {
+  display: flex;
+  gap: 6px;
+  align-items: flex-end;
+}
+
+.bg-scale-step {
+  flex: 1;
+  border-radius: var(--r);
+  border: 1px solid var(--b-1);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.bg-scale-step:hover { transform: scale(1.03); }
+
+.bg-scale-block { width: 100%; }
+.bg-scale-info { padding: 5px 6px; background: var(--bg-2); }
+.bg-scale-var { font-size: 9px; font-family: var(--font-mono); color: var(--t-3); display: block; }
+.bg-scale-hex { font-size: 9px; font-family: var(--font-mono); color: var(--t-2); display: block; }
+
+/* ============================================================
+   SECTION 4 — COLOR SANDBOX
+   ============================================================ */
+
+.sandbox-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.sandbox-controls {
+  background: var(--bg-2);
+  border: 1px solid var(--b-1);
+  border-radius: var(--card-radius);
+  padding: 20px;
+}
+
+.sandbox-field { margin-bottom: 16px; }
+
+.sandbox-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--t-3);
+  display: block;
+  margin-bottom: 6px;
+}
+
+.sandbox-picker {
+  width: 48px;
+  height: 32px;
+  border: 1px solid var(--b-2);
+  border-radius: var(--input-radius);
+  background: var(--bg-3);
+  cursor: pointer;
+  padding: 2px;
+}
+
+.sandbox-input {
+  width: 100%;
+  background: var(--bg-3);
+  border: 1px solid var(--b-2);
+  border-radius: var(--input-radius);
+  color: var(--t-1);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  padding: 7px 10px;
+  margin-top: 6px;
+  outline: none;
+  transition: border-color 0.12s;
+}
+
+.sandbox-input:focus { border-color: var(--acc); }
+
+.sandbox-picker-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sandbox-target-btn {
+  flex: 1;
+  background: var(--bg-3);
+  border: 1px solid var(--b-2);
+  border-radius: var(--input-radius);
+  color: var(--t-2);
+  font-size: 11px;
+  padding: 6px 10px;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.12s, background 0.12s;
+}
+
+.sandbox-target-btn:hover, .sandbox-target-btn.active {
+  border-color: var(--acc);
+  background: var(--acc-bg);
+  color: var(--acc);
+}
+
+.sandbox-preview-card {
+  background: var(--bg-2);
+  border: 1px solid var(--b-1);
+  border-radius: var(--card-radius);
+  overflow: hidden;
+}
+
+.preview-card-header {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--b-1);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.preview-card-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--acc);
+  flex-shrink: 0;
+}
+
+.preview-card-title { font-size: 13px; font-weight: 600; color: var(--t-1); }
+.preview-card-sub { font-size: 11px; color: var(--t-2); margin-left: auto; }
+
+.preview-card-body { padding: 18px; }
+
+.preview-card-artist {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--t-1);
+  margin-bottom: 4px;
+  letter-spacing: -0.01em;
+}
+
+.preview-card-genre { font-size: 11px; color: var(--acc); margin-bottom: 12px; }
+
+.preview-card-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+
+.preview-tag {
+  font-size: 10px;
+  padding: 3px 8px;
+  background: var(--tag-bg);
+  color: var(--tag-text);
+  border: 1px solid var(--tag-border);
+  border-radius: var(--r);
+}
+
+.preview-card-desc { font-size: 12px; color: var(--t-2); line-height: 1.6; margin-bottom: 16px; }
+
+.preview-card-actions { display: flex; gap: 8px; }
+
+.preview-btn-primary {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 7px 14px;
+  background: var(--acc);
+  color: #000;
+  border: none;
+  border-radius: var(--r);
+  cursor: pointer;
+  letter-spacing: 0.04em;
+}
+
+.preview-btn-secondary {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 7px 14px;
+  background: transparent;
+  color: var(--acc);
+  border: 1px solid var(--b-acc);
+  border-radius: var(--r);
+  cursor: pointer;
+}
+
+.sandbox-reset-btn {
+  width: 100%;
+  background: var(--bg-3);
+  border: 1px solid var(--b-2);
+  border-radius: var(--input-radius);
+  color: var(--t-3);
+  font-size: 11px;
+  padding: 7px 10px;
+  cursor: pointer;
+  transition: color 0.12s, border-color 0.12s;
+  margin-top: 4px;
+}
+
+.sandbox-reset-btn:hover { color: var(--t-2); border-color: var(--b-3); }
+
+/* ============================================================
+   SECTION 5 — COMPONENTS
+   ============================================================ */
+
+/* Buttons */
+.btn { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-sans); font-size: 12px; font-weight: 500; padding: 7px 14px; border-radius: var(--r); cursor: pointer; transition: background 0.12s, color 0.12s, border-color 0.12s; letter-spacing: 0.02em; border: 1px solid transparent; }
+
+.btn-primary { background: var(--acc); color: #000; border-color: var(--acc); font-weight: 600; }
+.btn-primary:hover { background: #d4b56a; border-color: #d4b56a; }
+
+.btn-secondary { background: transparent; color: var(--acc); border-color: var(--b-acc); }
+.btn-secondary:hover { background: var(--acc-bg); }
+
+.btn-ghost { background: transparent; color: var(--t-2); border-color: var(--b-2); }
+.btn-ghost:hover { background: var(--bg-4); color: var(--t-1); }
+
+.btn-danger { background: transparent; color: #e05555; border-color: rgba(224,85,85,0.3); }
+.btn-danger:hover { background: rgba(224,85,85,0.1); }
+
+.btn-disabled { background: var(--bg-4); color: var(--t-3); border-color: var(--b-1); cursor: not-allowed; opacity: 0.5; }
+
+.btn-sm { font-size: 11px; padding: 5px 10px; }
+.btn-lg { font-size: 14px; padding: 10px 20px; }
+
+.btn-icon { width: 28px; height: 28px; padding: 0; justify-content: center; }
+
+/* Cards */
+.card {
+  background: var(--bg-2);
+  border: 1px solid var(--b-1);
+  border-radius: var(--card-radius);
+  overflow: hidden;
+}
+
+.card-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--b-1);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--t-1);
+  background: var(--bg-3);
+}
+
+.card-body { padding: 16px; color: var(--t-2); font-size: 12px; line-height: 1.6; }
+.card-footer { padding: 10px 16px; border-top: 1px solid var(--b-1); background: var(--bg-3); }
+
+.panel {
+  background: var(--bg-1);
+  border: 1px solid var(--b-1);
+  border-radius: var(--r);
+}
+
+.panel-header {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--b-1);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--t-3);
+}
+
+.panel-body { padding: 12px; }
+
+.elevated-card {
+  background: var(--bg-3);
+  border: 1px solid var(--b-2);
+  border-radius: var(--card-radius);
+  padding: 16px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4), 0 1px 4px rgba(0,0,0,0.3);
+}
+
+/* Form Elements */
+.form-group { margin-bottom: 16px; }
+.form-label { display: block; font-size: 11px; font-weight: 600; color: var(--t-2); margin-bottom: 6px; }
+
+.form-input {
+  width: 100%;
+  background: var(--bg-2);
+  border: 1px solid var(--b-2);
+  border-radius: var(--input-radius);
+  color: var(--t-1);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  padding: 8px 12px;
+  outline: none;
+  transition: border-color 0.12s, box-shadow 0.12s;
+}
+
+.form-input:focus {
+  border-color: var(--acc);
+  box-shadow: 0 0 0 2px var(--acc-bg);
+}
+
+.form-input::placeholder { color: var(--t-3); }
+
+.form-input.error { border-color: #e05555; box-shadow: 0 0 0 2px rgba(224,85,85,0.12); }
+.form-input.success { border-color: #3dba6a; box-shadow: 0 0 0 2px rgba(61,186,106,0.12); }
+
+.form-select {
+  width: 100%;
+  background: var(--bg-2);
+  border: 1px solid var(--b-2);
+  border-radius: var(--input-radius);
+  color: var(--t-1);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  padding: 8px 12px;
+  outline: none;
+  appearance: none;
+  cursor: pointer;
+}
+
+.form-checkbox-row { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+
+.form-checkbox {
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--b-3);
+  border-radius: 2px;
+  background: var(--bg-3);
+  appearance: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.1s, border-color 0.1s;
+  position: relative;
+}
+
+.form-checkbox:checked {
+  background: var(--acc);
+  border-color: var(--acc);
+}
+
+.form-checkbox:checked::after {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 1px;
+  width: 5px;
+  height: 8px;
+  border: 1.5px solid #000;
+  border-top: none;
+  border-left: none;
+  transform: rotate(40deg);
+}
+
+.form-checkbox-label { font-size: 12px; color: var(--t-2); }
+
+/* Tags */
+.tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 500;
+  padding: 3px 8px;
+  border-radius: var(--r);
+  cursor: pointer;
+  border: 1px solid var(--tag-border);
+  background: var(--tag-bg);
+  color: var(--tag-text);
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.tag:hover { background: rgba(91,155,213,0.15); border-color: rgba(91,155,213,0.35); }
+
+.tag-amber {
+  background: var(--acc-bg);
+  border-color: var(--b-acc);
+  color: var(--acc);
+}
+
+.tag-amber:hover { background: var(--acc-bg-h); }
+
+/* Platform badges */
+.platform-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 4px 9px;
+  border-radius: var(--r);
+  border: 1px solid transparent;
+}
+
+.badge-bandcamp { background: rgba(29,160,195,0.12); color: var(--bandcamp-color); border-color: rgba(29,160,195,0.25); }
+.badge-spotify  { background: rgba(29,185,84,0.12);  color: var(--spotify-color);  border-color: rgba(29,185,84,0.25); }
+.badge-sc       { background: rgba(255,85,0,0.12);   color: var(--soundcloud-color); border-color: rgba(255,85,0,0.25); }
+.badge-yt       { background: rgba(255,0,0,0.12);    color: var(--youtube-color);  border-color: rgba(255,0,0,0.25); }
+
+/* Semantic feedback */
+.inline-success { font-size: 11px; color: #3dba6a; display: flex; align-items: center; gap: 5px; }
+.inline-error   { font-size: 11px; color: #e05555; display: flex; align-items: center; gap: 5px; }
+.inline-warning { font-size: 11px; color: #d4a843; display: flex; align-items: center; gap: 5px; }
+.inline-info    { font-size: 11px; color: var(--link-color); display: flex; align-items: center; gap: 5px; }
+
+/* ============================================================
+   SECTION 6 — TOKENS TABLE
+   ============================================================ */
+
+.tokens-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.tokens-table th {
+  text-align: left;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--t-3);
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--b-1);
+  background: var(--bg-2);
+}
+
+.tokens-table td {
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--b-0);
+  vertical-align: middle;
+}
+
+.tokens-table tr:last-child td { border-bottom: none; }
+.tokens-table tr:hover td { background: var(--bg-3); }
+
+.token-name {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--acc);
+}
+
+.token-value {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--t-2);
+}
+
+.token-preview {
+  width: 20px;
+  height: 20px;
+  border-radius: 3px;
+  border: 1px solid var(--b-2);
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.token-desc { font-size: 11px; color: var(--t-3); }
+
+.token-copy {
+  font-size: 10px;
+  color: var(--t-3);
+  background: var(--bg-3);
+  border: 1px solid var(--b-1);
+  border-radius: 3px;
+  padding: 2px 6px;
+  cursor: pointer;
+  transition: color 0.12s, border-color 0.12s;
+  font-family: var(--font-mono);
+  white-space: nowrap;
+}
+
+.token-copy:hover { color: var(--acc); border-color: var(--b-acc); }
+.token-copy.copied { color: #3dba6a; border-color: rgba(61,186,106,0.4); }
+
+.tokens-group-header td {
+  background: var(--bg-2) !important;
+  padding: 10px 12px 6px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--t-3);
+  border-top: 1px solid var(--b-1);
+}
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+
+.ds-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--bg-4);
+  border: 1px solid var(--b-3);
+  border-radius: var(--card-radius);
+  padding: 10px 16px;
+  font-size: 12px;
+  color: var(--t-1);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transform: translateY(64px);
+  opacity: 0;
+  transition: transform 0.2s, opacity 0.2s;
+  pointer-events: none;
+}
+
+.ds-toast.show { transform: translateY(0); opacity: 1; }
+.ds-toast-dot { width: 7px; height: 7px; border-radius: 50%; background: #3dba6a; flex-shrink: 0; }
+
+/* ============================================================
+   RESPONSIVE / MISC
+   ============================================================ */
+
+.divider { height: 1px; background: var(--b-1); margin: 24px 0; }
+.ds-spacer { height: 16px; }
+
+.radius-demo {
+  width: 100%;
+  height: 48px;
+  background: var(--bg-4);
+  border: 1px solid var(--b-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: var(--t-3);
+  font-family: var(--font-mono);
+}
+
+.shadow-demo {
+  width: 100%;
+  height: 64px;
+  background: var(--bg-3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: var(--t-3);
+  font-family: var(--font-mono);
+  border-radius: var(--card-radius);
+}
+
+</style>
+</head>
+<body>
+
+<div class="ds-shell">
+
+  <!-- ============================================================
+       SIDEBAR NAVIGATION
+       ============================================================ -->
+  <nav class="ds-nav">
+    <div class="ds-nav-header">
+      <div class="ds-nav-wordmark">Mercury</div>
+      <div class="ds-nav-subtitle">Design System v1.4</div>
+    </div>
+    <ul>
+      <li class="ds-nav-section-label">Identity</li>
+      <li><a href="#brand" class="active">Brand Overview</a></li>
+
+      <li class="ds-nav-section-label">Foundations</li>
+      <li><a href="#typography">Typography</a></li>
+      <li><a href="#color">Color Palette</a></li>
+      <li><a href="#sandbox">Color Sandbox</a></li>
+      <li><a href="#spacing">Spacing &amp; Radius</a></li>
+
+      <li class="ds-nav-section-label">Components</li>
+      <li><a href="#buttons">Buttons</a></li>
+      <li><a href="#cards">Cards &amp; Panels</a></li>
+      <li><a href="#forms">Form Elements</a></li>
+      <li><a href="#tags">Tags &amp; Badges</a></li>
+
+      <li class="ds-nav-section-label">Reference</li>
+      <li><a href="#tokens">Design Tokens</a></li>
+    </ul>
+  </nav>
+
+  <!-- ============================================================
+       MAIN CONTENT
+       ============================================================ -->
+  <main class="ds-main">
+
+    <!-- ────────────────────────────────────────────────────────
+         1. BRAND OVERVIEW
+         ──────────────────────────────────────────────────────── -->
+    <section class="ds-section" id="brand">
+      <div class="ds-section-header">
+        <h2 class="ds-section-title">Brand Overview</h2>
+        <span class="ds-section-badge">Identity</span>
+      </div>
+
+      <div class="brand-logo-block">
+        <div class="brand-logo-wordmark">Mercury</div>
+        <span>Codename — Real name TBD · Change once in <code>src/lib/config.ts</code></span>
+      </div>
+
+      <div class="brand-meta-grid">
+        <div class="brand-meta-card">
+          <div class="brand-meta-label">Core Mission</div>
+          <div class="brand-meta-value">A music discovery engine that rewards the niche. Indexes open databases, embeds players from where music already lives. Uniqueness is discoverability.</div>
+        </div>
+        <div class="brand-meta-card">
+          <div class="brand-meta-label">What It's Not</div>
+          <div class="brand-meta-value">Not a platform. Not a streaming service. No audio hosting. No tracking. No algorithmic manipulation. A discovery tool, not a retention tool.</div>
+        </div>
+        <div class="brand-meta-card">
+          <div class="brand-meta-label">Tone of Voice</div>
+          <div class="brand-meta-value">
+            <span class="brand-tone-pill">Direct</span>
+            <span class="brand-tone-pill">Sparse</span>
+            <span class="brand-tone-pill">Nerdy</span>
+            <span class="brand-tone-pill">No fluff</span>
+            <span class="brand-tone-pill">Open source</span>
+            <span class="brand-tone-pill">Anti-corporate</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ────────────────────────────────────────────────────────
+         2. TYPOGRAPHY
+         ──────────────────────────────────────────────────────── -->
+    <section class="ds-section" id="typography">
+      <div class="ds-section-header">
+        <h2 class="ds-section-title">Typography</h2>
+        <span class="ds-section-badge">Foundations</span>
+      </div>
+
+      <div class="ds-subsection">
+        <div class="ds-subsection-title">Font Families</div>
+        <div class="ds-grid-2">
+          <div class="font-card">
+            <div class="font-name" style="font-family: var(--font-sans)">Inter</div>
+            <div class="font-stack">--font-sans · system-ui fallback</div>
+            <div class="font-weights">
+              <div class="font-weight-row"><span class="font-weight-num">300</span><span class="font-weight-sample" style="font-weight:300">Light — Discovery through tags</span></div>
+              <div class="font-weight-row"><span class="font-weight-num">400</span><span class="font-weight-sample" style="font-weight:400">Regular — Body text and descriptions</span></div>
+              <div class="font-weight-row"><span class="font-weight-num">500</span><span class="font-weight-sample" style="font-weight:500">Medium — Labels and secondary UI</span></div>
+              <div class="font-weight-row"><span class="font-weight-num">600</span><span class="font-weight-sample" style="font-weight:600">Semibold — Section headers</span></div>
+              <div class="font-weight-row"><span class="font-weight-num">700</span><span class="font-weight-sample" style="font-weight:700">Bold — Artist names, titles</span></div>
+            </div>
+          </div>
+          <div class="font-card">
+            <div class="font-name" style="font-family: var(--font-mono)">Cascadia Code</div>
+            <div class="font-stack">--font-mono · JetBrains Mono, Fira Code fallback</div>
+            <div class="font-weights">
+              <div class="font-weight-row"><span class="font-weight-num">400</span><span class="font-weight-sample" style="font-family:var(--font-mono); font-weight:400">--token-name: #c4a55a</span></div>
+              <div class="font-weight-row"><span class="font-weight-num">use</span><span class="font-weight-sample" style="font-family:var(--font-mono); color: var(--t-3); font-size:11px">Hex values, CSS vars, code snippets</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ds-subsection">
+        <div class="ds-subsection-title">Type Scale</div>
+
+        <div class="type-specimen">
+          <div class="type-h1">Artist: Grouper</div>
+          <div class="type-meta">
+            <span>H1 · 32px · weight 700 · tracking -0.02em</span>
+          </div>
+        </div>
+
+        <div class="type-specimen">
+          <div class="type-h2">Dragging a Dead Deer Up a Hill</div>
+          <div class="type-meta"><span>H2 · 22px · weight 600 · tracking -0.01em</span></div>
+        </div>
+
+        <div class="type-specimen">
+          <div class="type-h3">Ambient / Drone / Pacific Northwest</div>
+          <div class="type-meta"><span>H3 · 16px · weight 500</span></div>
+        </div>
+
+        <div class="type-specimen">
+          <div class="type-body">Liz Harris records under the name Grouper — austere, reverb-drenched songs that blur the line between folk and drone. Based in Portland, Oregon. Active since 2005.</div>
+          <div class="type-meta"><span>Body · 13px · weight 400 · leading 1.6</span></div>
+        </div>
+
+        <div class="type-specimen">
+          <div class="type-small">14 releases · 2 on Bandcamp · MusicBrainz ID 7f2e0f6a</div>
+          <div class="type-meta"><span>Small / Meta · 11px · weight 400 · color --t-2</span></div>
+        </div>
+
+        <div class="type-specimen">
+          <div class="type-label">Discography</div>
+          <div class="type-meta"><span>Label / Eyebrow · 10px · weight 700 · tracking 0.12em · uppercase · color --t-3</span></div>
+        </div>
+
+        <div class="type-specimen">
+          <div class="type-mono">--acc: #c4a55a · var(--font-mono) · 12px</div>
+          <div class="type-meta"><span>Mono · 12px · Cascadia Code · color --acc</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ────────────────────────────────────────────────────────
+         3. COLOR PALETTE
+         ──────────────────────────────────────────────────────── -->
+    <section class="ds-section" id="color">
+      <div class="ds-section-header">
+        <h2 class="ds-section-title">Color Palette</h2>
+        <span class="ds-section-badge">Foundations</span>
+      </div>
+
+      <div class="ds-subsection">
+        <div class="ds-subsection-title">Background Scale — Dark Layering System</div>
+        <div class="bg-scale">
+          <div class="bg-scale-step" onclick="copyToClipboard('--bg-0', '#080808')">
+            <div class="bg-scale-block" style="background:#080808; height:56px;"></div>
+            <div class="bg-scale-info"><span class="bg-scale-var">--bg-0</span><span class="bg-scale-hex">#080808</span></div>
+          </div>
+          <div class="bg-scale-step" onclick="copyToClipboard('--bg-1', '#0f0f0f')">
+            <div class="bg-scale-block" style="background:#0f0f0f; height:52px;"></div>
+            <div class="bg-scale-info"><span class="bg-scale-var">--bg-1</span><span class="bg-scale-hex">#0f0f0f</span></div>
+          </div>
+          <div class="bg-scale-step" onclick="copyToClipboard('--bg-2', '#141414')">
+            <div class="bg-scale-block" style="background:#141414; height:48px;"></div>
+            <div class="bg-scale-info"><span class="bg-scale-var">--bg-2</span><span class="bg-scale-hex">#141414</span></div>
+          </div>
+          <div class="bg-scale-step" onclick="copyToClipboard('--bg-3', '#1a1a1a')">
+            <div class="bg-scale-block" style="background:#1a1a1a; height:44px;"></div>
+            <div class="bg-scale-info"><span class="bg-scale-var">--bg-3</span><span class="bg-scale-hex">#1a1a1a</span></div>
+          </div>
+          <div class="bg-scale-step" onclick="copyToClipboard('--bg-4', '#212121')">
+            <div class="bg-scale-block" style="background:#212121; height:40px;"></div>
+            <div class="bg-scale-info"><span class="bg-scale-var">--bg-4</span><span class="bg-scale-hex">#212121</span></div>
+          </div>
+          <div class="bg-scale-step" onclick="copyToClipboard('--bg-5', '#292929')">
+            <div class="bg-scale-block" style="background:#292929; height:36px;"></div>
+            <div class="bg-scale-info"><span class="bg-scale-var">--bg-5</span><span class="bg-scale-hex">#292929</span></div>
+          </div>
+          <div class="bg-scale-step" onclick="copyToClipboard('--bg-6', '#323232')">
+            <div class="bg-scale-block" style="background:#323232; height:32px;"></div>
+            <div class="bg-scale-info"><span class="bg-scale-var">--bg-6</span><span class="bg-scale-hex">#323232</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ds-subsection">
+        <div class="ds-subsection-title">Primary &amp; Accent</div>
+        <div class="ds-grid-4">
+          <div class="color-swatch" onclick="copyToClipboard('--acc', '#c4a55a')">
+            <div class="color-swatch-block" style="background:#c4a55a;"></div>
+            <div class="color-swatch-info">
+              <div class="color-swatch-name">Accent Amber</div>
+              <div class="color-swatch-hex">#c4a55a</div>
+              <div class="color-swatch-var">--acc</div>
+            </div>
+          </div>
+          <div class="color-swatch" onclick="copyToClipboard('--acc-bg', 'rgba(196,165,90,0.10)')">
+            <div class="color-swatch-block" style="background:rgba(196,165,90,0.10); border-bottom: 1px solid rgba(196,165,90,0.2);"></div>
+            <div class="color-swatch-info">
+              <div class="color-swatch-name">Accent BG</div>
+              <div class="color-swatch-hex">rgba(196,165,90,0.10)</div>
+              <div class="color-swatch-var">--acc-bg</div>
+            </div>
+          </div>
+          <div class="color-swatch" onclick="copyToClipboard('--link-color', '#5b9bd5')">
+            <div class="color-swatch-block" style="background:#5b9bd5;"></div>
+            <div class="color-swatch-info">
+              <div class="color-swatch-name">Link / Tag Blue</div>
+              <div class="color-swatch-hex">#5b9bd5</div>
+              <div class="color-swatch-var">--link-color</div>
+            </div>
+          </div>
+          <div class="color-swatch" onclick="copyToClipboard('--tag-bg', '#0f1520')">
+            <div class="color-swatch-block" style="background:#0f1520;"></div>
+            <div class="color-swatch-info">
+              <div class="color-swatch-name">Tag BG</div>
+              <div class="color-swatch-hex">#0f1520</div>
+              <div class="color-swatch-var">--tag-bg</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ds-subsection">
+        <div class="ds-subsection-title">Text Hierarchy</div>
+        <div class="ds-grid-3">
+          <div class="color-swatch" onclick="copyToClipboard('--t-1', '#e0e0e0')">
+            <div class="color-swatch-block" style="background:#e0e0e0;"></div>
+            <div class="color-swatch-info">
+              <div class="color-swatch-name">Text Primary</div>
+              <div class="color-swatch-hex">#e0e0e0</div>
+              <div class="color-swatch-var">--t-1</div>
+            </div>
+          </div>
+          <div class="color-swatch" onclick="copyToClipboard('--t-2', '#888888')">
+            <div class="color-swatch-block" style="background:#888888;"></div>
+            <div class="color-swatch-info">
+              <div class="color-swatch-name">Text Secondary</div>
+              <div class="color-swatch-hex">#888888</div>
+              <div class="color-swatch-var">--t-2</div>
+            </div>
+          </div>
+          <div class="color-swatch" onclick="copyToClipboard('--t-3', '#464646')">
+            <div class="color-swatch-block" style="background:#464646;"></div>
+            <div class="color-swatch-info">
+              <div class="color-swatch-name">Text Muted</div>
+              <div class="color-swatch-hex">#464646</div>
+              <div class="color-swatch-var">--t-3</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ds-subsection">
+        <div class="ds-subsection-title">Semantic Colors</div>
+        <div class="ds-grid-4">
+          <div class="color-swatch">
+            <div class="color-swatch-block" style="background:#3dba6a;"></div>
+            <div class="color-swatch-info">
+              <div class="color-swatch-name">Success</div>
+              <div class="color-swatch-hex">#3dba6a</div>
+              <div class="color-swatch-var">(inline)</div>
+            </div>
+          </div>
+          <div class="color-swatch">
+            <div class="color-swatch-block" style="background:#e05555;"></div>
+            <div class="color-swatch-info">
+              <div class="color-swatch-name">Error</div>
+              <div class="color-swatch-hex">#e05555</div>
+              <div class="color-swatch-var">(inline)</div>
+            </div>
+          </div>
+          <div class="color-swatch">
+            <div class="color-swatch-block" style="background:#d4a843;"></div>
+            <div class="color-swatch-info">
+              <div class="color-swatch-name">Warning</div>
+              <div class="color-swatch-hex">#d4a843</div>
+              <div class="color-swatch-var">(inline)</div>
+            </div>
+          </div>
+          <div class="color-swatch">
+            <div class="color-swatch-block" style="background:#5b9bd5;"></div>
+            <div class="color-swatch-info">
+              <div class="color-swatch-name">Info</div>
+              <div class="color-swatch-hex">#5b9bd5</div>
+              <div class="color-swatch-var">--link-color</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ds-subsection">
+        <div class="ds-subsection-title">Platform Brand Colors</div>
+        <div class="ds-grid-4">
+          <div class="color-swatch" onclick="copyToClipboard('--bandcamp-color', '#1da0c3')">
+            <div class="color-swatch-block" style="background:#1da0c3;"></div>
+            <div class="color-swatch-info">
+              <div class="color-swatch-name">Bandcamp</div>
+              <div class="color-swatch-hex">#1da0c3</div>
+              <div class="color-swatch-var">--bandcamp-color</div>
+            </div>
+          </div>
+          <div class="color-swatch" onclick="copyToClipboard('--spotify-color', '#1db954')">
+            <div class="color-swatch-block" style="background:#1db954;"></div>
+            <div class="color-swatch-info">
+              <div class="color-swatch-name">Spotify</div>
+              <div class="color-swatch-hex">#1db954</div>
+              <div class="color-swatch-var">--spotify-color</div>
+            </div>
+          </div>
+          <div class="color-swatch" onclick="copyToClipboard('--soundcloud-color', '#ff5500')">
+            <div class="color-swatch-block" style="background:#ff5500;"></div>
+            <div class="color-swatch-info">
+              <div class="color-swatch-name">SoundCloud</div>
+              <div class="color-swatch-hex">#ff5500</div>
+              <div class="color-swatch-var">--soundcloud-color</div>
+            </div>
+          </div>
+          <div class="color-swatch" onclick="copyToClipboard('--youtube-color', '#ff0000')">
+            <div class="color-swatch-block" style="background:#ff0000;"></div>
+            <div class="color-swatch-info">
+              <div class="color-swatch-name">YouTube</div>
+              <div class="color-swatch-hex">#ff0000</div>
+              <div class="color-swatch-var">--youtube-color</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ────────────────────────────────────────────────────────
+         4. COLOR SANDBOX
+         ──────────────────────────────────────────────────────── -->
+    <section class="ds-section" id="sandbox">
+      <div class="ds-section-header">
+        <h2 class="ds-section-title">Color Sandbox</h2>
+        <span class="ds-section-badge">Interactive</span>
+      </div>
+
+      <div class="sandbox-layout">
+        <div class="sandbox-controls">
+          <div class="sandbox-field">
+            <label class="sandbox-label">Target Token</label>
+            <div style="display:flex; flex-direction:column; gap:5px;">
+              <button class="sandbox-target-btn active" data-target="acc" onclick="setTarget(this, 'acc', '--acc', '#c4a55a')">--acc (Accent)</button>
+              <button class="sandbox-target-btn" data-target="bg" onclick="setTarget(this, 'bg', '--bg-2', '#141414')">--bg-2 (Surface)</button>
+              <button class="sandbox-target-btn" data-target="t1" onclick="setTarget(this, 't1', '--t-1', '#e0e0e0')">--t-1 (Text Primary)</button>
+              <button class="sandbox-target-btn" data-target="link" onclick="setTarget(this, 'link', '--link-color', '#5b9bd5')">--link-color (Blue)</button>
+            </div>
+          </div>
+
+          <div class="sandbox-field">
+            <label class="sandbox-label">Color Picker</label>
+            <div class="sandbox-picker-row">
+              <input type="color" class="sandbox-picker" id="colorPicker" value="#c4a55a" oninput="onPickerChange(this.value)">
+              <input type="text" class="sandbox-input" id="colorHex" value="#c4a55a" placeholder="#c4a55a" oninput="onHexChange(this.value)" style="margin-top:0;">
+            </div>
+          </div>
+
+          <button class="sandbox-reset-btn" onclick="resetSandbox()">Reset to Defaults</button>
+        </div>
+
+        <!-- Preview Card -->
+        <div class="sandbox-preview-card" id="previewCard">
+          <div class="preview-card-header">
+            <div class="preview-card-dot" id="previewDot"></div>
+            <div class="preview-card-title">Artist Profile</div>
+            <div class="preview-card-sub" id="previewSub">Live Preview</div>
+          </div>
+          <div class="preview-card-body" id="previewBody">
+            <div class="preview-card-artist">Grouper</div>
+            <div class="preview-card-genre" id="previewGenre">Ambient · Drone · Pacific Northwest</div>
+            <div class="preview-card-tags">
+              <span class="preview-tag">ambient</span>
+              <span class="preview-tag">drone</span>
+              <span class="preview-tag">lo-fi</span>
+              <span class="preview-tag">pacific northwest</span>
+            </div>
+            <div class="preview-card-desc">
+              Reverb-drenched, sparse songwriting from Portland, Oregon. Blurs the boundary between folk and drone. Recordings feel like listening through a wall.
+            </div>
+            <div class="preview-card-actions">
+              <button class="preview-btn-primary" id="previewBtnPrimary">Play</button>
+              <button class="preview-btn-secondary" id="previewBtnSecondary">+ Library</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ────────────────────────────────────────────────────────
+         5a. SPACING & RADIUS
+         ──────────────────────────────────────────────────────── -->
+    <section class="ds-section" id="spacing">
+      <div class="ds-section-header">
+        <h2 class="ds-section-title">Spacing &amp; Radius</h2>
+        <span class="ds-section-badge">Foundations</span>
+      </div>
+
+      <div class="ds-subsection">
+        <div class="ds-subsection-title">Spacing Scale</div>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <div style="display:flex; align-items:center; gap:16px;">
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--t-3);width:100px;">--space-xs · 4px</span>
+            <div style="width:4px; height:16px; background:var(--acc); border-radius:1px;"></div>
+          </div>
+          <div style="display:flex; align-items:center; gap:16px;">
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--t-3);width:100px;">--space-sm · 8px</span>
+            <div style="width:8px; height:16px; background:var(--acc); border-radius:1px;"></div>
+          </div>
+          <div style="display:flex; align-items:center; gap:16px;">
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--t-3);width:100px;">--space-md · 16px</span>
+            <div style="width:16px; height:16px; background:var(--acc); border-radius:1px;"></div>
+          </div>
+          <div style="display:flex; align-items:center; gap:16px;">
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--t-3);width:100px;">--space-lg · 24px</span>
+            <div style="width:24px; height:16px; background:var(--acc); border-radius:1px;"></div>
+          </div>
+          <div style="display:flex; align-items:center; gap:16px;">
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--t-3);width:100px;">--space-xl · 32px</span>
+            <div style="width:32px; height:16px; background:var(--acc); border-radius:1px;"></div>
+          </div>
+          <div style="display:flex; align-items:center; gap:16px;">
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--t-3);width:100px;">--space-2xl · 48px</span>
+            <div style="width:48px; height:16px; background:var(--acc); border-radius:1px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ds-subsection">
+        <div class="ds-subsection-title">Border Radius</div>
+        <div class="ds-grid-3">
+          <div>
+            <div class="radius-demo" style="border-radius:2px;">--r · 2px<br><span style="font-size:9px;margin-top:2px;display:block">Default — square aesthetic</span></div>
+          </div>
+          <div>
+            <div class="radius-demo" style="border-radius:6px;">--card-radius · 6px<br><span style="font-size:9px;margin-top:2px;display:block">Cards, inputs</span></div>
+          </div>
+          <div>
+            <div class="radius-demo" style="border-radius:50%;width:64px;height:64px;margin:0 auto;">50%<br><span style="font-size:9px;">Avatars</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ds-subsection">
+        <div class="ds-subsection-title">Shadows</div>
+        <div class="ds-grid-2">
+          <div>
+            <div class="shadow-demo" style="box-shadow:0 2px 8px rgba(0,0,0,0.3);">Subtle<br><span style="font-size:9px;">0 2px 8px rgba(0,0,0,0.3)</span></div>
+          </div>
+          <div>
+            <div class="shadow-demo" style="box-shadow:0 4px 16px rgba(0,0,0,0.4), 0 1px 4px rgba(0,0,0,0.3);">Elevated<br><span style="font-size:9px;">0 4px 16px rgba(0,0,0,0.4)</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ────────────────────────────────────────────────────────
+         5b. BUTTONS
+         ──────────────────────────────────────────────────────── -->
+    <section class="ds-section" id="buttons">
+      <div class="ds-section-header">
+        <h2 class="ds-section-title">Buttons</h2>
+        <span class="ds-section-badge">Components</span>
+      </div>
+
+      <div class="ds-subsection">
+        <div class="ds-subsection-title">Variants</div>
+        <div class="ds-row">
+          <button class="btn btn-primary">Primary</button>
+          <button class="btn btn-secondary">Secondary</button>
+          <button class="btn btn-ghost">Ghost</button>
+          <button class="btn btn-danger">Danger</button>
+          <button class="btn btn-disabled" disabled>Disabled</button>
+        </div>
+      </div>
+
+      <div class="ds-subsection">
+        <div class="ds-subsection-title">Sizes</div>
+        <div class="ds-row" style="align-items:center;">
+          <button class="btn btn-primary btn-sm">Small</button>
+          <button class="btn btn-primary">Default</button>
+          <button class="btn btn-primary btn-lg">Large</button>
+          <button class="btn btn-ghost btn-icon">▶</button>
+          <button class="btn btn-ghost btn-icon">+</button>
+          <button class="btn btn-ghost btn-icon">⋯</button>
+        </div>
+      </div>
+
+      <div class="ds-subsection">
+        <div class="ds-subsection-title">With Icons</div>
+        <div class="ds-row">
+          <button class="btn btn-primary">▶ Play Album</button>
+          <button class="btn btn-secondary">+ Add to Queue</button>
+          <button class="btn btn-ghost">↑ Share</button>
+          <button class="btn btn-ghost">♥ Save</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ────────────────────────────────────────────────────────
+         5c. CARDS & PANELS
+         ──────────────────────────────────────────────────────── -->
+    <section class="ds-section" id="cards">
+      <div class="ds-section-header">
+        <h2 class="ds-section-title">Cards &amp; Panels</h2>
+        <span class="ds-section-badge">Components</span>
+      </div>
+
+      <div class="ds-grid-3">
+        <div>
+          <div class="ds-subsection-title">Standard Card</div>
+          <div class="card">
+            <div class="card-header">Release</div>
+            <div class="card-body">Dragging a Dead Deer Up a Hill · 2008 · Kranky Records</div>
+            <div class="card-footer">
+              <button class="btn btn-secondary btn-sm">View</button>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="ds-subsection-title">Panel</div>
+          <div class="panel">
+            <div class="panel-header">Discography</div>
+            <div class="panel-body" style="color:var(--t-2); font-size:12px; line-height:2;">
+              Dragging a Dead Deer · 2008<br>
+              A I A · 2011<br>
+              Ruins · 2014
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="ds-subsection-title">Elevated Card</div>
+          <div class="elevated-card">
+            <div style="font-size:12px; font-weight:600; color:var(--t-1); margin-bottom:6px;">Now Playing</div>
+            <div style="font-size:11px; color:var(--acc); margin-bottom:4px;">Grouper</div>
+            <div style="font-size:11px; color:var(--t-2);">Dragging a Dead Deer...</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ────────────────────────────────────────────────────────
+         5d. FORM ELEMENTS
+         ──────────────────────────────────────────────────────── -->
+    <section class="ds-section" id="forms">
+      <div class="ds-section-header">
+        <h2 class="ds-section-title">Form Elements</h2>
+        <span class="ds-section-badge">Components</span>
+      </div>
+
+      <div class="ds-grid-2">
+        <div>
+          <div class="form-group">
+            <label class="form-label">Search Artists</label>
+            <input type="text" class="form-input" placeholder="e.g. Grouper, Burial, Arca...">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Focus State</label>
+            <input type="text" class="form-input" value="Grouper" style="border-color:var(--acc); box-shadow: 0 0 0 2px var(--acc-bg);">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Error State</label>
+            <input type="text" class="form-input error" value="inv@lid">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Success State</label>
+            <input type="text" class="form-input success" value="Grouper">
+          </div>
+        </div>
+
+        <div>
+          <div class="form-group">
+            <label class="form-label">Select / Dropdown</label>
+            <select class="form-select">
+              <option>All Genres</option>
+              <option>Ambient</option>
+              <option>Electronic</option>
+              <option>Experimental</option>
+            </select>
+          </div>
+
+          <div class="form-group" style="margin-top:16px;">
+            <label class="form-label">Checkboxes</label>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <label class="form-checkbox-row">
+                <input type="checkbox" class="form-checkbox" checked>
+                <span class="form-checkbox-label">Show releases</span>
+              </label>
+              <label class="form-checkbox-row">
+                <input type="checkbox" class="form-checkbox" checked>
+                <span class="form-checkbox-label">Include EPs</span>
+              </label>
+              <label class="form-checkbox-row">
+                <input type="checkbox" class="form-checkbox">
+                <span class="form-checkbox-label">Show compilations</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top:16px;">
+            <label class="form-label">Inline Feedback</label>
+            <div style="display:flex; flex-direction:column; gap:6px;">
+              <div class="inline-success">✓ Artist saved to library</div>
+              <div class="inline-error">✗ Not found in database</div>
+              <div class="inline-warning">⚠ Missing MusicBrainz ID</div>
+              <div class="inline-info">ℹ 3 releases on Bandcamp</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ────────────────────────────────────────────────────────
+         5e. TAGS & BADGES
+         ──────────────────────────────────────────────────────── -->
+    <section class="ds-section" id="tags">
+      <div class="ds-section-header">
+        <h2 class="ds-section-title">Tags &amp; Badges</h2>
+        <span class="ds-section-badge">Components</span>
+      </div>
+
+      <div class="ds-subsection">
+        <div class="ds-subsection-title">Discovery Tags (Blue)</div>
+        <div class="ds-row">
+          <span class="tag">ambient</span>
+          <span class="tag">drone</span>
+          <span class="tag">lo-fi</span>
+          <span class="tag">pacific northwest</span>
+          <span class="tag">shoegaze</span>
+          <span class="tag">experimental</span>
+        </div>
+      </div>
+
+      <div class="ds-subsection">
+        <div class="ds-subsection-title">Accent Tags (Amber)</div>
+        <div class="ds-row">
+          <span class="tag tag-amber">Featured</span>
+          <span class="tag tag-amber">Bandcamp Pick</span>
+          <span class="tag tag-amber">New Rising</span>
+        </div>
+      </div>
+
+      <div class="ds-subsection">
+        <div class="ds-subsection-title">Platform Badges</div>
+        <div class="ds-row">
+          <span class="platform-badge badge-bandcamp">Bandcamp</span>
+          <span class="platform-badge badge-spotify">Spotify</span>
+          <span class="platform-badge badge-sc">SoundCloud</span>
+          <span class="platform-badge badge-yt">YouTube</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ────────────────────────────────────────────────────────
+         6. DESIGN TOKENS TABLE
+         ──────────────────────────────────────────────────────── -->
+    <section class="ds-section" id="tokens">
+      <div class="ds-section-header">
+        <h2 class="ds-section-title">Design Tokens</h2>
+        <span class="ds-section-badge">Reference</span>
+      </div>
+
+      <div style="background:var(--bg-1); border:1px solid var(--b-1); border-radius:var(--card-radius); overflow:hidden;">
+        <table class="tokens-table">
+          <thead>
+            <tr>
+              <th>Token</th>
+              <th>Value</th>
+              <th>Preview</th>
+              <th>Description</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+
+            <tr class="tokens-group-header"><td colspan="5">Backgrounds</td></tr>
+            <tr><td class="token-name">--bg-0</td><td class="token-value">#080808</td><td><span class="token-preview" style="background:#080808; border-color:#333;"></span></td><td class="token-desc">Page base — darkest layer</td><td><button class="token-copy" onclick="copyToken(this,'--bg-0: #080808')">copy</button></td></tr>
+            <tr><td class="token-name">--bg-1</td><td class="token-value">#0f0f0f</td><td><span class="token-preview" style="background:#0f0f0f; border-color:#333;"></span></td><td class="token-desc">Sidebar, nav</td><td><button class="token-copy" onclick="copyToken(this,'--bg-1: #0f0f0f')">copy</button></td></tr>
+            <tr><td class="token-name">--bg-2</td><td class="token-value">#141414</td><td><span class="token-preview" style="background:#141414; border-color:#333;"></span></td><td class="token-desc">Card, panel backgrounds</td><td><button class="token-copy" onclick="copyToken(this,'--bg-2: #141414')">copy</button></td></tr>
+            <tr><td class="token-name">--bg-3</td><td class="token-value">#1a1a1a</td><td><span class="token-preview" style="background:#1a1a1a; border-color:#333;"></span></td><td class="token-desc">Elevated surfaces</td><td><button class="token-copy" onclick="copyToken(this,'--bg-3: #1a1a1a')">copy</button></td></tr>
+            <tr><td class="token-name">--bg-4</td><td class="token-value">#212121</td><td><span class="token-preview" style="background:#212121; border-color:#333;"></span></td><td class="token-desc">Hover states</td><td><button class="token-copy" onclick="copyToken(this,'--bg-4: #212121')">copy</button></td></tr>
+            <tr><td class="token-name">--bg-5</td><td class="token-value">#292929</td><td><span class="token-preview" style="background:#292929; border-color:#333;"></span></td><td class="token-desc">Active/selected items</td><td><button class="token-copy" onclick="copyToken(this,'--bg-5: #292929')">copy</button></td></tr>
+            <tr><td class="token-name">--bg-6</td><td class="token-value">#323232</td><td><span class="token-preview" style="background:#323232; border-color:#333;"></span></td><td class="token-desc">Lightest surface layer</td><td><button class="token-copy" onclick="copyToken(this,'--bg-6: #323232')">copy</button></td></tr>
+
+            <tr class="tokens-group-header"><td colspan="5">Borders</td></tr>
+            <tr><td class="token-name">--b-0</td><td class="token-value">#161616</td><td><span class="token-preview" style="background:#161616; border-color:#444;"></span></td><td class="token-desc">Hairline border</td><td><button class="token-copy" onclick="copyToken(this,'--b-0: #161616')">copy</button></td></tr>
+            <tr><td class="token-name">--b-1</td><td class="token-value">#202020</td><td><span class="token-preview" style="background:#202020; border-color:#444;"></span></td><td class="token-desc">Default border</td><td><button class="token-copy" onclick="copyToken(this,'--b-1: #202020')">copy</button></td></tr>
+            <tr><td class="token-name">--b-2</td><td class="token-value">#2c2c2c</td><td><span class="token-preview" style="background:#2c2c2c; border-color:#444;"></span></td><td class="token-desc">Visible border</td><td><button class="token-copy" onclick="copyToken(this,'--b-2: #2c2c2c')">copy</button></td></tr>
+            <tr><td class="token-name">--b-3</td><td class="token-value">#3a3a3a</td><td><span class="token-preview" style="background:#3a3a3a; border-color:#555;"></span></td><td class="token-desc">Strong border / hover</td><td><button class="token-copy" onclick="copyToken(this,'--b-3: #3a3a3a')">copy</button></td></tr>
+            <tr><td class="token-name">--b-acc</td><td class="token-value">rgba(196,165,90,0.3)</td><td><span class="token-preview" style="background:rgba(196,165,90,0.3);"></span></td><td class="token-desc">Accent border</td><td><button class="token-copy" onclick="copyToken(this,'--b-acc: rgba(196, 165, 90, 0.3)')">copy</button></td></tr>
+
+            <tr class="tokens-group-header"><td colspan="5">Text</td></tr>
+            <tr><td class="token-name">--t-1</td><td class="token-value">#e0e0e0</td><td><span class="token-preview" style="background:#e0e0e0;"></span></td><td class="token-desc">Primary text</td><td><button class="token-copy" onclick="copyToken(this,'--t-1: #e0e0e0')">copy</button></td></tr>
+            <tr><td class="token-name">--t-2</td><td class="token-value">#888888</td><td><span class="token-preview" style="background:#888888;"></span></td><td class="token-desc">Secondary / meta text</td><td><button class="token-copy" onclick="copyToken(this,'--t-2: #888888')">copy</button></td></tr>
+            <tr><td class="token-name">--t-3</td><td class="token-value">#464646</td><td><span class="token-preview" style="background:#464646;"></span></td><td class="token-desc">Muted / label text</td><td><button class="token-copy" onclick="copyToken(this,'--t-3: #464646')">copy</button></td></tr>
+
+            <tr class="tokens-group-header"><td colspan="5">Accent</td></tr>
+            <tr><td class="token-name">--acc</td><td class="token-value">#c4a55a</td><td><span class="token-preview" style="background:#c4a55a;"></span></td><td class="token-desc">Warm amber — primary brand accent</td><td><button class="token-copy" onclick="copyToken(this,'--acc: #c4a55a')">copy</button></td></tr>
+            <tr><td class="token-name">--acc-bg</td><td class="token-value">rgba(196,165,90,0.10)</td><td><span class="token-preview" style="background:rgba(196,165,90,0.10);"></span></td><td class="token-desc">Accent tint background</td><td><button class="token-copy" onclick="copyToken(this,'--acc-bg: rgba(196, 165, 90, 0.10)')">copy</button></td></tr>
+            <tr><td class="token-name">--acc-bg-h</td><td class="token-value">rgba(196,165,90,0.18)</td><td><span class="token-preview" style="background:rgba(196,165,90,0.18);"></span></td><td class="token-desc">Accent tint hover</td><td><button class="token-copy" onclick="copyToken(this,'--acc-bg-h: rgba(196, 165, 90, 0.18)')">copy</button></td></tr>
+            <tr><td class="token-name">--link-color</td><td class="token-value">#5b9bd5</td><td><span class="token-preview" style="background:#5b9bd5;"></span></td><td class="token-desc">Links, tags, progress</td><td><button class="token-copy" onclick="copyToken(this,'--link-color: #5b9bd5')">copy</button></td></tr>
+
+            <tr class="tokens-group-header"><td colspan="5">Tags</td></tr>
+            <tr><td class="token-name">--tag-bg</td><td class="token-value">#0f1520</td><td><span class="token-preview" style="background:#0f1520;"></span></td><td class="token-desc">Tag background</td><td><button class="token-copy" onclick="copyToken(this,'--tag-bg: #0f1520')">copy</button></td></tr>
+            <tr><td class="token-name">--tag-text</td><td class="token-value">#5b9bd5</td><td><span class="token-preview" style="background:#5b9bd5;"></span></td><td class="token-desc">Tag text color</td><td><button class="token-copy" onclick="copyToken(this,'--tag-text: #5b9bd5')">copy</button></td></tr>
+            <tr><td class="token-name">--tag-border</td><td class="token-value">#1d2d45</td><td><span class="token-preview" style="background:#1d2d45;"></span></td><td class="token-desc">Tag border</td><td><button class="token-copy" onclick="copyToken(this,'--tag-border: #1d2d45')">copy</button></td></tr>
+
+            <tr class="tokens-group-header"><td colspan="5">Typography</td></tr>
+            <tr><td class="token-name">--font-sans</td><td class="token-value">'Inter', system-ui</td><td></td><td class="token-desc">Primary UI font</td><td><button class="token-copy" onclick="copyToken(this,&quot;--font-sans: 'Inter', system-ui, -apple-system, sans-serif&quot;)">copy</button></td></tr>
+            <tr><td class="token-name">--font-mono</td><td class="token-value">'Cascadia Code', ...</td><td></td><td class="token-desc">Code, tokens, hex values</td><td><button class="token-copy" onclick="copyToken(this,&quot;--font-mono: 'Cascadia Code', 'JetBrains Mono', 'Fira Code', monospace&quot;)">copy</button></td></tr>
+
+            <tr class="tokens-group-header"><td colspan="5">Spacing</td></tr>
+            <tr><td class="token-name">--space-xs</td><td class="token-value">0.25rem (4px)</td><td></td><td class="token-desc">Tight gaps</td><td><button class="token-copy" onclick="copyToken(this,'--space-xs: 0.25rem')">copy</button></td></tr>
+            <tr><td class="token-name">--space-sm</td><td class="token-value">0.5rem (8px)</td><td></td><td class="token-desc">Small gaps</td><td><button class="token-copy" onclick="copyToken(this,'--space-sm: 0.5rem')">copy</button></td></tr>
+            <tr><td class="token-name">--space-md</td><td class="token-value">1rem (16px)</td><td></td><td class="token-desc">Default padding</td><td><button class="token-copy" onclick="copyToken(this,'--space-md: 1rem')">copy</button></td></tr>
+            <tr><td class="token-name">--space-lg</td><td class="token-value">1.5rem (24px)</td><td></td><td class="token-desc">Section padding</td><td><button class="token-copy" onclick="copyToken(this,'--space-lg: 1.5rem')">copy</button></td></tr>
+            <tr><td class="token-name">--space-xl</td><td class="token-value">2rem (32px)</td><td></td><td class="token-desc">Large gaps</td><td><button class="token-copy" onclick="copyToken(this,'--space-xl: 2rem')">copy</button></td></tr>
+            <tr><td class="token-name">--space-2xl</td><td class="token-value">3rem (48px)</td><td></td><td class="token-desc">Page sections</td><td><button class="token-copy" onclick="copyToken(this,'--space-2xl: 3rem')">copy</button></td></tr>
+
+            <tr class="tokens-group-header"><td colspan="5">Radius</td></tr>
+            <tr><td class="token-name">--r</td><td class="token-value">2px</td><td></td><td class="token-desc">Default — sharp/square aesthetic</td><td><button class="token-copy" onclick="copyToken(this,'--r: 2px')">copy</button></td></tr>
+            <tr><td class="token-name">--card-radius</td><td class="token-value">6px</td><td></td><td class="token-desc">Cards and containers</td><td><button class="token-copy" onclick="copyToken(this,'--card-radius: 6px')">copy</button></td></tr>
+            <tr><td class="token-name">--input-radius</td><td class="token-value">6px</td><td></td><td class="token-desc">Inputs and selects</td><td><button class="token-copy" onclick="copyToken(this,'--input-radius: 6px')">copy</button></td></tr>
+
+            <tr class="tokens-group-header"><td colspan="5">Layout</td></tr>
+            <tr><td class="token-name">--sidebar</td><td class="token-value">192px</td><td></td><td class="token-desc">Left nav width</td><td><button class="token-copy" onclick="copyToken(this,'--sidebar: 192px')">copy</button></td></tr>
+            <tr><td class="token-name">--topbar</td><td class="token-value">42px</td><td></td><td class="token-desc">Titlebar height</td><td><button class="token-copy" onclick="copyToken(this,'--topbar: 42px')">copy</button></td></tr>
+            <tr><td class="token-name">--player-height</td><td class="token-value">72px</td><td></td><td class="token-desc">Bottom player height</td><td><button class="token-copy" onclick="copyToken(this,'--player-height: 72px')">copy</button></td></tr>
+            <tr><td class="token-name">--header-height</td><td class="token-value">48px</td><td></td><td class="token-desc">Content area header</td><td><button class="token-copy" onclick="copyToken(this,'--header-height: 48px')">copy</button></td></tr>
+            <tr><td class="token-name">--max-width</td><td class="token-value">1200px</td><td></td><td class="token-desc">Max content width</td><td><button class="token-copy" onclick="copyToken(this,'--max-width: 1200px')">copy</button></td></tr>
+
+            <tr class="tokens-group-header"><td colspan="5">Platform Colors</td></tr>
+            <tr><td class="token-name">--bandcamp-color</td><td class="token-value">#1da0c3</td><td><span class="token-preview" style="background:#1da0c3;"></span></td><td class="token-desc">Bandcamp blue</td><td><button class="token-copy" onclick="copyToken(this,'--bandcamp-color: #1da0c3')">copy</button></td></tr>
+            <tr><td class="token-name">--spotify-color</td><td class="token-value">#1db954</td><td><span class="token-preview" style="background:#1db954;"></span></td><td class="token-desc">Spotify green</td><td><button class="token-copy" onclick="copyToken(this,'--spotify-color: #1db954')">copy</button></td></tr>
+            <tr><td class="token-name">--soundcloud-color</td><td class="token-value">#ff5500</td><td><span class="token-preview" style="background:#ff5500;"></span></td><td class="token-desc">SoundCloud orange</td><td><button class="token-copy" onclick="copyToken(this,'--soundcloud-color: #ff5500')">copy</button></td></tr>
+            <tr><td class="token-name">--youtube-color</td><td class="token-value">#ff0000</td><td><span class="token-preview" style="background:#ff0000;"></span></td><td class="token-desc">YouTube red</td><td><button class="token-copy" onclick="copyToken(this,'--youtube-color: #ff0000')">copy</button></td></tr>
+
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- Toast notification -->
+<div class="ds-toast" id="toast">
+  <span class="ds-toast-dot"></span>
+  <span id="toastMsg">Copied to clipboard</span>
+</div>
+
+<script>
+// ============================================================
+//  SANDBOX — defaults per target
+// ============================================================
+const TARGETS = {
+  acc:  { var: '--acc',        default: '#c4a55a' },
+  bg:   { var: '--bg-2',       default: '#141414' },
+  t1:   { var: '--t-1',        default: '#e0e0e0' },
+  link: { var: '--link-color', default: '#5b9bd5' },
+};
+
+let currentTarget = 'acc';
+
+function setTarget(btn, key, varName, defaultVal) {
+  document.querySelectorAll('.sandbox-target-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentTarget = key;
+  const cur = getComputedStyle(document.documentElement).getPropertyValue(varName).trim() || defaultVal;
+  const hex = colorToHex(cur) || defaultVal;
+  document.getElementById('colorPicker').value = hex;
+  document.getElementById('colorHex').value = hex;
+  applyColor(hex);
+}
+
+function onPickerChange(val) {
+  document.getElementById('colorHex').value = val;
+  applyColor(val);
+}
+
+function onHexChange(val) {
+  if (/^#[0-9a-fA-F]{6}$/.test(val)) {
+    document.getElementById('colorPicker').value = val;
+    applyColor(val);
+  }
+}
+
+function applyColor(hex) {
+  const card = document.getElementById('previewCard');
+  const root = document.documentElement;
+
+  if (currentTarget === 'acc') {
+    card.style.setProperty('--acc', hex);
+    card.style.setProperty('--b-acc', hex + '4d');
+    card.style.setProperty('--acc-bg', hex + '1a');
+    document.getElementById('previewDot').style.background = hex;
+    document.getElementById('previewGenre').style.color = hex;
+    document.getElementById('previewBtnPrimary').style.background = hex;
+    document.getElementById('previewBtnSecondary').style.color = hex;
+    document.getElementById('previewBtnSecondary').style.borderColor = hex + '4d';
+  } else if (currentTarget === 'bg') {
+    card.style.background = hex;
+    document.getElementById('previewBody').style.background = hex;
+  } else if (currentTarget === 't1') {
+    document.getElementById('previewCard').style.setProperty('--t-1', hex);
+    card.querySelectorAll('.preview-card-artist').forEach(el => el.style.color = hex);
+    card.querySelectorAll('.preview-card-title').forEach(el => el.style.color = hex);
+  } else if (currentTarget === 'link') {
+    card.style.setProperty('--link-color', hex);
+    card.style.setProperty('--tag-text', hex);
+    card.style.setProperty('--tag-bg', hex + '15');
+    card.style.setProperty('--tag-border', hex + '35');
+  }
+}
+
+function resetSandbox() {
+  const card = document.getElementById('previewCard');
+  card.removeAttribute('style');
+  document.getElementById('previewDot').removeAttribute('style');
+  document.getElementById('previewGenre').removeAttribute('style');
+  document.getElementById('previewBtnPrimary').removeAttribute('style');
+  document.getElementById('previewBtnSecondary').removeAttribute('style');
+  document.getElementById('previewBody').removeAttribute('style');
+
+  const def = TARGETS[currentTarget].default;
+  document.getElementById('colorPicker').value = def;
+  document.getElementById('colorHex').value = def;
+  showToast('Reset to defaults');
+}
+
+function colorToHex(str) {
+  if (/^#[0-9a-fA-F]{6}$/.test(str)) return str;
+  return null;
+}
+
+// ============================================================
+//  COPY UTILITIES
+// ============================================================
+function copyToClipboard(varName, value) {
+  const text = varName + ': ' + value;
+  navigator.clipboard.writeText(text).then(() => showToast('Copied: ' + text));
+}
+
+function copyToken(btn, text) {
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'copied!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'copy';
+      btn.classList.remove('copied');
+    }, 1500);
+    showToast('Copied: ' + text);
+  });
+}
+
+let toastTimer;
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
+}
+
+// ============================================================
+//  NAV — active state on scroll
+// ============================================================
+const sections = document.querySelectorAll('.ds-section[id]');
+const navLinks = document.querySelectorAll('.ds-nav a[href^="#"]');
+
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      navLinks.forEach(a => {
+        a.classList.toggle('active', a.getAttribute('href') === '#' + entry.target.id);
+      });
+    }
+  });
+}, { rootMargin: '-20% 0px -70% 0px' });
+
+sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>
