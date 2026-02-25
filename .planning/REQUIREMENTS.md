@@ -20,9 +20,9 @@
 - [x] **ARTP-03**: Artist page displays influenced-by and influenced artists from MusicBrainz relationships
 - [x] **ARTP-04**: Artist page displays associated labels from MusicBrainz relationships
 - [x] **ARTP-05**: Release credits (producers, engineers, featured artists) are displayed and linked to their own artist pages
-- [ ] **ARTP-06**: Discography has a type filter — All / Albums / EPs / Singles
-- [ ] **ARTP-07**: Discography can be sorted by date (newest / oldest)
-- [ ] **ARTP-08**: Mastodon share button has a visible text label (not just "↑")
+- [x] **ARTP-06**: Discography has a type filter — All / Albums / EPs / Singles
+- [x] **ARTP-07**: Discography can be sorted by date (newest / oldest)
+- [x] **ARTP-08**: Mastodon share button has a visible text label (not just "↑")
 
 ### Queue & Playback
 
@@ -104,9 +104,9 @@
 | ARTP-03 | Phase 24: Artist Page | Complete |
 | ARTP-04 | Phase 24: Artist Page | Complete |
 | ARTP-05 | Phase 24: Artist Page | Complete |
-| ARTP-06 | Phase 24: Artist Page | Pending |
-| ARTP-07 | Phase 24: Artist Page | Pending |
-| ARTP-08 | Phase 24: Artist Page | Pending |
+| ARTP-06 | Phase 24: Artist Page | Complete |
+| ARTP-07 | Phase 24: Artist Page | Complete |
+| ARTP-08 | Phase 24: Artist Page | Complete |
 | QUEU-01 | Phase 25: Queue System + Library | Pending |
 | QUEU-02 | Phase 25: Queue System + Library | Pending |
 | QUEU-03 | Phase 25: Queue System + Library | Pending |
