@@ -174,6 +174,13 @@
 		{/if}
 	</div>
 
+	<div class="tm-cross-links">
+		<a
+			href="/discover?era={encodeURIComponent(activeDecade.label)}"
+			class="tm-cross-link"
+		>Explore {activeDecade.label} artists in Discover →</a>
+	</div>
+
 	<!-- View 3: Filtered artist list -->
 	{#if artists.length > 0}
 		<div class="artist-grid">
@@ -220,6 +227,15 @@
 	.year-snapshot { margin-bottom: 1.25rem; }
 	.year-snapshot h2 { font-size: 1.2rem; }
 	.loading-hint { color: var(--color-muted, #888); font-size: 0.85rem; }
+
+	.tm-cross-links { margin-bottom: 1rem; }
+	.tm-cross-link {
+		font-size: 0.8rem;
+		color: var(--color-muted, #888);
+		text-decoration: none;
+		transition: color 0.15s;
+	}
+	.tm-cross-link:hover { color: var(--color-primary, #60a5fa); }
 
 	.artist-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.75rem; }
 	.no-results { text-align: center; padding: 3rem; color: var(--color-muted, #888); }

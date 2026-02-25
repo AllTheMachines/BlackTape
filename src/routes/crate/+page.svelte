@@ -5,6 +5,7 @@
 	import type { ArtistResult } from '$lib/db/queries';
 	import { isTauri } from '$lib/platform';
 	import { PROJECT_NAME } from '$lib/config';
+	import { openChat, chatState } from '$lib/comms/notifications.svelte.js';
 
 	let { data }: { data: PageData } = $props();
 
@@ -156,7 +157,22 @@
 		{:else}
 			<div class="artist-grid">
 				{#each artists as artist}
-					<ArtistCard {artist} />
+					<div class="crate-result">
+						<ArtistCard {artist} />
+						<div class="crate-cross-links">
+							{#if artist.tags}
+								{@const primaryTag = artist.tags.split(', ')[0]}
+								<a
+									href="/style-map?tag={encodeURIComponent(primaryTag)}"
+									class="crate-cross-link"
+								>Explore in Style Map →</a>
+								<button
+									class="crate-cross-link crate-room-link"
+									onclick={() => { chatState.view = 'rooms'; openChat('rooms'); }}
+								>Open scene room →</button>
+							{/if}
+						</div>
+					</div>
 				{/each}
 			</div>
 		{/if}
@@ -235,6 +251,21 @@
 		grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
 		gap: var(--space-md);
 	}
+
+	.crate-result { display: flex; flex-direction: column; gap: var(--space-xs); }
+	.crate-cross-links { display: flex; gap: var(--space-sm); flex-wrap: wrap; }
+	.crate-cross-link {
+		font-size: 0.75rem;
+		color: var(--text-muted);
+		text-decoration: none;
+		background: none;
+		border: none;
+		cursor: pointer;
+		padding: 0;
+		font-family: inherit;
+		transition: color 0.15s;
+	}
+	.crate-cross-link:hover { color: var(--text-accent); }
 
 	.empty-state, .desktop-only {
 		color: var(--text-muted);

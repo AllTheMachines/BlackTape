@@ -211,6 +211,16 @@
 			</div>
 		{/if}
 
+		<!-- KB cross-link -->
+		<div class="kb-cross-link">
+			<a
+				href="/kb/genre/{data.scene.slug}"
+				class="cross-link-secondary"
+			>
+				See {data.scene.name} in Knowledge Base →
+			</a>
+		</div>
+
 		<!-- 3. Artists block -->
 		<section class="scene-section">
 			<h2>Artists in this scene</h2>
@@ -632,6 +642,16 @@
 		color: var(--text-secondary);
 		border-color: var(--text-muted);
 	}
+
+	/* ── KB Cross-link ─────────────────────────────────── */
+	.kb-cross-link { margin: var(--space-md) 0; }
+	.cross-link-secondary {
+		font-size: 0.8rem;
+		color: var(--text-muted);
+		text-decoration: none;
+		transition: color 0.15s;
+	}
+	.cross-link-secondary:hover { color: var(--text-accent); }
 
 	.back-link {
 		margin-top: var(--space-xl);
