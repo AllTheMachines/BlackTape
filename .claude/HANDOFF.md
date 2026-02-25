@@ -1,48 +1,46 @@
 # Work Handoff - 2026-02-25
 
 ## What Was Done This Session
-- Applied design audit round-2 fixes (items identified but NOT applied in previous session)
-- Visually verified all changes in the running Tauri app using PowerShell screenshot automation
 
-## Changes Made (committed in 38c0a3b + 42edb7d)
+### 1. Window Controls Fix (SHIPPED)
+- **Root cause:** `core:window:default` in Tauri 2.0 only grants read-only window queries — it does NOT include minimize/maximize/close action permissions
+- **Fix 1:** Separated `data-tauri-drag-region` into its own absolutely-positioned child div (z-index 0) so it no longer swallows clicks on buttons (z-index 1) in `src/lib/components/Titlebar.svelte`
+- **Fix 2:** Added explicit permissions to `src-tauri/capabilities/default.json`:
+  - `core:window:allow-minimize`
+  - `core:window:allow-toggle-maximize`
+  - `core:window:allow-close`
+- **Verified:** Rebuilt and user confirmed buttons work
+- **Committed:** `928eb58` — fix(titlebar): window controls now work in release build
 
-### LibraryBrowser.svelte — 7 fixes
-- `.album-list-pane` bg: `--bg-2` → `--bg-1`
-- `.release-title`: 15px/500wt → 18px/300wt
-- `.release-artist`: `--t-2` → `--acc` + `font-weight: 500` (amber/gold, confirmed visually)
-- `.release-play-btn`: solid amber fill → ghost accent style (`--acc-bg` bg, `--b-acc` border, `--acc` color)
-- `.track-pane-column-headers`: bg `--bg-2` → `--bg-1`, add `height: 28px`
-- `.album-list-item:hover`: `--bg-hover` → `#181818`
-- `.album-list-item.selected`: add `background: #1e1e1e`
+### 2. Design System Dashboard (NEW FILE)
+- Created `docs/design-system.html` — single-file HTML design system
+- Sections: Brand Overview, Typography, Color Palette, Color Sandbox, Spacing & Radius, Buttons, Cards & Panels, Forms, Tags & Badges, Design Tokens Table
+- Interactive color picker popover on every swatch — click any color to open picker, change color, get a ready-to-paste Claude prompt like: `In Mercury's design system (src/lib/styles/theme.css), change --acc from #c4a55a to #NEW.`
+- Token copy buttons in the full tokens table
+- Color sandbox for live-previewing token changes on an artist card
 
-### PanelLayout.svelte — 2 fixes
-- `.sidebar-pane` bg: `--bg-base` → `--bg-1`
-- All sidebar borders: `--border-subtle` → `--b-1`
-
-### discover/+page.svelte — 2 fixes
-- `.filter-heading`: padding `5px 12px` → `10px 12px 8px`, added `border-bottom`, tracking `0.08em` → `0.12em`
-- `.results-toolbar`: added `border-bottom: 1px solid var(--b-1)`
-
-### artist/[slug]/+page.svelte — 1 fix (11 instances)
-- All `border-radius: 4px` and `6px` → `var(--r)`
+### 3. System Housekeeping (Not committed)
+- Killed stale Node.js processes (Mercury dev/build/test leftovers)
+- Disabled Phone Link, NVIDIA Overlay, Roland Cloud Manager from autostart
+- These are system-level changes, not project changes
 
 ## Current State
-- **164 tests passing, 0 failing**
-- No uncommitted changes
-- App was running (`npm run tauri dev`) during testing — may or may not still be active
-- VS Code windows were minimized during screenshot session (may need restoring)
+- **All tests passing: 164 code checks, 0 failing**
+- No uncommitted changes (BUILD-LOG.md only had auto-save noise)
+- `mercury.exe` at `src-tauri/target/release/mercury.exe` is the current working build
+- Window controls work in the release exe
 
-## Screenshot Automation Notes (for future sessions)
-- Screen is 1920×1080 but Read tool displays images scaled to ~1456×816
-- Scale factor: 1920/1456 ≈ 1.32× (apply to all thumbnail pixel measurements)
-- Mercury process name: `mercury`
-- Calibrated screen coords for nav items (1920×1080 maximized):
-  - Discover: x=53, y=108
-  - Library: x=53, y=309
-  - Album list click (to select item): x=554, y=<item_screen_y>
-- Script directory: `C:/Users/User/AppData/Local/Temp/` — reusable scripts there
+## Pending / Next Up
+- **UAT Review:** User invoked `/uat-review` but needs to provide video file path
+  - Repo: `AllTheMachines/Mercury`
+  - Skill: `C:/Users/User/.claude/skills/uat-review/`
+  - User needs to provide: path to UAT recording video
+  - Then: validate environment (ffmpeg, whisper, gh CLI), transcribe, find incidents, review and file GitHub issues one by one
+- After UAT: review findings and plan next phase
 
-## Next Potential Work
-- No specific next task assigned — audit is complete
-- Possible areas: spot-check remaining components not in the 4 audit mockups (SceneCard, TrackRow, ReleaseCard, TagChip)
-- Or start Phase 28 work per ROADMAP.md
+## Key Files Changed This Session
+| File | Change |
+|------|--------|
+| `src/lib/components/Titlebar.svelte` | Drag region separated from controls |
+| `src-tauri/capabilities/default.json` | Added 3 window action permissions |
+| `docs/design-system.html` | New — design system dashboard |
