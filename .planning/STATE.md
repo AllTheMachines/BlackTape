@@ -2,19 +2,19 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-02-24 after v1.4 milestone started)
+See: .planning/PROJECT.md (updated 2026-02-25 after v1.4 milestone)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** v1.4 The Interface — Phase 27 COMPLETE (all 5 plans done: SRCH-01..04, KBAS-01)
+**Current focus:** Planning v1.5 — run `/gsd:new-milestone` to define next milestone scope
 
 ## Current Position
 
-Phase: 27 of 27 (Search Knowledge Base — COMPLETE)
-Plan: 5 of 5 in current phase (27-05 complete — test manifest, all Phase 27 requirements locked)
-Status: Phase 27 COMPLETE — all 5 plans done: autocomplete backend, SearchBar UI, intent routing/badges, KB genre redesign, test manifest
-Last activity: 2026-02-25 — Phase 27 Plan 05 complete: PHASE_27 test manifest added; 164 code checks passing, 0 failing
+Milestone: v1.4 The Interface — COMPLETE (shipped 2026-02-25)
+Phase: 27 of 27 — all phases complete
+Status: v1.4 archived. REQUIREMENTS.md deleted. ROADMAP.md collapsed. Ready for next milestone.
+Last activity: 2026-02-25 — v1.4 milestone complete: 5 phases, 19 plans, 35/35 requirements, 164 code checks passing
 
-Progress: [████████░░] 80% (v1.4 — Phase 27 complete, all planned phases done)
+Progress: [██████████] 100% v1.4 complete
 
 ## Performance Metrics
 

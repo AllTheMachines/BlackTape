@@ -2,27 +2,11 @@
 
 ## What This Is
 
-A music discovery engine that indexes 2.8M+ artists from open databases, lets you explore through atomic tags, and embeds players from wherever the music already lives — Bandcamp, Spotify, SoundCloud, YouTube. Runs as a Tauri desktop app with a local SQLite database (offline-first). Not a platform. Not a streaming service. A search engine that becomes an ecosystem.
+A music discovery engine that indexes 2.8M+ artists from open databases, lets you explore through atomic tags, and embeds players from wherever the music already lives — Bandcamp, Spotify, SoundCloud, YouTube. Runs as a Tauri desktop app with a local SQLite database (offline-first). Not a platform. Not a streaming service. A search engine that becomes an ecosystem — with a consistent design system, full queue management, artist relationship data, cross-linked discovery tools, and intelligent search.
 
-v1.0 shipped: data pipeline → desktop app → local music player → client-side AI → tag discovery engine → knowledge base → underground aesthetic → community foundation → encrypted communication layer.
+v1.4 shipped: visual redesign complete — design system, queue management, artist relationships, discovery cross-linking, search autocomplete + intent parsing, KB genre pages.
 
-v1.1 shipped: scene building → curator/blog tools.
-
-v1.2 shipped: test automation complete — Playwright CDP E2E runner, Rust unit tests, pre-commit gate. Web gateway removed — Tauri-desktop-only confirmed.
-
-## Current Milestone: v1.4 — The Interface
-
-**Goal:** Transform Mercury from a functional prototype into a real desktop application — ground-up visual redesign plus the UX depth the app has been missing.
-
-**Target features:**
-- Full visual overhaul implementing the square/layered-grey design system from mockups
-- Queue management — ▶ Play and + Queue from every track surface in the app
-- Artist relationships — MusicBrainz members, influences, labels; release credits linked
-- Discovery cross-linking — the 7 tools reference each other naturally
-- Search improvements — autocomplete + label + city search
-- Discography filters, Crate Dig country dropdown, Mastodon button label
-
-## Previous: v1.3 Shipped (2026-02-24)
+## Previous: v1.4 Shipped (2026-02-25)
 
 ## Core Value
 
@@ -63,17 +47,16 @@ Uniqueness is rewarded — the more niche you are, the more discoverable you bec
 - ✓ Static site generator — self-contained HTML export with cover art, XSS-safe, zero Mercury dependency — v1.3
 - ✓ Synchronized listening rooms via Nostr — host YouTube control, jukebox queue, participant presence — v1.3
 - ✓ ActivityPub outbound — static AP actor export (actor.json + webfinger.json + outbox.json) for self-hosted Fediverse presence — v1.3
+- ✓ v1.4 design system — CSS custom properties (layered dark greys, amber accent, 2px radius), custom Tauri titlebar, restyled app chrome, global base styles — v1.4
+- ✓ Artist page redesign with MusicBrainz relationships (band members, influenced-by, labels), linked release credits, discography type filter + date sort, Mastodon "Share" label — v1.4
+- ✓ Queue management — TrackRow on every track surface, Play Album/Play All/+ Queue All, slide-up queue panel with drag-reorder, localStorage persistence — v1.4
+- ✓ Discover redesign (filter panel + artist grid) + cross-linking across all 7 discovery tools — v1.4
+- ✓ Search autocomplete (FTS5 prefix, direct-to-artist), city/label intent parsing, intent chips, per-result match badges — v1.4
+- ✓ KB genre page redesign — type badge pill, compact artist rows, colour-coded genre dots, genre map placeholder — v1.4
 
 ### Active
 
-- [ ] Full visual redesign — square UI, layered dark greys, amber accent, 1px borders on every panel
-- [ ] Queue system — ▶ Play and + Queue actions on every track surface; Play Album on release pages
-- [ ] Artist relationships — band members, influenced-by, labels from MusicBrainz; credits linked to artist pages
-- [ ] Discovery cross-linking — tools surface each other (Discover → Style Map → Scenes → KB → Time Machine)
-- [ ] Search autocomplete + label + city search
-- [ ] Discography type filter (Albums/EPs/Singles) + date sort
-- [ ] Crate Dig country dropdown (replace raw ISO code input)
-- [ ] Mastodon share button visible label
+*(Defined in next milestone — run `/gsd:new-milestone` to scope v1.5)*
 
 ### Out of Scope
 
@@ -96,6 +79,8 @@ Uniqueness is rewarded — the more niche you are, the more discoverable you bec
 **v1.2 shipped 2026-02-24.** Test automation milestone complete.
 
 **v1.3 shipped 2026-02-24.** The Open Network — Phases 16–21: sustainability links, stats dashboard, AI summaries, static site generator, listening rooms, ActivityPub outbound. Codebase: ~38,456 LOC.
+
+**v1.4 shipped 2026-02-25.** The Interface — Phases 23–27: full visual redesign, queue management, artist relationships, discovery cross-linking, search improvements. Codebase: ~30,036 LOC TypeScript/Svelte (net reduction from refactoring old styles). 164 code checks passing.
 
 **Tech stack:** SvelteKit (Svelte 5) + Tauri 2.0 + SQLite + FTS5. Client-side AI via llama.cpp sidecar (Qwen2.5 3B) + Nomic Embed. Nostr (NDK) for communications.
 
@@ -134,6 +119,11 @@ Pre-project research (2026-02-14) saved in ControlCenter:
 | Playwright CDP for Tauri E2E | Direct browser protocol (CDP), no extra test framework; Playwright already in codebase | ✓ Good |
 | Rust unit test helper extraction | `parse_year_from_tags` extracted to enable isolated testing without full Tauri binary compile | ✓ Good |
 | Phases 14–15 outside GSD workflow | Speed over process — test infra sprint; accepted tech debt (no VERIFICATION.md/SUMMARY.md) | ⚠️ Revisit (use GSD for v1.3) |
+| CSS custom properties design system (v1.4) | Single theme.css source of truth for all tokens; components reference vars not hardcoded values | ✓ Good |
+| TrackRow reusable component pattern (v1.4) | Single component for all track surfaces eliminates duplication; queue actions consistent everywhere | ✓ Good |
+| FTS5 prefix search for autocomplete (v1.4) | Leverages existing FTS5 index; prefix-first ORDER BY ensures best matches appear first | ✓ Good |
+| onmousedown + 150ms blur delay for autocomplete (v1.4) | Prevents race condition where blur fires before click registers — no JS state hacks needed | ✓ Good |
+| Genre map placeholder instead of live ForceGraph (v1.4) | GenreGraph was too heavy for the KB genre page; placeholder acknowledges feature without blocking redesign | — Pending (v1.5 candidate) |
 
 ---
-*Last updated: 2026-02-24 after v1.4 milestone started (The Interface)*
+*Last updated: 2026-02-25 after v1.4 milestone — The Interface*

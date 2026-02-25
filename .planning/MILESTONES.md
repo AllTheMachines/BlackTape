@@ -85,3 +85,23 @@
 
 ---
 
+
+## v1.4 The Interface (Shipped: 2026-02-25)
+
+**Phases completed:** 5 phases (23–27), 19 plans
+**Code:** ~30,036 LOC (TypeScript/Svelte) | 87 files changed (+12,854 / −1,011)
+**Timeline:** 2 days (2026-02-24 → 2026-02-25)
+
+**Delivered:** Ground-up visual redesign transforming Mercury from a functional prototype into a real desktop application — consistent design system, full queue management on every track surface, artist relationship data, discovery cross-linking, and smarter search.
+
+**Key accomplishments:**
+1. v1.4 design system — CSS custom properties (layered dark greys, amber accent, 2px radius), custom Tauri titlebar, restyled app chrome (topbar, sidebar, player bar), global button/input/badge/tab-bar base styles, TagChip spec
+2. Artist page redesign — MusicBrainz relationships (band members, influenced-by, associated labels), linked release credits (producers, engineers), discography type filter (All/Albums/EPs/Singles) + date sort, Mastodon "Share" label
+3. Full queue management — TrackRow reusable component on every track surface (search, artist page, release page, library), Play Album / Play All / + Queue All, slide-up queue panel with drag-reorder, localStorage persistence
+4. Discover redesign + cross-linking — filter panel + artist card grid, uniqueness score bars, 7 discovery tools cross-linking each other (artist→Style Map, scene→KB, crate/time-machine→Discover/scenes)
+5. Search intelligence — FTS5 autocomplete (2-char trigger, 5 suggestions, direct-to-artist navigation), city/label intent parsing ("artists from Berlin", "artists on Warp Records"), intent confirmation chips, per-result match badges, KB genre page redesign
+
+**Archive:** `.planning/milestones/v1.4-ROADMAP.md`, `.planning/milestones/v1.4-REQUIREMENTS.md`
+
+---
+
