@@ -92,7 +92,7 @@ Plans:
 - [ ] 26-01-PLAN.md — Discover page redesign: filter panel, live filtering, uniqueness score bar on artist cards
 - [ ] 26-02-PLAN.md — Discovery tool cross-linking: artist→Style Map, scene→KB, crate/time-machine links
 - [ ] 26-03-PLAN.md — Crate Dig country dropdown fix
-- [ ] 26-04-PLAN.md — Phase 26 test manifest (P26-01 through P26-16)
+- [x] 26-04-PLAN.md — Phase 26 test manifest (P26-01 through P26-16) (completed 2026-02-25)
 
 ### Phase 27: Search + Knowledge Base
 **Goal**: Search finds artists by city and label in addition to name, shows autocomplete suggestions, distinguishes result types, and the KB genre pages match the v1.4 design
@@ -115,5 +115,5 @@ Plans:
 | 23. Design System Foundation | 3/3 | Complete    | 2026-02-24 |
 | 24. Artist Page | 3/3 | Complete    | 2026-02-25 |
 | 25. Queue System + Library | 4/4 | Complete    | 2026-02-25 |
-| 26. Discover + Cross-Linking + Crate Fix | 4/4 | Complete   | 2026-02-25 |
+| 26. Discover + Cross-Linking + Crate Fix | 4/4 | Complete    | 2026-02-25 |
 | 27. Search + Knowledge Base | 0/TBD | Not started | - |
