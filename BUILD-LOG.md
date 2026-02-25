@@ -6557,3 +6557,20 @@ TypeScript: 0 errors. Test suite: 134 passed, 0 failed. CRAT-01 complete.
 
 > **Commit 28f98de** (2026-02-25 09:21) — docs(26-03): add build log entry for Crate Dig country dropdown
 > Files changed: 1
+
+> **Commit 4dc7fc8** (2026-02-25 09:21) — wip: auto-save
+> Files changed: 2
+
+## Entry — 2026-02-25 — Phase 26 Plan 01: Discover Page Redesign
+
+### What Was Built
+
+Redesigned the Discover page from a flat tag cloud + grid into a proper two-column filter panel layout. Three tasks, ~3 minutes.
+
+**Task 1 — Query layer:** Extended `ArtistResult` with optional `uniqueness_score` field; added `DiscoverFilters` interface and `getDiscoveryArtists()` — filter-aware query that computes uniqueness scores inline. Era maps to decade BETWEEN ranges. Falls back to `discovery_score` ordering when no filters set.
+
+**Task 2 — Page layout:** `+page.ts` reads `country` and `era` from URL params. `+page.svelte` reworked as 220px fixed left panel + right results column. Filter panel has top-50 tag cloud, debounced country input, era pills. Results toolbar shows active filter chips with × dismiss, result count, "Clear all" button. All changes via `goto()` — no Apply button.
+
+**Task 3 — Card update:** ArtistCard shows a thin 3px progress bar using log10 normalization of the uniqueness score. Bar only visible when `uniqueness_score` is non-null (backwards-compatible). Tag chips capped at 3 for compact layout.
+
+TypeScript: 0 errors. Test suite: 134 passed, 0 failed. DISC-01/02/03 delivered.

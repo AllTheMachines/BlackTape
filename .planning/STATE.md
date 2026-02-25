@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-02-24 after v1.4 milestone started)
 ## Current Position
 
 Phase: 26 of 27 (Discover Cross-linking + Crate Fix)
-Plan: 3 of 4 in current phase
-Status: Phase 26 Plan 03 complete — Crate Dig country dropdown (CRAT-01), 1 task, 1 file
-Last activity: 2026-02-25 — Phase 26 Plan 03 complete: Crate Dig country filter replaced with named-country dropdown (60 countries, ISO code mapping)
+Plan: 3 of 4 in current phase (Plans 01, 02, 03 complete)
+Status: Phase 26 Plans 01/02/03 complete — Discover redesign (DISC-01/02/03), cross-linking (XLINK-01..05), Crate Dig country dropdown (CRAT-01)
+Last activity: 2026-02-25 — Phase 26 Plan 01 complete: Discover page redesigned with filter panel, live URL-driven filtering, and ArtistCard uniqueness bar
 
 Progress: [█████░░░░░] 50% (v1.4 — Phase 26 in progress 3/4 plans, 2/4 phases)
 
@@ -81,6 +81,15 @@ Progress: [█████░░░░░] 50% (v1.4 — Phase 26 in progress 3/
 - [Phase 26-03]: Native <select> used for country dropdown over datalist/combobox — simpler, accessible, no dependencies, consistent with decade dropdown
 - [Phase 26-03]: selectedCountryCode replaces country $state — select values are controlled strings, no trim() needed
 - [Phase 26-03]: 60 countries covers MusicBrainz strong-coverage territories without overwhelming list length
+- [Phase 26-01]: ArtistResult.uniqueness_score is optional (?) so existing callers compile without changes — bar only renders when score is non-null
+- [Phase 26-01]: getDiscoveryArtists falls back to discovery_score ordering when no filters set — ensures strong default Discover page state
+- [Phase 26-01]: URL-driven filter state in Discover — goto() with keepFocus+noScroll on every change, no $state for filter values
+- [Phase 26-01]: Tag chips sliced to 3 (from 5) in ArtistCard for compact medium-density grid
+- [Phase 26-01]: <label> for Genre/Era filter headers converted to <span> — group labels without associated single control trigger a11y warnings
+- [Phase 26-02]: Time Machine KB era cross-link targets /discover?era= — KB has no dedicated era pages; Discover era filter is the correct destination
+- [Phase 26-02]: Crate Dig cross-links placed per-result below ArtistCard (not page-level) — contextual link follows the specific artist's primary tag
+- [Phase 26-02]: StyleMap initialTag sets hoveredTag after simulation tick(500) completes — pre-highlights incoming node without interfering with physics layout
+- [Phase 26-02]: XLINK-02 (KB → Discover) was already satisfied by existing KB genre page — no changes needed
 
 ### Pending Todos
 None
@@ -91,6 +100,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-25
-Stopped at: Completed 26-03-PLAN.md (Phase 26 Plan 03 — Crate Dig country dropdown)
+Stopped at: Completed 26-01-PLAN.md (Phase 26 Plan 01 — Discover redesign DISC-01/02/03)
 Resume file: None
 Next: Phase 26 Plan 04 (test manifest — P26 tests)

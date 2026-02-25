@@ -41,17 +41,17 @@
 
 ### Discover
 
-- [ ] **DISC-01**: Discover page uses the filter panel + results grid layout from the v1.4 mockup
-- [ ] **DISC-02**: Active filters are shown as dismissable chips in the results toolbar
-- [ ] **DISC-03**: Artist cards show name, country, top tags, and uniqueness score bar
+- [x] **DISC-01**: Discover page uses the filter panel + results grid layout from the v1.4 mockup
+- [x] **DISC-02**: Active filters are shown as dismissable chips in the results toolbar
+- [x] **DISC-03**: Artist cards show name, country, top tags, and uniqueness score bar
 
 ### Discovery Cross-Linking
 
-- [ ] **XLINK-01**: Artist page links to Style Map filtered to artist's primary tag
-- [ ] **XLINK-02**: Knowledge Base genre pages link to Discover filtered by that genre
-- [ ] **XLINK-03**: Scene pages link to the Knowledge Base for the scene's primary genre
-- [ ] **XLINK-04**: Crate Dig results surface "Explore similar in Style Map" and "Open scene room" where relevant
-- [ ] **XLINK-05**: Time Machine results link to artist pages and Knowledge Base entries for the era
+- [x] **XLINK-01**: Artist page links to Style Map filtered to artist's primary tag
+- [x] **XLINK-02**: Knowledge Base genre pages link to Discover filtered by that genre
+- [x] **XLINK-03**: Scene pages link to the Knowledge Base for the scene's primary genre
+- [x] **XLINK-04**: Crate Dig results surface "Explore similar in Style Map" and "Open scene room" where relevant
+- [x] **XLINK-05**: Time Machine results link to artist pages and Knowledge Base entries for the era
 
 ### Search
 
@@ -116,14 +116,14 @@
 | LIBR-01 | Phase 25: Queue System + Library | Complete |
 | LIBR-02 | Phase 25: Queue System + Library | Complete |
 | LIBR-03 | Phase 25: Queue System + Library | Complete |
-| DISC-01 | Phase 26: Discover + Cross-Linking + Crate Fix | Pending |
-| DISC-02 | Phase 26: Discover + Cross-Linking + Crate Fix | Pending |
-| DISC-03 | Phase 26: Discover + Cross-Linking + Crate Fix | Pending |
-| XLINK-01 | Phase 26: Discover + Cross-Linking + Crate Fix | Pending |
-| XLINK-02 | Phase 26: Discover + Cross-Linking + Crate Fix | Pending |
-| XLINK-03 | Phase 26: Discover + Cross-Linking + Crate Fix | Pending |
-| XLINK-04 | Phase 26: Discover + Cross-Linking + Crate Fix | Pending |
-| XLINK-05 | Phase 26: Discover + Cross-Linking + Crate Fix | Pending |
+| DISC-01 | Phase 26: Discover + Cross-Linking + Crate Fix | Complete |
+| DISC-02 | Phase 26: Discover + Cross-Linking + Crate Fix | Complete |
+| DISC-03 | Phase 26: Discover + Cross-Linking + Crate Fix | Complete |
+| XLINK-01 | Phase 26: Discover + Cross-Linking + Crate Fix | Complete |
+| XLINK-02 | Phase 26: Discover + Cross-Linking + Crate Fix | Complete |
+| XLINK-03 | Phase 26: Discover + Cross-Linking + Crate Fix | Complete |
+| XLINK-04 | Phase 26: Discover + Cross-Linking + Crate Fix | Complete |
+| XLINK-05 | Phase 26: Discover + Cross-Linking + Crate Fix | Complete |
 | CRAT-01 | Phase 26: Discover + Cross-Linking + Crate Fix | Complete |
 | SRCH-01 | Phase 27: Search + Knowledge Base | Pending |
 | SRCH-02 | Phase 27: Search + Knowledge Base | Pending |
