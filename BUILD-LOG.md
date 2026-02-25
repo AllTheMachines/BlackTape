@@ -7237,3 +7237,6 @@ Fix: renamed to `avatar.svelte.ts`, updated 5 import sites (AvatarEditor, Avatar
 
 > **Commit 7cbf27b** (2026-02-25 17:49) — docs: build log — UAT #4 compact list + #8 library cover art closed
 > Files changed: 1
+
+> **Commit 9344ac5** (2026-02-25 17:49) — wip: auto-save
+> Files changed: 1
