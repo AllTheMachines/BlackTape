@@ -36,6 +36,30 @@ The library browser was showing initials placeholders for album covers. Now extr
 
 ---
 
+## Entry 2026-02-25 — Refresh Covers: Borrow Fix + Blocking Modal
+
+### Rust borrow fix
+
+`refresh_covers` had a lifetime error at compile time — `stmt` was borrowed by `query_map`'s return type through the end of the block, but needed to be dropped before the block closed. Fix: bind the collected `Vec` to a local variable `result` before the block ends, forcing the borrow to settle before `stmt` drops. 43 tests pass.
+
+### Blocking modal for cover refresh
+
+The Refresh Covers operation processes every track with missing art — potentially thousands of file reads, base64 encodes, and DB writes in one synchronous go. It works, but the app visibly freezes while it runs with no feedback. Steve's call:
+
+> "Maybe you create a popup with ok or anything that just shows refreshing covers until its done, so people are wondering less about the freezing app"
+
+Added a full-screen modal overlay that appears the moment the button is clicked and disappears when the operation completes:
+- Fixed overlay with semi-transparent dark background (z-index 1000, covers everything)
+- Centered card: spinner + "Refreshing covers..." text
+- No close button — it's blocking by design, matches the app being busy
+- All controlled by the existing `isRefreshingCovers` state variable — zero new state
+
+<!-- decision: Refresh Covers as one-time backfill only -->
+The Refresh Covers button only exists for tracks that were scanned before cover art extraction was implemented. New scans always include embedded art (via `read_track_metadata`). The button will quietly disappear from the header once all tracks have art (future: hide when no NULL covers remain).
+<!-- /decision -->
+
+---
+
 ## Entry 001 — 2026-02-14 — The Name Search
 
 ### Context
@@ -7279,3 +7303,6 @@ Fix: renamed to `avatar.svelte.ts`, updated 5 import sites (AvatarEditor, Avatar
 
 > **Commit 38b81a9** (2026-02-25 18:16) — auto-save: 1 files @ 18:16
 > Files changed: 1
+
+> **Commit 86fa16d** (2026-02-25 18:26) — wip: auto-save
+> Files changed: 2

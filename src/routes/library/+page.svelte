@@ -59,6 +59,15 @@
 	<title>Library</title>
 </svelte:head>
 
+{#if isRefreshingCovers}
+	<div class="covers-overlay">
+		<div class="covers-dialog">
+			<div class="covers-spinner"></div>
+			<p>Refreshing covers...</p>
+		</div>
+	</div>
+{/if}
+
 {#if !tauriMode}
 	<div class="desktop-only">
 		<div class="desktop-only-icon">
@@ -370,5 +379,46 @@
 		font-size: 0.85rem;
 		color: var(--t-2);
 		margin: 0 0 var(--space-xl);
+	}
+
+	/* Refresh covers blocking overlay */
+	.covers-overlay {
+		position: fixed;
+		inset: 0;
+		background: rgba(0, 0, 0, 0.6);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		z-index: 1000;
+	}
+
+	.covers-dialog {
+		background: var(--bg-2);
+		border: 1px solid var(--b-1);
+		border-radius: var(--r-lg, 8px);
+		padding: 32px 48px;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 16px;
+	}
+
+	.covers-dialog p {
+		margin: 0;
+		font-size: 0.9rem;
+		color: var(--t-2);
+	}
+
+	.covers-spinner {
+		width: 28px;
+		height: 28px;
+		border: 2px solid var(--b-2);
+		border-top-color: var(--t-2);
+		border-radius: 50%;
+		animation: spin 0.8s linear infinite;
+	}
+
+	@keyframes spin {
+		to { transform: rotate(360deg); }
 	}
 </style>
