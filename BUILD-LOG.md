@@ -6904,7 +6904,7 @@ Applied remaining audit fixes from the v1.4 design review — items identified b
 **Result:** `npm run check` 0 errors, 8 warnings (all pre-existing).
 
 <!-- status -->
-Design audit fixes applied — LibraryBrowser, PanelLayout, Discover, Artist pages all cleaned up.
+Design audit fixes applied + visually verified in running app. All 10 changes confirmed correct.
 <!-- /status -->
 
 > **Commit a53863f** (2026-02-25) — fix(design): apply v1.4 cockpit design system across all pages
@@ -6936,3 +6936,6 @@ Design audit fixes applied — LibraryBrowser, PanelLayout, Discover, Artist pag
 
 > **Commit 38c0a3b** (2026-02-25 11:16) — wip: auto-save
 > Files changed: 5
+
+> **Commit 0f698e7** (2026-02-25 11:16) — auto-save: 1 files @ 11:16
+> Files changed: 1
