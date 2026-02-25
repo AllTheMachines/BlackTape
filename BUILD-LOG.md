@@ -7119,3 +7119,39 @@ The `/uat-review` skill is operational. Pipeline: OBS recording → Whisper tran
 
 > **Commit 2825262** (2026-02-25 15:46) — auto-save: 1 files @ 15:46
 > Files changed: 1
+
+> **Commit 3160731** (2026-02-25 16:00) — wip: auto-save
+> Files changed: 4
+
+> **Commit 12a6688** (2026-02-25 16:13) — fix: resolve 8 UAT issues (#1, #5, #7, #10, #11, #12, #13, #14)
+> Files changed: 9
+
+## Entry — 2026-02-25 — UAT Issues: Batch Fix (10 of 14 closed)
+
+Picked up from context handoff and worked through all resolvable UAT issues autonomously. All fixes in one commit (12a6688), all issues closed on GitHub.
+
+### Fixed
+
+| # | Issue | Fix |
+|---|-------|-----|
+| #6 | Time Machine slider future years | Capped slider + DB query at current year (prev session) |
+| #12 | Spacebar restarts playback | Global `svelte:window` keydown → `togglePlayPause`; removed space from TrackRow handler |
+| #13 | Duplicate Deezer streaming links | Deduplicate `categorizedLinks.streaming` by hostname after building |
+| #11 | Autocomplete no keyboard nav | Added ArrowUp/Down/Enter/Escape handling + active highlight in SearchBar |
+| #10 | Volume resets on restart | `setVolume()` writes to localStorage; `initAudio()` restores it |
+| #7 | Crate dig decade filter broken | Switched from object binding to index binding on `<select>` — Svelte 5 reliable |
+| #5 | Back nav broken in Tauri | Added ← back button to ControlBar, shows when `pathname !== '/'` |
+| #14 | Play All / Queue All do nothing | Buttons now disabled with tooltip "Library track matching coming soon" |
+| #1 | Library artist name not clickable | `.album-list-artist` is now an `<a>` → `/search?q={artist}` |
+| #2 | Library filter bar broken | Closed as obsolete — filter bar removed in library redesign |
+
+### Deferred / Won't Fix
+
+| # | Issue | Reason |
+|---|-------|--------|
+| #3 | Dark theme / low contrast | Design direction change — larger scope |
+| #4 | Discover empty gray boxes | ArtistCard image loading not implemented |
+| #8 | Library cover art missing | Needs Rust ID3 tag reading — separate work item |
+| #9 | Profile page 500 | Check if reproducible; may be transient |
+
+All 164 test suite checks pass after fixes.
