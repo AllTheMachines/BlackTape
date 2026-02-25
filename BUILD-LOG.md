@@ -7156,6 +7156,17 @@ Picked up from context handoff and worked through all resolvable UAT issues auto
 
 All 164 test suite checks pass after fixes.
 
+## Entry — 2026-02-25 — UAT Issue #9: Profile 500 Fixed
+
+Root cause found: `avatar.ts` used `$state()` at module level in a plain `.ts` file (not `.svelte.ts`). The Svelte compiler only transforms runes in `.svelte` and `.svelte.ts` files — so `$state` was arriving as an undefined global at runtime in the Tauri WebView, throwing a TypeError on every page that imported it.
+
+Fix: renamed to `avatar.svelte.ts`, updated 5 import sites (AvatarEditor, AvatarPreview, profile page, settings page, room page), updated test manifest. 164/164 tests pass.
+
+**Remaining open issues (3 of 14):**
+- **#3 Dark theme** — Design direction decision. `--t-3` is genuinely too dark for tertiary text but fixing it is partly subjective.
+- **#4 ArtistCard images** — No clean source. MusicBrainz has no artist photo API; would need N CAA calls for N cards with rate-limit risk.
+- **#8 Library cover art** — Requires Rust changes to `scanner/metadata.rs` to extract embedded artwork. Real feature work, separate issue.
+
 > **Commit 700f96e** (2026-02-25 16:15) — docs: UAT batch fix session log + clear handoff
 > Files changed: 2
 
@@ -7167,3 +7178,9 @@ All 164 test suite checks pass after fixes.
 
 > **Commit 757692e** (2026-02-25 16:46) — auto-save: 1 files @ 16:46
 > Files changed: 1
+
+> **Commit 65af2e7** (2026-02-25 17:16) — auto-save: 1 files @ 17:16
+> Files changed: 1
+
+> **Commit 3ee5bdd** (2026-02-25 17:25) — fix: #9 profile page 500 — rename avatar.ts to avatar.svelte.ts
+> Files changed: 7
