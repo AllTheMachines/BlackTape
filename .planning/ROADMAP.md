@@ -16,7 +16,7 @@
 
 ## Phases
 
-- [x] **Phase 23: Design System Foundation** - CSS design tokens, base component overhaul (buttons, tags, inputs, panels), layout shell (topbar, sidebar, player bar) (completed 2026-02-24)
+- [x] **Phase 23: Design System Foundation** - CSS design tokens, base component overhaul (buttons, tags, inputs, panels), layout shell (topbar, sidebar, player bar) (completed 2026-02-24)
 - [ ] **Phase 24: Artist Page** - Redesign artist page + MusicBrainz relationships (members, influences, labels) + release credits linking + discography filters + Mastodon button label
 - [ ] **Phase 25: Queue System + Library** - Full queue management (Play/Queue on every track surface, Play Album, player queue panel, reorder/remove) + library two-pane redesign
 - [ ] **Phase 26: Discover + Cross-Linking + Crate Fix** - Discover page redesign (filter panel + artist grid) + discovery tool cross-linking + Crate Dig country dropdown
@@ -37,9 +37,9 @@
 **Plans**: 3 plans
 
 Plans:
-- [ ] 23-01-PLAN.md — Design tokens in theme.css + custom Tauri titlebar
-- [ ] 23-02-PLAN.md — App chrome: ControlBar, LeftSidebar, Player bar
-- [ ] 23-03-PLAN.md — TagChip spec + global button/input/badge base styles
+- [x] 23-01-PLAN.md — Design tokens in theme.css + custom Tauri titlebar
+- [x] 23-02-PLAN.md — App chrome: ControlBar, LeftSidebar, Player bar
+- [x] 23-03-PLAN.md — TagChip spec + global button/input/badge base styles
 
 ### Phase 24: Artist Page
 **Goal**: The artist page is a fully redesigned, information-rich view — relationships from MusicBrainz, linked credits, filterable discography, and a fixed share button label
@@ -51,7 +51,12 @@ Plans:
   3. Release credits (producers, engineers, featured artists) appear on release views and each name links to that artist's page
   4. Discography has a working type filter (All / Albums / EPs / Singles) and date sort (newest / oldest)
   5. The Mastodon share button shows a visible text label, not just the arrow icon
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 24-01-PLAN.md — MB relationships fetch + ArtistRelationships component + About tab + v1.4 tab bar tokens
+- [ ] 24-02-PLAN.md — Discography filter pills (All/Albums/EPs/Singles) + sort control (Newest/Oldest)
+- [ ] 24-03-PLAN.md — Release page collapsible Credits section + all P24 test suite entries
 
 ### Phase 25: Queue System + Library
 **Goal**: Users can build and manage a playback queue from any track surface in the app, and the library uses a clear two-pane layout
@@ -96,7 +101,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 23. Design System Foundation | 3/3 | Complete    | 2026-02-24 |
-| 24. Artist Page | 0/TBD | Not started | - |
+| 24. Artist Page | 0/3 | Planned | - |
 | 25. Queue System + Library | 0/TBD | Not started | - |
 | 26. Discover + Cross-Linking + Crate Fix | 0/TBD | Not started | - |
 | 27. Search + Knowledge Base | 0/TBD | Not started | - |
