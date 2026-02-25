@@ -7062,3 +7062,45 @@ Applied remaining audit fixes from the v1.4 design review — items identified b
 
 > **Commit 8d984b8** (2026-02-25 15:08) — wip: auto-save
 > Files changed: 1
+
+> **Commit 94dbd94** (2026-02-25 15:10) — wip: auto-save
+> Files changed: 1
+
+---
+
+## Entry — 2026-02-25 — First UAT Session: 44 Minutes, 12 Issues Filed
+
+Steve recorded a 44-minute screen capture narrating a first-time user walkthrough of Mercury. Processed the recording with Whisper (local transcription) + automated incident detection, extracted frames at each trigger moment, and filed 12 GitHub issues through a one-by-one review loop.
+
+<!-- breakthrough -->
+First real user test of the app. Not a developer test — Steve went in as a user, no context, no safety net. Narrated everything out loud. 44 minutes of honest first impressions.
+<!-- /breakthrough -->
+
+### Issues Filed (AllTheMachines/Mercury)
+
+| # | Title | Type |
+|---|-------|------|
+| [#3](https://github.com/AllTheMachines/Mercury/issues/3) | Dark background and low-contrast typography make app visually inaccessible | enhancement |
+| [#4](https://github.com/AllTheMachines/Mercury/issues/4) | Discover page shows empty gray boxes — artist images never load | bug |
+| [#5](https://github.com/AllTheMachines/Mercury/issues/5) | Back navigation broken after navigating from Knowledge Base to Style Map | bug |
+| [#6](https://github.com/AllTheMachines/Mercury/issues/6) | Time Machine slider allows future years — should cap at current year | bug |
+| [#7](https://github.com/AllTheMachines/Mercury/issues/7) | Crate Digging country filter has no effect on results | bug |
+| [#8](https://github.com/AllTheMachines/Mercury/issues/8) | Library shows no album cover art — all entries display text placeholders | bug |
+| [#9](https://github.com/AllTheMachines/Mercury/issues/9) | Profile page always renders 500 Internal Error | bug |
+| [#10](https://github.com/AllTheMachines/Mercury/issues/10) | Persist volume level between app sessions | enhancement |
+| [#11](https://github.com/AllTheMachines/Mercury/issues/11) | Search autocomplete dropdown has no keyboard navigation | enhancement |
+| [#12](https://github.com/AllTheMachines/Mercury/issues/12) | Spacebar restarts playback from beginning instead of pausing | bug |
+| [#13](https://github.com/AllTheMachines/Mercury/issues/13) | Duplicate streaming service entries on artist page (two Deezer links) | bug |
+| [#14](https://github.com/AllTheMachines/Mercury/issues/14) | Play All and Queue All buttons on artist page do nothing | bug |
+
+**10 bugs · 2 enhancements**
+
+### Key Findings
+
+The biggest signal: the app is functionally there but the interface is fighting the user at every turn. Dark-on-dark contrast, no home button, no back navigation in places, buttons that don't respond — these aren't polish issues, they're blockers. Steve had to narrate his confusion out loud repeatedly: "I don't know how to get back."
+
+The Profile 500 (#9) is a complete dead end that hits every new user immediately. Cover art (#8) and Discover grid images (#4) being blank makes the app feel broken before you've done anything.
+
+<!-- decision: UAT tooling is now proven — /uat-review skill processes any screen recording into filed GitHub issues. Use after every significant build session. -->
+The `/uat-review` skill is operational. Pipeline: OBS recording → Whisper transcription → incident detection → frame extraction → GitHub issue creation. ~15 minutes to process a 44-minute session end-to-end.
+<!-- /decision -->
