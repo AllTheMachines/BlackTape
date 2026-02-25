@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { avatarState } from '$lib/identity/avatar';
+	import { avatarState } from '$lib/identity/avatar.svelte';
 
 	let { size = 128 } = $props();
 </script>

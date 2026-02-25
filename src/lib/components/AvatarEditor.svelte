@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { avatarState, saveAvatarMode, GRID_SIZE, EMPTY_PIXELS } from '$lib/identity/avatar';
+	import { avatarState, saveAvatarMode, GRID_SIZE, EMPTY_PIXELS } from '$lib/identity/avatar.svelte';
 
 	const { onSave }: { onSave?: (pixels: string[]) => void } = $props();
 

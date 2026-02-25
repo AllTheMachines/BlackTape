@@ -18,7 +18,7 @@
 		type QueueItem
 	} from '$lib/comms/listening-room.svelte.js';
 	import { ndkState } from '$lib/comms/nostr.svelte.js';
-	import { generateAvatarSvg } from '$lib/identity/avatar.js';
+	import { generateAvatarSvg } from '$lib/identity/avatar.svelte.js';
 
 	const channelId = $derived($page.params.channelId);
 

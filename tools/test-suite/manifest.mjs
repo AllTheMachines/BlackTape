@@ -404,9 +404,9 @@ export const PHASE_9 = [
   },
   {
     id: 'P9-05', phase: 9, area: 'Avatar',
-    desc: 'avatar.ts identity module exists with generateAvatarSvg export',
+    desc: 'avatar.svelte.ts identity module exists with generateAvatarSvg export',
     method: 'code',
-    fn: fileContains('src/lib/identity/avatar.ts', 'generateAvatarSvg'),
+    fn: fileContains('src/lib/identity/avatar.svelte.ts', 'generateAvatarSvg'),
   },
   {
     id: 'P9-06', phase: 9, area: 'Avatar',

@@ -44,7 +44,7 @@
 
 	async function handleAvatarModeChange(mode: 'generative' | 'edited') {
 		avatarModeLocal = mode;
-		const { saveAvatarMode } = await import('$lib/identity/avatar');
+		const { saveAvatarMode } = await import('$lib/identity/avatar.svelte');
 		await saveAvatarMode(mode);
 	}
 
@@ -178,7 +178,7 @@
 		if (tauriMode) {
 			const { invoke } = await import('@tauri-apps/api/core');
 			identityHandle = (await invoke<string | null>('get_identity_value', { key: 'handle' })) ?? '';
-			const { loadAvatarState, avatarState } = await import('$lib/identity/avatar');
+			const { loadAvatarState, avatarState } = await import('$lib/identity/avatar.svelte');
 			await loadAvatarState(tasteProfile.tags);
 			avatarModeLocal = (avatarState.mode === 'edited' ? 'edited' : 'generative') as 'generative' | 'edited';
 		}

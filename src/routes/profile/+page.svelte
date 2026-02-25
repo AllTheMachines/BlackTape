@@ -3,7 +3,7 @@
 	import { isTauri } from '$lib/platform';
 	import { tasteProfile } from '$lib/taste/profile.svelte';
 	import { collectionsState, loadCollections, createCollection } from '$lib/taste/collections.svelte';
-	import { loadAvatarState, avatarState, saveAvatarMode } from '$lib/identity/avatar';
+	import { loadAvatarState, avatarState, saveAvatarMode } from '$lib/identity/avatar.svelte';
 	import { ndkState } from '$lib/comms/nostr.svelte.js';
 	import { publishTasteProfile } from '$lib/comms/taste-publish.js';
 	import { exportPlayHistory } from '$lib/taste/history.js';
