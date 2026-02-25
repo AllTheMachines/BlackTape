@@ -56,10 +56,7 @@
 </div>
 
 <style>
-	.about-page {
-		max-width: 720px;
-		margin: 0 auto;
-		padding: var(--space-xl, 2rem) var(--space-lg, 1.5rem);
+	.about-page {		padding: 20px;
 	}
 
 	.about-header {
@@ -69,26 +66,26 @@
 	.about-header h1 {
 		font-size: 1.5rem;
 		font-weight: 600;
-		color: var(--text-primary);
+		color: var(--t-1);
 		margin: 0 0 var(--space-xs, 0.25rem) 0;
 	}
 
 	.tagline {
 		font-size: 0.9rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 		margin: 0;
 	}
 
 	.about-section {
 		padding-top: var(--space-lg, 1.5rem);
-		border-top: 1px solid var(--border-subtle);
+		border-top: 1px solid var(--b-1);
 		margin-top: var(--space-lg, 1.5rem);
 	}
 
 	.about-section h2 {
 		font-size: 0.95rem;
 		font-weight: 600;
-		color: var(--text-secondary);
+		color: var(--t-2);
 		margin: 0 0 var(--space-sm, 0.5rem) 0;
 		text-transform: uppercase;
 		letter-spacing: 0.05em;
@@ -96,13 +93,13 @@
 
 	.about-section p {
 		font-size: 0.9rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 		line-height: 1.7;
 		margin: 0;
 	}
 
 	.about-section a {
-		color: var(--text-accent);
+		color: var(--acc);
 		text-decoration: none;
 	}
 
@@ -115,38 +112,38 @@
 		gap: var(--space-md, 1rem);
 		margin-top: var(--space-xl, 2rem);
 		padding-top: var(--space-lg, 1.5rem);
-		border-top: 1px solid var(--border-subtle);
+		border-top: 1px solid var(--b-1);
 	}
 
 	.cta-primary {
 		font-size: 0.85rem;
 		font-weight: 500;
-		color: var(--text-accent);
+		color: var(--acc);
 		text-decoration: none;
 		padding: var(--space-sm, 0.5rem) var(--space-md, 1rem);
-		border: 1px solid var(--text-accent);
+		border: 1px solid var(--acc);
 		border-radius: 4px;
 		transition: background 0.15s, color 0.15s;
 	}
 
 	.cta-primary:hover {
-		background: var(--text-accent);
+		background: var(--acc);
 		color: var(--bg-base, #0a0a0a);
 	}
 
 	.cta-secondary {
 		font-size: 0.85rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 		text-decoration: none;
 		padding: var(--space-sm, 0.5rem) var(--space-md, 1rem);
-		border: 1px solid var(--border-subtle);
+		border: 1px solid var(--b-1);
 		border-radius: 4px;
 		transition: color 0.15s, border-color 0.15s;
 	}
 
 	.cta-secondary:hover {
-		color: var(--text-secondary);
-		border-color: var(--text-muted);
+		color: var(--t-2);
+		border-color: var(--t-3);
 	}
 
 	.support-links-row {
@@ -159,28 +156,28 @@
 
 	.support-link-item {
 		font-size: 0.85rem;
-		color: var(--text-accent);
+		color: var(--acc);
 		text-decoration: none;
 		padding: 0.25rem 0.6rem;
-		border: 1px solid color-mix(in srgb, var(--text-accent) 40%, transparent);
+		border: 1px solid color-mix(in srgb, var(--acc) 40%, transparent);
 		border-radius: 4px;
 		transition: background 0.15s, color 0.15s;
 	}
 
 	.support-link-item:hover {
-		background: color-mix(in srgb, var(--text-accent) 15%, transparent);
+		background: color-mix(in srgb, var(--acc) 15%, transparent);
 	}
 
 	.view-backers-link {
 		font-size: 0.85rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 		text-decoration: none;
 		display: inline-block;
 		margin-top: var(--space-xs, 0.25rem);
 	}
 
 	.view-backers-link:hover {
-		color: var(--text-secondary);
+		color: var(--t-2);
 		text-decoration: underline;
 	}
 </style>

@@ -180,21 +180,18 @@
 </div>
 
 <style>
-	.crate-page {
-		max-width: 1200px;
-		margin: 0 auto;
-		padding: var(--space-xl) var(--space-lg);
+	.crate-page {		padding: 20px;
 	}
 
 	.page-title {
 		font-size: 1.5rem;
 		font-weight: 600;
-		color: var(--text-primary);
+		color: var(--t-1);
 		margin: 0 0 var(--space-xs);
 	}
 
 	.page-desc {
-		color: var(--text-muted);
+		color: var(--t-3);
 		font-size: 0.875rem;
 		margin: 0 0 var(--space-lg);
 	}
@@ -208,31 +205,31 @@
 	}
 
 	.filter-input {
-		background: var(--bg-surface);
-		border: 1px solid var(--border-default);
+		background: var(--bg-2);
+		border: 1px solid var(--b-2);
 		border-radius: 4px;
-		color: var(--text-primary);
+		color: var(--t-1);
 		font-size: 0.875rem;
 		padding: 6px 10px;
 		width: 180px;
 	}
 
 	.filter-input::placeholder {
-		color: var(--text-muted);
+		color: var(--t-3);
 	}
 
 	.filter-select {
-		background: var(--bg-surface);
-		border: 1px solid var(--border-default);
+		background: var(--bg-2);
+		border: 1px solid var(--b-2);
 		border-radius: 4px;
-		color: var(--text-primary);
+		color: var(--t-1);
 		font-size: 0.875rem;
 		padding: 6px 10px;
 		cursor: pointer;
 	}
 
 	.dig-btn {
-		background: var(--text-accent);
+		background: var(--acc);
 		border: none;
 		border-radius: 4px;
 		color: var(--bg-base);
@@ -256,7 +253,7 @@
 	.crate-cross-links { display: flex; gap: var(--space-sm); flex-wrap: wrap; }
 	.crate-cross-link {
 		font-size: 0.75rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 		text-decoration: none;
 		background: none;
 		border: none;
@@ -265,10 +262,10 @@
 		font-family: inherit;
 		transition: color 0.15s;
 	}
-	.crate-cross-link:hover { color: var(--text-accent); }
+	.crate-cross-link:hover { color: var(--acc); }
 
 	.empty-state, .desktop-only {
-		color: var(--text-muted);
+		color: var(--t-3);
 		font-size: 0.875rem;
 		text-align: center;
 		padding: var(--space-2xl);

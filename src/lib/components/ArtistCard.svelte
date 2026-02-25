@@ -24,124 +24,144 @@
 			? Math.min(100, Math.round((Math.log10(artist.uniqueness_score + 1) / Math.log10(1001)) * 100))
 			: 0
 	);
+
+	/** Initials placeholder for art area */
+	let initials = $derived(
+		artist.name
+			.split(/\s+/)
+			.slice(0, 3)
+			.map(w => w[0] ?? '')
+			.join('')
+			.toUpperCase()
+	);
 </script>
 
-<article class="artist-card">
-	<div class="card-header">
-		<a href="/artist/{artist.slug}" class="artist-name">{artist.name}</a>
+<a href="/artist/{artist.slug}" class="artist-card" aria-label={artist.name}>
+	<!-- Square art area — initials placeholder until cover art available -->
+	<div class="a-art" aria-hidden="true">{initials}</div>
+
+	<div class="a-info">
+		<div class="a-name">{artist.name}</div>
 		{#if artist.country}
-			<span class="country">{artist.country}</span>
+			<div class="a-meta">{artist.country}</div>
+		{/if}
+
+		{#if tags.length > 0}
+			<div class="a-tags">
+				{#each tags as tag}
+					<TagChip {tag} clickable={false} />
+				{/each}
+			</div>
+		{/if}
+
+		{#if matchReason}
+			<p class="match-reason">{matchReason}</p>
+		{/if}
+
+		{#if artist.uniqueness_score !== null && artist.uniqueness_score !== undefined}
+			<div class="a-score">
+				<span class="score-num">{barPct}</span>
+				<div class="score-bar uniqueness-bar">
+					<div class="score-fill" style="width: {barPct}%"></div>
+				</div>
+			</div>
 		{/if}
 	</div>
-
-	{#if tags.length > 0}
-		<div class="tags">
-			{#each tags as tag}
-				<TagChip {tag} />
-			{/each}
-		</div>
-	{/if}
-
-	{#if matchReason}
-		<p class="match-reason">{matchReason}</p>
-	{/if}
-
-	{#if artist.uniqueness_score !== null && artist.uniqueness_score !== undefined}
-		<div class="uniqueness-bar-wrap">
-			<div class="uniqueness-bar-label">Uniqueness</div>
-			<div class="uniqueness-bar-track">
-				<div class="uniqueness-bar-fill" style="width: {barPct}%"></div>
-			</div>
-			<div class="uniqueness-bar-pct">{barPct}%</div>
-		</div>
-	{/if}
-</article>
+</a>
 
 <style>
 	.artist-card {
-		background: var(--bg-surface);
-		border: 1px solid var(--border-subtle);
-		border-radius: var(--card-radius);
-		padding: var(--space-md);
-		transition:
-			background 0.15s,
-			border-color 0.15s;
+		background: var(--bg-3);
+		border: 1px solid var(--b-2);
+		border-radius: var(--r);
+		overflow: hidden;
+		cursor: pointer;
+		display: block;
+		text-decoration: none;
+		transition: border-color 0.1s, background 0.1s;
 	}
 
 	.artist-card:hover {
-		background: var(--bg-hover);
-		border-color: var(--border-default);
-	}
-
-	.card-header {
-		display: flex;
-		align-items: baseline;
-		gap: var(--space-sm);
-		margin-bottom: var(--space-sm);
-	}
-
-	.artist-name {
-		font-size: 1.1rem;
-		font-weight: 600;
-		color: var(--text-accent);
+		border-color: var(--b-3);
+		background: #1d1d1d;
 		text-decoration: none;
 	}
 
-	.artist-name:hover {
-		text-decoration: underline;
+	/* Square art area — fills width, 1:1 ratio */
+	.a-art {
+		aspect-ratio: 1;
+		background: var(--bg-4);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 9px;
+		color: var(--t-3);
+		font-weight: 700;
+		letter-spacing: 0.06em;
 	}
 
-	.country {
-		font-size: 0.8rem;
-		color: var(--text-secondary);
+	.a-info {
+		padding: 8px 10px;
 	}
 
-	.tags {
+	.a-name {
+		font-size: 12px;
+		font-weight: 600;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		color: var(--t-1);
+	}
+
+	.artist-card:hover .a-name {
+		color: var(--t-1);
+	}
+
+	.a-meta {
+		font-size: 10px;
+		color: var(--t-3);
+		margin-top: 2px;
+	}
+
+	.a-tags {
 		display: flex;
 		flex-wrap: wrap;
-		gap: var(--space-xs);
-		margin-bottom: var(--space-sm);
+		gap: 3px;
+		margin-top: 6px;
 	}
 
 	.match-reason {
-		font-size: 0.75rem;
-		color: var(--text-muted);
-		margin: 0;
+		font-size: 10px;
+		color: var(--t-3);
+		margin: 4px 0 0;
+		font-style: italic;
 	}
 
-	.uniqueness-bar-wrap {
+	.a-score {
+		margin-top: 6px;
 		display: flex;
 		align-items: center;
-		gap: var(--space-xs);
-		margin-top: var(--space-sm);
+		gap: 4px;
+		font-size: 9px;
+		color: var(--t-3);
 	}
 
-	.uniqueness-bar-label {
-		font-size: 0.65rem;
-		color: var(--text-muted, var(--t-3));
-		white-space: nowrap;
+	.score-num {
 		flex-shrink: 0;
 	}
 
-	.uniqueness-bar-track {
+	.score-bar {
 		flex: 1;
-		height: 3px;
-		background: var(--bg-elevated, var(--bg-4));
-		border-radius: 2px;
-		overflow: hidden;
+		height: 2px;
+		background: var(--b-2);
+		position: relative;
 	}
 
-	.uniqueness-bar-fill {
-		height: 100%;
-		background: var(--text-accent, var(--acc));
-		border-radius: 2px;
-		transition: width 0.3s ease;
-	}
-
-	.uniqueness-bar-pct {
-		font-size: 0.65rem;
-		color: var(--text-muted, var(--t-3));
-		min-width: 2.5rem;
-		text-align: right;
+	.score-fill {
+		position: absolute;
+		left: 0;
+		top: 0;
+		bottom: 0;
+		background: var(--acc);
 	}
 </style>

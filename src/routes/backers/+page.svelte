@@ -105,10 +105,7 @@
 </div>
 
 <style>
-	.backers-page {
-		max-width: 480px;
-		margin: 0 auto;
-		padding: var(--space-xl, 2rem) var(--space-lg, 1.5rem);
+	.backers-page {		padding: 20px;
 	}
 
 	.backers-header {
@@ -117,27 +114,27 @@
 
 	.back-link {
 		font-size: 0.8rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 		text-decoration: none;
 		display: inline-block;
 		margin-bottom: var(--space-sm, 0.5rem);
 	}
 
 	.back-link:hover {
-		color: var(--text-secondary);
+		color: var(--t-2);
 		text-decoration: underline;
 	}
 
 	.backers-header h1 {
 		font-size: 1.4rem;
 		font-weight: 600;
-		color: var(--text-primary);
+		color: var(--t-1);
 		margin: 0 0 var(--space-xs, 0.25rem) 0;
 	}
 
 	.backers-subtitle {
 		font-size: 0.875rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 		margin: 0;
 	}
 
@@ -145,7 +142,7 @@
 		display: flex;
 		align-items: center;
 		gap: var(--space-sm, 0.5rem);
-		color: var(--text-muted);
+		color: var(--t-3);
 		font-size: 0.875rem;
 		padding: var(--space-lg, 1.5rem) 0;
 	}
@@ -154,8 +151,8 @@
 		display: inline-block;
 		width: 14px;
 		height: 14px;
-		border: 2px solid var(--border-subtle);
-		border-top-color: var(--text-muted);
+		border: 2px solid var(--b-1);
+		border-top-color: var(--t-3);
 		border-radius: 50%;
 		animation: spin 0.8s linear infinite;
 		flex-shrink: 0;
@@ -173,9 +170,9 @@
 
 	.backer-name {
 		font-size: 0.9rem;
-		color: var(--text-secondary);
+		color: var(--t-2);
 		padding: var(--space-xs, 0.25rem) 0;
-		border-bottom: 1px solid var(--border-subtle);
+		border-bottom: 1px solid var(--b-1);
 		line-height: 1.6;
 	}
 
@@ -185,7 +182,7 @@
 
 	.backers-empty {
 		font-size: 0.875rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 		padding: var(--space-lg, 1.5rem) 0;
 	}
 
@@ -195,15 +192,15 @@
 
 	.backers-error p {
 		font-size: 0.875rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 		margin: 0 0 var(--space-sm, 0.5rem) 0;
 	}
 
 	.retry-btn {
 		font-size: 0.8rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 		background: transparent;
-		border: 1px solid var(--border-subtle);
+		border: 1px solid var(--b-1);
 		border-radius: 4px;
 		padding: 0.2rem 0.6rem;
 		cursor: pointer;
@@ -211,8 +208,8 @@
 	}
 
 	.retry-btn:hover:not(:disabled) {
-		color: var(--text-secondary);
-		border-color: var(--text-muted);
+		color: var(--t-2);
+		border-color: var(--t-3);
 	}
 
 	.retry-btn:disabled {
@@ -223,17 +220,17 @@
 	.backers-cta {
 		margin-top: var(--space-xl, 2rem);
 		padding-top: var(--space-lg, 1.5rem);
-		border-top: 1px solid var(--border-subtle);
+		border-top: 1px solid var(--b-1);
 	}
 
 	.backers-cta-link {
 		font-size: 0.85rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 		text-decoration: none;
 	}
 
 	.backers-cta-link:hover {
-		color: var(--text-secondary);
+		color: var(--t-2);
 		text-decoration: underline;
 	}
 </style>

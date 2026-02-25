@@ -2,6 +2,7 @@
 	import type { LibraryAlbum, LocalTrack } from '$lib/library/types';
 	import type { PlayerTrack } from '$lib/player/state.svelte';
 	import TrackRow from './TrackRow.svelte';
+	import { setQueue, addToQueue } from '$lib/player/queue.svelte';
 
 	let { albums }: { albums: LibraryAlbum[] } = $props();
 
@@ -39,6 +40,20 @@
 	function selectAlbum(album: LibraryAlbum) {
 		selectedAlbumKey = albumKey(album);
 	}
+
+	function getInitials(name: string): string {
+		const words = name.trim().split(/\s+/);
+		if (words.length >= 2) return (words[0][0] + words[1][0]).toUpperCase();
+		return name.slice(0, 2).toUpperCase();
+	}
+
+	function playAlbum() {
+		if (selectedAlbumPlayerTracks.length > 0) setQueue(selectedAlbumPlayerTracks, 0);
+	}
+
+	function queueAlbum() {
+		for (const t of selectedAlbumPlayerTracks) addToQueue(t);
+	}
 </script>
 
 <div class="library-panes">
@@ -51,8 +66,11 @@
 				onclick={() => selectAlbum(album)}
 				data-testid="album-list-item"
 			>
-				<div class="album-list-title">{album.name}</div>
-				<div class="album-list-artist">{album.artist}</div>
+				<div class="album-thumb">{getInitials(album.name)}</div>
+				<div class="album-list-info">
+					<div class="album-list-title">{album.name}</div>
+					<div class="album-list-artist">{album.artist}</div>
+				</div>
 			</button>
 		{/each}
 	</div>
@@ -61,11 +79,19 @@
 	<div class="track-pane" data-testid="track-pane">
 		{#if selectedAlbum}
 			<div class="track-pane-header">
-				<div class="track-pane-album-name">{selectedAlbum.name}</div>
-				<div class="track-pane-artist">{selectedAlbum.artist}</div>
-				{#if selectedAlbum.year}
-					<div class="track-pane-year">{selectedAlbum.year}</div>
-				{/if}
+				<div class="release-cover" aria-hidden="true">{getInitials(selectedAlbum.name)}</div>
+				<div class="release-info">
+					<div class="release-title">{selectedAlbum.name}</div>
+					<div class="release-artist">{selectedAlbum.artist}</div>
+					<div class="release-meta">
+						{#if selectedAlbum.year}<span>{selectedAlbum.year}</span>{/if}
+						<span>{selectedAlbum.tracks.length} tracks</span>
+					</div>
+					<div class="release-actions">
+						<button class="release-play-btn" onclick={playAlbum}>▶ Play</button>
+						<button class="release-queue-btn" onclick={queueAlbum}>+ Queue</button>
+					</div>
+				</div>
 			</div>
 			<!-- Column headers: # / Title / Time / Actions — satisfies LIBR-03 -->
 			<div class="track-pane-column-headers" data-testid="track-pane-column-headers">
@@ -93,10 +119,7 @@
 	.library-panes {
 		display: grid;
 		grid-template-columns: 240px 1fr;
-		height: calc(100vh - var(--topbar) - var(--player) - 120px);
-		min-height: 300px;
-		border: 1px solid var(--b-1);
-		border-radius: var(--r);
+		height: 100%;
 		overflow: hidden;
 	}
 
@@ -108,10 +131,12 @@
 
 	.album-list-item {
 		display: flex;
-		flex-direction: column;
-		gap: 2px;
+		flex-direction: row;
+		align-items: center;
+		gap: 10px;
 		width: 100%;
-		padding: 8px 12px;
+		height: 52px;
+		padding: 0 12px;
 		background: none;
 		border: none;
 		border-left: 2px solid transparent;
@@ -119,6 +144,30 @@
 		cursor: pointer;
 		text-align: left;
 		transition: background 0.1s;
+		box-sizing: border-box;
+	}
+
+	.album-thumb {
+		width: 36px;
+		height: 36px;
+		flex-shrink: 0;
+		background: var(--bg-4);
+		border: 1px solid var(--b-2);
+		border-radius: var(--r);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 10px;
+		font-weight: 600;
+		color: var(--t-3);
+		letter-spacing: 0.04em;
+	}
+
+	.album-list-info {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		min-width: 0;
 	}
 
 	.album-list-item:hover {
@@ -151,26 +200,95 @@
 	}
 
 	.track-pane-header {
-		padding: 12px 16px;
+		display: flex;
+		align-items: flex-start;
+		gap: 16px;
+		padding: 16px 20px;
 		border-bottom: 1px solid var(--b-1);
+		background: var(--bg-2);
 	}
 
-	.track-pane-album-name {
-		font-size: 0.9rem;
+	.release-cover {
+		width: 80px;
+		height: 80px;
+		flex-shrink: 0;
+		background: var(--bg-4);
+		border: 1px solid var(--b-2);
+		border-radius: var(--r);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 18px;
 		font-weight: 600;
-		color: var(--t-1);
-	}
-
-	.track-pane-artist {
-		font-size: 0.8rem;
-		color: var(--t-2);
-		margin-top: 2px;
-	}
-
-	.track-pane-year {
-		font-size: 0.75rem;
 		color: var(--t-3);
-		margin-top: 2px;
+		letter-spacing: 0.04em;
+	}
+
+	.release-info {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+		min-width: 0;
+		flex: 1;
+	}
+
+	.release-title {
+		font-size: 15px;
+		font-weight: 500;
+		color: var(--t-1);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.release-artist {
+		font-size: 12px;
+		color: var(--t-2);
+	}
+
+	.release-meta {
+		display: flex;
+		gap: 8px;
+		font-size: 11px;
+		color: var(--t-3);
+	}
+
+	.release-actions {
+		display: flex;
+		gap: 6px;
+		margin-top: 4px;
+	}
+
+	.release-play-btn {
+		height: 26px;
+		padding: 0 12px;
+		background: var(--acc);
+		color: #000;
+		border: none;
+		border-radius: var(--r);
+		font-size: 11px;
+		font-weight: 600;
+		cursor: pointer;
+	}
+
+	.release-play-btn:hover {
+		opacity: 0.85;
+	}
+
+	.release-queue-btn {
+		height: 26px;
+		padding: 0 12px;
+		background: transparent;
+		color: var(--t-2);
+		border: 1px solid var(--b-2);
+		border-radius: var(--r);
+		font-size: 11px;
+		cursor: pointer;
+	}
+
+	.release-queue-btn:hover {
+		border-color: var(--b-3);
+		color: var(--t-1);
 	}
 
 	/* Column header row — mirrors TrackRow column layout */

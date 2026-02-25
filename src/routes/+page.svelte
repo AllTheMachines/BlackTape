@@ -57,7 +57,7 @@
 		align-items: center;
 		justify-content: center;
 		min-height: calc(100vh - var(--header-height));
-		color: var(--text-muted);
+		color: var(--t-3);
 	}
 
 	.hero {
@@ -76,19 +76,18 @@
 		letter-spacing: 0.15em;
 		text-transform: uppercase;
 		margin: 0 0 var(--space-sm);
-		color: var(--text-accent);
+		color: var(--acc);
 	}
 
 	.tagline {
 		font-size: 1.1rem;
-		color: var(--text-secondary);
+		color: var(--t-2);
 		margin: 0 0 var(--space-2xl);
 		font-weight: 300;
 	}
 
 	.search-container {
 		width: 100%;
-		max-width: 560px;
 	}
 
 	@media (max-width: 600px) {

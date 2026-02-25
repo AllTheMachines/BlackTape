@@ -67,10 +67,7 @@
 </div>
 
 <style>
-	.kb-landing {
-		max-width: 1200px;
-		margin: 0 auto;
-		padding: var(--space-xl, 2rem) var(--space-lg, 1rem);
+	.kb-landing {		padding: 20px;
 	}
 
 	.kb-header {
@@ -80,12 +77,12 @@
 	.kb-header h1 {
 		font-size: 1.75rem;
 		font-weight: 600;
-		color: var(--text-primary);
+		color: var(--t-1);
 		margin: 0 0 var(--space-xs, 0.5rem);
 	}
 
 	.kb-subtitle {
-		color: var(--text-muted);
+		color: var(--t-3);
 		font-size: 0.875rem;
 		margin: 0;
 	}
@@ -96,7 +93,7 @@
 
 	.skeleton-line {
 		height: 0.875rem;
-		background: var(--bg-elevated);
+		background: var(--bg-3);
 		border-radius: 4px;
 		animation: skeleton-pulse 1.5s ease-in-out infinite;
 	}
@@ -108,23 +105,23 @@
 
 	.kb-taste-empty {
 		font-size: 0.85rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 		margin: var(--space-xs, 0.4rem) 0 var(--space-md, 1rem);
 	}
 
 	.kb-taste-empty a {
-		color: var(--text-accent);
+		color: var(--acc);
 	}
 
 	.kb-empty {
 		padding: var(--space-2xl, 3rem);
 		text-align: center;
-		color: var(--text-muted);
+		color: var(--t-3);
 		font-size: 0.875rem;
 	}
 
 	.kb-empty code {
-		background: var(--bg-elevated);
+		background: var(--bg-3);
 		padding: 2px 6px;
 		border-radius: 4px;
 		font-family: monospace;

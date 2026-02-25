@@ -245,16 +245,13 @@
 </div>
 
 <style>
-	.release-page {
-		max-width: 860px;
-		margin: 0 auto;
-		padding: var(--space-xl) var(--space-lg);
+	.release-page {		padding: 20px;
 	}
 
 	.release-loading {
 		text-align: center;
 		padding: var(--space-xl);
-		color: var(--text-muted);
+		color: var(--t-3);
 	}
 
 	/* Hero */
@@ -269,10 +266,10 @@
 		width: 220px;
 		height: 220px;
 		flex-shrink: 0;
-		border-radius: var(--card-radius);
+		border-radius: var(--r);
 		overflow: hidden;
-		background: var(--bg-elevated);
-		border: 1px solid var(--border-subtle);
+		background: var(--bg-3);
+		border: 1px solid var(--b-1);
 	}
 
 	.cover-art img {
@@ -288,13 +285,13 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		background: var(--bg-elevated);
+		background: var(--bg-3);
 	}
 
 	.cover-placeholder span {
 		font-size: 4rem;
 		font-weight: 200;
-		color: var(--text-muted);
+		color: var(--t-3);
 	}
 
 	.hero-info {
@@ -314,7 +311,7 @@
 
 	.year {
 		font-size: 0.85rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 	}
 
 	.type-badge {
@@ -324,28 +321,28 @@
 		letter-spacing: 0.05em;
 		padding: 2px 6px;
 		border-radius: 3px;
-		background: var(--bg-elevated);
-		color: var(--text-secondary);
-		border: 1px solid var(--border-subtle);
+		background: var(--bg-3);
+		color: var(--t-2);
+		border: 1px solid var(--b-1);
 	}
 
 	.release-title {
 		font-size: 1.8rem;
 		font-weight: 700;
-		color: var(--text-primary);
+		color: var(--t-1);
 		line-height: 1.2;
 		margin: 0;
 	}
 
 	.artist-link {
 		font-size: 1rem;
-		color: var(--text-secondary);
+		color: var(--t-2);
 		text-decoration: none;
 		transition: color 0.15s;
 	}
 
 	.artist-link:hover {
-		color: var(--text-primary);
+		color: var(--t-1);
 	}
 
 	.action-rows {
@@ -399,7 +396,7 @@
 		font-weight: 600;
 		text-transform: uppercase;
 		letter-spacing: 0.1em;
-		color: var(--text-muted);
+		color: var(--t-3);
 		margin-bottom: var(--space-md);
 	}
 
@@ -407,7 +404,7 @@
 		list-style: none;
 		padding: 0;
 		margin: 0;
-		border-top: 1px solid var(--border-subtle);
+		border-top: 1px solid var(--b-1);
 	}
 
 	.track {
@@ -416,19 +413,19 @@
 		align-items: center;
 		gap: var(--space-sm);
 		padding: var(--space-sm) 0;
-		border-bottom: 1px solid var(--border-subtle);
+		border-bottom: 1px solid var(--b-1);
 	}
 
 	.track-num {
 		font-size: 0.8rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 		text-align: right;
 		font-variant-numeric: tabular-nums;
 	}
 
 	.track-title {
 		font-size: 0.9rem;
-		color: var(--text-primary);
+		color: var(--t-1);
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
@@ -436,14 +433,14 @@
 
 	.track-duration {
 		font-size: 0.8rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 		font-variant-numeric: tabular-nums;
 		white-space: nowrap;
 	}
 
 	.no-tracks {
 		font-size: 0.85rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 		font-style: italic;
 	}
 
@@ -468,12 +465,12 @@
 	}
 
 	.credit-name {
-		color: var(--text-primary);
+		color: var(--t-1);
 		min-width: 160px;
 	}
 
 	.credit-role {
-		color: var(--text-muted);
+		color: var(--t-3);
 		text-transform: capitalize;
 	}
 
@@ -484,7 +481,7 @@
 		font-size: 0.8rem;
 		border: 1px solid var(--border);
 		background: var(--bg-secondary);
-		color: var(--text-primary);
+		color: var(--t-1);
 		border-radius: 4px;
 		cursor: pointer;
 	}
@@ -508,7 +505,7 @@
 		padding: 6px 12px;
 		background: none;
 		border: none;
-		color: var(--text-primary);
+		color: var(--t-1);
 		font-size: 0.85rem;
 		cursor: pointer;
 	}
@@ -520,7 +517,7 @@
 		padding: 4px;
 		background: var(--bg-tertiary);
 		border: 1px solid var(--border);
-		color: var(--text-primary);
+		color: var(--t-1);
 		border-radius: 3px;
 		font-size: 0.8rem;
 	}

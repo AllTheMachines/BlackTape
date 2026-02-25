@@ -187,49 +187,53 @@
 
 <style>
 	.discover-page {
-		padding: var(--space-lg);
 		height: 100%;
 		overflow: hidden;
 	}
 
 	.discover-layout {
 		display: grid;
-		grid-template-columns: 220px 1fr;
-		gap: var(--space-lg);
+		grid-template-columns: 196px 1fr;
 		height: 100%;
+		overflow: hidden;
 	}
 
 	/* ---- Filter panel ---- */
 	.discover-filter-panel {
-		border-right: 1px solid var(--border-subtle, var(--b-1));
-		padding-right: var(--space-md);
+		background: var(--bg-1);
+		border-right: 1px solid var(--b-1);
+		padding: 10px 0;
 		overflow-y: auto;
 		display: flex;
 		flex-direction: column;
-		gap: var(--space-lg);
+		gap: 0;
 	}
 
 	.filter-heading {
-		font-size: 0.75rem;
+		font-size: 9px;
 		font-weight: 600;
 		text-transform: uppercase;
 		letter-spacing: 0.08em;
 		color: var(--t-3);
 		margin: 0;
+		padding: 5px 12px;
 	}
 
 	.filter-section {
 		display: flex;
 		flex-direction: column;
-		gap: var(--space-xs);
+		gap: 0;
+		border-bottom: 1px solid var(--b-0);
+		padding: 8px 0;
 	}
 
 	.filter-label {
-		font-size: 0.7rem;
+		font-size: 9px;
 		font-weight: 600;
 		text-transform: uppercase;
 		letter-spacing: 0.06em;
 		color: var(--t-3);
+		padding: 3px 12px 6px;
 	}
 
 	/* Tag cloud in filter panel */
@@ -237,6 +241,7 @@
 		display: flex;
 		flex-wrap: wrap;
 		gap: 4px;
+		padding: 0 10px;
 	}
 
 	.tag-chip {
@@ -314,8 +319,7 @@
 	.discover-results {
 		display: flex;
 		flex-direction: column;
-		gap: var(--space-md);
-		overflow-y: auto;
+		overflow: hidden;
 	}
 
 	/* Toolbar */
@@ -325,8 +329,9 @@
 		justify-content: space-between;
 		flex-wrap: wrap;
 		gap: var(--space-xs);
-		padding-bottom: var(--space-xs);
-		border-bottom: 1px solid var(--b-1);
+		background: var(--bg-2);
+		padding: 8px 16px;
+		flex-shrink: 0;
 	}
 
 	.active-chips {
@@ -369,6 +374,7 @@
 	.result-count {
 		font-size: 0.75rem;
 		color: var(--t-3);
+		flex-shrink: 0;
 	}
 
 	.clear-all-btn {
@@ -390,8 +396,12 @@
 	/* Artist grid */
 	.artist-grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-		gap: var(--space-md);
+		grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+		gap: var(--space-sm);
+		flex: 1;
+		overflow-y: auto;
+		padding: 14px 16px;
+		align-content: start;
 	}
 
 	/* Empty state */

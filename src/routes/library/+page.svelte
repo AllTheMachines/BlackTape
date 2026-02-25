@@ -145,7 +145,9 @@
 				</button>
 			</div>
 		{:else if hasLibrary}
-			<LibraryBrowser {albums} />
+			<div class="library-content">
+				<LibraryBrowser {albums} />
+			</div>
 		{/if}
 	</div>
 {/if}
@@ -160,32 +162,32 @@
 		min-height: 60vh;
 		text-align: center;
 		padding: var(--space-xl);
-		color: var(--text-secondary);
+		color: var(--t-2);
 	}
 
 	.desktop-only-icon {
-		color: var(--text-muted);
+		color: var(--t-3);
 		margin-bottom: var(--space-lg);
 	}
 
 	.desktop-only h2 {
 		font-size: 1.2rem;
 		font-weight: 500;
-		color: var(--text-primary);
+		color: var(--t-1);
 		margin: 0 0 var(--space-sm);
 	}
 
 	.desktop-only p {
 		font-size: 0.85rem;
-		max-width: 400px;
 		margin: 0;
 	}
 
 	/* Library page layout */
 	.library-page {
-		max-width: var(--max-width);
-		margin: 0 auto;
-		padding: var(--space-lg);
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		height: 100%;
 	}
 
 	/* Header */
@@ -193,7 +195,10 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		margin-bottom: var(--space-lg);
+		padding: 12px 20px;
+		border-bottom: 1px solid var(--b-1);
+		background: var(--bg-2);
+		flex-shrink: 0;
 	}
 
 	.header-left {
@@ -203,15 +208,15 @@
 	}
 
 	.library-header h1 {
-		font-size: 1.5rem;
-		font-weight: 600;
-		color: var(--text-primary);
+		font-size: 14px;
+		font-weight: 500;
+		color: var(--t-1);
 		margin: 0;
 	}
 
 	.track-count {
 		font-size: 0.8rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 	}
 
 	.header-actions {
@@ -227,7 +232,7 @@
 		gap: var(--space-xs);
 		padding: 6px 12px;
 		border: none;
-		border-radius: var(--card-radius);
+		border-radius: var(--r);
 		font-size: 0.8rem;
 		font-weight: 500;
 		cursor: pointer;
@@ -235,25 +240,25 @@
 	}
 
 	.btn-primary {
-		background: var(--bg-elevated);
-		color: var(--text-primary);
-		border: 1px solid var(--border-default);
+		background: var(--bg-3);
+		color: var(--t-1);
+		border: 1px solid var(--b-2);
 	}
 
 	.btn-primary:hover {
-		background: var(--bg-hover);
-		border-color: var(--border-hover);
+		background: var(--bg-3);
+		border-color: var(--b-3);
 	}
 
 	.btn-secondary {
 		background: transparent;
-		color: var(--text-secondary);
-		border: 1px solid var(--border-subtle);
+		color: var(--t-2);
+		border: 1px solid var(--b-1);
 	}
 
 	.btn-secondary:hover {
-		color: var(--text-primary);
-		border-color: var(--border-default);
+		color: var(--t-1);
+		border-color: var(--b-2);
 	}
 
 	.btn-lg {
@@ -265,9 +270,9 @@
 	.scan-progress {
 		margin-bottom: var(--space-lg);
 		padding: var(--space-md);
-		background: var(--bg-surface);
-		border: 1px solid var(--border-subtle);
-		border-radius: var(--card-radius);
+		background: var(--bg-2);
+		border: 1px solid var(--b-1);
+		border-radius: var(--r);
 	}
 
 	.progress-bar {
@@ -304,16 +309,21 @@
 		justify-content: space-between;
 		margin-top: var(--space-xs);
 		font-size: 0.75rem;
-		color: var(--text-secondary);
+		color: var(--t-2);
 	}
 
 	.progress-file {
-		color: var(--text-muted);
+		color: var(--t-3);
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
-		max-width: 60%;
 		text-align: right;
+	}
+
+	/* Library content fills remaining space */
+	.library-content {
+		flex: 1;
+		overflow: hidden;
 	}
 
 	/* Empty state */
@@ -328,7 +338,7 @@
 	}
 
 	.empty-icon {
-		color: var(--text-muted);
+		color: var(--t-3);
 		margin-bottom: var(--space-lg);
 		opacity: 0.5;
 	}
@@ -336,14 +346,13 @@
 	.empty-state h2 {
 		font-size: 1.2rem;
 		font-weight: 500;
-		color: var(--text-primary);
+		color: var(--t-1);
 		margin: 0 0 var(--space-sm);
 	}
 
 	.empty-state p {
 		font-size: 0.85rem;
-		color: var(--text-secondary);
-		max-width: 440px;
+		color: var(--t-2);
 		margin: 0 0 var(--space-xl);
 	}
 </style>

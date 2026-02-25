@@ -160,13 +160,13 @@
 
 <style>
 	.genre-page {
-		max-width: 860px;
-		margin: 0 auto;
-		padding: var(--space-lg, 1.5rem) var(--space-md, 1rem);
+		padding: 0;
 	}
 
 	.genre-header {
-		margin-bottom: var(--space-lg, 1.5rem);
+		padding: 18px 20px 16px;
+		border-bottom: 1px solid var(--b-1);
+		background: var(--bg-2);
 	}
 
 	.genre-title-row {
@@ -177,10 +177,11 @@
 	}
 
 	.genre-title-row h1 {
-		font-size: 1.8rem;
-		font-weight: 700;
+		font-size: 28px;
+		font-weight: 300;
 		margin: 0;
-		color: var(--text-primary);
+		margin-top: 6px;
+		color: var(--t-1);
 	}
 
 	/* Type badge pill */
@@ -194,8 +195,8 @@
 		letter-spacing: 0.08em;
 		border: 1px solid;
 		/* Default (genre) */
-		color: var(--text-muted);
-		border-color: var(--border-default);
+		color: var(--t-3);
+		border-color: var(--b-2);
 		background: transparent;
 	}
 
@@ -212,24 +213,21 @@
 	}
 
 	.genre-meta {
-		color: var(--text-muted);
-		font-size: 0.85rem;
+		color: var(--t-3);
+		font-size: 11px;
 		margin: 0;
 	}
 
 	/* Description panel */
 	.genre-description {
 		position: relative;
-		padding: var(--space-md, 1rem);
-		background: var(--bg-surface, #141414);
-		border: 1px solid var(--border-subtle);
-		border-radius: var(--r, 2px);
-		margin-bottom: var(--space-lg, 1.5rem);
+		padding: 14px 20px;
+		border-bottom: 1px solid var(--b-1);
 	}
 
 	.genre-description p {
 		margin: 0 0 var(--space-xs) 0;
-		color: var(--text-secondary);
+		color: var(--t-2);
 		font-size: 0.9rem;
 		line-height: 1.6;
 	}
@@ -237,10 +235,10 @@
 	.source-badge {
 		font-size: 0.6rem;
 		text-transform: uppercase;
-		color: var(--text-muted);
+		color: var(--t-3);
 		letter-spacing: 0.1em;
-		background: var(--bg-elevated);
-		border: 1px solid var(--border-subtle);
+		background: var(--bg-3);
+		border: 1px solid var(--b-1);
 		padding: 1px 5px;
 		border-radius: var(--r, 2px);
 	}
@@ -248,7 +246,7 @@
 	.genre-cta {
 		padding: var(--space-lg);
 		text-align: center;
-		color: var(--text-muted);
+		color: var(--t-3);
 		font-size: 0.9rem;
 	}
 
@@ -262,23 +260,25 @@
 
 	/* Section layout */
 	.genre-section {
-		margin-bottom: var(--space-xl, 2rem);
+		border-bottom: 1px solid var(--b-1);
+		padding: 0;
 	}
 
 	.genre-section h2 {
-		font-size: 0.7rem;
+		font-size: 9px;
 		font-weight: 600;
 		text-transform: uppercase;
 		letter-spacing: 0.08em;
-		color: var(--text-muted);
-		margin: 0 0 var(--space-sm);
+		color: var(--t-3);
+		padding: 9px 20px;
+		margin: 0;
 	}
 
 	/* Compact key artists list */
 	.key-artists-list {
 		list-style: none;
 		margin: 0;
-		padding: 0;
+		padding: 0 20px 14px;
 		display: flex;
 		flex-direction: column;
 		gap: 1px;
@@ -289,13 +289,13 @@
 		align-items: baseline;
 		gap: var(--space-sm);
 		padding: var(--space-xs) var(--space-sm);
-		background: var(--bg-surface);
-		border: 1px solid var(--border-subtle);
+		background: var(--bg-2);
+		border: 1px solid var(--b-1);
 	}
 
 	.key-artist-row:hover {
-		background: var(--bg-hover);
-		border-color: var(--border-default);
+		background: var(--bg-3);
+		border-color: var(--b-2);
 	}
 
 	.key-artist-name {
@@ -312,7 +312,7 @@
 
 	.key-artist-tags {
 		font-size: 0.75rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
@@ -323,6 +323,7 @@
 		display: flex;
 		flex-wrap: wrap;
 		gap: var(--space-xs);
+		padding: 0 20px 14px;
 	}
 
 	.related-genre-chip {
@@ -330,18 +331,18 @@
 		align-items: center;
 		gap: 6px;
 		padding: 4px 10px;
-		background: var(--bg-surface);
-		border: 1px solid var(--border-subtle);
+		background: var(--bg-2);
+		border: 1px solid var(--b-1);
 		border-radius: var(--r, 2px);
 		text-decoration: none;
 		font-size: 0.8rem;
-		color: var(--text-secondary);
+		color: var(--t-2);
 	}
 
 	.related-genre-chip:hover {
-		background: var(--bg-hover);
-		border-color: var(--border-default);
-		color: var(--text-primary);
+		background: var(--bg-3);
+		border-color: var(--b-2);
+		color: var(--t-1);
 	}
 
 	.chip-type-dot {
@@ -349,7 +350,7 @@
 		height: 6px;
 		border-radius: 50%;
 		flex-shrink: 0;
-		background: var(--text-muted);
+		background: var(--t-3);
 	}
 
 	.chip-type-dot.type-scene {
@@ -371,24 +372,25 @@
 		align-items: center;
 		justify-content: center;
 		gap: var(--space-xs);
-		padding: var(--space-xl, 2rem);
-		background: var(--bg-surface);
-		border: 1px dashed var(--border-subtle);
+		padding: 14px 20px;
+		background: var(--bg-2);
+		border: 1px dashed var(--b-1);
 		border-radius: var(--r, 2px);
 		text-align: center;
+		margin: 14px 20px;
 	}
 
 	.placeholder-label {
 		font-size: 0.85rem;
 		font-weight: 500;
-		color: var(--text-muted);
+		color: var(--t-3);
 		text-transform: uppercase;
 		letter-spacing: 0.06em;
 	}
 
 	.placeholder-hint {
 		font-size: 0.75rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 		max-width: 320px;
 		margin: 0;
 		opacity: 0.7;
@@ -400,7 +402,7 @@
 		font-size: 0.8rem;
 		color: var(--acc, #c4a55a);
 		text-decoration: none;
-		margin-bottom: var(--space-md);
+		padding: 8px 20px;
 	}
 
 	.discover-link:hover {
@@ -410,7 +412,7 @@
 	.discover-footer {
 		margin-top: var(--space-xl);
 		padding-top: var(--space-md);
-		border-top: 1px solid var(--border-subtle);
+		border-top: 1px solid var(--b-1);
 		text-align: center;
 	}
 </style>

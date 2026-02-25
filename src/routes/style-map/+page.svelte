@@ -26,10 +26,7 @@
 </div>
 
 <style>
-	.style-map-page {
-		max-width: 1200px;
-		margin: 0 auto;
-		padding: var(--space-xl) var(--space-lg);
+	.style-map-page {		padding: 20px;
 	}
 
 	.page-header {
@@ -39,18 +36,18 @@
 	.page-title {
 		font-size: 1.5rem;
 		font-weight: 600;
-		color: var(--text-primary);
+		color: var(--t-1);
 		margin: 0 0 var(--space-xs);
 	}
 
 	.page-desc {
 		font-size: 0.875rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 		margin: 0;
 	}
 
 	.empty-state {
-		color: var(--text-muted);
+		color: var(--t-3);
 		font-size: 0.875rem;
 		text-align: center;
 		padding: var(--space-2xl);

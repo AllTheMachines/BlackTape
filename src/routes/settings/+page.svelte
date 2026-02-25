@@ -596,68 +596,64 @@
 		justify-content: center;
 		min-height: 60vh;
 		text-align: center;
-		padding: var(--space-xl);
-		color: var(--text-secondary);
+		padding:  20px;
+		color: var(--t-2);
 	}
 
 	.desktop-only-icon {
-		color: var(--text-muted);
+		color: var(--t-3);
 		margin-bottom: var(--space-lg);
 	}
 
 	.desktop-only h2 {
 		font-size: 1.2rem;
 		font-weight: 500;
-		color: var(--text-primary);
+		color: var(--t-1);
 		margin: 0 0 var(--space-sm);
 	}
 
 	.desktop-only p {
 		font-size: 0.85rem;
-		max-width: 400px;
 		margin: 0;
 	}
 
 	.settings-page {
-		max-width: var(--max-width);
-		margin: 0 auto;
-		padding: var(--space-lg);
+		padding: 20px;
 	}
 
 	.settings-page h1 {
 		font-size: 1.5rem;
 		font-weight: 600;
-		color: var(--text-primary);
+		color: var(--t-1);
 		margin: 0 0 var(--space-lg);
 	}
 
 	.section-separator {
 		height: 1px;
-		background: var(--border-subtle);
+		background: var(--b-1);
 		margin: var(--space-sm) 0;
 	}
 
 	.settings-section {
-		padding: var(--space-lg);
-		background: var(--bg-surface);
-		border: 1px solid var(--border-subtle);
-		border-radius: var(--card-radius);
+		padding: 20px;
+		background: var(--bg-2);
+		border: 1px solid var(--b-1);
+		border-radius: var(--r);
 		margin-bottom: var(--space-lg);
 	}
 
 	.settings-section h2 {
 		font-size: 1rem;
 		font-weight: 600;
-		color: var(--text-primary);
+		color: var(--t-1);
 		margin: 0 0 var(--space-xs);
 	}
 
 	.section-desc {
 		font-size: 0.8rem;
-		color: var(--text-secondary);
+		color: var(--t-2);
 		margin: 0 0 var(--space-md);
 		line-height: 1.5;
-		max-width: 560px;
 	}
 
 	/* ─── Setting rows ─────────────────────────────────────────────────── */
@@ -672,7 +668,7 @@
 
 	.setting-label {
 		font-size: 0.8rem;
-		color: var(--text-secondary);
+		color: var(--t-2);
 		min-width: 120px;
 		flex-shrink: 0;
 	}
@@ -691,11 +687,11 @@
 		gap: var(--space-sm);
 		cursor: pointer;
 		font-size: 0.85rem;
-		color: var(--text-primary);
+		color: var(--t-1);
 	}
 
 	.radio-option input[type='radio'] {
-		accent-color: var(--link-color);
+		accent-color: var(--acc);
 		cursor: pointer;
 	}
 
@@ -710,7 +706,7 @@
 
 	.radio-desc {
 		font-size: 0.7rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 	}
 
 	/* ─── Hue slider ───────────────────────────────────────────────────── */
@@ -725,7 +721,7 @@
 		width: 24px;
 		height: 24px;
 		border-radius: 50%;
-		border: 1px solid var(--border-default);
+		border: 1px solid var(--b-2);
 		flex-shrink: 0;
 	}
 
@@ -739,10 +735,10 @@
 	}
 
 	.template-card {
-		background: var(--bg-elevated);
-		border: 1px solid var(--border-subtle);
+		background: var(--bg-3);
+		border: 1px solid var(--b-1);
 		padding: var(--space-sm);
-		border-radius: var(--card-radius);
+		border-radius: var(--r);
 		cursor: pointer;
 		text-align: center;
 		display: flex;
@@ -752,24 +748,24 @@
 	}
 
 	.template-card:hover {
-		background: var(--bg-hover);
-		border-color: var(--border-default);
+		background: var(--bg-3);
+		border-color: var(--b-2);
 	}
 
 	.template-card.active {
-		border-color: var(--link-color);
-		background: var(--bg-hover);
+		border-color: var(--acc);
+		background: var(--bg-3);
 	}
 
 	.template-name {
 		font-size: 0.85rem;
 		font-weight: 500;
-		color: var(--text-primary);
+		color: var(--t-1);
 	}
 
 	.template-desc {
 		font-size: 0.7rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 	}
 
 	/* ─── User templates ───────────────────────────────────────────────── */
@@ -800,8 +796,8 @@
 		padding: var(--space-xs);
 		background: none;
 		border: none;
-		border-left: 1px solid var(--border-subtle);
-		color: var(--text-muted);
+		border-left: 1px solid var(--b-1);
+		color: var(--t-3);
 		cursor: pointer;
 		font-size: 1rem;
 		line-height: 1;
@@ -812,12 +808,12 @@
 	}
 
 	.template-delete-btn:hover {
-		color: var(--text-accent);
+		color: var(--acc);
 	}
 
 	.sub-section-label {
 		font-size: 0.75rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 		text-transform: uppercase;
 		letter-spacing: 0.08em;
 		margin-top: var(--space-sm);
@@ -835,9 +831,9 @@
 
 	.template-name-input {
 		flex: 1;
-		background: var(--bg-elevated);
-		color: var(--text-primary);
-		border: 1px solid var(--border-default);
+		background: var(--bg-3);
+		color: var(--t-1);
+		border: 1px solid var(--b-2);
 		padding: var(--space-xs) var(--space-sm);
 		border-radius: var(--input-radius, 4px);
 		font-size: 0.85rem;
@@ -846,17 +842,17 @@
 	}
 
 	.template-name-input:focus {
-		border-color: var(--border-hover);
+		border-color: var(--b-3);
 	}
 
 	.template-name-input::placeholder {
-		color: var(--text-muted);
+		color: var(--t-3);
 	}
 
 	.save-template-btn {
-		background: var(--bg-hover);
-		color: var(--text-primary);
-		border: 1px solid var(--border-default);
+		background: var(--bg-3);
+		color: var(--t-1);
+		border: 1px solid var(--b-2);
 		padding: var(--space-xs) var(--space-sm);
 		border-radius: var(--input-radius, 4px);
 		cursor: pointer;
@@ -866,8 +862,8 @@
 	}
 
 	.save-template-btn:hover:not(:disabled) {
-		border-color: var(--border-hover);
-		background: var(--bg-elevated);
+		border-color: var(--b-3);
+		background: var(--bg-3);
 	}
 
 	.save-template-btn:disabled {
@@ -878,9 +874,9 @@
 	/* ─── Text input (shared) ──────────────────────────────────────────── */
 
 	.text-input {
-		background: var(--bg-elevated);
-		color: var(--text-primary);
-		border: 1px solid var(--border-default);
+		background: var(--bg-3);
+		color: var(--t-1);
+		border: 1px solid var(--b-2);
 		padding: var(--space-xs) var(--space-sm);
 		border-radius: var(--input-radius, 4px);
 		font-size: 0.85rem;
@@ -890,11 +886,11 @@
 	}
 
 	.text-input:focus {
-		border-color: var(--border-hover);
+		border-color: var(--b-3);
 	}
 
 	.text-input::placeholder {
-		color: var(--text-muted);
+		color: var(--t-3);
 	}
 
 	/* ─── Avatar mode toggle ────────────────────────────────────────────── */
@@ -902,14 +898,14 @@
 	.btn-group {
 		display: flex;
 		gap: 0;
-		border: 1px solid var(--border-default);
+		border: 1px solid var(--b-2);
 		border-radius: var(--input-radius, 4px);
 		overflow: hidden;
 	}
 
 	.btn-toggle {
-		background: var(--bg-elevated);
-		color: var(--text-secondary);
+		background: var(--bg-3);
+		color: var(--t-2);
 		border: none;
 		padding: var(--space-xs) var(--space-sm);
 		font-size: 0.8rem;
@@ -918,11 +914,11 @@
 	}
 
 	.btn-toggle + .btn-toggle {
-		border-left: 1px solid var(--border-default);
+		border-left: 1px solid var(--b-2);
 	}
 
 	.btn-toggle.active {
-		background: var(--link-color);
+		background: var(--acc);
 		color: #fff;
 	}
 
@@ -930,7 +926,7 @@
 
 	.profile-link {
 		font-size: 0.8rem;
-		color: var(--link-color);
+		color: var(--acc);
 		text-decoration: none;
 	}
 
@@ -941,9 +937,9 @@
 	/* ─── Import cards ──────────────────────────────────────────────────── */
 
 	.import-card {
-		background: var(--bg-elevated);
-		border: 1px solid var(--border-subtle);
-		border-radius: var(--card-radius);
+		background: var(--bg-3);
+		border: 1px solid var(--b-1);
+		border-radius: var(--r);
 		padding: var(--space-md);
 		margin-top: var(--space-md);
 		display: flex;
@@ -960,7 +956,7 @@
 	.import-platform {
 		font-size: 0.9rem;
 		font-weight: 600;
-		color: var(--text-primary);
+		color: var(--t-1);
 	}
 
 	.badge-advanced {
@@ -970,20 +966,20 @@
 		letter-spacing: 0.05em;
 		padding: 2px 6px;
 		border-radius: 3px;
-		background: var(--bg-hover);
-		color: var(--text-muted);
-		border: 1px solid var(--border-subtle);
+		background: var(--bg-3);
+		color: var(--t-3);
+		border: 1px solid var(--b-1);
 	}
 
 	.import-card-desc {
 		font-size: 0.78rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 		line-height: 1.5;
 		margin: 0;
 	}
 
 	.import-card-desc a {
-		color: var(--link-color);
+		color: var(--acc);
 		text-decoration: none;
 	}
 
@@ -993,10 +989,10 @@
 
 	.import-card-desc code {
 		font-size: 0.75rem;
-		background: var(--bg-hover);
+		background: var(--bg-3);
 		padding: 1px 4px;
 		border-radius: 3px;
-		color: var(--text-secondary);
+		color: var(--t-2);
 	}
 
 	.import-card-fields {
@@ -1013,9 +1009,9 @@
 	}
 
 	.import-btn {
-		background: var(--bg-hover);
-		color: var(--text-primary);
-		border: 1px solid var(--border-default);
+		background: var(--bg-3);
+		color: var(--t-1);
+		border: 1px solid var(--b-2);
 		padding: var(--space-xs) var(--space-sm);
 		border-radius: var(--input-radius, 4px);
 		cursor: pointer;
@@ -1025,8 +1021,8 @@
 	}
 
 	.import-btn:hover:not(:disabled) {
-		border-color: var(--border-hover);
-		background: var(--bg-elevated);
+		border-color: var(--b-3);
+		background: var(--bg-3);
 	}
 
 	.import-btn:disabled {
@@ -1035,9 +1031,9 @@
 	}
 
 	.import-file-label {
-		background: var(--bg-hover);
-		color: var(--text-primary);
-		border: 1px solid var(--border-default);
+		background: var(--bg-3);
+		color: var(--t-1);
+		border: 1px solid var(--b-2);
 		padding: var(--space-xs) var(--space-sm);
 		border-radius: var(--input-radius, 4px);
 		cursor: pointer;
@@ -1047,8 +1043,8 @@
 	}
 
 	.import-file-label:hover {
-		border-color: var(--border-hover);
-		background: var(--bg-elevated);
+		border-color: var(--b-3);
+		background: var(--bg-3);
 	}
 
 	.import-file-input {
@@ -1057,7 +1053,7 @@
 
 	.import-status {
 		font-size: 0.78rem;
-		color: var(--text-secondary);
+		color: var(--t-2);
 		font-style: italic;
 	}
 
@@ -1070,9 +1066,9 @@
 	}
 
 	.export-btn {
-		background: var(--bg-hover);
-		color: var(--text-primary);
-		border: 1px solid var(--border-default);
+		background: var(--bg-3);
+		color: var(--t-1);
+		border: 1px solid var(--b-2);
 		padding: var(--space-sm) var(--space-md);
 		border-radius: var(--input-radius, 4px);
 		cursor: pointer;
@@ -1081,16 +1077,16 @@
 	}
 
 	.export-btn:hover {
-		border-color: var(--border-hover);
-		background: var(--bg-elevated);
+		border-color: var(--b-3);
+		background: var(--bg-3);
 	}
 
 	/* ─── Streaming preference ─────────────────────────────────────────── */
 
 	.platform-select {
-		background: var(--bg-elevated);
-		color: var(--text-primary);
-		border: 1px solid var(--border-default);
+		background: var(--bg-3);
+		color: var(--t-1);
+		border: 1px solid var(--b-2);
 		padding: var(--space-xs) var(--space-sm);
 		border-radius: var(--input-radius, 4px);
 		font-size: 0.85rem;
@@ -1100,6 +1096,6 @@
 	}
 
 	.platform-select:focus {
-		border-color: var(--border-hover);
+		border-color: var(--b-3);
 	}
 </style>

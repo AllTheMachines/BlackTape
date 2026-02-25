@@ -237,8 +237,8 @@
 		align-items: center;
 		height: var(--header-height);
 		padding: 0 var(--space-lg);
-		background: var(--bg-surface);
-		border-bottom: 1px solid var(--border-subtle);
+		background: var(--bg-2);
+		border-bottom: 1px solid var(--b-1);
 	}
 
 	header.hidden {
@@ -251,7 +251,7 @@
 		justify-content: center;
 		background: none;
 		border: none;
-		color: var(--text-muted);
+		color: var(--t-3);
 		cursor: pointer;
 		padding: 4px;
 		margin-right: var(--space-xs);
@@ -260,7 +260,7 @@
 	}
 
 	.back-btn:hover {
-		color: var(--text-primary);
+		color: var(--t-1);
 	}
 
 	.site-name {
@@ -268,12 +268,12 @@
 		font-weight: 500;
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
-		color: var(--text-secondary);
+		color: var(--t-2);
 		text-decoration: none;
 	}
 
 	.site-name:hover {
-		color: var(--text-primary);
+		color: var(--t-1);
 		text-decoration: none;
 	}
 
@@ -286,7 +286,7 @@
 
 	.nav-link {
 		font-size: 0.75rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 		text-decoration: none;
 		margin-left: var(--space-lg);
 		transition: color 0.15s;
@@ -299,12 +299,12 @@
 	}
 
 	.nav-link:hover {
-		color: var(--text-secondary);
+		color: var(--t-2);
 		text-decoration: none;
 	}
 
 	.nav-link.active {
-		color: var(--text-accent);
+		color: var(--acc);
 	}
 
 	.nav-chat-btn {
@@ -314,7 +314,7 @@
 		cursor: pointer;
 		font-size: 0.75rem;
 		padding: 4px 8px;
-		color: var(--text-muted);
+		color: var(--t-3);
 		border-radius: 4px;
 		margin-left: var(--space-lg);
 		transition: color 0.15s, background 0.15s;
@@ -322,16 +322,16 @@
 
 	.nav-chat-btn:hover,
 	.nav-chat-btn.active {
-		color: var(--text-primary);
-		background: var(--bg-tertiary, var(--bg-elevated));
+		color: var(--t-1);
+		background: var(--bg-tertiary, var(--bg-3));
 	}
 
 	.nav-badge {
 		position: absolute;
 		top: 0;
 		right: 0;
-		background: var(--text-accent);
-		color: var(--bg-primary, var(--bg-surface));
+		background: var(--acc);
+		color: var(--bg-primary, var(--bg-2));
 		border-radius: 10px;
 		font-size: 0.6rem;
 		font-weight: 700;
@@ -348,7 +348,7 @@
 		margin-left: auto;
 		padding: 4px 8px;
 		font-size: 0.7rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 		cursor: default;
 	}
 
@@ -360,7 +360,7 @@
 	}
 
 	.ai-dot.ready {
-		background: var(--text-accent);
+		background: var(--acc);
 	}
 
 	.ai-dot.error {
@@ -368,7 +368,7 @@
 	}
 
 	.ai-dot.pulsing {
-		background: var(--text-muted);
+		background: var(--t-3);
 		animation: ai-pulse 1.5s ease-in-out infinite;
 	}
 
@@ -393,13 +393,13 @@
 
 	.site-footer {
 		padding: var(--space-lg);
-		border-top: 1px solid var(--border-subtle);
+		border-top: 1px solid var(--b-1);
 		margin-top: auto;
 	}
 
 	.affiliate-disclosure {
 		font-size: 0.7rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 		max-width: 860px;
 		margin: 0 auto;
 		text-align: center;
@@ -413,12 +413,12 @@
 
 	.footer-link {
 		font-size: 0.7rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 		text-decoration: none;
 	}
 
 	.footer-link:hover {
-		color: var(--text-secondary);
+		color: var(--t-2);
 	}
 
 	/* Phase 1: advance from 0% to ~80% while loading (NProgress style) */
@@ -428,7 +428,7 @@
 		left: 0;
 		height: 2px;
 		z-index: 200;
-		background: var(--text-accent);
+		background: var(--acc);
 		width: 0%;
 		animation: loading-advance 3s ease-out forwards;
 		pointer-events: none;

@@ -300,10 +300,9 @@
 
 <style>
 	.not-found {
-		max-width: 600px;
 		margin: 4rem auto;
 		text-align: center;
-		padding: var(--space-xl);
+		padding: 20px;
 	}
 
 	.not-found h1 {
@@ -312,13 +311,11 @@
 	}
 
 	.not-found a {
-		color: var(--text-accent);
+		color: var(--acc);
 	}
 
 	.scene-page {
-		max-width: 900px;
-		margin: 0 auto;
-		padding: var(--space-xl) var(--space-lg);
+		padding: 20px;
 	}
 
 	.scene-header {
@@ -329,7 +326,7 @@
 		font-size: 0.7rem;
 		text-transform: uppercase;
 		letter-spacing: 0.1em;
-		color: var(--text-muted);
+		color: var(--t-3);
 		display: block;
 		margin-bottom: var(--space-xs);
 	}
@@ -346,30 +343,30 @@
 		font-size: 2rem;
 		font-weight: 700;
 		margin: 0;
-		color: var(--text-primary);
+		color: var(--t-1);
 	}
 
 	.follow-btn {
 		padding: 6px 14px;
 		font-size: 0.8rem;
 		border-radius: 999px;
-		border: 1px solid var(--border-default, var(--border-subtle));
+		border: 1px solid var(--border-default, var(--b-1));
 		background: transparent;
-		color: var(--text-secondary);
+		color: var(--t-2);
 		cursor: pointer;
 		transition: background 0.15s, color 0.15s, border-color 0.15s;
 		white-space: nowrap;
 	}
 
 	.follow-btn:hover:not(:disabled) {
-		background: var(--bg-elevated);
-		color: var(--text-primary);
+		background: var(--bg-3);
+		color: var(--t-1);
 	}
 
 	.follow-btn.following {
-		background: var(--text-accent);
-		color: var(--bg-surface);
-		border-color: var(--text-accent);
+		background: var(--acc);
+		color: var(--bg-2);
+		border-color: var(--acc);
 	}
 
 	.follow-btn.following:hover:not(:disabled) {
@@ -390,11 +387,11 @@
 
 	.listener-badge {
 		font-size: 0.85rem;
-		color: var(--text-secondary);
+		color: var(--t-2);
 	}
 
 	.emerging-count {
-		color: var(--text-muted);
+		color: var(--t-3);
 		font-style: italic;
 	}
 
@@ -411,7 +408,7 @@
 	.ai-description {
 		position: relative;
 		padding: var(--space-md);
-		background: var(--bg-surface);
+		background: var(--bg-2);
 		border-radius: 8px;
 		margin-bottom: var(--space-lg);
 		border-left: 3px solid var(--accent, #60a5fa);
@@ -420,14 +417,14 @@
 	.ai-description p {
 		margin: 0;
 		font-style: italic;
-		color: var(--text-secondary);
+		color: var(--t-2);
 		font-size: 0.95rem;
 	}
 
 	.source-badge {
 		font-size: 0.65rem;
 		text-transform: uppercase;
-		color: var(--text-muted);
+		color: var(--t-3);
 		letter-spacing: 0.1em;
 		display: block;
 		margin-top: var(--space-xs);
@@ -469,11 +466,11 @@
 		font-size: 1.1rem;
 		font-weight: 600;
 		margin-bottom: var(--space-md);
-		color: var(--text-primary);
+		color: var(--t-1);
 	}
 
 	.empty-artists {
-		color: var(--text-muted);
+		color: var(--t-3);
 		font-size: 0.9rem;
 	}
 
@@ -495,7 +492,7 @@
 	.artist-link {
 		font-size: 1rem;
 		font-weight: 500;
-		color: var(--text-accent);
+		color: var(--acc);
 		text-decoration: none;
 	}
 
@@ -505,12 +502,12 @@
 
 	.artist-country {
 		font-size: 0.8rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 	}
 
 	/* Community suggestions — muted/italic styling */
 	.community-section h2 {
-		color: var(--text-muted);
+		color: var(--t-3);
 	}
 
 	.community-list {
@@ -524,7 +521,7 @@
 
 	.community-item {
 		font-size: 0.9rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 	}
 
 	.tracks-list {
@@ -544,15 +541,15 @@
 	}
 
 	.track-title {
-		color: var(--text-primary);
+		color: var(--t-1);
 	}
 
 	.track-sep {
-		color: var(--text-muted);
+		color: var(--t-3);
 	}
 
 	.track-artist {
-		color: var(--text-accent);
+		color: var(--acc);
 		text-decoration: none;
 		font-size: 0.85rem;
 	}
@@ -563,12 +560,12 @@
 
 	/* Suggestion form */
 	.suggest-section h2 {
-		color: var(--text-secondary);
+		color: var(--t-2);
 	}
 
 	.suggest-desc {
 		font-size: 0.85rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 		margin: 0 0 var(--space-sm);
 	}
 
@@ -584,33 +581,33 @@
 		min-width: 200px;
 		padding: 6px 10px;
 		font-size: 0.875rem;
-		background: var(--bg-elevated);
-		border: 1px solid var(--border-subtle);
+		background: var(--bg-3);
+		border: 1px solid var(--b-1);
 		border-radius: 6px;
-		color: var(--text-primary);
+		color: var(--t-1);
 		outline: none;
 		transition: border-color 0.15s;
 	}
 
 	.suggest-input:focus {
-		border-color: var(--border-default, var(--text-muted));
+		border-color: var(--border-default, var(--t-3));
 	}
 
 	.suggest-btn {
 		padding: 6px 14px;
 		font-size: 0.8rem;
-		background: var(--bg-elevated);
-		border: 1px solid var(--border-subtle);
+		background: var(--bg-3);
+		border: 1px solid var(--b-1);
 		border-radius: 6px;
-		color: var(--text-secondary);
+		color: var(--t-2);
 		cursor: pointer;
 		transition: background 0.15s, color 0.15s;
 		white-space: nowrap;
 	}
 
 	.suggest-btn:hover:not(:disabled) {
-		background: var(--bg-surface);
-		color: var(--text-primary);
+		background: var(--bg-2);
+		color: var(--t-1);
 	}
 
 	.suggest-btn:disabled {
@@ -620,7 +617,7 @@
 
 	.suggestion-thanks {
 		font-size: 0.875rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 		font-style: italic;
 		margin: 0;
 	}
@@ -628,10 +625,10 @@
 	/* ── Mastodon Share Button ───────────────────────────── */
 	.share-mastodon-btn {
 		font-size: 0.85rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 		text-decoration: none;
 		padding: 0.25rem 0.5rem;
-		border: 1px solid var(--border-subtle);
+		border: 1px solid var(--b-1);
 		border-radius: 4px;
 		line-height: 1;
 		transition: color 0.15s, border-color 0.15s;
@@ -639,34 +636,34 @@
 	}
 
 	.share-mastodon-btn:hover {
-		color: var(--text-secondary);
-		border-color: var(--text-muted);
+		color: var(--t-2);
+		border-color: var(--t-3);
 	}
 
 	/* ── KB Cross-link ─────────────────────────────────── */
 	.kb-cross-link { margin: var(--space-md) 0; }
 	.cross-link-secondary {
 		font-size: 0.8rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 		text-decoration: none;
 		transition: color 0.15s;
 	}
-	.cross-link-secondary:hover { color: var(--text-accent); }
+	.cross-link-secondary:hover { color: var(--acc); }
 
 	.back-link {
 		margin-top: var(--space-xl);
 		padding-top: var(--space-md);
-		border-top: 1px solid var(--border-subtle);
+		border-top: 1px solid var(--b-1);
 	}
 
 	.back-link a {
 		font-size: 0.85rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 		text-decoration: none;
 	}
 
 	.back-link a:hover {
-		color: var(--text-accent);
+		color: var(--acc);
 	}
 
 	/* ── Listening Room Indicator ──────────────────────── */
@@ -676,8 +673,8 @@
 		gap: var(--space-sm);
 		margin-bottom: var(--space-lg);
 		padding: var(--space-sm) var(--space-md);
-		background: var(--bg-surface);
-		border: 1px solid var(--border-subtle);
+		background: var(--bg-2);
+		border: 1px solid var(--b-1);
 		border-radius: 8px;
 		font-size: 0.85rem;
 	}
@@ -697,7 +694,7 @@
 	}
 
 	.room-active-label {
-		color: var(--text-secondary);
+		color: var(--t-2);
 		flex: 1;
 	}
 
@@ -706,9 +703,9 @@
 		padding: 4px 12px;
 		font-size: 0.8rem;
 		border-radius: 999px;
-		border: 1px solid var(--border-subtle);
+		border: 1px solid var(--b-1);
 		background: transparent;
-		color: var(--text-accent);
+		color: var(--acc);
 		text-decoration: none;
 		white-space: nowrap;
 		transition: background 0.15s, border-color 0.15s;
@@ -716,11 +713,11 @@
 
 	.room-join-btn:hover,
 	.room-start-btn:hover {
-		background: var(--bg-elevated);
-		border-color: var(--text-accent);
+		background: var(--bg-3);
+		border-color: var(--acc);
 	}
 
 	.room-start-btn {
-		color: var(--text-muted);
+		color: var(--t-3);
 	}
 </style>

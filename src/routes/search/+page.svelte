@@ -127,13 +127,10 @@
 
 <style>
 	.search-page {
-		max-width: var(--max-width);
-		margin: 0 auto;
-		padding: var(--space-lg);
+		padding: 20px;
 	}
 
 	.search-header {
-		max-width: 600px;
 		margin-bottom: var(--space-lg);
 	}
 
@@ -142,7 +139,7 @@
 		font-weight: 600;
 		text-transform: uppercase;
 		letter-spacing: 0.08em;
-		color: var(--text-muted);
+		color: var(--t-3);
 		margin: 0 0 var(--space-sm);
 	}
 
@@ -161,7 +158,7 @@
 		display: inline-block;
 		margin-top: var(--space-sm);
 		font-size: 0.8rem;
-		color: var(--text-accent);
+		color: var(--acc);
 		text-decoration: none;
 	}
 
@@ -171,7 +168,7 @@
 
 	.section-divider {
 		height: 1px;
-		background: var(--border-subtle);
+		background: var(--b-1);
 		margin: var(--space-lg) 0;
 	}
 
@@ -198,7 +195,7 @@
 	}
 
 	.intent-clear {
-		color: var(--text-muted);
+		color: var(--t-3);
 		text-decoration: none;
 		font-size: 1rem;
 		line-height: 1;
@@ -206,12 +203,12 @@
 	}
 
 	.intent-clear:hover {
-		color: var(--text-primary);
+		color: var(--t-1);
 	}
 
 	.intent-hint {
 		font-size: 0.75rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 	}
 
 	/* Discovery results */
@@ -221,18 +218,18 @@
 
 	.results-summary {
 		font-size: 0.85rem;
-		color: var(--text-secondary);
+		color: var(--t-2);
 		margin: 0 0 var(--space-md);
 	}
 
 	.results-grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+		grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
 		gap: var(--space-md);
 	}
 
 	.message {
-		color: var(--text-secondary);
+		color: var(--t-2);
 		font-size: 0.95rem;
 	}
 </style>

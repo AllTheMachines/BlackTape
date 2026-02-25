@@ -133,10 +133,7 @@
 </div>
 
 <style>
-	.scenes-page {
-		max-width: 1200px;
-		margin: 0 auto;
-		padding: var(--space-xl) var(--space-lg);
+	.scenes-page {		padding: 20px;
 	}
 
 	.scenes-header {
@@ -146,19 +143,19 @@
 	.page-title {
 		font-size: 1.5rem;
 		font-weight: 600;
-		color: var(--text-primary);
+		color: var(--t-1);
 		margin: 0 0 var(--space-xs);
 	}
 
 	.page-desc {
 		font-size: 0.875rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 		margin: 0;
 	}
 
 	.detecting-indicator {
 		font-size: 0.875rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 		margin-bottom: var(--space-md);
 		font-style: italic;
 	}
@@ -166,11 +163,8 @@
 	.empty-state {
 		padding: var(--space-2xl) var(--space-lg);
 		text-align: center;
-		color: var(--text-muted);
-		font-size: 0.9rem;
-		max-width: 480px;
-		margin: 0 auto;
-	}
+		color: var(--t-3);
+		font-size: 0.9rem;	}
 
 	.scenes-section {
 		margin-bottom: var(--space-2xl);
@@ -179,13 +173,13 @@
 	.scenes-section h2 {
 		font-size: 1.1rem;
 		font-weight: 600;
-		color: var(--text-primary);
+		color: var(--t-1);
 		margin: 0 0 var(--space-xs);
 	}
 
 	.section-desc {
 		font-size: 0.8rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 		margin: 0 0 var(--space-md);
 	}
 
@@ -204,23 +198,23 @@
 	.scenes-reload {
 		margin-top: var(--space-xl);
 		padding-top: var(--space-md);
-		border-top: 1px solid var(--border-subtle);
+		border-top: 1px solid var(--b-1);
 	}
 
 	.reload-btn {
 		padding: 6px 14px;
 		font-size: 0.8rem;
 		background: transparent;
-		border: 1px solid var(--border-subtle);
+		border: 1px solid var(--b-1);
 		border-radius: 999px;
-		color: var(--text-muted);
+		color: var(--t-3);
 		cursor: pointer;
 		transition: color 0.15s, border-color 0.15s;
 	}
 
 	.reload-btn:hover:not(:disabled) {
-		color: var(--text-accent);
-		border-color: var(--text-accent);
+		color: var(--acc);
+		border-color: var(--acc);
 	}
 
 	.reload-btn:disabled {
@@ -232,7 +226,7 @@
 	.scenes-cta {
 		margin-top: var(--space-xl);
 		padding-top: var(--space-md);
-		border-top: 1px solid var(--border-subtle);
+		border-top: 1px solid var(--b-1);
 		display: flex;
 		align-items: center;
 		gap: var(--space-md);
@@ -241,7 +235,7 @@
 
 	.cta-label {
 		font-size: 0.85rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 		margin: 0;
 	}
 
@@ -249,21 +243,21 @@
 		padding: 5px 12px;
 		font-size: 0.8rem;
 		background: transparent;
-		border: 1px solid var(--border-subtle);
+		border: 1px solid var(--b-1);
 		border-radius: 999px;
-		color: var(--text-muted);
+		color: var(--t-3);
 		cursor: pointer;
 		transition: color 0.15s, border-color 0.15s;
 	}
 
 	.cta-btn:hover {
-		color: var(--text-accent);
-		border-color: var(--text-accent);
+		color: var(--acc);
+		border-color: var(--acc);
 	}
 
 	.vote-confirmed {
 		font-size: 0.8rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 		font-style: italic;
 	}
 </style>

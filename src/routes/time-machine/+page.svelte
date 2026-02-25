@@ -197,47 +197,47 @@
 </div>
 
 <style>
-	.time-machine { max-width: 1100px; margin: 0 auto; padding: 2rem 1rem; }
+	.time-machine { max-width: 1100px; margin: 0 auto; padding: 20px; }
 	.tm-header { margin-bottom: 1.5rem; }
 	.tm-header h1 { font-size: 1.75rem; }
-	.tm-subtitle { color: var(--color-muted, #888); font-size: 0.9rem; margin-top: 0.25rem; }
+	.tm-subtitle { color: var(--t-3); font-size: 0.9rem; margin-top: 0.25rem; }
 
 	.decade-buttons { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
 	.decade-btn {
-		padding: 0.4rem 1rem; border-radius: 999px; border: 1px solid var(--color-border, #333);
+		padding: 0.4rem 1rem; border-radius: 999px; border: 1px solid var(--b-2);
 		background: transparent; cursor: pointer; font-size: 0.85rem; color: inherit;
 		transition: background 0.15s, border-color 0.15s;
 	}
-	.decade-btn:hover { background: var(--color-surface-2, #1a1a1a); }
-	.decade-btn.active { background: var(--color-primary, #60a5fa); border-color: var(--color-primary, #60a5fa); color: #000; }
+	.decade-btn:hover { background: var(--bg-3); }
+	.decade-btn.active { background: var(--acc); border-color: var(--acc); color: #000; }
 
 	.year-scrub { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
 	.year-label { font-size: 1.5rem; font-weight: 600; min-width: 3.5rem; text-align: right; }
-	.year-slider { flex: 1; accent-color: var(--color-primary, #60a5fa); }
+	.year-slider { flex: 1; accent-color: var(--acc); }
 
-	.genre-evolution-panel { margin-bottom: 1.5rem; border-radius: 8px; overflow: hidden; background: var(--color-surface-2, #1a1a1a); }
+	.genre-evolution-panel { margin-bottom: 1.5rem; border-radius: 8px; overflow: hidden; background: var(--bg-3); }
 
 	.tag-filter-row { margin-bottom: 1.5rem; }
 	.tag-input {
 		width: 100%; max-width: 400px; padding: 0.5rem 0.75rem;
-		background: var(--color-surface-2, #1a1a1a); border: 1px solid var(--color-border, #333);
+		background: var(--bg-3); border: 1px solid var(--b-2);
 		border-radius: 6px; color: inherit; font-size: 0.9rem;
 	}
 
 	.year-snapshot { margin-bottom: 1.25rem; }
 	.year-snapshot h2 { font-size: 1.2rem; }
-	.loading-hint { color: var(--color-muted, #888); font-size: 0.85rem; }
+	.loading-hint { color: var(--t-3); font-size: 0.85rem; }
 
 	.tm-cross-links { margin-bottom: 1rem; }
 	.tm-cross-link {
 		font-size: 0.8rem;
-		color: var(--color-muted, #888);
+		color: var(--t-3);
 		text-decoration: none;
 		transition: color 0.15s;
 	}
-	.tm-cross-link:hover { color: var(--color-primary, #60a5fa); }
+	.tm-cross-link:hover { color: var(--acc); }
 
 	.artist-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.75rem; }
-	.no-results { text-align: center; padding: 3rem; color: var(--color-muted, #888); }
+	.no-results { text-align: center; padding: 3rem; color: var(--t-3); }
 	.no-results-hint { font-size: 0.85rem; margin-top: 0.5rem; }
 </style>

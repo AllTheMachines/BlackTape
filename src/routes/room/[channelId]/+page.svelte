@@ -299,16 +299,13 @@
 </div>
 
 <style>
-	.room-page {
-		max-width: 1200px;
-		margin: 0 auto;
-		padding: var(--space-xl) var(--space-lg);
+	.room-page {		padding: 20px;
 	}
 
 	/* ── Loading / not-found states ── */
 
 	.room-loading {
-		color: var(--text-muted);
+		color: var(--t-3);
 		font-style: italic;
 		padding: var(--space-xl) 0;
 	}
@@ -319,17 +316,17 @@
 	}
 
 	.no-room h2 {
-		color: var(--text-primary);
+		color: var(--t-1);
 		margin-bottom: var(--space-md);
 	}
 
 	.no-room p {
-		color: var(--text-secondary);
+		color: var(--t-2);
 		margin-bottom: var(--space-lg);
 	}
 
 	.start-room-btn {
-		background: var(--text-accent);
+		background: var(--acc);
 		color: #fff;
 		border: none;
 		border-radius: 6px;
@@ -350,7 +347,7 @@
 		justify-content: space-between;
 		margin-bottom: var(--space-lg);
 		padding-bottom: var(--space-md);
-		border-bottom: 1px solid var(--border-subtle);
+		border-bottom: 1px solid var(--b-1);
 	}
 
 	.room-header-left {
@@ -361,20 +358,20 @@
 
 	.room-title {
 		font-size: 1.4rem;
-		color: var(--text-primary);
+		color: var(--t-1);
 		margin: 0;
 	}
 
 	.room-scene {
 		font-size: 0.85rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 	}
 
 	.leave-btn {
 		background: transparent;
-		border: 1px solid var(--border-subtle);
+		border: 1px solid var(--b-1);
 		border-radius: 6px;
-		color: var(--text-secondary);
+		color: var(--t-2);
 		padding: 8px 16px;
 		cursor: pointer;
 		font-size: 0.9rem;
@@ -382,8 +379,8 @@
 	}
 
 	.leave-btn:hover {
-		border-color: var(--text-accent);
-		color: var(--text-accent);
+		border-color: var(--acc);
+		color: var(--acc);
 	}
 
 	/* ── Room layout ── */
@@ -426,15 +423,15 @@
 		width: 100%;
 		aspect-ratio: 16 / 9;
 		border-radius: 8px;
-		background: var(--bg-elevated);
-		border: 1px solid var(--border-subtle);
+		background: var(--bg-3);
+		border: 1px solid var(--b-1);
 		display: flex;
 		align-items: center;
 		justify-content: center;
 	}
 
 	.no-video-placeholder p {
-		color: var(--text-muted);
+		color: var(--t-3);
 		font-style: italic;
 	}
 
@@ -442,8 +439,8 @@
 
 	.host-controls,
 	.guest-controls {
-		background: var(--bg-surface);
-		border: 1px solid var(--border-subtle);
+		background: var(--bg-2);
+		border: 1px solid var(--b-1);
 		border-radius: 8px;
 		padding: var(--space-md);
 	}
@@ -452,7 +449,7 @@
 	.guest-label {
 		display: block;
 		font-size: 0.85rem;
-		color: var(--text-secondary);
+		color: var(--t-2);
 		margin-bottom: 8px;
 		font-weight: 500;
 	}
@@ -469,16 +466,16 @@
 		min-width: 0;
 		padding: 8px 12px;
 		border-radius: 6px;
-		border: 1px solid var(--border-subtle);
-		background: var(--bg-elevated);
-		color: var(--text-primary);
+		border: 1px solid var(--b-1);
+		background: var(--bg-3);
+		color: var(--t-1);
 		font-size: 0.9rem;
 	}
 
 	.video-url-input:focus,
 	.suggestion-input:focus {
 		outline: none;
-		border-color: var(--text-accent);
+		border-color: var(--acc);
 	}
 
 	.video-url-input:disabled,
@@ -492,7 +489,7 @@
 		padding: 8px 16px;
 		border-radius: 6px;
 		border: none;
-		background: var(--text-accent);
+		background: var(--acc);
 		color: #fff;
 		font-size: 0.9rem;
 		cursor: pointer;
@@ -518,7 +515,7 @@
 	}
 
 	.pending-note {
-		color: var(--text-muted);
+		color: var(--t-3);
 		font-size: 0.82rem;
 		margin-top: 6px;
 		font-style: italic;
@@ -528,8 +525,8 @@
 
 	.queue-section,
 	.participants-section {
-		background: var(--bg-surface);
-		border: 1px solid var(--border-subtle);
+		background: var(--bg-2);
+		border: 1px solid var(--b-1);
 		border-radius: 8px;
 		padding: var(--space-md);
 	}
@@ -537,12 +534,12 @@
 	.section-title {
 		font-size: 0.95rem;
 		font-weight: 600;
-		color: var(--text-primary);
+		color: var(--t-1);
 		margin: 0 0 var(--space-md) 0;
 	}
 
 	.empty-queue {
-		color: var(--text-muted);
+		color: var(--t-3);
 		font-size: 0.88rem;
 		font-style: italic;
 	}
@@ -561,14 +558,14 @@
 		flex-direction: column;
 		gap: 4px;
 		padding: 8px;
-		background: var(--bg-elevated);
+		background: var(--bg-3);
 		border-radius: 6px;
-		border: 1px solid var(--border-subtle);
+		border: 1px solid var(--b-1);
 	}
 
 	.queue-url {
 		font-size: 0.82rem;
-		color: var(--text-accent);
+		color: var(--acc);
 		overflow: hidden;
 		white-space: nowrap;
 		text-overflow: ellipsis;
@@ -576,7 +573,7 @@
 
 	.queue-sender {
 		font-size: 0.78rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 	}
 
 	.queue-actions {
@@ -589,7 +586,7 @@
 		padding: 4px 10px;
 		border-radius: 4px;
 		border: none;
-		background: var(--text-accent);
+		background: var(--acc);
 		color: #fff;
 		font-size: 0.8rem;
 		cursor: pointer;
@@ -602,9 +599,9 @@
 	.reject-btn {
 		padding: 4px 8px;
 		border-radius: 4px;
-		border: 1px solid var(--border-subtle);
+		border: 1px solid var(--b-1);
 		background: transparent;
-		color: var(--text-secondary);
+		color: var(--t-2);
 		font-size: 0.8rem;
 		cursor: pointer;
 	}
@@ -617,16 +614,16 @@
 	.retract-btn {
 		padding: 4px 10px;
 		border-radius: 4px;
-		border: 1px solid var(--border-subtle);
+		border: 1px solid var(--b-1);
 		background: transparent;
-		color: var(--text-secondary);
+		color: var(--t-2);
 		font-size: 0.8rem;
 		cursor: pointer;
 	}
 
 	.retract-btn:hover {
-		border-color: var(--text-accent);
-		color: var(--text-accent);
+		border-color: var(--acc);
+		color: var(--acc);
 	}
 
 	/* ── Participants section ── */
@@ -662,7 +659,7 @@
 
 	.participant-name {
 		font-size: 0.88rem;
-		color: var(--text-primary);
+		color: var(--t-1);
 		display: flex;
 		align-items: center;
 		gap: 6px;
@@ -670,7 +667,7 @@
 
 	.host-badge {
 		font-size: 0.7rem;
-		background: var(--text-accent);
+		background: var(--acc);
 		color: #fff;
 		border-radius: 4px;
 		padding: 1px 5px;

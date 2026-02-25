@@ -152,10 +152,7 @@
 </div>
 
 <style>
-	.new-rising-page {
-		max-width: 1200px;
-		margin: 0 auto;
-		padding: var(--space-xl) var(--space-lg);
+	.new-rising-page {		padding: 20px;
 	}
 
 	.page-header {
@@ -172,13 +169,13 @@
 	.page-title {
 		font-size: 1.5rem;
 		font-weight: 600;
-		color: var(--text-primary);
+		color: var(--t-1);
 		margin: 0 0 var(--space-xs);
 	}
 
 	.page-desc {
 		font-size: 0.875rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 		margin: 0;
 	}
 
@@ -186,7 +183,7 @@
 		display: flex;
 		gap: var(--space-xs);
 		margin-bottom: var(--space-lg);
-		border-bottom: 1px solid var(--border-subtle);
+		border-bottom: 1px solid var(--b-1);
 		padding-bottom: var(--space-xs);
 	}
 
@@ -196,18 +193,18 @@
 		background: transparent;
 		border: 1px solid transparent;
 		border-radius: 999px;
-		color: var(--text-muted);
+		color: var(--t-3);
 		cursor: pointer;
 		transition: color 0.15s, border-color 0.15s;
 	}
 
 	.tab-btn:hover {
-		color: var(--text-secondary);
+		color: var(--t-2);
 	}
 
 	.tab-btn.active {
-		color: var(--text-accent);
-		border-color: var(--text-accent);
+		color: var(--acc);
+		border-color: var(--acc);
 	}
 
 	.curator-tab {
@@ -232,39 +229,39 @@
 		flex-direction: column;
 		gap: 4px;
 		padding: var(--space-md);
-		background: var(--bg-surface);
-		border: 1px solid var(--border-subtle);
+		background: var(--bg-2);
+		border: 1px solid var(--b-1);
 		border-radius: 8px;
 		text-decoration: none;
 		transition: border-color 0.15s, background 0.15s;
 	}
 
 	.artist-card:hover {
-		border-color: var(--border-default);
-		background: var(--bg-elevated);
+		border-color: var(--b-2);
+		background: var(--bg-3);
 		text-decoration: none;
 	}
 
 	.artist-name {
 		font-size: 0.9rem;
 		font-weight: 500;
-		color: var(--text-primary);
+		color: var(--t-1);
 	}
 
 	.artist-year {
 		font-size: 0.75rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 	}
 
 	.artist-country {
 		font-size: 0.75rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 		font-variant: small-caps;
 	}
 
 	.artist-tags {
 		font-size: 0.75rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 		margin-top: 2px;
 		line-height: 1.4;
 	}
@@ -272,15 +269,13 @@
 	.empty-state {
 		padding: var(--space-2xl) var(--space-lg);
 		text-align: center;
-		color: var(--text-muted);
-		font-size: 0.9rem;
-		max-width: 480px;
-		margin: 0 auto var(--space-lg);
+		color: var(--t-3);
+		font-size: 0.9rem;		margin: 0 auto var(--space-lg);
 	}
 
 	.view-note {
 		font-size: 0.75rem;
-		color: var(--text-muted);
+		color: var(--t-3);
 		font-style: italic;
 		margin: var(--space-md) 0 0;
 	}
