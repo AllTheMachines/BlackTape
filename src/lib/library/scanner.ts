@@ -69,6 +69,16 @@ export async function refreshCovers(): Promise<number> {
 }
 
 /**
+ * Set a custom cover image for all tracks in an album.
+ * coverArtBase64 should be a data URL (data:image/...;base64,...).
+ * Returns the number of tracks updated.
+ */
+export async function setAlbumCover(album: string, artist: string, coverArtBase64: string): Promise<number> {
+	const invoke = await getInvoke();
+	return await invoke<number>('set_album_cover', { album, artist, coverArtBase64 });
+}
+
+/**
  * Open a native OS folder picker dialog.
  * Returns the selected folder path, or null if cancelled.
  */

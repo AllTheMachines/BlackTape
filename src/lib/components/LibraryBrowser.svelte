@@ -3,10 +3,14 @@
 	import type { PlayerTrack } from '$lib/player/state.svelte';
 	import TrackRow from './TrackRow.svelte';
 	import { setQueue, addToQueue } from '$lib/player/queue.svelte';
+	import { setAlbumCover } from '$lib/library/scanner';
+	import { loadLibrary } from '$lib/library/store.svelte';
 
 	let { albums }: { albums: LibraryAlbum[] } = $props();
 
 	let selectedAlbumKey = $state<string | null>(null);
+	let lightboxSrc = $state<string | null>(null);
+	let coverFileInput = $state<HTMLInputElement | null>(null);
 
 	function albumKey(album: LibraryAlbum): string {
 		return `${album.artist}|||${album.name}`;
@@ -54,7 +58,47 @@
 	function queueAlbum() {
 		for (const t of selectedAlbumPlayerTracks) addToQueue(t);
 	}
+
+	function openLightbox(src: string) {
+		lightboxSrc = src;
+	}
+
+	function openCoverPicker() {
+		coverFileInput?.click();
+	}
+
+	async function handleCoverFile(event: Event) {
+		const input = event.target as HTMLInputElement;
+		const file = input.files?.[0];
+		const album = selectedAlbum;
+		if (!file || !album) return;
+
+		const reader = new FileReader();
+		reader.onload = async (e) => {
+			const dataUrl = e.target?.result as string;
+			if (!dataUrl) return;
+			await setAlbumCover(album.name, album.artist, dataUrl);
+			await loadLibrary();
+		};
+		reader.readAsDataURL(file);
+		input.value = '';
+	}
 </script>
+
+{#if lightboxSrc}
+	<div class="lightbox-overlay" role="dialog" aria-modal="true" aria-label="Cover art">
+		<button class="lightbox-close-area" onclick={() => (lightboxSrc = null)} aria-label="Close"></button>
+		<img class="lightbox-img" src={lightboxSrc} alt="Album cover" />
+	</div>
+{/if}
+
+<input
+	bind:this={coverFileInput}
+	type="file"
+	accept="image/*"
+	style="display:none"
+	onchange={handleCoverFile}
+/>
 
 <div class="library-panes">
 	<!-- Left pane: album list sorted by recently added (newest first) -->
@@ -84,9 +128,19 @@
 		{#if selectedAlbum}
 			<div class="track-pane-header">
 				{#if selectedAlbum.coverArtBase64}
-					<img class="release-cover release-cover-img" src={selectedAlbum.coverArtBase64} alt={selectedAlbum.name} />
+					<button class="cover-btn" onclick={() => openLightbox(selectedAlbum!.coverArtBase64!)} title="View cover">
+						<img class="release-cover release-cover-img" src={selectedAlbum.coverArtBase64} alt={selectedAlbum.name} />
+						<div class="cover-hint">
+							<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+						</div>
+					</button>
 				{:else}
-					<div class="release-cover" aria-hidden="true">{getInitials(selectedAlbum.name)}</div>
+					<button class="cover-btn cover-btn-empty" onclick={openCoverPicker} title="Add cover art">
+						<div class="release-cover">{getInitials(selectedAlbum.name)}</div>
+						<div class="cover-hint">
+							<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/><line x1="12" y1="9" x2="12" y2="15"/><line x1="9" y1="12" x2="15" y2="12"/></svg>
+						</div>
+					</button>
 				{/if}
 				<div class="release-info">
 					<div class="release-title">{selectedAlbum.name}</div>
@@ -352,5 +406,75 @@
 
 	.track-pane-tracks {
 		padding: 4px 0;
+	}
+
+	/* Clickable cover wrapper */
+	.cover-btn {
+		position: relative;
+		width: 80px;
+		height: 80px;
+		flex-shrink: 0;
+		padding: 0;
+		background: none;
+		border: none;
+		cursor: pointer;
+		border-radius: var(--r);
+		overflow: hidden;
+	}
+
+	.cover-btn .release-cover {
+		width: 100%;
+		height: 100%;
+	}
+
+	/* Hover overlay hint */
+	.cover-hint {
+		position: absolute;
+		inset: 0;
+		background: rgba(0, 0, 0, 0.55);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: #fff;
+		opacity: 0;
+		transition: opacity 0.15s;
+		border-radius: var(--r);
+	}
+
+	.cover-btn:hover .cover-hint {
+		opacity: 1;
+	}
+
+	.cover-btn-empty:hover .release-cover {
+		opacity: 0.5;
+	}
+
+	/* Lightbox */
+	.lightbox-overlay {
+		position: fixed;
+		inset: 0;
+		background: rgba(0, 0, 0, 0.85);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		z-index: 2000;
+	}
+
+	.lightbox-close-area {
+		position: absolute;
+		inset: 0;
+		background: none;
+		border: none;
+		cursor: zoom-out;
+	}
+
+	.lightbox-img {
+		position: relative;
+		max-width: min(600px, 90vw);
+		max-height: 90vh;
+		border-radius: var(--r);
+		object-fit: contain;
+		box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6);
+		pointer-events: none;
 	}
 </style>

@@ -54,6 +54,31 @@ Added a full-screen modal overlay that appears the moment the button is clicked 
 - No close button — it's blocking by design, matches the app being busy
 - All controlled by the existing `isRefreshingCovers` state variable — zero new state
 
+---
+
+## Entry 2026-02-25 — Custom Cover Art + Lightbox
+
+Two things merged into one feature: click the cover to see it big, click an empty placeholder to upload your own.
+
+### Lightbox
+
+Clicking the 80×80 album cover in the detail pane opens a full-screen darkened overlay with the image at up to 600px. Click anywhere outside to close. The cursor is `zoom-out` to signal dismissal. Image itself has `pointer-events: none` — click always falls through to the invisible close button underneath.
+
+### Custom cover upload
+
+Clicking an empty cover placeholder opens a native file picker (`<input type="file" accept="image/*">`). FileReader converts it to a base64 data URL. That URL gets saved to every track in the album via a new Tauri command `set_album_cover`.
+
+Matching logic: `WHERE album = ? AND (album_artist = ? OR (album_artist IS NULL AND artist = ?))` — same artist-resolution logic used by `groupByAlbum` in the store.
+
+**Changes:**
+- `library/db.rs` — `set_album_cover(album, artist, cover)` updates all matching tracks
+- `scanner/mod.rs` — `set_album_cover` Tauri command wrapping the above
+- `lib.rs` — registered in invoke_handler
+- `scanner.ts` — `setAlbumCover()` TS wrapper
+- `LibraryBrowser.svelte` — cover button wraps both img and placeholder; hover hint icon (zoom for existing, camera/plus for empty); lightbox modal with `role="dialog"`; hidden file input; `handleCoverFile` reads file + saves + reloads library
+
+**Result:** 43/43 Rust tests, 0 TS/Svelte errors.
+
 <!-- decision: Refresh Covers as one-time backfill only -->
 The Refresh Covers button only exists for tracks that were scanned before cover art extraction was implemented. New scans always include embedded art (via `read_track_metadata`). The button will quietly disappear from the header once all tracks have art (future: hide when no NULL covers remain).
 <!-- /decision -->
@@ -7305,4 +7330,7 @@ Fix: renamed to `avatar.svelte.ts`, updated 5 import sites (AvatarEditor, Avatar
 > Files changed: 1
 
 > **Commit 86fa16d** (2026-02-25 18:26) — wip: auto-save
+> Files changed: 2
+
+> **Commit fa01a24** (2026-02-25 18:34) — wip: auto-save
 > Files changed: 2

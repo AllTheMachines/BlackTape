@@ -102,6 +102,18 @@ pub fn remove_music_folder(
     db::remove_music_folder(&conn, &path)
 }
 
+/// Set a custom cover for all tracks in an album (matched by album name + artist).
+#[tauri::command]
+pub fn set_album_cover(
+    album: String,
+    artist: String,
+    cover_art_base64: String,
+    state: tauri::State<'_, LibraryState>,
+) -> Result<u32, String> {
+    let conn = state.0.lock().map_err(|e| format!("Lock error: {}", e))?;
+    db::set_album_cover(&conn, &album, &artist, &cover_art_base64)
+}
+
 /// Backfill cover art for existing tracks that have no art stored yet.
 /// Reads only artwork (not full metadata) for each track with NULL cover_art_base64.
 #[tauri::command]

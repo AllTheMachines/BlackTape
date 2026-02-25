@@ -161,6 +161,21 @@ pub fn add_music_folder(conn: &Connection, path: &str) -> Result<(), String> {
     Ok(())
 }
 
+/// Set cover art for all tracks belonging to an album.
+/// Matches by album name and artist (album_artist or artist field).
+pub fn set_album_cover(conn: &Connection, album: &str, artist: &str, cover: &str) -> Result<u32, String> {
+    let n = conn
+        .execute(
+            "UPDATE local_tracks
+             SET cover_art_base64 = ?1
+             WHERE album = ?2
+               AND (album_artist = ?3 OR (album_artist IS NULL AND artist = ?3))",
+            params![cover, album, artist],
+        )
+        .map_err(|e| format!("Failed to set album cover: {}", e))?;
+    Ok(n as u32)
+}
+
 pub fn remove_music_folder(conn: &Connection, path: &str) -> Result<(), String> {
     conn.execute(
         "DELETE FROM music_folders WHERE path = ?1",
