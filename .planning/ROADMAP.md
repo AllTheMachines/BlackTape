@@ -74,7 +74,7 @@ Plans:
 - [ ] 25-01-PLAN.md — Queue persistence (localStorage) + TrackRow reusable component
 - [ ] 25-02-PLAN.md — Wire TrackRow into search/release/artist surfaces + Play Album / Play All buttons
 - [ ] 25-03-PLAN.md — Queue panel slide-up redesign + drag-reorder + library two-pane layout
-- [ ] 25-04-PLAN.md — Phase 25 test manifest (P25-01 through P25-20)
+- [x] 25-04-PLAN.md — Phase 25 test manifest (P25-01 through P25-20) (completed 2026-02-25)
 
 ### Phase 26: Discover + Cross-Linking + Crate Fix
 **Goal**: The Discover page has a proper filter-and-grid layout, the seven discovery tools reference each other naturally, and the Crate Dig country field is a proper dropdown
@@ -108,6 +108,6 @@ Plans:
 |-------|----------------|--------|-----------|
 | 23. Design System Foundation | 3/3 | Complete    | 2026-02-24 |
 | 24. Artist Page | 3/3 | Complete    | 2026-02-25 |
-| 25. Queue System + Library | 4/4 | Complete   | 2026-02-25 |
+| 25. Queue System + Library | 4/4 | Complete    | 2026-02-25 |
 | 26. Discover + Cross-Linking + Crate Fix | 0/TBD | Not started | - |
 | 27. Search + Knowledge Base | 0/TBD | Not started | - |
