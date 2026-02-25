@@ -21,7 +21,8 @@
 	}
 </script>
 
-<div class="titlebar" data-tauri-drag-region>
+<div class="titlebar">
+	<div class="drag-region" data-tauri-drag-region></div>
 	<span class="titlebar-logo">{PROJECT_NAME}</span>
 
 	{#if isTauri()}
@@ -49,6 +50,15 @@
 		z-index: 9999;
 	}
 
+	.drag-region {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 0;
+	}
+
 	.titlebar-logo {
 		font-size: 10px;
 		font-weight: 700;
@@ -56,12 +66,16 @@
 		text-transform: uppercase;
 		color: var(--acc);
 		pointer-events: none;
+		position: relative;
+		z-index: 1;
 	}
 
 	.titlebar-controls {
 		margin-left: auto;
 		display: flex;
 		align-items: center;
+		position: relative;
+		z-index: 1;
 	}
 
 	.ctrl-btn {
