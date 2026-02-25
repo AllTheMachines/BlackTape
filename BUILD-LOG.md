@@ -6422,5 +6422,8 @@ TypeScript check: 0 errors, 593 files.
 > Files changed: 5
 
 <!-- status -->
-Phase 25 Plan 03 — Queue panel redesign + Library two-pane layout. Task 1/2 done: Queue.svelte slide-up animation, drag-reorder, updated empty state; Player.svelte queue-toggle testid; root layout restores queue on mount. Starting Task 2: Library two-pane layout.
+Phase 25 Plan 03 — Task 2/2 done. Library rebuilt as two-pane layout: album list left, tracklist right with column headers. Sort controls removed (always "recently added"). TypeScript: 0 errors. Committing.
 <!-- /status -->
+
+> **Commit 1f49d48** (2026-02-25 05:26) — feat(25-03): redesign Queue panel slide-up + Player queue-toggle testid + root layout restore
+> Files changed: 4

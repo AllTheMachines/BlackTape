@@ -12,6 +12,8 @@
 	let showFolderManager = $state(false);
 
 	onMount(() => {
+		libraryState.sortBy = 'added';
+		libraryState.sortAsc = false;
 		tauriMode = isTauri();
 	});
 
@@ -29,15 +31,6 @@
 	async function handleRemoveFolder(path: string) {
 		await removeMusicFolder(path);
 		await loadLibrary();
-	}
-
-	function setSortBy(sort: 'artist' | 'album' | 'title' | 'added') {
-		if (libraryState.sortBy === sort) {
-			libraryState.sortAsc = !libraryState.sortAsc;
-		} else {
-			libraryState.sortBy = sort;
-			libraryState.sortAsc = true;
-		}
 	}
 
 	let albums = $derived(groupByAlbum(getSortedTracks()));
@@ -128,25 +121,6 @@
 				onRemove={handleRemoveFolder}
 				onClose={() => (showFolderManager = false)}
 			/>
-		{/if}
-
-		<!-- Sort controls -->
-		{#if hasLibrary}
-			<div class="sort-controls">
-				<span class="sort-label">Sort by</span>
-				{#each ['artist', 'album', 'title', 'added'] as sort}
-					<button
-						class="sort-btn"
-						class:active={libraryState.sortBy === sort}
-						onclick={() => setSortBy(sort as 'artist' | 'album' | 'title' | 'added')}
-					>
-						{sort === 'added' ? 'date added' : sort}
-						{#if libraryState.sortBy === sort}
-							<span class="sort-arrow">{libraryState.sortAsc ? '\u2191' : '\u2193'}</span>
-						{/if}
-					</button>
-				{/each}
-			</div>
 		{/if}
 
 		<!-- Content -->
@@ -340,50 +314,6 @@
 		white-space: nowrap;
 		max-width: 60%;
 		text-align: right;
-	}
-
-	/* Sort controls */
-	.sort-controls {
-		display: flex;
-		align-items: center;
-		gap: var(--space-xs);
-		margin-bottom: var(--space-lg);
-	}
-
-	.sort-label {
-		font-size: 0.75rem;
-		color: var(--text-muted);
-		margin-right: var(--space-xs);
-	}
-
-	.sort-btn {
-		display: inline-flex;
-		align-items: center;
-		gap: 2px;
-		padding: 4px 10px;
-		background: none;
-		border: 1px solid var(--border-subtle);
-		border-radius: var(--card-radius);
-		color: var(--text-secondary);
-		font-size: 0.75rem;
-		cursor: pointer;
-		transition: color 0.15s, border-color 0.15s;
-		text-transform: capitalize;
-	}
-
-	.sort-btn:hover {
-		color: var(--text-primary);
-		border-color: var(--border-default);
-	}
-
-	.sort-btn.active {
-		color: var(--text-primary);
-		border-color: var(--border-hover);
-		background: var(--bg-elevated);
-	}
-
-	.sort-arrow {
-		font-size: 0.7rem;
 	}
 
 	/* Empty state */
