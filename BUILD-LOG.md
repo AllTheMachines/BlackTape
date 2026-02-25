@@ -6554,3 +6554,6 @@ TypeScript: 0 errors. Test suite: 134 passed, 0 failed. CRAT-01 complete.
 
 > **Commit 24e6a5b** (2026-02-25 09:20) — feat(26-02): add KB, Style Map, and Discover cross-links across discovery pages (XLINK-03,04,05)
 > Files changed: 3
+
+> **Commit 28f98de** (2026-02-25 09:21) — docs(26-03): add build log entry for Crate Dig country dropdown
+> Files changed: 1

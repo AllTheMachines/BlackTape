@@ -64,7 +64,7 @@ Each task was committed atomically:
 
 1. **Task 1: Replace country text input with named-country dropdown** - `fe435b3` (feat)
 
-**Plan metadata:** (pending final commit)
+**Plan metadata:** `f6d934c` (docs: complete plan) + `28f98de` (docs: build log entry)
 
 ## Files Created/Modified
 - `src/routes/crate/+page.svelte` - Added COUNTRIES array, replaced country text input with select dropdown bound to selectedCountryCode
