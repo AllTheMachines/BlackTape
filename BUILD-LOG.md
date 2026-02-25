@@ -7113,3 +7113,6 @@ The `/uat-review` skill is operational. Pipeline: OBS recording → Whisper tran
 
 > **Commit 674260b** (2026-02-25 15:14) — wip: auto-save
 > Files changed: 1
+
+> **Commit 85a08fd** (2026-02-25 15:16) — auto-save: 1 files @ 15:16
+> Files changed: 1
