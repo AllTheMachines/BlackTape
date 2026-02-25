@@ -7017,3 +7017,6 @@ Applied remaining audit fixes from the v1.4 design review — items identified b
 
 > **Commit 19ae50d** (2026-02-25 14:16) — auto-save: 1 files @ 14:16
 > Files changed: 1
+
+> **Commit 928eb58** (2026-02-25 14:21) — fix(titlebar): window controls now work in release build
+> Files changed: 1
