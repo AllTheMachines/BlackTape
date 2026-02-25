@@ -15,8 +15,14 @@
 			? artist.tags
 					.split(', ')
 					.filter(Boolean)
-					.slice(0, 5)
+					.slice(0, 3)
 			: []
+	);
+
+	let barPct = $derived(
+		artist.uniqueness_score
+			? Math.min(100, Math.round((Math.log10(artist.uniqueness_score + 1) / Math.log10(1001)) * 100))
+			: 0
 	);
 </script>
 
@@ -38,6 +44,16 @@
 
 	{#if matchReason}
 		<p class="match-reason">{matchReason}</p>
+	{/if}
+
+	{#if artist.uniqueness_score !== null && artist.uniqueness_score !== undefined}
+		<div class="uniqueness-bar-wrap">
+			<div class="uniqueness-bar-label">Uniqueness</div>
+			<div class="uniqueness-bar-track">
+				<div class="uniqueness-bar-fill" style="width: {barPct}%"></div>
+			</div>
+			<div class="uniqueness-bar-pct">{barPct}%</div>
+		</div>
 	{/if}
 </article>
 
@@ -91,5 +107,41 @@
 		font-size: 0.75rem;
 		color: var(--text-muted);
 		margin: 0;
+	}
+
+	.uniqueness-bar-wrap {
+		display: flex;
+		align-items: center;
+		gap: var(--space-xs);
+		margin-top: var(--space-sm);
+	}
+
+	.uniqueness-bar-label {
+		font-size: 0.65rem;
+		color: var(--text-muted, var(--t-3));
+		white-space: nowrap;
+		flex-shrink: 0;
+	}
+
+	.uniqueness-bar-track {
+		flex: 1;
+		height: 3px;
+		background: var(--bg-elevated, var(--bg-4));
+		border-radius: 2px;
+		overflow: hidden;
+	}
+
+	.uniqueness-bar-fill {
+		height: 100%;
+		background: var(--text-accent, var(--acc));
+		border-radius: 2px;
+		transition: width 0.3s ease;
+	}
+
+	.uniqueness-bar-pct {
+		font-size: 0.65rem;
+		color: var(--text-muted, var(--t-3));
+		min-width: 2.5rem;
+		text-align: right;
 	}
 </style>
