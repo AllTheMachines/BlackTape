@@ -6602,3 +6602,6 @@ Five cross-links connecting the seven discovery tools so they feel like a unifie
 CSS pattern established: `.cross-link-secondary` — `font-size: 0.8rem`, `color: var(--text-muted)`, amber on hover. Used on artist page and scene page. Crate page uses `.crate-cross-link` (same values, button reset needed). Time Machine uses `.tm-cross-link` (matches its existing `var(--color-muted)` convention).
 
 Verification: `npm run check` 0 errors. Test suite 134/134 passing.
+
+> **Commit 17fcba3** (2026-02-25 09:24) — docs(26-02): complete cross-linking discovery tools plan — XLINK-01..05
+> Files changed: 1
