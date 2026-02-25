@@ -2472,6 +2472,146 @@ export const PHASE_26 = [
 ];
 
 // ---------------------------------------------------------------------------
+// PHASE 27 — Search + Knowledge Base
+// ---------------------------------------------------------------------------
+
+export const PHASE_27 = [
+  // SRCH-01: Autocomplete backend
+  {
+    id: 'P27-01', phase: 27, area: 'Search',
+    desc: 'queries.ts exports parseSearchIntent function',
+    method: 'code',
+    fn: () => fileContains('src/lib/db/queries.ts', 'parseSearchIntent')(),
+  },
+  {
+    id: 'P27-02', phase: 27, area: 'Search',
+    desc: 'queries.ts exports searchArtistsAutocomplete function',
+    method: 'code',
+    fn: () => fileContains('src/lib/db/queries.ts', 'searchArtistsAutocomplete')(),
+  },
+  // SRCH-02 / SRCH-03: City and label search
+  {
+    id: 'P27-03', phase: 27, area: 'Search',
+    desc: 'queries.ts exports searchByCity function',
+    method: 'code',
+    fn: () => fileContains('src/lib/db/queries.ts', 'searchByCity')(),
+  },
+  {
+    id: 'P27-04', phase: 27, area: 'Search',
+    desc: 'queries.ts exports searchByLabel function',
+    method: 'code',
+    fn: () => fileContains('src/lib/db/queries.ts', 'searchByLabel')(),
+  },
+  // SRCH-04: Result type distinction
+  {
+    id: 'P27-05', phase: 27, area: 'Search',
+    desc: 'ArtistResult interface has match_type field',
+    method: 'code',
+    fn: () => fileContains('src/lib/db/queries.ts', 'match_type')(),
+  },
+  // SRCH-01: SearchBar autocomplete UI
+  {
+    id: 'P27-06', phase: 27, area: 'Search',
+    desc: 'SearchBar.svelte contains autocomplete-list class (dropdown)',
+    method: 'code',
+    fn: () => fileContains('src/lib/components/SearchBar.svelte', 'autocomplete-list')(),
+  },
+  {
+    id: 'P27-07', phase: 27, area: 'Search',
+    desc: 'SearchBar.svelte imports searchArtistsAutocomplete',
+    method: 'code',
+    fn: () => fileContains('src/lib/components/SearchBar.svelte', 'searchArtistsAutocomplete')(),
+  },
+  {
+    id: 'P27-08', phase: 27, area: 'Search',
+    desc: 'SearchBar.svelte navigates to /artist/{slug} on suggestion select',
+    method: 'code',
+    fn: () => fileContains('src/lib/components/SearchBar.svelte', '/artist/')(),
+  },
+  {
+    id: 'P27-09', phase: 27, area: 'Search',
+    desc: 'Autocomplete dropdown appears while typing (requires running desktop app)',
+    method: 'skip',
+    reason: 'Requires running desktop app — live autocomplete interaction',
+  },
+  // SRCH-02 / SRCH-03: Search page intent wiring
+  {
+    id: 'P27-10', phase: 27, area: 'Search',
+    desc: 'search +page.ts imports parseSearchIntent',
+    method: 'code',
+    fn: () => fileContains('src/routes/search/+page.ts', 'parseSearchIntent')(),
+  },
+  {
+    id: 'P27-11', phase: 27, area: 'Search',
+    desc: 'search +page.ts imports searchByCity',
+    method: 'code',
+    fn: () => fileContains('src/routes/search/+page.ts', 'searchByCity')(),
+  },
+  {
+    id: 'P27-12', phase: 27, area: 'Search',
+    desc: 'search +page.ts imports searchByLabel',
+    method: 'code',
+    fn: () => fileContains('src/routes/search/+page.ts', 'searchByLabel')(),
+  },
+  // SRCH-04: Match type badges
+  {
+    id: 'P27-13', phase: 27, area: 'Search',
+    desc: 'search +page.svelte renders intent-chip element',
+    method: 'code',
+    fn: () => fileContains('src/routes/search/+page.svelte', 'intent-chip')(),
+  },
+  {
+    id: 'P27-14', phase: 27, area: 'Search',
+    desc: 'search +page.svelte passes matchReason to ArtistCard',
+    method: 'code',
+    fn: () => fileContains('src/routes/search/+page.svelte', 'matchReason')(),
+  },
+  {
+    id: 'P27-15', phase: 27, area: 'Search',
+    desc: 'City search shows "City: Berlin" confirmation chip (requires running desktop app)',
+    method: 'skip',
+    reason: 'Requires running desktop app — live search interaction',
+  },
+  {
+    id: 'P27-16', phase: 27, area: 'Search',
+    desc: 'Label search shows "Label: Warp Records" confirmation chip (requires running desktop app)',
+    method: 'skip',
+    reason: 'Requires running desktop app — live search interaction',
+  },
+  // KBAS-01: KB genre page redesign
+  {
+    id: 'P27-17', phase: 27, area: 'KB',
+    desc: 'KB genre page contains genre-type-pill class (coloured type badge)',
+    method: 'code',
+    fn: () => fileContains('src/routes/kb/genre/[slug]/+page.svelte', 'genre-type-pill')(),
+  },
+  {
+    id: 'P27-18', phase: 27, area: 'KB',
+    desc: 'KB genre page contains key-artist-row class (compact artist list)',
+    method: 'code',
+    fn: () => fileContains('src/routes/kb/genre/[slug]/+page.svelte', 'key-artist-row')(),
+  },
+  {
+    id: 'P27-19', phase: 27, area: 'KB',
+    desc: 'KB genre page contains genre-map-placeholder (Coming Soon box)',
+    method: 'code',
+    fn: () => fileContains('src/routes/kb/genre/[slug]/+page.svelte', 'genre-map-placeholder')(),
+  },
+  {
+    id: 'P27-20', phase: 27, area: 'KB',
+    desc: 'KB genre page does NOT import GenreGraph (replaced by placeholder)',
+    method: 'code',
+    fn: () => !fileContains('src/routes/kb/genre/[slug]/+page.svelte', "import GenreGraph")(),
+  },
+  {
+    id: 'P27-21', phase: 27, area: 'KB',
+    desc: 'KB genre page type badge, compact artists, and map placeholder visible in desktop app',
+    method: 'skip',
+    reason: 'Requires running desktop app — visual redesign verification',
+  },
+];
+
+// ---------------------------------------------------------------------------
 // Build check — always runs last
 // ---------------------------------------------------------------------------
 
@@ -2513,5 +2653,6 @@ export const ALL_TESTS = [
   ...PHASE_24,
   ...PHASE_25,
   ...PHASE_26,
+  ...PHASE_27,
   ...BUILD,
 ];
