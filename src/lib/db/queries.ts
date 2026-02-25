@@ -262,6 +262,105 @@ export async function searchByTag(
 }
 
 /**
+ * Autocomplete query — fast prefix match for the search dropdown.
+ * Returns up to 5 artists matching the name prefix.
+ * Each result includes name, slug, and first tag (for disambiguation).
+ * Triggered after 2 characters are typed.
+ */
+export async function searchArtistsAutocomplete(
+	db: DbProvider,
+	query: string,
+	limit = 5
+): Promise<Array<{ name: string; slug: string; tags: string | null }>> {
+	const sanitized = sanitizeFtsQuery(query);
+	const lowerQuery = query.toLowerCase().trim();
+
+	if (!sanitized) return [];
+
+	// Use FTS5 for speed, but order by prefix match first (exact prefix wins)
+	return db.all(
+		`SELECT a.name, a.slug,
+		        (SELECT tag FROM artist_tags WHERE artist_id = a.id ORDER BY count DESC LIMIT 1) AS tags
+		 FROM artists_fts f
+		 JOIN artists a ON a.id = f.rowid
+		 WHERE artists_fts MATCH ?
+		 ORDER BY
+		   CASE
+		     WHEN LOWER(a.name) LIKE ? THEN 0
+		     ELSE 1
+		   END,
+		   f.rank
+		 LIMIT ?`,
+		sanitized + '*',
+		lowerQuery + '%',
+		limit
+	);
+}
+
+/**
+ * Search artists whose country column matches the given city/country name.
+ * Uses LIKE for partial matching (e.g. "Berlin" matches "DE" via country name —
+ * but MB country column stores ISO codes. Try both LIKE on name column and
+ * check artist_tags for city-tagged artists).
+ *
+ * Since the artists.country column stores ISO country codes (e.g. "DE", "GB"),
+ * we search artist_tags for city/area names (MusicBrainz tags include cities),
+ * AND do a case-insensitive LIKE on artists.country for country-level matches.
+ */
+export async function searchByCity(
+	db: DbProvider,
+	city: string,
+	limit = DEFAULT_LIMIT
+): Promise<ArtistResult[]> {
+	const normalizedCity = city.toLowerCase().trim();
+
+	return db.all<ArtistResult>(
+		`SELECT DISTINCT a.id, a.mbid, a.name, a.slug, a.country,
+		        (SELECT GROUP_CONCAT(tag, ', ') FROM artist_tags WHERE artist_id = a.id) AS tags,
+		        'city' AS match_type
+		 FROM artists a
+		 WHERE
+		   LOWER(a.country) = ?
+		   OR EXISTS (
+		     SELECT 1 FROM artist_tags
+		     WHERE artist_id = a.id AND LOWER(tag) = ?
+		   )
+		 ORDER BY a.name
+		 LIMIT ?`,
+		normalizedCity,
+		normalizedCity,
+		limit
+	);
+}
+
+/**
+ * Search artists by label name via artist_tags.
+ * MusicBrainz encodes label associations as tags on artists.
+ * Uses LIKE for partial label name matching.
+ */
+export async function searchByLabel(
+	db: DbProvider,
+	label: string,
+	limit = DEFAULT_LIMIT
+): Promise<ArtistResult[]> {
+	const normalizedLabel = label.toLowerCase().trim();
+
+	return db.all<ArtistResult>(
+		`SELECT a.id, a.mbid, a.name, a.slug, a.country,
+		        (SELECT GROUP_CONCAT(tag, ', ') FROM artist_tags WHERE artist_id = a.id) AS tags,
+		        'label' AS match_type
+		 FROM artists a
+		 JOIN artist_tags at1 ON at1.artist_id = a.id
+		 WHERE LOWER(at1.tag) LIKE ?
+		 GROUP BY a.id
+		 ORDER BY at1.count DESC
+		 LIMIT ?`,
+		'%' + normalizedLabel + '%',
+		limit
+	);
+}
+
+/**
  * Look up a single artist by their URL slug.
  *
  * Returns the full Artist record with aggregated tags, or null if the
