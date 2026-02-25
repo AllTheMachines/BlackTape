@@ -22,9 +22,10 @@
 		y: number;
 	}
 
-	let { nodes: rawNodes, edges: rawEdges }: {
+	let { nodes: rawNodes, edges: rawEdges, initialTag = null }: {
 		nodes: StyleMapNode[];
 		edges: StyleMapEdge[];
+		initialTag?: string | null;
 	} = $props();
 
 	let width = $state(800);
@@ -83,6 +84,8 @@
 			.filter(Boolean) as typeof layoutEdges;
 
 		layoutNodes = settled;
+
+		if (initialTag) hoveredTag = initialTag;
 	});
 
 	function handleNodeClick(tag: string) {

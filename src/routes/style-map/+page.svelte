@@ -21,7 +21,7 @@
 	{#if data.nodes.length === 0}
 		<p class="empty-state">Style map data not available. Make sure mercury.db includes tag_cooccurrence data (run the pipeline).</p>
 	{:else}
-		<StyleMap nodes={data.nodes} edges={data.edges} />
+		<StyleMap nodes={data.nodes} edges={data.edges} initialTag={data.initialTag} />
 	{/if}
 </div>
 

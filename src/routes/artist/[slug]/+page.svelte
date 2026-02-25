@@ -363,6 +363,16 @@
 				</a>
 			</div>
 
+			<div class="style-map-cross-link">
+				<a
+					href="/style-map?tag={encodeURIComponent(tags[0])}"
+					class="cross-link-secondary"
+					title="See {tags[0]} in the Style Map"
+				>
+					Explore {tags[0]} in Style Map →
+				</a>
+			</div>
+
 			<!-- Scene Rooms discovery link -->
 			<section class="scene-rooms-hint">
 				<button onclick={openRoomsForArtist} class="rooms-link">
@@ -747,6 +757,21 @@
 	.explore-scene-link:hover {
 		color: var(--text-accent);
 		text-decoration: none;
+	}
+
+	.style-map-cross-link {
+		margin-top: var(--space-xs);
+	}
+
+	.cross-link-secondary {
+		font-size: 0.8rem;
+		color: var(--text-muted);
+		text-decoration: none;
+		transition: color 0.15s;
+	}
+
+	.cross-link-secondary:hover {
+		color: var(--text-accent);
 	}
 
 	.scene-rooms-hint {
