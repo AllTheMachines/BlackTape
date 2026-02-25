@@ -9,6 +9,7 @@
 	import RssButton from '$lib/components/RssButton.svelte';
 	import ArtistStats from '$lib/components/ArtistStats.svelte';
 	import ArtistSummary from '$lib/components/ArtistSummary.svelte';
+	import ArtistRelationships from '$lib/components/ArtistRelationships.svelte';
 	import SiteGenDialog from '$lib/components/SiteGenDialog.svelte';
 	import { LINK_CATEGORY_ORDER, LINK_CATEGORY_LABELS } from '$lib/embeds/types';
 	import { isTauri } from '$lib/platform';
@@ -22,7 +23,7 @@
 	let { data } = $props();
 
 	let tauriMode = $state(false);
-	let activeTab = $state<'overview' | 'stats'>('overview');
+	let activeTab = $state<'overview' | 'stats' | 'about'>('overview');
 	let showSiteGen = $state(false);
 
 	/** Save to Shelf state (Tauri-only) */
@@ -36,6 +37,13 @@
 		data.artist.tags
 			? data.artist.tags.split(', ').filter(Boolean)
 			: []
+	);
+
+	let hasRelationships = $derived(
+		data.relationships.members.length > 0 ||
+		data.relationships.influencedBy.length > 0 ||
+		data.relationships.influenced.length > 0 ||
+		data.relationships.labels.length > 0
 	);
 
 	let artistMeta = $derived(() => {
@@ -128,11 +136,34 @@
 		inlinePlayerHtml = html;
 	}
 
-	/** Show more releases. */
-	let showAllReleases = $state(false);
-	let visibleReleases = $derived(
-		showAllReleases ? data.releases : data.releases.slice(0, 50)
-	);
+	/** Discography filter and sort state. */
+	type DiscographyFilter = 'all' | 'album' | 'ep' | 'single';
+	type DiscographySort = 'newest' | 'oldest';
+
+	let discographyFilter = $state<DiscographyFilter>('all');
+	let discographySort = $state<DiscographySort>('newest');
+
+	const TYPE_MAP: Record<string, DiscographyFilter> = {
+		Album: 'album',
+		EP: 'ep',
+		Single: 'single'
+	};
+
+	let filteredReleases = $derived(() => {
+		let result = data.releases as typeof data.releases;
+		if (discographyFilter !== 'all') {
+			result = result.filter(r => TYPE_MAP[r.type ?? ''] === discographyFilter);
+		}
+		if (discographySort === 'oldest') {
+			return [...result].sort((a, b) => {
+				if (a.year === null && b.year === null) return 0;
+				if (a.year === null) return 1;
+				if (b.year === null) return -1;
+				return a.year - b.year;
+			});
+		}
+		return result; // 'newest' is already sorted in data.releases
+	});
 
 	/** Streaming links for the "Listen On" bar. */
 	let streamingLinks = $derived(data.categorizedLinks.streaming);
@@ -280,7 +311,7 @@
 				class="share-mastodon-btn"
 				aria-label="Share on Mastodon"
 				title="Share on Mastodon"
-			>↑</a>
+			>↑ Share</a>
 			{#if tauriMode}
 				<button
 					class="export-site-btn"
@@ -385,6 +416,14 @@
 			onclick={() => activeTab = 'stats'}
 			data-testid="tab-stats"
 		>Stats</button>
+		{#if hasRelationships}
+			<button
+				class="artist-tab"
+				class:active={activeTab === 'about'}
+				onclick={() => activeTab = 'about'}
+				data-testid="tab-about"
+			>About</button>
+		{/if}
 	</div>
 
 	<!-- Tab content -->
@@ -538,6 +577,10 @@
 					</div>
 				{/if}
 			</section>
+		</div>
+	{:else if activeTab === 'about'}
+		<div data-testid="tab-content-about">
+			<ArtistRelationships relationships={data.relationships} />
 		</div>
 	{:else}
 		<div data-testid="tab-content-stats">
@@ -736,7 +779,7 @@
 	.artist-tab-bar {
 		display: flex;
 		gap: 0;
-		border-bottom: 1px solid var(--border, #333);
+		border-bottom: 1px solid var(--b-1);
 		margin-bottom: 1.5rem;
 	}
 
@@ -746,7 +789,7 @@
 		border-bottom: 2px solid transparent;
 		padding: 0.5rem 1.25rem;
 		cursor: pointer;
-		color: var(--text-muted, #888);
+		color: var(--t-3);
 		font-size: 0.875rem;
 		font-weight: 500;
 		letter-spacing: 0.02em;
@@ -755,12 +798,12 @@
 	}
 
 	.artist-tab.active {
-		color: var(--text, #e0e0e0);
-		border-bottom-color: var(--accent, #7c6af7);
+		color: var(--t-1);
+		border-bottom-color: var(--acc);
 	}
 
 	.artist-tab:hover:not(.active) {
-		color: var(--text-secondary, #bbb);
+		color: var(--t-2);
 	}
 
 	/* ── Section titles ────────────────────────────────── */

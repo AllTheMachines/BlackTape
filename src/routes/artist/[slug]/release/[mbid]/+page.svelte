@@ -21,6 +21,7 @@
 
 	let coverError = $state(false);
 	let tauriMode = $state(false);
+	let creditsExpanded = $state(false);
 
 	/** Save to Shelf state (Tauri-only) */
 	let savedInCollections = $state<string[]>([]);
@@ -184,6 +185,36 @@
 						</li>
 					{/each}
 				</ul>
+			</section>
+		{/if}
+
+		<!-- Collapsible Credits Section (producer/engineer/mix etc. with artist links) -->
+		{#if data.credits && data.credits.length > 0}
+			<section class="credits-section" data-testid="credits-section">
+				<button
+					class="credits-toggle"
+					onclick={() => creditsExpanded = !creditsExpanded}
+					aria-expanded={creditsExpanded}
+					data-testid="credits-toggle"
+				>
+					<span>Credits</span>
+					<span class="credits-icon">{creditsExpanded ? '▲' : '▼'}</span>
+				</button>
+
+				{#if creditsExpanded}
+					<ul class="credits-expanded-list" data-testid="credits-list">
+						{#each data.credits as credit}
+							<li class="credit-row">
+								<span class="credit-role-label">{credit.role}</span>
+								{#if credit.slug}
+									<a href="/artist/{credit.slug}" class="credit-artist-link">{credit.name}</a>
+								{:else}
+									<span class="credit-artist-text">{credit.name}</span>
+								{/if}
+							</li>
+						{/each}
+					</ul>
+				{/if}
 			</section>
 		{/if}
 
@@ -435,6 +466,73 @@
 		color: var(--text-primary);
 		border-radius: 3px;
 		font-size: 0.8rem;
+	}
+
+	/* ── Credits Section (new collapsible) ─────────────── */
+	.credits-section {
+		margin-bottom: var(--space-xl);
+		border-top: 1px solid var(--b-1);
+		padding-top: var(--space-xs);
+	}
+
+	.credits-toggle {
+		width: 100%;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: var(--space-sm) 0;
+		background: none;
+		border: none;
+		cursor: pointer;
+		font-size: 0.9rem;
+		font-weight: 500;
+		color: var(--t-2);
+		text-align: left;
+	}
+
+	.credits-toggle:hover {
+		color: var(--t-1);
+	}
+
+	.credits-icon {
+		font-size: 0.65rem;
+		color: var(--t-3);
+	}
+
+	.credits-expanded-list {
+		list-style: none;
+		padding: 0 0 var(--space-md);
+		margin: 0;
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-xs);
+	}
+
+	.credit-row {
+		display: flex;
+		gap: var(--space-md);
+		font-size: 0.85rem;
+	}
+
+	.credit-role-label {
+		color: var(--t-3);
+		text-transform: capitalize;
+		min-width: 100px;
+		flex-shrink: 0;
+	}
+
+	.credit-artist-link {
+		color: var(--t-2);
+		text-decoration: none;
+	}
+
+	.credit-artist-link:hover {
+		color: var(--acc);
+		text-decoration: underline;
+	}
+
+	.credit-artist-text {
+		color: var(--t-2);
 	}
 
 	/* Mobile */

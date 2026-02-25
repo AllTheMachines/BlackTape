@@ -2135,6 +2135,57 @@ export const PHASE_23 = [
 ];
 
 // ---------------------------------------------------------------------------
+// Phase 24 — Artist Page
+// ---------------------------------------------------------------------------
+
+export const PHASE_24 = [
+  {
+    id: 'P24-01', phase: 24, area: 'Artist Page',
+    desc: 'ArtistRelationships.svelte component exists',
+    method: 'code',
+    fn: () => fileExists('src/lib/components/ArtistRelationships.svelte'),
+  },
+  {
+    id: 'P24-02', phase: 24, area: 'Artist Page',
+    desc: 'ArtistRelationships.svelte contains external MusicBrainz links (target="_blank")',
+    method: 'code',
+    fn: () => fileContains('src/lib/components/ArtistRelationships.svelte', 'target="_blank"')(),
+  },
+  {
+    id: 'P24-03', phase: 24, area: 'Artist Page',
+    desc: 'ArtistRelationships.svelte contains showAllMembers expand state',
+    method: 'code',
+    fn: () => fileContains('src/lib/components/ArtistRelationships.svelte', 'showAllMembers')(),
+  },
+  {
+    id: 'P24-04', phase: 24, area: 'Artist Page',
+    desc: 'Artist +page.svelte contains tab-about testid (About tab button)',
+    method: 'code',
+    fn: () => fileContains('src/routes/artist/[slug]/+page.svelte', 'tab-about')(),
+  },
+  {
+    id: 'P24-05', phase: 24, area: 'Artist Page',
+    desc: 'Artist +page.svelte contains hasRelationships (conditional About tab)',
+    method: 'code',
+    fn: () => fileContains('src/routes/artist/[slug]/+page.svelte', 'hasRelationships')(),
+  },
+  {
+    id: 'P24-06', phase: 24, area: 'Artist Page',
+    desc: 'Artist +page.ts fetches MusicBrainz artist-rels',
+    method: 'code',
+    fn: () => fileContains('src/routes/artist/[slug]/+page.ts', 'artist-rels')(),
+  },
+  {
+    id: 'P24-07', phase: 24, area: 'Artist Page',
+    desc: 'Mastodon share button in artist +page.svelte contains visible "Share" text label',
+    method: 'code',
+    fn: () => fileContains('src/routes/artist/[slug]/+page.svelte', 'Share')(),
+  },
+  // P24-08 through P24-12 added by Plan 02 (discography filter + sort)
+  // P24-13 through P24-15 added by Plan 03 (release credits collapsible)
+];
+
+// ---------------------------------------------------------------------------
 // Build check — always runs last
 // ---------------------------------------------------------------------------
 
@@ -2173,5 +2224,6 @@ export const ALL_TESTS = [
   ...PHASE_21,
   ...PHASE_22,
   ...PHASE_23,
+  ...PHASE_24,
   ...BUILD,
 ];
