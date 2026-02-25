@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-24 after v1.4 milestone started)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** v1.4 The Interface — Phase 26 COMPLETE, Phase 27 (Autocomplete) is next
+**Current focus:** v1.4 The Interface — Phase 27 COMPLETE (all 5 plans done: SRCH-01..04, KBAS-01)
 
 ## Current Position
 
-Phase: 27 of 27 (Search Knowledge Base — active)
-Plan: 4 of ? in current phase (27-04 complete — KB genre page redesign)
-Status: Phase 27 active — Plan 04 complete: KB genre page redesigned with type pill, compact artist rows, genre map placeholder (KBAS-01)
-Last activity: 2026-02-25 — Phase 27 Plan 04 complete: KB genre page redesign — genre-type-pill, key-artist-row, genre-map-placeholder
+Phase: 27 of 27 (Search Knowledge Base — COMPLETE)
+Plan: 5 of 5 in current phase (27-05 complete — test manifest, all Phase 27 requirements locked)
+Status: Phase 27 COMPLETE — all 5 plans done: autocomplete backend, SearchBar UI, intent routing/badges, KB genre redesign, test manifest
+Last activity: 2026-02-25 — Phase 27 Plan 05 complete: PHASE_27 test manifest added; 164 code checks passing, 0 failing
 
-Progress: [██████░░░░] 65% (v1.4 — Phase 26 complete, Phase 27 plan 04/? done)
+Progress: [████████░░] 80% (v1.4 — Phase 27 complete, all planned phases done)
 
 ## Performance Metrics
 
@@ -48,6 +48,9 @@ Progress: [██████░░░░] 65% (v1.4 — Phase 26 complete, Phas
 | Phase 27-search-knowledge-base P01 | 2min | 2 tasks | 1 files |
 | Phase 27-search-knowledge-base P03 | ~4min | 2 tasks | 2 files |
 | Phase 27-search-knowledge-base P02 | 1min | 1 tasks | 1 files |
+| Phase 27-search-knowledge-base P04 | ~5min | 1 tasks | 1 files |
+| Phase 27-search-knowledge-base P05 | 4min | 1 tasks | 1 files |
+| **Phase 27 Total** | **5 plans** | **5/5 requirements (SRCH-01..04, KBAS-01)** | **Complete** |
 
 ## Accumulated Context
 
@@ -109,6 +112,8 @@ Progress: [██████░░░░] 65% (v1.4 — Phase 26 complete, Phas
 - [Phase 27-03]: Tag mode bypasses intent parsing — mode toggle is explicit user intent; intent stays 'artist' type for chip display purposes
 - [Phase 27-03]: EMPTY_INTENT constant at module level for all empty/error return paths — avoids redundant object literals
 - [Phase 27-03]: data-testid removed from ArtistCard call — component does not spread restProps; plan spec was aspirational
+- [Phase 27-05]: Tests written against actual source strings verified before writing — no idealized strings used
+- [Phase 27-05]: 7 skip entries for desktop-only tests: live autocomplete, search interaction, visual redesign verification
 
 ### Pending Todos
 None
@@ -119,6 +124,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-25
-Stopped at: Completed 27-03-PLAN.md (Phase 27 Plan 03 — search intent routing, match badges, SRCH-02..04)
+Stopped at: Completed 27-05-PLAN.md (Phase 27 Plan 05 — test manifest for SRCH-01..04, KBAS-01)
 Resume file: None
-Next: Phase 27 Plan 05 (test manifest for Plans 01-04)
+Next: Phase 27 COMPLETE — all phases done. Ready for milestone close or v1.5 planning.

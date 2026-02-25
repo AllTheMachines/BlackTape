@@ -20,7 +20,7 @@
 - [x] **Phase 24: Artist Page** - Redesign artist page + MusicBrainz relationships (members, influences, labels) + release credits linking + discography filters + Mastodon button label (completed 2026-02-25)
 - [x] **Phase 25: Queue System + Library** - Full queue management (Play/Queue on every track surface, Play Album, player queue panel, reorder/remove) + library two-pane redesign (completed 2026-02-25)
 - [x] **Phase 26: Discover + Cross-Linking + Crate Fix** - Discover page redesign (filter panel + artist grid) + discovery tool cross-linking + Crate Dig country dropdown (completed 2026-02-25)
-- [ ] **Phase 27: Search + Knowledge Base** - Search autocomplete + label/city search + result distinction + KB genre page redesign
+- [x] **Phase 27: Search + Knowledge Base** - Search autocomplete + label/city search + result distinction + KB genre page redesign (completed 2026-02-25)
 
 ## Phase Details
 
@@ -123,4 +123,4 @@ Plans:
 | 24. Artist Page | 3/3 | Complete    | 2026-02-25 |
 | 25. Queue System + Library | 4/4 | Complete    | 2026-02-25 |
 | 26. Discover + Cross-Linking + Crate Fix | 4/4 | Complete    | 2026-02-25 |
-| 27. Search + Knowledge Base | 4/5 | In Progress|  |
+| 27. Search + Knowledge Base | 5/5 | Complete   | 2026-02-25 |
