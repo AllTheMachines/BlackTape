@@ -6518,3 +6518,39 @@ Test suite coverage for Phase 25 requirements: QUEU-01 through QUEU-06, LIBR-01 
 
 > **Commit 2ab8869** (2026-02-25 09:16) — auto-save: 1 files @ 09:16
 > Files changed: 1
+
+> **Commit 675bdad** (2026-02-25 09:17) — wip: auto-save
+> Files changed: 1
+
+> **Commit 0634f23** (2026-02-25 09:18) — feat(26-01): add uniqueness_score to ArtistResult + getDiscoveryArtists query
+> Files changed: 1
+
+## Entry — 2026-02-25 — Phase 26 Plan 03: Crate Dig Country Dropdown
+
+**Phase 26 Plan 03 complete in ~3 minutes.**
+
+The Crate Dig country field was a raw text input with `maxlength="2"` — users had to know to type "GB" not "United Kingdom". This was the UX audit's explicit callout (CRAT-01).
+
+Fixed by replacing the input with a native `<select>` dropdown. Added a `COUNTRIES` array of 60 `{name, code}` objects covering all major music markets where MusicBrainz has strong artist coverage — from "United States" / "US" to "Morocco" / "MA". The select is bound to `selectedCountryCode` which feeds directly into the `dig()` query's `country` filter. User sees country names, query receives ISO codes, no translation layer needed.
+
+Used native `<select>` over `<datalist>` — simpler, fully accessible, no dependencies, and consistent with the existing decade dropdown that already uses the same `.filter-select` CSS class. No new styles needed.
+
+TypeScript: 0 errors. Test suite: 134 passed, 0 failed. CRAT-01 complete.
+
+> **Commit fe435b3** (2026-02-25 09:18) — feat(26-03): replace country text input with named-country dropdown in Crate Dig
+> Files changed: 1
+
+> **Commit 27efbb1** (2026-02-25 09:19) — feat(26-02): add Style Map cross-link on artist page + ?tag= param support (XLINK-01)
+> Files changed: 4
+
+> **Commit 51bd90e** (2026-02-25 09:19) — feat(26-01): redesign Discover page with filter panel + live-filtered grid
+> Files changed: 2
+
+> **Commit f6d934c** (2026-02-25 09:20) — docs(26-03): complete crate-dig country dropdown plan
+> Files changed: 4
+
+> **Commit 2ecb0ab** (2026-02-25 09:20) — feat(26-01): add uniqueness score progress bar to ArtistCard
+> Files changed: 1
+
+> **Commit 24e6a5b** (2026-02-25 09:20) — feat(26-02): add KB, Style Map, and Discover cross-links across discovery pages (XLINK-03,04,05)
+> Files changed: 3
