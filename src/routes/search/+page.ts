@@ -10,10 +10,12 @@
  */
 
 import type { PageLoad } from './$types';
-import type { ArtistResult } from '$lib/db/queries';
+import type { ArtistResult, SearchIntent } from '$lib/db/queries';
 import type { LocalTrack } from '$lib/library/types';
 
 export const prerender = true;
+
+const EMPTY_INTENT: SearchIntent = { type: 'artist', raw: '', entity: '' };
 
 export const load: PageLoad = async ({ url }) => {
 	// During prerendering url.searchParams is unavailable — return empty placeholder.
@@ -24,7 +26,15 @@ export const load: PageLoad = async ({ url }) => {
 		q = url.searchParams.get('q')?.trim() ?? '';
 		mode = url.searchParams.get('mode') === 'tag' ? 'tag' : 'artist';
 	} catch {
-		return { results: [] as ArtistResult[], query: '', mode: 'artist' as const, matchedTag: null as string | null, error: false, localTracks: [] as LocalTrack[] };
+		return {
+			results: [] as ArtistResult[],
+			query: '',
+			mode: 'artist' as const,
+			matchedTag: null as string | null,
+			intent: EMPTY_INTENT,
+			error: false,
+			localTracks: [] as LocalTrack[]
+		};
 	}
 
 	if (!q) {
@@ -33,6 +43,7 @@ export const load: PageLoad = async ({ url }) => {
 			query: '',
 			mode,
 			matchedTag: null as string | null,
+			intent: EMPTY_INTENT,
 			error: false,
 			localTracks: [] as LocalTrack[]
 		};
@@ -40,11 +51,27 @@ export const load: PageLoad = async ({ url }) => {
 
 	try {
 		const { getProvider } = await import('$lib/db/provider');
-		const { searchArtists, searchByTag } = await import('$lib/db/queries');
+		const { searchArtists, searchByTag, parseSearchIntent, searchByCity, searchByLabel } =
+			await import('$lib/db/queries');
 
 		const provider = await getProvider();
-		const results =
-			mode === 'tag' ? await searchByTag(provider, q) : await searchArtists(provider, q);
+
+		// Parse intent from the query (unless mode toggle explicitly sets tag search).
+		// Tag mode uses its own search path — intent stays 'artist' for chip display purposes.
+		const intent: SearchIntent = mode === 'tag'
+			? { type: 'artist', raw: q, entity: q }
+			: parseSearchIntent(q);
+
+		let results: ArtistResult[];
+		if (mode === 'tag') {
+			results = await searchByTag(provider, q);
+		} else if (intent.type === 'city') {
+			results = await searchByCity(provider, intent.entity);
+		} else if (intent.type === 'label') {
+			results = await searchByLabel(provider, intent.entity);
+		} else {
+			results = await searchArtists(provider, q);
+		}
 
 		let localTracks: LocalTrack[] = [];
 		try {
@@ -66,6 +93,7 @@ export const load: PageLoad = async ({ url }) => {
 			query: q,
 			mode,
 			matchedTag: mode === 'tag' ? q : null,
+			intent,
 			error: false,
 			localTracks
 		};
@@ -76,6 +104,7 @@ export const load: PageLoad = async ({ url }) => {
 			query: q,
 			mode,
 			matchedTag: null as string | null,
+			intent: { type: 'artist', raw: q, entity: q } as SearchIntent,
 			error: true,
 			localTracks: [] as LocalTrack[]
 		};
