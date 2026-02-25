@@ -115,10 +115,11 @@ pub fn refresh_covers(
         let mut stmt = conn
             .prepare("SELECT id, path FROM local_tracks WHERE cover_art_base64 IS NULL")
             .map_err(|e| e.to_string())?;
-        stmt.query_map([], |row| Ok((row.get(0)?, row.get(1)?)))
+        let result = stmt.query_map([], |row| Ok((row.get(0)?, row.get(1)?)))
             .map_err(|e| e.to_string())?
             .collect::<Result<Vec<_>, _>>()
-            .map_err(|e| e.to_string())?
+            .map_err(|e| e.to_string())?;
+        result
     };
 
     let mut updated = 0u32;
