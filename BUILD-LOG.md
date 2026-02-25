@@ -6345,3 +6345,12 @@ The slug resolution is outside the main try/catch so it can gracefully handle pr
 
 > **Commit 3cb90f5** (2026-02-25 04:49) — docs(25): capture phase context
 > Files changed: 1
+
+> **Commit 41bd811** (2026-02-25 04:49) — wip: auto-save
+> Files changed: 1
+
+> **Commit 6f4bec3** (2026-02-25 05:01) — docs(25): create phase 25 plan
+> Files changed: 5
+
+> **Commit 4065594** (2026-02-25 05:08) — fix(25): revise plans based on checker feedback
+> Files changed: 4
