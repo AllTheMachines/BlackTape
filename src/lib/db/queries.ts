@@ -23,6 +23,8 @@ export interface ArtistResult {
 	tags: string | null;
 	/** Optional uniqueness score (0–1000). Only populated by getDiscoveryArtists. */
 	uniqueness_score?: number | null;
+	/** What caused this result to appear (for badge display) */
+	match_type?: 'name' | 'tag' | 'city' | 'label';
 }
 
 /** Full artist record returned by single-artist lookup. */
@@ -98,6 +100,47 @@ export interface GenreEdge {
 export interface GenreGraph {
 	nodes: GenreNode[];
 	edges: GenreEdge[];
+}
+
+/** Parsed intent from a natural language search query */
+export interface SearchIntent {
+	type: 'artist' | 'city' | 'label';
+	/** Original full query string */
+	raw: string;
+	/** Extracted entity name (e.g. "Berlin" from "artists from Berlin") */
+	entity: string;
+}
+
+/**
+ * Parse natural-language search queries into structured intents.
+ *
+ * Patterns detected:
+ *   "artists from Berlin" | "from Berlin" | "in Berlin"  → city intent
+ *   "artists on Warp Records" | "on Warp" | "label Warp" → label intent
+ *   Anything else                                         → artist intent
+ *
+ * The extracted entity is trimmed and lowercased for query use.
+ */
+export function parseSearchIntent(query: string): SearchIntent {
+	const q = query.trim();
+
+	// City patterns: "artists from X", "from X", "artists in X", "in X"
+	const cityMatch = q.match(
+		/^(?:artists?\s+)?(?:from|in)\s+(.+)$/i
+	);
+	if (cityMatch) {
+		return { type: 'city', raw: q, entity: cityMatch[1].trim() };
+	}
+
+	// Label patterns: "artists on X", "on label X", "label X"
+	const labelMatch = q.match(
+		/^(?:artists?\s+)?(?:on|on label|label)\s+(.+)$/i
+	);
+	if (labelMatch) {
+		return { type: 'label', raw: q, entity: labelMatch[1].trim() };
+	}
+
+	return { type: 'artist', raw: q, entity: q };
 }
 
 // ---------------------------------------------------------------------------
