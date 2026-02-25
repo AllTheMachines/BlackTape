@@ -1,11 +1,14 @@
 <script lang="ts">
-	import { queueState, setQueue, removeFromQueue, clearQueue } from '$lib/player/queue.svelte';
+	import { queueState, setQueue, removeFromQueue, clearQueue, reorderQueue } from '$lib/player/queue.svelte';
 
 	interface Props {
 		onclose: () => void;
 	}
 
 	let { onclose }: Props = $props();
+
+	let dragSrcIndex = $state<number | null>(null);
+	let isDragTarget = $state<number | null>(null);
 
 	function formatDuration(secs: number): string {
 		if (!isFinite(secs) || secs < 0) return '0:00';
@@ -25,8 +28,6 @@
 	}
 </script>
 
-<div class="queue-overlay" role="presentation" onclick={onclose}></div>
-
 <aside class="queue-panel" aria-label="Play queue">
 	<div class="queue-header">
 		<h3>Queue</h3>
@@ -44,18 +45,26 @@
 	</div>
 
 	{#if queueState.tracks.length === 0}
-		<div class="queue-empty">Queue is empty</div>
+		<div class="queue-empty">Queue is empty. Hit + Queue on any track.</div>
 	{:else}
 		<div class="queue-list">
 			{#each queueState.tracks as track, i}
 				<div
 					class="queue-item"
 					class:active={i === queueState.currentIndex}
+					class:drag-over={isDragTarget === i}
 					role="button"
 					tabindex="0"
+					draggable={true}
+					ondragstart={() => { dragSrcIndex = i; }}
+					ondragover={(e) => { e.preventDefault(); isDragTarget = i; }}
+					ondragleave={() => { isDragTarget = null; }}
+					ondrop={(e) => { e.preventDefault(); if (dragSrcIndex !== null && dragSrcIndex !== i) reorderQueue(dragSrcIndex, i); dragSrcIndex = null; isDragTarget = null; }}
+					ondragend={() => { dragSrcIndex = null; isDragTarget = null; }}
 					onclick={() => jumpTo(i)}
 					onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') jumpTo(i); }}
 				>
+					<span class="drag-handle">⠿</span>
 					<span class="queue-index">{i + 1}</span>
 					<div class="queue-track-info">
 						<span class="queue-track-title">{track.title}</span>
@@ -79,38 +88,27 @@
 </aside>
 
 <style>
-	.queue-overlay {
-		position: fixed;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: var(--player-height);
-		background: rgba(0, 0, 0, 0.4);
-		z-index: 199;
-	}
-
 	.queue-panel {
 		position: fixed;
-		top: var(--header-height);
+		left: 0;
 		right: 0;
-		bottom: var(--player-height);
-		width: 340px;
-		max-width: 90vw;
-		background: var(--bg-surface);
-		border-left: 1px solid var(--border-subtle);
-		z-index: 201;
+		bottom: var(--player);
+		height: min(420px, 65vh);
+		background: var(--bg-2);
+		border-top: 1px solid var(--b-2);
+		z-index: 200;
 		display: flex;
 		flex-direction: column;
 		overflow: hidden;
-		animation: slide-in 0.2s ease-out;
+		animation: slide-up 0.2s ease-out;
 	}
 
-	@keyframes slide-in {
+	@keyframes slide-up {
 		from {
-			transform: translateX(100%);
+			transform: translateY(100%);
 		}
 		to {
-			transform: translateX(0);
+			transform: translateY(0);
 		}
 	}
 
@@ -204,6 +202,25 @@
 
 	.queue-item.active .queue-track-title {
 		color: var(--progress-color);
+	}
+
+	.queue-item.drag-over {
+		background: var(--bg-4);
+		border-top: 1px solid var(--b-acc);
+	}
+
+	.drag-handle {
+		font-size: 0.9rem;
+		color: var(--t-3);
+		opacity: 0;
+		cursor: grab;
+		flex-shrink: 0;
+		transition: opacity 0.15s;
+		line-height: 1;
+	}
+
+	.queue-item:hover .drag-handle {
+		opacity: 1;
 	}
 
 	.queue-index {

@@ -10,6 +10,7 @@
 	import { aiState, loadAiSettings, initializeAi } from '$lib/ai/state.svelte';
 	import { loadTasteProfile, tasteProfile } from '$lib/taste/profile.svelte';
 	import { loadPlaybackSettings } from '$lib/player/playback.svelte';
+	import { restoreQueueFromStorage } from '$lib/player/queue.svelte';
 	import { onMount } from 'svelte';
 	import PanelLayout from '$lib/components/PanelLayout.svelte';
 	import LeftSidebar from '$lib/components/LeftSidebar.svelte';
@@ -41,6 +42,7 @@
 	]);
 
 	onMount(async () => {
+		restoreQueueFromStorage(); // Restore persisted queue first
 		tauriMode = isTauri();
 
 		// Initialize Nostr communication layer — fire-and-forget, does not block layout render

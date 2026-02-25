@@ -6417,3 +6417,10 @@ TypeScript check: 0 errors, 593 files.
 
 > **Commit f0dfa5e** (2026-02-25 05:21) — feat(25-02): add Top Tracks section with Play All / Queue All to artist page
 > Files changed: 1
+
+> **Commit 5b1796b** (2026-02-25 05:24) — docs(25-02): complete TrackRow surface integration plan
+> Files changed: 5
+
+<!-- status -->
+Phase 25 Plan 03 — Queue panel redesign + Library two-pane layout. Task 1/2 done: Queue.svelte slide-up animation, drag-reorder, updated empty state; Player.svelte queue-toggle testid; root layout restores queue on mount. Starting Task 2: Library two-pane layout.
+<!-- /status -->
