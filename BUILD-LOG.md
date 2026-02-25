@@ -6339,3 +6339,9 @@ The slug resolution is outside the main try/catch so it can gracefully handle pr
 
 > **Commit 1430410** (2026-02-25 04:43) — wip: auto-save
 > Files changed: 1
+
+> **Commit f097b8f** (2026-02-25 04:46) — auto-save: 1 files @ 04:46
+> Files changed: 1
+
+> **Commit 3cb90f5** (2026-02-25 04:49) — docs(25): capture phase context
+> Files changed: 1
