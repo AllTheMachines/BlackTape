@@ -231,7 +231,7 @@
 		height: 100%;
 		overflow-y: auto;
 		padding: var(--space-sm);
-		background: var(--bg-base);
+		background: var(--bg-2);
 		display: flex;
 		flex-direction: column;
 		gap: 0;

@@ -192,6 +192,7 @@
 	.main-pane {
 		height: 100%;
 		overflow-y: auto;
+		background: var(--bg-2);
 	}
 
 	.minimal-main {
