@@ -6577,3 +6577,28 @@ TypeScript: 0 errors. Test suite: 134 passed, 0 failed. DISC-01/02/03 delivered.
 
 > **Commit 9110268** (2026-02-25 09:23) — docs(26-01): complete Discover page redesign plan — DISC-01/02/03
 > Files changed: 5
+
+> **Commit 167d2c0** (2026-02-25 09:24) — wip: auto-save
+> Files changed: 2
+
+## Entry — 2026-02-25 — Phase 26 Plan 02: Cross-linking Discovery Tools
+
+### What Was Built
+
+Five cross-links connecting the seven discovery tools so they feel like a unified ecosystem rather than isolated pages. XLINK-01..05 complete. ~4 minutes, 2 tasks, 7 files.
+
+**Artist page → Style Map (XLINK-01):** Added a secondary "Explore [tag] in Style Map →" link below the KB explore link. The link encodes `tags[0]` as a URL param (`/style-map?tag=shoegaze`). The Style Map page now reads this param in `+page.ts` using `url.searchParams.get('tag')` and passes `initialTag` through to `StyleMap.svelte`. In `onMount`, after the force simulation's `tick(500)` completes and `layoutNodes` is set, `hoveredTag = initialTag` — so the node is visually highlighted when arriving from an artist page.
+
+**XLINK-02 verified as already satisfied:** The KB genre page at `/kb/genre/[slug]/+page.svelte` already renders a link to Discover. No changes needed.
+
+**Scene page → KB (XLINK-03):** Added "See [name] in Knowledge Base →" link using `data.scene.slug` to construct the `/kb/genre/[slug]` URL. Placed between the tags block and the artists list — visible context without competing with core content.
+
+**Crate Dig per-result cross-links (XLINK-04):** Each `ArtistCard` in the crate grid is now wrapped in a `.crate-result` div with a `.crate-cross-links` row beneath it. Two links appear when the artist has tags: "Explore in Style Map →" (deep-links to the map with `primaryTag`) and "Open scene room →" (a button that invokes `chatState.view = 'rooms'; openChat('rooms')`). The links follow the specific artist's primary tag, not the filter applied to the dig.
+
+**Time Machine → Discover era link (XLINK-05):** Added "Explore [era] artists in Discover →" between the year snapshot heading and the artist grid. Links to `/discover?era=70s` etc. The KB has no dedicated era pages, so Discover's era filter is the correct destination.
+
+### Technical Notes
+
+CSS pattern established: `.cross-link-secondary` — `font-size: 0.8rem`, `color: var(--text-muted)`, amber on hover. Used on artist page and scene page. Crate page uses `.crate-cross-link` (same values, button reset needed). Time Machine uses `.tm-cross-link` (matches its existing `var(--color-muted)` convention).
+
+Verification: `npm run check` 0 errors. Test suite 134/134 passing.
