@@ -15,10 +15,10 @@
 
 ### Artist Page
 
-- [ ] **ARTP-01**: Artist page is fully redesigned to match the v1.4 design system (header, sections, tabs, player integration)
-- [ ] **ARTP-02**: Artist page displays band members sourced from MusicBrainz relationships
-- [ ] **ARTP-03**: Artist page displays influenced-by and influenced artists from MusicBrainz relationships
-- [ ] **ARTP-04**: Artist page displays associated labels from MusicBrainz relationships
+- [x] **ARTP-01**: Artist page is fully redesigned to match the v1.4 design system (header, sections, tabs, player integration)
+- [x] **ARTP-02**: Artist page displays band members sourced from MusicBrainz relationships
+- [x] **ARTP-03**: Artist page displays influenced-by and influenced artists from MusicBrainz relationships
+- [x] **ARTP-04**: Artist page displays associated labels from MusicBrainz relationships
 - [ ] **ARTP-05**: Release credits (producers, engineers, featured artists) are displayed and linked to their own artist pages
 - [ ] **ARTP-06**: Discography has a type filter — All / Albums / EPs / Singles
 - [ ] **ARTP-07**: Discography can be sorted by date (newest / oldest)
@@ -99,10 +99,10 @@
 | DSYS-03 | Phase 23: Design System Foundation | Complete |
 | DSYS-04 | Phase 23: Design System Foundation | Complete |
 | DSYS-05 | Phase 23: Design System Foundation | Complete |
-| ARTP-01 | Phase 24: Artist Page | Pending |
-| ARTP-02 | Phase 24: Artist Page | Pending |
-| ARTP-03 | Phase 24: Artist Page | Pending |
-| ARTP-04 | Phase 24: Artist Page | Pending |
+| ARTP-01 | Phase 24: Artist Page | Complete |
+| ARTP-02 | Phase 24: Artist Page | Complete |
+| ARTP-03 | Phase 24: Artist Page | Complete |
+| ARTP-04 | Phase 24: Artist Page | Complete |
 | ARTP-05 | Phase 24: Artist Page | Pending |
 | ARTP-06 | Phase 24: Artist Page | Pending |
 | ARTP-07 | Phase 24: Artist Page | Pending |
