@@ -107,6 +107,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             check_database,
             scanner::scan_folder,
+            scanner::refresh_covers,
             scanner::get_library_tracks,
             scanner::get_music_folders,
             scanner::add_music_folder,

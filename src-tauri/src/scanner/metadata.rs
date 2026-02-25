@@ -94,6 +94,21 @@ pub fn read_track_metadata(path: &Path) -> Option<TrackMetadata> {
     })
 }
 
+/// Read only the first embedded cover art from an audio file.
+/// Used by `refresh_covers` to backfill art without re-reading all metadata.
+pub fn read_cover_art(path: &Path) -> Option<String> {
+    let tagged_file = lofty::read_from_path(path).ok()?;
+    let tag = tagged_file.primary_tag().or_else(|| tagged_file.first_tag())?;
+    tag.pictures().first().map(|pic| {
+        let mime = pic
+            .mime_type()
+            .map(|m| m.to_string())
+            .unwrap_or_else(|| "image/jpeg".to_string());
+        let encoded = general_purpose::STANDARD.encode(pic.data());
+        format!("data:{};base64,{}", mime, encoded)
+    })
+}
+
 // ---------------------------------------------------------------------------
 // RUST-03: Unit tests for scanner metadata helpers
 // ---------------------------------------------------------------------------

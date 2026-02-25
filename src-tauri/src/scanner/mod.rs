@@ -101,3 +101,41 @@ pub fn remove_music_folder(
     let conn = state.0.lock().map_err(|e| format!("Lock error: {}", e))?;
     db::remove_music_folder(&conn, &path)
 }
+
+/// Backfill cover art for existing tracks that have no art stored yet.
+/// Reads only artwork (not full metadata) for each track with NULL cover_art_base64.
+#[tauri::command]
+pub fn refresh_covers(
+    state: tauri::State<'_, LibraryState>,
+) -> Result<u32, String> {
+    let conn = state.0.lock().map_err(|e| format!("Lock error: {}", e))?;
+
+    // Collect paths of tracks missing cover art
+    let tracks: Vec<(i64, String)> = {
+        let mut stmt = conn
+            .prepare("SELECT id, path FROM local_tracks WHERE cover_art_base64 IS NULL")
+            .map_err(|e| e.to_string())?;
+        stmt.query_map([], |row| Ok((row.get(0)?, row.get(1)?)))
+            .map_err(|e| e.to_string())?
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|e| e.to_string())?
+    };
+
+    let mut updated = 0u32;
+    for (id, path) in &tracks {
+        let file_path = std::path::Path::new(path);
+        if let Some(art) = metadata::read_cover_art(file_path) {
+            if conn
+                .execute(
+                    "UPDATE local_tracks SET cover_art_base64 = ?1 WHERE id = ?2",
+                    rusqlite::params![art, id],
+                )
+                .is_ok()
+            {
+                updated += 1;
+            }
+        }
+    }
+
+    Ok(updated)
+}

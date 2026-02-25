@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { libraryState, scanFolder, groupByAlbum, getSortedTracks } from '$lib/library';
-	import { pickMusicFolder } from '$lib/library/scanner';
+	import { pickMusicFolder, refreshCovers } from '$lib/library/scanner';
 	import { loadLibrary } from '$lib/library/store.svelte';
 	import { removeMusicFolder } from '$lib/library/scanner';
 	import LibraryBrowser from '$lib/components/LibraryBrowser.svelte';
@@ -10,6 +10,7 @@
 
 	let tauriMode = $state(false);
 	let showFolderManager = $state(false);
+	let isRefreshingCovers = $state(false);
 
 	onMount(() => {
 		libraryState.sortBy = 'added';
@@ -26,6 +27,16 @@
 
 	async function handleRescan(path: string) {
 		await scanFolder(path);
+	}
+
+	async function handleRefreshCovers() {
+		isRefreshingCovers = true;
+		try {
+			await refreshCovers();
+			await loadLibrary();
+		} finally {
+			isRefreshingCovers = false;
+		}
 	}
 
 	async function handleRemoveFolder(path: string) {
@@ -71,6 +82,11 @@
 				{/if}
 			</div>
 			<div class="header-actions">
+				{#if hasLibrary}
+					<button class="btn btn-secondary" onclick={handleRefreshCovers} disabled={isRefreshingCovers} title="Refresh cover art from embedded tags">
+						{isRefreshingCovers ? 'Refreshing...' : 'Refresh Covers'}
+					</button>
+				{/if}
 				{#if hasFolders}
 					<button class="btn btn-secondary" onclick={() => (showFolderManager = !showFolderManager)} title="Manage folders">
 						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

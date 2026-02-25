@@ -60,6 +60,15 @@ export async function removeMusicFolder(path: string): Promise<void> {
 }
 
 /**
+ * Backfill cover art for existing tracks that have no art stored yet.
+ * Returns the number of tracks that got art added.
+ */
+export async function refreshCovers(): Promise<number> {
+	const invoke = await getInvoke();
+	return await invoke<number>('refresh_covers');
+}
+
+/**
  * Open a native OS folder picker dialog.
  * Returns the selected folder path, or null if cancelled.
  */

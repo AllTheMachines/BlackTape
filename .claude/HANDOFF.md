@@ -1,53 +1,38 @@
 # Work Handoff - 2026-02-25
 
-## Current Task
-Fix remaining 2 open UAT issues: #4 (Discover grid) and #8 (Library cover art)
+## What Was Done This Session
 
-## Decisions Made This Session
+### Theme changes (theme.css)
+- `--bg-0`: #292929
+- `--t-3`: #888888
+- `--t-2`: #cfcfcf
 
-### #4 — Discover page: drop thumbnails, use compact list
-Steve's call: the large square placeholder grid looks broken because it promises images and never delivers. Switch to a **compact list layout** — name, tags, country, uniqueness bar — no image thumbnails. Looks intentional, loads instantly. Images are a future data pipeline concern.
+### Layout fixes
+- `PanelLayout.svelte` `.main-pane`: added `background: var(--bg-2)` (was transparent/near-black)
+- `RightSidebar.svelte`: changed background from `var(--bg-base)` to `var(--bg-2)`
 
-**What to change:**
-- `src/lib/components/ArtistCard.svelte` — remove `.a-art` div (the initials square), tighten layout to a compact list row
-- May need CSS changes in the Discover page grid to switch from grid to list layout (`src/routes/discover/+page.svelte`)
+### Hero page
+- `src/routes/+page.svelte`: changed `.hero` from `justify-content: center` + `min-height` to `justify-content: flex-start` + `padding-top: var(--space-2xl)`
 
-### #8 — Library cover art: Rust feature, full implementation
-Steve said "yes do it". Plan:
-1. **`src-tauri/src/scanner/metadata.rs`** — during scan, read first embedded artwork (ID3v2 `APIC` tag / FLAC `METADATA_BLOCK_PICTURE`), write to a cache file in app data dir keyed by `{artist}-{album}.jpg` (or hash)
-2. **`src-tauri/src/mercury_db.rs`** — add `cover_art_path TEXT` column to `library_albums` (or however albums are stored) — check actual schema first
-3. **`src-tauri/src/lib.rs`** — register a `get_album_art` command or use `convertFileSrc` on the cache path; alternatively store small images as base64 in DB (simpler, no file management)
-4. **`src/lib/components/LibraryBrowser.svelte`** — display `<img>` from the art path/base64 instead of the initials `{getInitials()}` div
-
-**Key decision to make before coding:** cache file vs. base64 in DB
-- **Cache file** (app data dir): cleaner for large art, needs path management, needs custom protocol or `convertFileSrc`
-- **Base64 in DB**: simpler plumbing (no files to manage), works directly in `<img src="data:image/jpeg;base64,...">`, slightly larger DB but fine for 256x256 thumbnails
-- **Recommendation:** base64, stored as TEXT in DB, max 256×256 resize during scan. Avoids file management complexity entirely.
-
-## Relevant Files
-
-### #4 (Discover compact list)
-- `src/lib/components/ArtistCard.svelte` — remove `.a-art` square, style as list row
-- `src/routes/discover/+page.svelte` — likely needs grid → list CSS change
-- Check other pages that use `ArtistCard` (Crate Dig, Time Machine, Scenes) — they may want the same treatment or may keep cards
-
-### #8 (Library cover art)
-- `src-tauri/src/scanner/metadata.rs` — add artwork extraction during scan
-- `src-tauri/src/mercury_db.rs` — schema: check `library_tracks` / `library_albums` table structure, add cover art column
-- `src-tauri/src/lib.rs` — no new command needed if using base64 in DB
-- `src/lib/components/LibraryBrowser.svelte` — display art instead of initials
+### Cover art — Refresh Covers feature (needs cargo build + test)
+The #8 library cover art fix only extracts art at scan time. Existing 2345 tracks have NULL cover_art_base64. Added backfill command:
+- `src-tauri/src/scanner/metadata.rs` — added `read_cover_art(path)` standalone function
+- `src-tauri/src/scanner/mod.rs` — added `refresh_covers` Tauri command (reads art for all tracks with NULL cover_art_base64, updates DB)
+- `src-tauri/src/lib.rs` — registered `scanner::refresh_covers` in invoke_handler
+- `src/lib/library/scanner.ts` — added `refreshCovers()` TS wrapper
+- `src/routes/library/+page.svelte` — added "Refresh Covers" button in header (visible when library has tracks)
 
 ## Current State
-- All other UAT issues closed (11/14). 164/164 tests passing.
-- No uncommitted changes.
-- Branch: main
+- `npm run check`: 0 errors ✓
+- Rust NOT yet compiled/tested — needs `cargo test` then rebuild
+- "Refresh Covers" button will appear in Library header — user clicks it once to backfill all existing tracks
 
 ## Next Steps
-1. Fix #4 first (smaller change)
-2. Then #8 (Rust work — read existing scanner/DB schema before touching anything)
-3. Run `npm run check` after #4
-4. Run `npm run check` + `cargo test` after #8
-5. Close both GitHub issues
+1. Run `cargo test` to verify Rust compiles cleanly
+2. `npm run build` + `npm run tauri dev`
+3. User clicks "Refresh Covers" in Library — art backfills for all 2345 tracks
+4. Reload library to see covers appear
+5. Commit all changes (theme tweaks + layout fixes + refresh covers feature)
 
 ## Resume Command
 After `/clear`, run `/resume` to continue.
