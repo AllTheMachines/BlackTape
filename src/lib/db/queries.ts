@@ -840,6 +840,7 @@ export async function getArtistsByYear(
 			        (SELECT GROUP_CONCAT(t.tag, ', ') FROM artist_tags t WHERE t.artist_id = a.id LIMIT 5) AS tags
 			 FROM artists a
 			 WHERE a.begin_year = ?
+			   AND a.begin_year <= strftime('%Y', 'now')
 			   AND EXISTS (SELECT 1 FROM artist_tags WHERE artist_id = a.id AND tag = ?)
 			 ORDER BY a.name
 			 LIMIT ?`,
@@ -853,6 +854,7 @@ export async function getArtistsByYear(
 		        (SELECT GROUP_CONCAT(t.tag, ', ') FROM artist_tags t WHERE t.artist_id = a.id LIMIT 5) AS tags
 		 FROM artists a
 		 WHERE a.begin_year = ?
+		   AND a.begin_year <= strftime('%Y', 'now')
 		 ORDER BY a.name
 		 LIMIT ?`,
 		year,

@@ -19,6 +19,7 @@
 	let allGenreEdges = $state<GenreEdge[]>([]);
 
 	// Decade definitions
+	const THIS_YEAR = new Date().getFullYear();
 	const DECADES = [
 		{ label: '60s', start: 1960, end: 1969 },
 		{ label: '70s', start: 1970, end: 1979 },
@@ -26,7 +27,7 @@
 		{ label: '90s', start: 1990, end: 1999 },
 		{ label: '00s', start: 2000, end: 2009 },
 		{ label: '10s', start: 2010, end: 2019 },
-		{ label: '20s', start: 2020, end: 2029 },
+		{ label: '20s', start: 2020, end: THIS_YEAR },
 	];
 
 	let activeDecade = $state(DECADES.find(d => currentYear >= d.start && currentYear <= d.end) ?? DECADES[3]);
@@ -137,7 +138,7 @@
 			id="year-slider"
 			type="range"
 			min={activeDecade.start}
-			max={activeDecade.end}
+			max={Math.min(activeDecade.end, THIS_YEAR)}
 			value={currentYear}
 			oninput={onYearSlide}
 			class="year-slider"
