@@ -6891,3 +6891,6 @@ Applied v1.4 cockpit design system across every page. Full token audit + structu
 
 > **Commit 5d11e87** (2026-02-25 10:56) — wip: auto-save
 > Files changed: 1
+
+> **Commit 68fc666** (2026-02-25 10:57) — wip: auto-save
+> Files changed: 2
