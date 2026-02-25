@@ -6229,3 +6229,25 @@ After fix: Vite logs showed WebSocket connections and module requests from mercu
 
 > **Commit 11a936f** (2026-02-25 01:36) — docs(24): create phase plan
 > Files changed: 4
+
+> **Commit d39406f** (2026-02-25 01:38) — wip: auto-save
+> Files changed: 1
+
+<!-- status -->
+Phase 24 Plan 01 complete — ArtistRelationships.svelte + About tab + v1.4 tab tokens + Mastodon "Share" label. 3/3 tasks committed. 106 tests passing.
+<!-- /status -->
+
+> **Commit 6115fd0** (2026-02-25 01:40) — feat(24-01): fetch MB artist relationships in +page.ts
+> Files changed: 1
+
+> **Commit 77dd463** (2026-02-25 01:41) — feat(24-03): fetch and resolve release credits in +page.ts
+> Files changed: 1
+
+> **Commit 3359816** (2026-02-25 01:42) — feat(24-01): create ArtistRelationships.svelte component
+> Files changed: 1
+
+> **Commit 74ea63a** (2026-02-25 01:44) — feat(24-01): wire About tab + v1.4 tokens + Mastodon label in +page.svelte
+> Files changed: 3
+
+> **Commit 5a37c6e** (2026-02-25 01:45) — feat(24-03): credits UI in release page + discography filter/sort + Phase 24 test manifest
+> Files changed: 1

@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-24 after v1.4 milestone started)
 ## Current Position
 
 Phase: 24 of 27 (Artist Page)
-Plan: 0 of ? in current phase
-Status: Not started — needs CONTEXT.md discussion then planning
-Last activity: 2026-02-25 — Phase 23 complete: design tokens, titlebar, chrome surfaces, TagChip, global styles (3 plans, 5/5 DSYS requirements verified)
+Plan: 1 of 3 in current phase
+Status: In progress — Plan 01 complete (MB relationships + About tab), Plans 02-03 pending
+Last activity: 2026-02-25 — Phase 24 Plan 01 complete: ArtistRelationships.svelte, About tab, v1.4 tab tokens, Mastodon Share label (~5 min, 3 tasks, 4 files)
 
-Progress: [████░░░░░░] 20% (v1.4 — 1/5 phases complete)
+Progress: [████░░░░░░] 20% (v1.4 — 1/5 phases complete, Phase 24 1/3 plans)
 
 ## Performance Metrics
 
@@ -55,17 +55,19 @@ Progress: [████░░░░░░] 20% (v1.4 — 1/5 phases complete)
 - [23-03] fileContains() in test runner returns a function, not a boolean — negation tests must call: !fileContains(path, str)()
 - [23-03] Global button/input base styles placed in theme.css (not separate file) — Svelte components inherit automatically, can override locally
 - [23-03] TagFilter uses parallel chip styles (not TagChip component) because it needs button elements with disabled state, not anchor elements
+- [24-01] External MB artist links use musicbrainz.org/artist/{mbid} not local /artist/slug — relationship MBIDs don't map to local slugs without a DB lookup
+- [24-01] Test manifest scoped per plan — future-plan tests deferred to avoid pre-commit hook failures on unimplemented features
+- [24-01] About tab hidden entirely (not just empty) when hasRelationships is false — cleaner UX for artists with no MB relationship data
 
 ### Pending Todos
 None
 
 ### Blockers/Concerns
-- [Phase 24] MusicBrainz relationship data (members, influences, labels) requires live API fetch — confirm MB relationship endpoint availability during planning
 - [Phase 27] City/label search requires FTS5 schema changes or additional index columns — assess during Phase 27 planning
 
 ## Session Continuity
 
 Last session: 2026-02-25
-Stopped at: Phase 23 verified complete (VERIFICATION.md passed 5/5), advancing to Phase 24
+Stopped at: Completed 24-01-PLAN.md (Phase 24 Plan 01 — MB relationships + About tab)
 Resume file: None
-Next: Discuss Phase 24 context (/gsd:discuss-phase 24) then plan and execute
+Next: Execute Phase 24 Plan 02 (discography filter/sort)
