@@ -11,10 +11,50 @@
 	let mode: 'artist' | 'tag' = $state(props.initialMode ?? 'artist');
 	let size = $derived(props.size ?? 'large');
 
+	let suggestions = $state<Array<{ name: string; slug: string; tags: string | null }>>([]);
+	let showSuggestions = $state(false);
+	let debounceTimer = $state<ReturnType<typeof setTimeout> | null>(null);
+
+	async function fetchSuggestions(q: string) {
+		if (q.length < 2 || mode !== 'artist') {
+			suggestions = [];
+			showSuggestions = false;
+			return;
+		}
+		try {
+			const { getProvider } = await import('$lib/db/provider');
+			const { searchArtistsAutocomplete } = await import('$lib/db/queries');
+			const db = await getProvider();
+			suggestions = await searchArtistsAutocomplete(db, q);
+			showSuggestions = suggestions.length > 0;
+		} catch {
+			suggestions = [];
+			showSuggestions = false;
+		}
+	}
+
+	function handleInput() {
+		if (debounceTimer) clearTimeout(debounceTimer);
+		debounceTimer = setTimeout(() => fetchSuggestions(query), 200);
+	}
+
+	function selectSuggestion(slug: string) {
+		showSuggestions = false;
+		suggestions = [];
+		goto(`/artist/${slug}`);
+	}
+
+	function handleBlur() {
+		setTimeout(() => {
+			showSuggestions = false;
+		}, 150);
+	}
+
 	function handleSubmit(e: Event) {
 		e.preventDefault();
 		const trimmed = query.trim();
 		if (!trimmed) return;
+		showSuggestions = false;
 		goto(`/search?q=${encodeURIComponent(trimmed)}&mode=${mode}`);
 	}
 </script>
@@ -45,13 +85,36 @@
 			bind:value={query}
 			placeholder={mode === 'artist' ? 'Search artists...' : 'Search by tag...'}
 			aria-label={mode === 'artist' ? 'Search artists' : 'Search by tag'}
+			oninput={handleInput}
+			onblur={handleBlur}
 		/>
 	</form>
+
+	{#if showSuggestions && suggestions.length > 0}
+		<ul class="autocomplete-list" role="listbox" data-testid="autocomplete-dropdown">
+			{#each suggestions as s}
+				<li role="option" aria-selected="false">
+					<button
+						type="button"
+						class="autocomplete-item"
+						onmousedown={() => selectSuggestion(s.slug)}
+						data-testid="autocomplete-item"
+					>
+						<span class="ac-name">{s.name}</span>
+						{#if s.tags}
+							<span class="ac-genre">{s.tags}</span>
+						{/if}
+					</button>
+				</li>
+			{/each}
+		</ul>
+	{/if}
 </div>
 
 <style>
 	.search-bar {
 		width: 100%;
+		position: relative;
 	}
 
 	.mode-toggle {
@@ -139,5 +202,54 @@
 	.normal .mode-btn {
 		padding: 2px var(--space-sm);
 		font-size: 0.75rem;
+	}
+
+	/* Autocomplete dropdown */
+	.autocomplete-list {
+		position: absolute;
+		top: 100%;
+		left: 0;
+		right: 0;
+		z-index: 100;
+		list-style: none;
+		margin: 2px 0 0;
+		padding: 0;
+		background: var(--bg-elevated);
+		border: 1px solid var(--border-default);
+		border-radius: var(--r, 2px);
+		overflow: hidden;
+	}
+
+	.autocomplete-item {
+		display: flex;
+		align-items: baseline;
+		gap: var(--space-sm);
+		width: 100%;
+		padding: var(--space-xs) var(--space-md);
+		background: transparent;
+		border: none;
+		border-radius: 0;
+		text-align: left;
+		cursor: pointer;
+		color: var(--text-primary);
+		font-size: 0.9rem;
+	}
+
+	.autocomplete-item:hover {
+		background: var(--bg-hover);
+	}
+
+	.ac-name {
+		font-weight: 500;
+		color: var(--text-primary);
+	}
+
+	.ac-genre {
+		font-size: 0.75rem;
+		color: var(--text-muted);
+		flex: 1;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 </style>
