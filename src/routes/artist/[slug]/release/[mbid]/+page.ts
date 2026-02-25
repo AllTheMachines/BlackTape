@@ -21,6 +21,9 @@ export interface Credit {
 	role: string;
 }
 
+/** A release credit with role/name/mbid and optional local artist slug. */
+export type CreditEntry = { role: string; name: string; mbid: string; slug: string | null };
+
 export interface ReleaseDetail {
 	releaseGroupMbid: string;
 	title: string;
@@ -34,9 +37,17 @@ export interface ReleaseDetail {
 	buyLinks: import('$lib/affiliates/types').BuyLink[];
 }
 
+/** Credit roles to include in the collapsible Credits section. */
+const CREDIT_ROLES = new Set([
+	'producer', 'engineer', 'mix', 'lyricist', 'composer',
+	'performer', 'instrument', 'vocal'
+]);
+
 export const load: PageLoad = async ({ params, fetch }) => {
 	const { mbid, slug } = params;
 	let release: ReleaseDetail | null = null;
+	/** Raw credits without slug — populated inside the fetch block. */
+	let rawCredits: Omit<CreditEntry, 'slug'>[] = [];
 
 	try {
 		const mbUrl = `https://musicbrainz.org/ws/2/release?release-group=${mbid}&inc=recordings+artist-credits+media+artist-rels&limit=1&fmt=json`;
@@ -63,7 +74,7 @@ export const load: PageLoad = async ({ params, fetch }) => {
 					relations?: Array<{
 						'target-type'?: string;
 						type?: string;
-						artist?: { name: string };
+						artist?: { name: string; id: string };
 						url?: { resource?: string };
 					}>;
 				}>;
@@ -89,6 +100,15 @@ export const load: PageLoad = async ({ params, fetch }) => {
 				for (const r of rel.relations ?? []) {
 					if (r['target-type'] === 'artist' && r.artist?.name && r.type) {
 						credits.push({ name: r.artist.name, role: r.type });
+					}
+				}
+
+				// Collect detailed credits (with MBID) for the collapsible Credits section
+				for (const r of rel.relations ?? []) {
+					if (r['target-type'] === 'artist' && r.type && r.artist?.name && r.artist?.id) {
+						if (CREDIT_ROLES.has(r.type)) {
+							rawCredits.push({ role: r.type, name: r.artist.name, mbid: r.artist.id });
+						}
 					}
 				}
 
@@ -136,5 +156,30 @@ export const load: PageLoad = async ({ params, fetch }) => {
 		console.error('Release fetch error:', err);
 	}
 
-	return { release, slug, mbid };
+	// Resolve slugs for credits against local DB (Tauri only — graceful degradation)
+	let credits: CreditEntry[] = [];
+	if (rawCredits.length > 0) {
+		try {
+			const { getProvider } = await import('$lib/db/provider');
+			const provider = await getProvider();
+			credits = await Promise.all(
+				rawCredits.map(async (c) => {
+					try {
+						const row = await provider.get<{ slug: string }>(
+							'SELECT slug FROM artists WHERE mbid = ?',
+							c.mbid
+						);
+						return { ...c, slug: row?.slug ?? null };
+					} catch {
+						return { ...c, slug: null };
+					}
+				})
+			);
+		} catch {
+			// Provider unavailable (web/dev mode) — credits shown without links
+			credits = rawCredits.map((c) => ({ ...c, slug: null }));
+		}
+	}
+
+	return { release, slug, mbid, credits };
 };
