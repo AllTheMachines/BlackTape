@@ -6208,3 +6208,6 @@ Now `cargo run --no-default-features` correctly disables `custom-protocol`, and 
 ### Verification
 
 After fix: Vite logs showed WebSocket connections and module requests from mercury.exe immediately on launch. Phase 23 changes (grouped sidebar, new topbar, custom titlebar) became visible.
+
+> **Commit 7f5d56a** (2026-02-25 01:17) — docs: phase 23 complete + dev mode fix + handoff
+> Files changed: 2
