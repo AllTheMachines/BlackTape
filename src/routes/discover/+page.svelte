@@ -175,9 +175,9 @@
 					<button class="clear-filters-btn" onclick={clearAllFilters}>Clear filters</button>
 				</div>
 			{:else}
-				<div class="artist-grid">
+				<div class="artist-list">
 					{#each data.artists as artist}
-						<ArtistCard {artist} />
+						<ArtistCard {artist} compact />
 					{/each}
 				</div>
 			{/if}
@@ -395,15 +395,14 @@
 		color: var(--acc);
 	}
 
-	/* Artist grid */
-	.artist-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-		gap: var(--space-sm);
+	/* Artist list (compact rows) */
+	.artist-list {
+		display: flex;
+		flex-direction: column;
+		gap: 1px;
 		flex: 1;
 		overflow-y: auto;
-		padding: 14px 16px;
-		align-content: start;
+		padding: 6px 8px;
 	}
 
 	/* Empty state */

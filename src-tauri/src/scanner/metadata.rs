@@ -1,3 +1,4 @@
+use base64::{engine::general_purpose, Engine as _};
 use lofty::file::TaggedFileExt;
 use lofty::prelude::*;
 use serde::Serialize;
@@ -17,6 +18,8 @@ pub struct TrackMetadata {
     pub year: Option<u32>,
     pub duration_secs: f64,
     pub path: String,
+    /// First embedded cover art as a data URL (data:image/jpeg;base64,...), if present.
+    pub cover_art_base64: Option<String>,
 }
 
 pub fn is_supported_audio(path: &Path) -> bool {
@@ -63,6 +66,16 @@ pub fn read_track_metadata(path: &Path) -> Option<TrackMetadata> {
     );
     let duration_secs = tagged_file.properties().duration().as_secs_f64();
 
+    // Extract first embedded cover art as a base64 data URL
+    let cover_art_base64 = tag.pictures().first().map(|pic| {
+        let mime = pic
+            .mime_type()
+            .map(|m| m.to_string())
+            .unwrap_or_else(|| "image/jpeg".to_string());
+        let encoded = general_purpose::STANDARD.encode(pic.data());
+        format!("data:{};base64,{}", mime, encoded)
+    });
+
     // Normalize path to forward slashes for cross-platform consistency
     let normalized_path = path.to_string_lossy().replace('\\', "/");
 
@@ -77,6 +90,7 @@ pub fn read_track_metadata(path: &Path) -> Option<TrackMetadata> {
         year,
         duration_secs,
         path: normalized_path,
+        cover_art_base64,
     })
 }
 

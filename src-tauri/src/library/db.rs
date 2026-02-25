@@ -19,6 +19,7 @@ pub struct LocalTrack {
     pub duration_secs: f64,
     pub file_modified: i64,
     pub created_at: String,
+    pub cover_art_base64: Option<String>,
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -62,14 +63,18 @@ pub fn init_library_db(app_data_dir: &Path) -> Result<Connection, String> {
     )
     .map_err(|e| format!("Failed to create library tables: {}", e))?;
 
+    // Migration: add cover_art_base64 column if it doesn't exist yet.
+    // Silently ignored if column already exists.
+    let _ = conn.execute_batch("ALTER TABLE local_tracks ADD COLUMN cover_art_base64 TEXT;");
+
     Ok(conn)
 }
 
 pub fn insert_track(conn: &Connection, track: &TrackMetadata, file_modified: i64) -> Result<(), String> {
     conn.execute(
         "INSERT OR REPLACE INTO local_tracks
-            (path, title, artist, album, album_artist, track_number, disc_number, genre, year, duration_secs, file_modified)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)",
+            (path, title, artist, album, album_artist, track_number, disc_number, genre, year, duration_secs, file_modified, cover_art_base64)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12)",
         params![
             track.path,
             track.title,
@@ -82,6 +87,7 @@ pub fn insert_track(conn: &Connection, track: &TrackMetadata, file_modified: i64
             track.year,
             track.duration_secs,
             file_modified,
+            track.cover_art_base64,
         ],
     )
     .map_err(|e| format!("Failed to insert track: {}", e))?;
@@ -93,7 +99,7 @@ pub fn get_all_tracks(conn: &Connection) -> Result<Vec<LocalTrack>, String> {
     let mut stmt = conn
         .prepare(
             "SELECT id, path, title, artist, album, album_artist, track_number, disc_number,
-                    genre, year, duration_secs, file_modified, created_at
+                    genre, year, duration_secs, file_modified, created_at, cover_art_base64
              FROM local_tracks
              ORDER BY album_artist, album, disc_number, track_number",
         )
@@ -115,6 +121,7 @@ pub fn get_all_tracks(conn: &Connection) -> Result<Vec<LocalTrack>, String> {
                 duration_secs: row.get(10)?,
                 file_modified: row.get(11)?,
                 created_at: row.get(12)?,
+                cover_art_base64: row.get(13)?,
             })
         })
         .map_err(|e| format!("Failed to query tracks: {}", e))?

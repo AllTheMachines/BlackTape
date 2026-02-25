@@ -20,6 +20,7 @@ export interface LocalTrack {
 	duration_secs: number;
 	file_modified: number;
 	created_at: string;
+	cover_art_base64: string | null;
 }
 
 /** Mirrors the Rust `MusicFolder` struct from library/db.rs */
@@ -42,4 +43,6 @@ export interface LibraryAlbum {
 	artist: string;
 	year: number | null;
 	tracks: LocalTrack[];
+	/** Data URL for the album cover art, taken from first track with embedded art. */
+	coverArtBase64: string | null;
 }

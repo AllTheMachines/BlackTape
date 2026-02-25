@@ -66,7 +66,11 @@
 				onclick={() => selectAlbum(album)}
 				data-testid="album-list-item"
 			>
-				<div class="album-thumb">{getInitials(album.name)}</div>
+				{#if album.coverArtBase64}
+					<img class="album-thumb album-thumb-img" src={album.coverArtBase64} alt={album.name} />
+				{:else}
+					<div class="album-thumb">{getInitials(album.name)}</div>
+				{/if}
 				<div class="album-list-info">
 					<div class="album-list-title">{album.name}</div>
 					<a href="/search?q={encodeURIComponent(album.artist)}" class="album-list-artist" onclick={(e) => e.stopPropagation()}>{album.artist}</a>
@@ -79,7 +83,11 @@
 	<div class="track-pane" data-testid="track-pane">
 		{#if selectedAlbum}
 			<div class="track-pane-header">
-				<div class="release-cover" aria-hidden="true">{getInitials(selectedAlbum.name)}</div>
+				{#if selectedAlbum.coverArtBase64}
+					<img class="release-cover release-cover-img" src={selectedAlbum.coverArtBase64} alt={selectedAlbum.name} />
+				{:else}
+					<div class="release-cover" aria-hidden="true">{getInitials(selectedAlbum.name)}</div>
+				{/if}
 				<div class="release-info">
 					<div class="release-title">{selectedAlbum.name}</div>
 					<div class="release-artist">{selectedAlbum.artist}</div>
@@ -163,6 +171,10 @@
 		letter-spacing: 0.04em;
 	}
 
+	.album-thumb-img {
+		object-fit: cover;
+	}
+
 	.album-list-info {
 		display: flex;
 		flex-direction: column;
@@ -229,6 +241,10 @@
 		font-weight: 600;
 		color: var(--t-3);
 		letter-spacing: 0.04em;
+	}
+
+	.release-cover-img {
+		object-fit: cover;
 	}
 
 	.release-info {

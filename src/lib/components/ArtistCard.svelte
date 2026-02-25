@@ -4,10 +4,12 @@
 
 	let {
 		artist,
-		matchReason
+		matchReason,
+		compact = false
 	}: {
 		artist: ArtistResult;
 		matchReason?: string;
+		compact?: boolean;
 	} = $props();
 
 	let tags = $derived(
@@ -15,7 +17,7 @@
 			? artist.tags
 					.split(', ')
 					.filter(Boolean)
-					.slice(0, 3)
+					.slice(0, compact ? 2 : 3)
 			: []
 	);
 
@@ -36,9 +38,11 @@
 	);
 </script>
 
-<a href="/artist/{artist.slug}" class="artist-card" aria-label={artist.name}>
-	<!-- Square art area — initials placeholder until cover art available -->
-	<div class="a-art" aria-hidden="true">{initials}</div>
+<a href="/artist/{artist.slug}" class="artist-card" class:compact aria-label={artist.name}>
+	{#if !compact}
+		<!-- Square art area — initials placeholder until cover art available -->
+		<div class="a-art" aria-hidden="true">{initials}</div>
+	{/if}
 
 	<div class="a-info">
 		<div class="a-name">{artist.name}</div>
@@ -85,6 +89,66 @@
 		border-color: var(--b-3);
 		background: #1d1d1d;
 		text-decoration: none;
+	}
+
+	/* Compact list row mode (used in Discover) */
+	.artist-card.compact {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		padding: 5px 10px;
+		border-radius: var(--r);
+		background: transparent;
+		border-color: transparent;
+	}
+
+	.artist-card.compact:hover {
+		background: var(--bg-3);
+		border-color: var(--b-1);
+	}
+
+	.artist-card.compact .a-info {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		padding: 0;
+		flex: 1;
+		min-width: 0;
+	}
+
+	.artist-card.compact .a-name {
+		flex-shrink: 0;
+		min-width: 140px;
+		max-width: 220px;
+		font-size: 12px;
+	}
+
+	.artist-card.compact .a-meta {
+		flex-shrink: 0;
+		margin: 0;
+		font-size: 10px;
+		color: var(--t-3);
+		min-width: 24px;
+	}
+
+	.artist-card.compact .a-tags {
+		display: flex;
+		flex-wrap: nowrap;
+		gap: 3px;
+		margin: 0;
+		flex: 1;
+		overflow: hidden;
+	}
+
+	.artist-card.compact .match-reason {
+		margin: 0;
+		flex-shrink: 0;
+	}
+
+	.artist-card.compact .a-score {
+		flex-shrink: 0;
+		margin: 0;
+		width: 80px;
 	}
 
 	/* Square art area — fills width, 1:1 ratio */

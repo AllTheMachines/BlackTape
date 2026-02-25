@@ -74,9 +74,15 @@ export function groupByAlbum(tracks: LocalTrack[]): LibraryAlbum[] {
 				name: albumName,
 				artist,
 				year: track.year,
-				tracks: []
+				tracks: [],
+				coverArtBase64: null
 			};
 			albumMap.set(key, album);
+		}
+
+		// Use the first embedded cover art found across tracks in the album
+		if (!album.coverArtBase64 && track.cover_art_base64) {
+			album.coverArtBase64 = track.cover_art_base64;
 		}
 
 		album.tracks.push(track);
