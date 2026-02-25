@@ -4,6 +4,30 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-02-25 — Fix "Not Responding" Freeze on Library Load
+
+Steve noticed "Mercury (not responding)" on the title bar during library loads and searches, even after the cover art blob fix.
+
+### Root cause: synchronous Tauri commands on the main thread
+
+In Tauri 2 on Windows, `pub fn` Tauri commands are dispatched on the WebView2 COM thread — the Windows message pump thread. Every call to `get_library_tracks()`, `get_album_covers()`, `search_local_tracks()` was blocking it: mutex lock + SQLite query + JSON serialization. Windows sees no messages for 1-3 seconds → shows "not responding". `scan_folder` was already `async`; none of the read commands were.
+
+### Fix 1: async commands
+
+Changed all library commands to `pub async fn`. Async commands dispatch on the tokio runtime — main thread is freed immediately. The tokio thread still blocks on the sync SQLite work (no actual `await` points), but the Windows message pump runs uninterrupted.
+
+Commands affected: `get_library_tracks`, `get_music_folders`, `get_album_covers`, `search_local_tracks`, `set_album_cover`, `add_music_folder`, `remove_music_folder`, `refresh_covers`.
+
+### Fix 2: loading overlay instead of blocked navigation
+
+`+page.ts` `load()` was awaiting `loadLibrary()` before navigation completed — SvelteKit held the page transition open while data loaded. Even with async commands, the SvelteKit navigation bar just animated while the old page showed.
+
+Moved `loadLibrary()` to `onMount`. Added `isLoading: boolean` to `libraryState` — set to `true`/`false` around the fetch. Library page now renders immediately with a blocking overlay (same dark overlay + spinner pattern as Refresh Covers). Overlay disappears when data is ready.
+
+43/43 Rust tests, 164/164 suite tests, 0 TS/Svelte errors.
+
+---
+
 ## Entry 2026-02-25 — Fix IPC Freeze on Search + Library Load
 
 The app was freezing and crashing because every search query and every library load was transferring all embedded cover art blobs over IPC — up to 350MB for a 2345-track library. Two related fixes.
@@ -7421,3 +7445,9 @@ Fix: renamed to `avatar.svelte.ts`, updated 5 import sites (AvatarEditor, Avatar
 
 > **Commit bc32493** (2026-02-25 22:28) — fix: eliminate IPC blob transfer freeze on search and library load
 > Files changed: 5
+
+> **Commit d803ce0** (2026-02-25 22:29) — wip: auto-save
+> Files changed: 1
+
+> **Commit 3eda0c0** (2026-02-25 22:43) — fix: eliminate "not responding" freeze during library load
+> Files changed: 4
