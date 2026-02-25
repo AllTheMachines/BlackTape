@@ -19,6 +19,8 @@
 	import { openChat, chatState } from '$lib/comms/notifications.svelte.js';
 	import { generateEmbedSnippets } from '$lib/curator/embed-snippet';
 	import { page } from '$app/stores';
+	import { setQueue, addToQueue } from '$lib/player/queue.svelte';
+	import type { PlayerTrack } from '$lib/player/state.svelte';
 
 	let { data } = $props();
 
@@ -224,6 +226,16 @@
 			embedMode === 'script' && curatorHandle.trim() ? curatorHandle.trim() : undefined
 		)
 	);
+
+	/** Top tracks for the artist (populated when local library matching is available). */
+	let topPlayerTracks = $state<PlayerTrack[]>([]);
+
+	function handlePlayAll() {
+		if (topPlayerTracks.length > 0) setQueue(topPlayerTracks, 0);
+	}
+	function handleQueueAll() {
+		for (const t of topPlayerTracks) addToQueue(t);
+	}
 
 	/** Generate QR code on demand (client-side only, lazy import). */
 	async function handleQrClick() {
@@ -435,6 +447,32 @@
 				artistTags={data.artist.tags ?? ''}
 				releases={data.releases}
 			/>
+
+			<!-- Top Tracks (Tauri-only: local library queue integration) -->
+			{#if tauriMode}
+				<div class="top-tracks-section" data-testid="top-tracks-section">
+					<div class="top-tracks-header">
+						<h3 class="section-label">Top Tracks</h3>
+						<div class="top-tracks-actions">
+							<button
+								class="btn-play-all"
+								onclick={handlePlayAll}
+								data-testid="play-all-btn"
+							>
+								Play All
+							</button>
+							<button
+								class="btn-queue-all"
+								onclick={handleQueueAll}
+								data-testid="queue-all-btn"
+							>
+								+ Queue All
+							</button>
+						</div>
+					</div>
+					<p class="top-tracks-stub">Local track matching coming in a future update.</p>
+				</div>
+			{/if}
 
 			<!-- Discography -->
 			{#if data.releases.length > 0}
@@ -841,6 +879,70 @@
 		color: var(--text-accent);
 		margin: 0 0 var(--space-md);
 		letter-spacing: 0.02em;
+	}
+
+	/* ── Top Tracks ────────────────────────────────────── */
+	.top-tracks-section {
+		margin-bottom: var(--space-lg);
+	}
+
+	.top-tracks-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: var(--space-sm);
+	}
+
+	.section-label {
+		font-size: 0.75rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--t-3);
+		margin: 0;
+	}
+
+	.top-tracks-actions {
+		display: flex;
+		gap: 6px;
+	}
+
+	.btn-play-all {
+		background: var(--acc);
+		color: #000;
+		border: none;
+		padding: 5px 12px;
+		border-radius: var(--r);
+		font-size: 0.75rem;
+		font-weight: 600;
+		cursor: pointer;
+	}
+
+	.btn-play-all:hover {
+		background: var(--acc-bg-h);
+		color: var(--acc);
+		border: 1px solid var(--b-acc);
+	}
+
+	.btn-queue-all {
+		background: transparent;
+		color: var(--t-1);
+		border: 1px solid var(--b-2);
+		padding: 5px 12px;
+		border-radius: var(--r);
+		font-size: 0.75rem;
+		cursor: pointer;
+	}
+
+	.btn-queue-all:hover {
+		border-color: var(--b-3);
+	}
+
+	.top-tracks-stub {
+		font-size: 0.75rem;
+		color: var(--t-3);
+		font-style: italic;
+		margin: 0;
 	}
 
 	/* ── Discography ───────────────────────────────────── */
