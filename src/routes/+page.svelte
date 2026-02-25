@@ -64,9 +64,8 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		justify-content: center;
-		min-height: calc(100vh - var(--header-height));
-		padding: var(--space-xl);
+		justify-content: flex-start;
+		padding: var(--space-2xl) var(--space-xl) var(--space-xl);
 		text-align: center;
 	}
 
