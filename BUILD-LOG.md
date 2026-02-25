@@ -6939,3 +6939,6 @@ Design audit fixes applied + visually verified in running app. All 10 changes co
 
 > **Commit 0f698e7** (2026-02-25 11:16) — auto-save: 1 files @ 11:16
 > Files changed: 1
+
+> **Commit 42edb7d** (2026-02-25 11:32) — fix(design): apply audit round-2 fixes — LibraryBrowser, PanelLayout, Discover, Artist
+> Files changed: 1
