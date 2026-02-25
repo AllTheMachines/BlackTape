@@ -104,7 +104,14 @@ Plans:
   3. User can search by label name (e.g. "Warp Records") and get artists on that label
   4. Search results visually distinguish between artist name matches and tag matches
   5. KB genre pages show a type badge, description panel, key artists list, related genres with colour-coded type dots, and a genre map placeholder
-**Plans**: TBD
+**Plans**: 5 plans
+
+Plans:
+- [ ] 27-01-PLAN.md — Search backend: parseSearchIntent + searchArtistsAutocomplete + searchByCity + searchByLabel in queries.ts
+- [ ] 27-02-PLAN.md — SearchBar autocomplete dropdown (2-char trigger, 5 suggestions, name + genre tag, navigate to artist)
+- [ ] 27-03-PLAN.md — Search page intent wiring: city/label chip confirmation + match type badges on results
+- [ ] 27-04-PLAN.md — KB genre page redesign: type badge pill, compact artist rows, map placeholder
+- [ ] 27-05-PLAN.md — Phase 27 test manifest (P27-01 through P27-21)
 
 ## Progress
 
@@ -116,4 +123,4 @@ Plans:
 | 24. Artist Page | 3/3 | Complete    | 2026-02-25 |
 | 25. Queue System + Library | 4/4 | Complete    | 2026-02-25 |
 | 26. Discover + Cross-Linking + Crate Fix | 4/4 | Complete    | 2026-02-25 |
-| 27. Search + Knowledge Base | 0/TBD | Not started | - |
+| 27. Search + Knowledge Base | 0/5 | Not started | - |
