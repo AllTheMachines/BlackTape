@@ -57,7 +57,8 @@ Users can build and manage a playback queue from any track surface in the app, a
 <deferred>
 ## Deferred Ideas
 
-None — discussion stayed within phase scope.
+### Play Album / Queue Album wiring to actual playback (release page)
+The release page shows MusicBrainz data fetched live from the API. MusicBrainz tracks have no local file paths — they are metadata only. The queue stores `PlayerTrack` objects which require a local `path` to an audio file. Wiring "Play Album" / "+ Queue Album" on the release page to actual playback requires a local-library-to-MusicBrainz matching mechanism (matching MB release MBID or track metadata against locally indexed files). That mechanism does not exist in this phase. The buttons are present as visual placeholders establishing the correct UI hierarchy; they will be wired to real playback when the matching layer is built.
 
 </deferred>
 
