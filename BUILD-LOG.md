@@ -6863,6 +6863,25 @@ What's still missing (candidates for v1.5):
 > **Commit dd65e2f** (2026-02-25 10:34) — wip: auto-save
 > Files changed: 2
 
-<!-- status -->
-Design audit vs mockups — 2/5 files fixed. ArtistCard (art area + sizing) ✓ Discover page (padding + grid) ✓ — Artist page, Genre page, LibraryBrowser still pending.
-<!-- /status -->
+## Entry — 2026-02-25 — Design System Overhaul: Cockpit Layout
+
+Applied v1.4 cockpit design system across every page. Full token audit + structural layout fixes.
+
+**Mockup-targeted fixes:**
+- Discover: 9px caps filter panel, toolbar bg-2, grid scroll independent
+- Artist: padding:0 cockpit layout, bg-2 header, flat listen-on bar, 9px section titles, discography grid 108px, links as rows
+- KB Genre: removed max-width, header bg-2/border-bottom, all sections get border separators
+- LibraryBrowser: height:100%, album thumbs (36×36 initials), upgraded release header (80×80 cover + Play/Queue)
+
+**Global token sweep (17 routes + layout.svelte):**
+- text-primary/secondary/muted/accent → t-1/2/3/acc
+- border-subtle/default/hover → b-1/2/3
+- bg-elevated/hover/surface → bg-2/3
+- card-radius → r, link-color → acc
+- Removed max-width + margin:0 auto from all containers
+- Fixed time-machine --color-* and profile --spacing-*/--bg-secondary tokens
+
+**Tests:** 164 passing, 0 failing.
+
+> **Commit a53863f** (2026-02-25) — fix(design): apply v1.4 cockpit design system across all pages
+> Files changed: 25
