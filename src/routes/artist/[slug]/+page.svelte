@@ -784,7 +784,7 @@
 	.rooms-link {
 		background: none;
 		border: 1px solid var(--b-2);
-		border-radius: 6px;
+		border-radius: var(--r);
 		padding: 6px 12px;
 		cursor: pointer;
 		color: var(--t-3);
@@ -1144,7 +1144,7 @@
 		border: 1px solid var(--border);
 		background: var(--bg-secondary);
 		color: var(--t-1);
-		border-radius: 4px;
+		border-radius: var(--r);
 		cursor: pointer;
 	}
 	.save-shelf-btn.saved { border-color: var(--accent); color: var(--accent); }
@@ -1155,7 +1155,7 @@
 		z-index: 50;
 		background: var(--bg-secondary);
 		border: 1px solid var(--border);
-		border-radius: 4px;
+		border-radius: var(--r);
 		min-width: 160px;
 		padding: 4px 0;
 		box-shadow: 0 4px 12px rgba(0,0,0,0.3);
@@ -1227,7 +1227,7 @@
 		align-self: flex-start;
 		background: none;
 		border: 1px solid var(--b-2);
-		border-radius: 6px;
+		border-radius: var(--r);
 		padding: 6px 12px;
 		cursor: pointer;
 		color: var(--t-3);
@@ -1259,7 +1259,7 @@
 	.mode-btn {
 		padding: 4px 10px;
 		border: 1px solid var(--b-2);
-		border-radius: 4px;
+		border-radius: var(--r);
 		background: none;
 		color: var(--t-3);
 		font-size: 0.8rem;
@@ -1276,7 +1276,7 @@
 	.embed-code {
 		background: var(--bg-surface, var(--bg-primary));
 		border: 1px solid var(--b-1);
-		border-radius: 4px;
+		border-radius: var(--r);
 		padding: var(--space-sm);
 		font-size: 0.75rem;
 		font-family: monospace;
@@ -1294,7 +1294,7 @@
 	.embed-action-btn {
 		padding: 4px 10px;
 		border: 1px solid var(--b-2);
-		border-radius: 4px;
+		border-radius: var(--r);
 		background: none;
 		color: var(--t-3);
 		font-size: 0.8rem;
@@ -1324,7 +1324,7 @@
 	.embed-curator-input {
 		padding: 3px 8px;
 		border: 1px solid var(--b-2);
-		border-radius: 4px;
+		border-radius: var(--r);
 		background: var(--bg-surface, var(--bg-primary));
 		color: var(--t-1);
 		font-size: 0.78rem;
@@ -1365,7 +1365,7 @@
 		text-decoration: none;
 		padding: 0.25rem 0.6rem;
 		border: 1px solid color-mix(in srgb, var(--acc) 40%, transparent);
-		border-radius: 4px;
+		border-radius: var(--r);
 		transition: background 0.15s, color 0.15s;
 	}
 
@@ -1378,7 +1378,7 @@
 		padding: 0.25rem 0.6rem;
 		font-size: 0.8rem;
 		border: 1px solid var(--border-default, #333);
-		border-radius: 4px;
+		border-radius: var(--r);
 		background: transparent;
 		color: var(--text-secondary, #b3b3b3);
 		cursor: pointer;
@@ -1396,7 +1396,7 @@
 		text-decoration: none;
 		padding: 0.25rem 0.5rem;
 		border: 1px solid var(--b-1);
-		border-radius: 4px;
+		border-radius: var(--r);
 		line-height: 1;
 		transition: color 0.15s, border-color 0.15s;
 		flex-shrink: 0;

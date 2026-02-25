@@ -6258,9 +6258,6 @@ The natural language parsing is intentionally simple regex-based matching — "a
 
 KB genre page drops the live `<GenreGraph>` component entirely from this page (it's still used on the KB landing and other pages). The mini-graph was showing a force-layout of neighbors which is visually heavy and slow to load for what's essentially an orientation aid. A "Coming Soon" placeholder communicates intent without the overhead.
 
-<!-- status -->
-Phase 27 planning complete — 5 plans created, 3-wave structure, 147 code checks passing. Ready to execute: /gsd:execute-phase 27
-<!-- /status -->
 
 > **Commit 6115fd0** (2026-02-25 01:40) — feat(24-01): fetch MB artist relationships in +page.ts
 > Files changed: 1
@@ -6689,9 +6686,6 @@ Redesigned `/kb/genre/[slug]` page to match the v1.4 design system and KBAS-01 s
 
 **Result:** `npm run check` 0 errors. 147 code tests pass.
 
-<!-- status -->
-Phase 27 Plan 04 complete — KB genre page redesigned. KBAS-01 satisfied.
-<!-- /status -->
 
 > **Commit 7c34869** (2026-02-25 09:56) — feat(27-01): add SearchIntent type, parseSearchIntent, and match_type field
 > Files changed: 1
@@ -6883,6 +6877,36 @@ Applied v1.4 cockpit design system across every page. Full token audit + structu
 
 **Tests:** 164 passing, 0 failing.
 
+## Entry — 2026-02-25 — Design Audit Fixes Round 2
+
+Applied remaining audit fixes from the v1.4 design review — items identified but not yet applied in the previous session:
+
+**LibraryBrowser.svelte** (critical fixes):
+- `.album-list-pane` bg: `--bg-2` → `--bg-1` (left pane was too dark, didn't match cockpit tone)
+- `.release-title`: 15px/500wt → 18px/300wt (album header should read as a headline, not a label)
+- `.release-artist`: `--t-2` → `--acc` + `font-weight: 500` (artist name as accent link)
+- `.release-play-btn`: solid amber fill → accent button style (`--acc-bg` bg, `--b-acc` border, `--acc` color) — filled amber was too aggressive for a secondary surface
+- `.track-pane-column-headers`: bg `--bg-2` → `--bg-1`, add `height: 28px` (consistent with cockpit row heights)
+- `.album-list-item:hover`: `--bg-hover` → `#181818` (crisper, darker hover)
+- `.album-list-item.selected`: add `background: #1e1e1e` (selected state now visually distinct)
+
+**PanelLayout.svelte**:
+- `.sidebar-pane` bg: `--bg-base` → `--bg-1` (sidebar was lighter than content area — inverted the expected depth)
+- All sidebar borders: `--border-subtle` → `--b-1` (use v1.4 token system consistently)
+
+**Discover page**:
+- `.filter-heading` padding: `5px 12px` → `10px 12px 8px`, add `border-bottom: 1px solid var(--b-1)`, tracking `0.08em` → `0.12em`
+- `.results-toolbar`: add `border-bottom: 1px solid var(--b-1)` (toolbar floats without bottom edge otherwise)
+
+**Artist page**:
+- All `border-radius: 4px` and `6px` → `var(--r)` (11 instances — artist page was using hardcoded radii instead of the system token)
+
+**Result:** `npm run check` 0 errors, 8 warnings (all pre-existing).
+
+<!-- status -->
+Design audit fixes applied — LibraryBrowser, PanelLayout, Discover, Artist pages all cleaned up.
+<!-- /status -->
+
 > **Commit a53863f** (2026-02-25) — fix(design): apply v1.4 cockpit design system across all pages
 > Files changed: 25
 
@@ -6906,3 +6930,6 @@ Applied v1.4 cockpit design system across every page. Full token audit + structu
 
 > **Commit 594075a** (2026-02-25 11:11) — wip: auto-save
 > Files changed: 2
+
+> **Commit 5ad3f7f** (2026-02-25 11:13) — wip: auto-save
+> Files changed: 1

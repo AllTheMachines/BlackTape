@@ -126,7 +126,7 @@
 	.album-list-pane {
 		border-right: 1px solid var(--b-1);
 		overflow-y: auto;
-		background: var(--bg-2);
+		background: var(--bg-1);
 	}
 
 	.album-list-item {
@@ -171,11 +171,12 @@
 	}
 
 	.album-list-item:hover {
-		background: var(--bg-hover);
+		background: #181818;
 	}
 
 	.album-list-item.selected {
 		border-left-color: var(--acc);
+		background: #1e1e1e;
 	}
 
 	.album-list-title {
@@ -233,8 +234,8 @@
 	}
 
 	.release-title {
-		font-size: 15px;
-		font-weight: 500;
+		font-size: 18px;
+		font-weight: 300;
 		color: var(--t-1);
 		white-space: nowrap;
 		overflow: hidden;
@@ -243,7 +244,8 @@
 
 	.release-artist {
 		font-size: 12px;
-		color: var(--t-2);
+		color: var(--acc);
+		font-weight: 500;
 	}
 
 	.release-meta {
@@ -262,9 +264,9 @@
 	.release-play-btn {
 		height: 26px;
 		padding: 0 12px;
-		background: var(--acc);
-		color: #000;
-		border: none;
+		background: var(--acc-bg);
+		color: var(--acc);
+		border: 1px solid var(--b-acc);
 		border-radius: var(--r);
 		font-size: 11px;
 		font-weight: 600;
@@ -296,8 +298,9 @@
 		display: grid;
 		grid-template-columns: 32px 1fr 56px 64px;
 		padding: 4px 8px;
+		height: 28px;
 		border-bottom: 1px solid var(--b-1);
-		background: var(--bg-2);
+		background: var(--bg-1);
 	}
 
 	.track-pane-column-headers span {

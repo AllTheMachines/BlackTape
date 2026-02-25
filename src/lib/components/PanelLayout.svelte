@@ -206,21 +206,21 @@
 		display: flex;
 		flex-direction: column;
 		position: relative;
-		background: var(--bg-base);
+		background: var(--bg-1);
 	}
 
 	.sidebar-pane.collapsed {
 		align-items: center;
 		background: var(--bg-surface);
-		border-right: 1px solid var(--border-subtle);
+		border-right: 1px solid var(--b-1);
 	}
 
 	.left-sidebar:not(.collapsed) {
-		border-right: 1px solid var(--border-subtle);
+		border-right: 1px solid var(--b-1);
 	}
 
 	.right-sidebar:not(.collapsed) {
-		border-left: 1px solid var(--border-subtle);
+		border-left: 1px solid var(--b-1);
 	}
 
 	.expand-btn,

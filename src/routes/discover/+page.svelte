@@ -213,10 +213,11 @@
 		font-size: 9px;
 		font-weight: 600;
 		text-transform: uppercase;
-		letter-spacing: 0.08em;
+		letter-spacing: 0.12em;
 		color: var(--t-3);
 		margin: 0;
-		padding: 5px 12px;
+		padding: 10px 12px 8px;
+		border-bottom: 1px solid var(--b-1);
 	}
 
 	.filter-section {
@@ -332,6 +333,7 @@
 		background: var(--bg-2);
 		padding: 8px 16px;
 		flex-shrink: 0;
+		border-bottom: 1px solid var(--b-1);
 	}
 
 	.active-chips {
