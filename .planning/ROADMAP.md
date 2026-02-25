@@ -18,7 +18,7 @@
 
 - [x] **Phase 23: Design System Foundation** - CSS design tokens, base component overhaul (buttons, tags, inputs, panels), layout shell (topbar, sidebar, player bar) (completed 2026-02-24)
 - [x] **Phase 24: Artist Page** - Redesign artist page + MusicBrainz relationships (members, influences, labels) + release credits linking + discography filters + Mastodon button label (completed 2026-02-25)
-- [ ] **Phase 25: Queue System + Library** - Full queue management (Play/Queue on every track surface, Play Album, player queue panel, reorder/remove) + library two-pane redesign
+- [x] **Phase 25: Queue System + Library** - Full queue management (Play/Queue on every track surface, Play Album, player queue panel, reorder/remove) + library two-pane redesign (completed 2026-02-25)
 - [ ] **Phase 26: Discover + Cross-Linking + Crate Fix** - Discover page redesign (filter panel + artist grid) + discovery tool cross-linking + Crate Dig country dropdown
 - [ ] **Phase 27: Search + Knowledge Base** - Search autocomplete + label/city search + result distinction + KB genre page redesign
 
@@ -108,6 +108,6 @@ Plans:
 |-------|----------------|--------|-----------|
 | 23. Design System Foundation | 3/3 | Complete    | 2026-02-24 |
 | 24. Artist Page | 3/3 | Complete    | 2026-02-25 |
-| 25. Queue System + Library | 3/4 | In Progress|  |
+| 25. Queue System + Library | 4/4 | Complete   | 2026-02-25 |
 | 26. Discover + Cross-Linking + Crate Fix | 0/TBD | Not started | - |
 | 27. Search + Knowledge Base | 0/TBD | Not started | - |

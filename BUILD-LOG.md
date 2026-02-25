@@ -6442,3 +6442,25 @@ TypeScript: 0 errors, 593 files. Test suite: 114 passed, 0 failed.
 
 > **Commit 093386a** (2026-02-25 05:27) — feat(25-03): rebuild LibraryBrowser as two-pane layout with column headers
 > Files changed: 3
+
+> **Commit ac2b27c** (2026-02-25 05:30) — docs(25-03): complete Queue panel + Library two-pane layout plan
+> Files changed: 5
+
+> **Commit 71a9cba** (2026-02-25 05:32) — feat(25-04): add PHASE_25 test manifest entries (P25-01 through P25-21)
+> Files changed: 1
+
+---
+
+## Phase 25 Complete — Queue System + Library
+
+Phase 25 is done. Four plans, all shipped:
+
+**Plan 01 — Queue persistence + TrackRow:** Queue state persists across app restarts via localStorage. `restoreQueueFromStorage()` called in root layout `onMount`. `playNextInQueue()` auto-advances when a track ends. TrackRow component built with Play and + Queue buttons — hover swap via pure CSS opacity, no JS state.
+
+**Plan 02 — Track surfaces wired:** Search results use TrackRow for every track result. Release page has Play Album and Queue Album buttons (intentional UI stubs — MB tracks lack local file paths, matching deferred). Artist page has Play All and Queue All buttons with top tracks section above discography.
+
+**Plan 03 — Queue panel + Library:** Queue panel redesigned as slide-up from player bar (not right-side drawer). Drag-and-drop reorder via native HTML5. Empty state: "Queue is empty. Hit + Queue on any track." Library rebuilt as two-pane layout — album list left, tracklist right, column headers (#/Title/Time/Actions), amber left-border on selected album.
+
+**Plan 04 — Test manifest:** 21 PHASE_25 code checks registered. All pass on first run — Plans 01-03 had every pattern already in place. Full suite: 134 code checks passing, 0 failures.
+
+Test suite coverage for Phase 25 requirements: QUEU-01 through QUEU-06, LIBR-01 through LIBR-03 — all verified.

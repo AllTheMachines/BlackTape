@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-24 after v1.4 milestone started)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** v1.4 The Interface — Phase 25: Queue System + Library
+**Current focus:** v1.4 The Interface — Phase 25 COMPLETE, ready for Phase 26
 
 ## Current Position
 
-Phase: 25 of 27 (Queue System + Library)
-Plan: 3 of 4 in current phase (COMPLETE)
-Status: Phase 25 Plan 03 complete — Queue panel redesigned as slide-up, Library rebuilt as two-pane layout, 0 TypeScript errors
-Last activity: 2026-02-25 — Phase 25 Plan 03 complete: Queue slide-up animation + drag-reorder, LibraryBrowser two-pane layout with column headers (~3 min, 2 tasks, 5 files)
+Phase: 25 of 27 (Queue System + Library) — COMPLETE
+Plan: 4 of 4 in current phase (COMPLETE)
+Status: Phase 25 complete — all 4 plans done, 21 P25 test entries added, 134 code checks passing
+Last activity: 2026-02-25 — Phase 25 Plan 04 complete: PHASE_25 test manifest (21 entries, all passing, ~1 min, 1 task, 1 file)
 
-Progress: [████░░░░░░] 20% (v1.4 — 1/5 phases complete, Phase 25 3/4 plans)
+Progress: [████░░░░░░] 25% (v1.4 — Phase 25 complete 4/4 plans, 1/4 phases)
 
 ## Performance Metrics
 
@@ -41,6 +41,8 @@ Progress: [████░░░░░░] 20% (v1.4 — 1/5 phases complete, Ph
 | Phase 25-queue-system-library P01 | 2 | 2 tasks | 2 files |
 | Phase 25-queue-system-library P02 | ~4min | 2 tasks | 3 files |
 | Phase 25-queue-system-library P03 | ~3min | 2 tasks | 5 files |
+| Phase 25-queue-system-library P04 | ~1min | 1 task | 1 file |
+| **Phase 25 Total** | **4 plans** | **9/9 requirements (QUEU-01..06, LIBR-01..03)** | **Complete** |
 
 ## Accumulated Context
 
@@ -75,6 +77,7 @@ Progress: [████░░░░░░] 20% (v1.4 — 1/5 phases complete, Ph
 - [Phase 25-03]: Queue panel uses slide-up from player bar (not right-side slide-in) — full-width feel per CONTEXT.md; overlay backdrop removed
 - [Phase 25-03]: Library sort controls removed entirely — always 'added' descending per LIBR-02; set in onMount
 - [Phase 25-03]: Album auto-select uses $effect with !selectedAlbumKey guard to prevent reset when albums array updates
+- [Phase 25-04]: Tests written against exact strings already present in source — no source changes needed when manifest added after Plans 01-03
 
 ### Pending Todos
 None
@@ -85,6 +88,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-25
-Stopped at: Completed 25-03-PLAN.md (Phase 25 Plan 03 — Queue panel redesign + Library two-pane layout)
+Stopped at: Completed 25-04-PLAN.md (Phase 25 Plan 04 — Test manifest with 21 P25 entries)
 Resume file: None
-Next: Phase 25 Plan 04 — Test manifest updates
+Next: Phase 26 (Cross-linking discovery tools) or Phase 27 (Autocomplete)
