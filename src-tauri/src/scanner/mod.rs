@@ -102,6 +102,26 @@ pub fn remove_music_folder(
     db::remove_music_folder(&conn, &path)
 }
 
+/// Search library tracks by title/artist/album — SQL-filtered, no cover art in response.
+/// Safe to call from the search page (avoids loading all cover blobs over IPC).
+#[tauri::command]
+pub fn search_local_tracks(
+    query: String,
+    state: tauri::State<'_, LibraryState>,
+) -> Result<Vec<db::LocalTrack>, String> {
+    let conn = state.0.lock().map_err(|e| format!("Lock error: {}", e))?;
+    db::search_tracks(&conn, &query)
+}
+
+/// Get one cover per album — lightweight alternative to embedding art in every track row.
+#[tauri::command]
+pub fn get_album_covers(
+    state: tauri::State<'_, LibraryState>,
+) -> Result<Vec<db::AlbumCover>, String> {
+    let conn = state.0.lock().map_err(|e| format!("Lock error: {}", e))?;
+    db::get_album_covers(&conn)
+}
+
 /// Set a custom cover for all tracks in an album (matched by album name + artist).
 #[tauri::command]
 pub fn set_album_cover(

@@ -69,6 +69,21 @@ export async function refreshCovers(): Promise<number> {
 }
 
 /**
+ * Search library tracks by title/artist/album — SQL-filtered, no cover art.
+ * Use this instead of getLibraryTracks() + client filter to avoid IPC blob overload.
+ */
+export async function searchLocalTracks(query: string): Promise<LocalTrack[]> {
+	const invoke = await getInvoke();
+	return await invoke<LocalTrack[]>('search_local_tracks', { query });
+}
+
+/** One cover per album — use with getLibraryTracks() to avoid per-track blob loading. */
+export async function getAlbumCovers(): Promise<Array<{ album: string; album_artist: string | null; cover_art_base64: string | null }>> {
+	const invoke = await getInvoke();
+	return await invoke('get_album_covers');
+}
+
+/**
  * Set a custom cover image for all tracks in an album.
  * coverArtBase64 should be a data URL (data:image/...;base64,...).
  * Returns the number of tracks updated.

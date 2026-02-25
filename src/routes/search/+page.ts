@@ -75,15 +75,8 @@ export const load: PageLoad = async ({ url }) => {
 
 		let localTracks: LocalTrack[] = [];
 		try {
-			const { getLibraryTracks } = await import('$lib/library/scanner');
-			const allTracks = await getLibraryTracks();
-			const lowerQ = q.toLowerCase();
-			localTracks = allTracks.filter(
-				(t) =>
-					(t.artist && t.artist.toLowerCase().includes(lowerQ)) ||
-					(t.title && t.title.toLowerCase().includes(lowerQ)) ||
-					(t.album && t.album.toLowerCase().includes(lowerQ))
-			);
+			const { searchLocalTracks } = await import('$lib/library/scanner');
+			localTracks = await searchLocalTracks(q);
 		} catch {
 			// Library search is best-effort — silently fail
 		}
