@@ -8,6 +8,71 @@
 
 	let { data }: { data: PageData } = $props();
 
+	// Country options: common countries in music databases mapped to ISO codes
+	const COUNTRIES = [
+		{ name: 'Any country', code: '' },
+		{ name: 'United States', code: 'US' },
+		{ name: 'United Kingdom', code: 'GB' },
+		{ name: 'Germany', code: 'DE' },
+		{ name: 'France', code: 'FR' },
+		{ name: 'Japan', code: 'JP' },
+		{ name: 'Canada', code: 'CA' },
+		{ name: 'Australia', code: 'AU' },
+		{ name: 'Sweden', code: 'SE' },
+		{ name: 'Norway', code: 'NO' },
+		{ name: 'Finland', code: 'FI' },
+		{ name: 'Denmark', code: 'DK' },
+		{ name: 'Netherlands', code: 'NL' },
+		{ name: 'Belgium', code: 'BE' },
+		{ name: 'Switzerland', code: 'CH' },
+		{ name: 'Austria', code: 'AT' },
+		{ name: 'Italy', code: 'IT' },
+		{ name: 'Spain', code: 'ES' },
+		{ name: 'Portugal', code: 'PT' },
+		{ name: 'Brazil', code: 'BR' },
+		{ name: 'Argentina', code: 'AR' },
+		{ name: 'Mexico', code: 'MX' },
+		{ name: 'Colombia', code: 'CO' },
+		{ name: 'Chile', code: 'CL' },
+		{ name: 'Poland', code: 'PL' },
+		{ name: 'Czech Republic', code: 'CZ' },
+		{ name: 'Hungary', code: 'HU' },
+		{ name: 'Russia', code: 'RU' },
+		{ name: 'Ukraine', code: 'UA' },
+		{ name: 'Greece', code: 'GR' },
+		{ name: 'Turkey', code: 'TR' },
+		{ name: 'Israel', code: 'IL' },
+		{ name: 'South Korea', code: 'KR' },
+		{ name: 'China', code: 'CN' },
+		{ name: 'Taiwan', code: 'TW' },
+		{ name: 'Hong Kong', code: 'HK' },
+		{ name: 'India', code: 'IN' },
+		{ name: 'Iceland', code: 'IS' },
+		{ name: 'Ireland', code: 'IE' },
+		{ name: 'New Zealand', code: 'NZ' },
+		{ name: 'South Africa', code: 'ZA' },
+		{ name: 'Nigeria', code: 'NG' },
+		{ name: 'Ghana', code: 'GH' },
+		{ name: 'Jamaica', code: 'JM' },
+		{ name: 'Cuba', code: 'CU' },
+		{ name: 'Romania', code: 'RO' },
+		{ name: 'Serbia', code: 'RS' },
+		{ name: 'Croatia', code: 'HR' },
+		{ name: 'Slovakia', code: 'SK' },
+		{ name: 'Bulgaria', code: 'BG' },
+		{ name: 'Lithuania', code: 'LT' },
+		{ name: 'Latvia', code: 'LV' },
+		{ name: 'Estonia', code: 'EE' },
+		{ name: 'Indonesia', code: 'ID' },
+		{ name: 'Philippines', code: 'PH' },
+		{ name: 'Thailand', code: 'TH' },
+		{ name: 'Vietnam', code: 'VN' },
+		{ name: 'Singapore', code: 'SG' },
+		{ name: 'Malaysia', code: 'MY' },
+		{ name: 'Egypt', code: 'EG' },
+		{ name: 'Morocco', code: 'MA' },
+	];
+
 	// Decade options: 1950s through 2020s
 	const decades = [
 		{ label: 'Any decade', min: undefined, max: undefined },
@@ -22,7 +87,7 @@
 	];
 
 	let tagInput = $state(data.filters.tag ?? '');
-	let country = $state(data.filters.country ?? '');
+	let selectedCountryCode = $state(data.filters.country ?? '');
 	let selectedDecade = $state(decades[0]);
 	let loading = $state(false);
 	let artists = $state<ArtistResult[]>(data.artists);
@@ -38,7 +103,7 @@
 				tag: tagInput.trim() || undefined,
 				decadeMin: selectedDecade.min,
 				decadeMax: selectedDecade.max,
-				country: country.trim() || undefined,
+				country: selectedCountryCode || undefined,
 			};
 			artists = await getCrateDigArtists(db, filters, 20);
 		} catch (e) {
@@ -76,13 +141,11 @@
 					<option value={d}>{d.label}</option>
 				{/each}
 			</select>
-			<input
-				class="filter-input"
-				type="text"
-				placeholder="Country code (e.g. US, GB)"
-				bind:value={country}
-				maxlength="2"
-			/>
+			<select class="filter-select" bind:value={selectedCountryCode}>
+				{#each COUNTRIES as c}
+					<option value={c.code}>{c.name}</option>
+				{/each}
+			</select>
 			<button class="dig-btn" onclick={dig} disabled={loading}>
 				{loading ? 'Digging...' : 'Dig'}
 			</button>
