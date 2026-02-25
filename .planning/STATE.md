@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-24 after v1.4 milestone started)
 ## Current Position
 
 Phase: 25 of 27 (Queue System + Library)
-Plan: 2 of 4 in current phase (COMPLETE)
-Status: Phase 25 Plan 02 complete — TrackRow wired into search/release/artist surfaces, 0 TypeScript errors
-Last activity: 2026-02-25 — Phase 25 Plan 02 complete: TrackRow in search results, Play Album/Queue Album on release page, Play All/Queue All on artist page (~4 min, 2 tasks, 3 files)
+Plan: 3 of 4 in current phase (COMPLETE)
+Status: Phase 25 Plan 03 complete — Queue panel redesigned as slide-up, Library rebuilt as two-pane layout, 0 TypeScript errors
+Last activity: 2026-02-25 — Phase 25 Plan 03 complete: Queue slide-up animation + drag-reorder, LibraryBrowser two-pane layout with column headers (~3 min, 2 tasks, 5 files)
 
-Progress: [████░░░░░░] 20% (v1.4 — 1/5 phases complete, Phase 25 2/4 plans)
+Progress: [████░░░░░░] 20% (v1.4 — 1/5 phases complete, Phase 25 3/4 plans)
 
 ## Performance Metrics
 
@@ -40,6 +40,7 @@ Progress: [████░░░░░░] 20% (v1.4 — 1/5 phases complete, Ph
 | Phase 24 P02 | 0 | 0 tasks | 1 files |
 | Phase 25-queue-system-library P01 | 2 | 2 tasks | 2 files |
 | Phase 25-queue-system-library P02 | ~4min | 2 tasks | 3 files |
+| Phase 25-queue-system-library P03 | ~3min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -71,6 +72,9 @@ Progress: [████░░░░░░] 20% (v1.4 — 1/5 phases complete, Ph
 - [Phase 25-02]: Release page Play Album / Queue Album are intentional UI stubs — MB tracks lack local paths; matching deferred per CONTEXT.md
 - [Phase 25-02]: Artist page topPlayerTracks initialized as empty $state array — populated when local-to-MB matching lands
 - [Phase 25-02]: Top Tracks section placed above Discography in overview tab — establishes UI hierarchy now, wired later
+- [Phase 25-03]: Queue panel uses slide-up from player bar (not right-side slide-in) — full-width feel per CONTEXT.md; overlay backdrop removed
+- [Phase 25-03]: Library sort controls removed entirely — always 'added' descending per LIBR-02; set in onMount
+- [Phase 25-03]: Album auto-select uses $effect with !selectedAlbumKey guard to prevent reset when albums array updates
 
 ### Pending Todos
 None
@@ -81,6 +85,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-25
-Stopped at: Completed 25-02-PLAN.md (Phase 25 Plan 02 — TrackRow surface integration)
+Stopped at: Completed 25-03-PLAN.md (Phase 25 Plan 03 — Queue panel redesign + Library two-pane layout)
 Resume file: None
-Next: Phase 25 Plan 03 — Queue panel in player bar
+Next: Phase 25 Plan 04 — Test manifest updates

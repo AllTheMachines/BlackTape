@@ -6421,9 +6421,24 @@ TypeScript check: 0 errors, 593 files.
 > **Commit 5b1796b** (2026-02-25 05:24) — docs(25-02): complete TrackRow surface integration plan
 > Files changed: 5
 
-<!-- status -->
-Phase 25 Plan 03 — Task 2/2 done. Library rebuilt as two-pane layout: album list left, tracklist right with column headers. Sort controls removed (always "recently added"). TypeScript: 0 errors. Committing.
-<!-- /status -->
+---
+
+## Entry — 2026-02-25 — Phase 25 Plan 03: Queue Panel + Library Two-Pane Layout
+
+**Phase 25 Plan 03 complete in ~3 minutes.**
+
+Two changes shipped in this session:
+
+**Queue panel redesigned:** The queue was previously a right-side drawer that slid in from the edge. It now slides up from the player bar — full-width, anchored to the bottom, consistent with the queue being attached to the player context rather than floating as a separate panel. The empty state text is now exactly what CONTEXT.md specifies: "Queue is empty. Hit + Queue on any track." Native HTML5 drag-and-drop reorder landed — draggable attribute on each queue item, `ondragstart/ondragover/ondrop/ondragend` handlers calling `reorderQueue()` from the queue store. Drag handle (braille grip icon ⠿) appears on hover. The dark overlay backdrop was removed — not needed for a slide-up design.
+
+**Library two-pane layout:** The old expand-on-click card grid is gone. The library now uses a proper two-pane layout: album list on the left (240px fixed), tracklist on the right. Album list items show title and artist only — no thumbnail. Selected album gets an amber left-border (`border-left-color: var(--acc)`) and nothing else — no background tint, no bold text. The right pane shows column headers (#, Title, Time, Actions) above TrackRow components. First album is auto-selected on load via `$effect` with a `!selectedAlbumKey` guard to prevent reset on re-renders. Sort controls were removed entirely — library is always sorted by recently added, newest first, set in `onMount`.
+
+Root layout now calls `restoreQueueFromStorage()` as the first statement in `onMount` — queue state persists across app restarts.
+
+TypeScript: 0 errors, 593 files. Test suite: 114 passed, 0 failed.
 
 > **Commit 1f49d48** (2026-02-25 05:26) — feat(25-03): redesign Queue panel slide-up + Player queue-toggle testid + root layout restore
 > Files changed: 4
+
+> **Commit 093386a** (2026-02-25 05:27) — feat(25-03): rebuild LibraryBrowser as two-pane layout with column headers
+> Files changed: 3

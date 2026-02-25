@@ -35,9 +35,9 @@
 
 ### Library
 
-- [ ] **LIBR-01**: Library uses a two-pane layout — album list (left) + tracklist (right) — matching the v1.4 mockup
-- [ ] **LIBR-02**: Selected album is highlighted with the amber left-border indicator
-- [ ] **LIBR-03**: Tracklist column headers: #, Title, Time, Actions
+- [x] **LIBR-01**: Library uses a two-pane layout — album list (left) + tracklist (right) — matching the v1.4 mockup
+- [x] **LIBR-02**: Selected album is highlighted with the amber left-border indicator
+- [x] **LIBR-03**: Tracklist column headers: #, Title, Time, Actions
 
 ### Discover
 
@@ -113,9 +113,9 @@
 | QUEU-04 | Phase 25: Queue System + Library | Complete |
 | QUEU-05 | Phase 25: Queue System + Library | Complete |
 | QUEU-06 | Phase 25: Queue System + Library | Complete |
-| LIBR-01 | Phase 25: Queue System + Library | Pending |
-| LIBR-02 | Phase 25: Queue System + Library | Pending |
-| LIBR-03 | Phase 25: Queue System + Library | Pending |
+| LIBR-01 | Phase 25: Queue System + Library | Complete |
+| LIBR-02 | Phase 25: Queue System + Library | Complete |
+| LIBR-03 | Phase 25: Queue System + Library | Complete |
 | DISC-01 | Phase 26: Discover + Cross-Linking + Crate Fix | Pending |
 | DISC-02 | Phase 26: Discover + Cross-Linking + Crate Fix | Pending |
 | DISC-03 | Phase 26: Discover + Cross-Linking + Crate Fix | Pending |
