@@ -100,6 +100,14 @@ None - no external service configuration required.
 - Test manifest for Phase 27 Plans 01-04 will be added in Plan 05 per standard pattern
 - Verification tests P27-17 through P27-21 documented in plan TEST-PLAN section, added to manifest in Plan 05
 
+## Self-Check: PASSED
+
+- FOUND: `src/routes/kb/genre/[slug]/+page.svelte`
+- FOUND: `.planning/phases/27-search-knowledge-base/27-04-SUMMARY.md`
+- FOUND: commit `0e18ce5` (feat — task commit)
+- FOUND: commit `83388ed` (docs — metadata commit)
+- 147 code tests pass, 0 failures
+
 ---
 *Phase: 27-search-knowledge-base*
 *Completed: 2026-02-25*
