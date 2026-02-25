@@ -4,6 +4,38 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-02-25 — UAT Issues #4 and #8 Closed
+
+### #4 — Discover page: compact list layout
+
+Steve's call: the large square placeholder grid looks broken. Initials squares promise images and never deliver. Switched to a **compact list row** — name, country, tags, uniqueness bar — no thumbnail square. Looks intentional, loads instantly.
+
+Added a `compact` boolean prop to `ArtistCard.svelte`. When `compact={true}`:
+- The `.a-art` initials square is not rendered
+- `.a-info` switches to horizontal flex layout (name → country → tags → score bar)
+- Tags truncated to 2 max (cleaner in narrow horizontal space)
+
+Discover uses `<ArtistCard {artist} compact />` inside a `.artist-list` flex column. All other pages using `ArtistCard` (Crate Dig, Time Machine, Search) are unchanged — they still get the card/grid layout.
+
+### #8 — Library: embedded cover art
+
+The library browser was showing initials placeholders for album covers. Now extracts embedded cover art from audio files during scan and displays it.
+
+**Implementation — base64 in DB (chosen over cache files):**
+- Simpler plumbing: no file management, no custom protocol, works directly in `<img src="...">`
+- Slightly larger DB but fine for embedded art (typically 500px JPEG ~ 50-150KB)
+
+**Changes:**
+- `scanner/metadata.rs` — `TrackMetadata` gains `cover_art_base64: Option<String>`. During scan, `tag.pictures().first()` extracts the first embedded image (ID3v2 APIC / FLAC PICTURE), base64-encoded with data URL prefix (`data:image/jpeg;base64,...`) using lofty + the existing `base64` crate.
+- `library/db.rs` — `local_tracks` gains `cover_art_base64 TEXT` via `ALTER TABLE` migration (silently ignored if column already exists). `insert_track` writes it. `get_all_tracks` reads it.
+- `library/types.ts` — `LocalTrack` and `LibraryAlbum` gain the field.
+- `store.svelte.ts` — `groupByAlbum` picks the first track with art to represent the album.
+- `LibraryBrowser.svelte` — album list thumbnails and the detail pane header both show `<img>` when art is available, fall back to initials div otherwise.
+
+**Result:** All 13 UAT issues now closed. 43/43 Rust tests pass. 0 TS/Svelte errors.
+
+---
+
 ## Entry 001 — 2026-02-14 — The Name Search
 
 ### Context
@@ -7199,3 +7231,6 @@ Fix: renamed to `avatar.svelte.ts`, updated 5 import sites (AvatarEditor, Avatar
 
 > **Commit ac1e5c7** (2026-02-25 17:40) — wip: auto-save
 > Files changed: 1
+
+> **Commit 0f45a48** (2026-02-25 17:46) — auto-save: 8 files @ 17:46
+> Files changed: 8
