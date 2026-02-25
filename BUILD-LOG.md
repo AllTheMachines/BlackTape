@@ -6856,3 +6856,6 @@ What's still missing (candidates for v1.5):
 
 > **Commit a902e84** (2026-02-25 10:31) — wip: auto-save
 > Files changed: 1
+
+> **Commit 492b1f0** (2026-02-25 10:31) — wip: auto-save
+> Files changed: 1
