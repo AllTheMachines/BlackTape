@@ -6393,3 +6393,27 @@ TypeScript check: 0 errors, 593 files.
 
 > **Commit f134059** (2026-02-25 05:16) — auto-save: 3 files @ 05:16
 > Files changed: 3
+
+> **Commit 9ab59a7** (2026-02-25 05:17) — docs(25-01): complete queue foundations plan
+> Files changed: 4
+
+
+## Entry — 2026-02-25 — Phase 25 Plan 02: TrackRow Surface Integration
+
+**Objective:** Wire the TrackRow component from Plan 01 into all three track surfaces, and add album/artist-level play buttons.
+
+**What shipped:**
+
+**Search page** — replaced inline `local-track-row` buttons with `TrackRow` component. Built `allPlayerTracks` as a `$derived` from `data.localTracks.slice(0, MAX_LOCAL_RESULTS).map(toPlayerTrack)` so each row has the full context list for queue-aware playback. Removed `playLocalTrack()`, `formatDuration()`, and all per-row CSS classes (now handled internally by TrackRow).
+
+**Release page** — added `Play Album` (filled amber, `data-testid="play-album-btn"`) and `+ Queue Album` (ghost, `data-testid="queue-album-btn"`) buttons in the hero block, wrapped in `{#if tauriMode}`. Handlers are clearly-commented stubs pending local-library-to-MB matching (deferred per CONTEXT.md). The buttons establish the correct UI hierarchy now — they'll be wired when the matching layer lands.
+
+**Artist page** — added Top Tracks section above Discography in the overview tab (tauriMode-gated). Section header has `Play All` (`data-testid="play-all-btn"`) and `+ Queue All` (`data-testid="queue-all-btn"`) wired to real `setQueue` / `addToQueue` calls. `topPlayerTracks` initialized as empty `$state<PlayerTrack[]>([])` — populated by future local-to-MB matching phase.
+
+**Test suite:** 114 passed, 0 failed. TypeScript: 0 errors, 593 files.
+
+> **Commit d828239** (2026-02-25 05:20) — feat(25-02): wire TrackRow into search results + Play Album buttons on release page
+> Files changed: 2
+
+> **Commit f0dfa5e** (2026-02-25 05:21) — feat(25-02): add Top Tracks section with Play All / Queue All to artist page
+> Files changed: 1

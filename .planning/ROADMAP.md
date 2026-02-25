@@ -108,6 +108,6 @@ Plans:
 |-------|----------------|--------|-----------|
 | 23. Design System Foundation | 3/3 | Complete    | 2026-02-24 |
 | 24. Artist Page | 3/3 | Complete    | 2026-02-25 |
-| 25. Queue System + Library | 1/4 | In Progress|  |
+| 25. Queue System + Library | 2/4 | In Progress|  |
 | 26. Discover + Cross-Linking + Crate Fix | 0/TBD | Not started | - |
 | 27. Search + Knowledge Base | 0/TBD | Not started | - |

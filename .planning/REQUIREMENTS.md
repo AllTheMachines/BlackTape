@@ -27,8 +27,8 @@
 ### Queue & Playback
 
 - [x] **QUEU-01**: Every track row in the app has ▶ Play and + Queue action buttons (visible on hover)
-- [ ] **QUEU-02**: Artist page has a "Play All" and "+ Queue All" button for the artist's top tracks
-- [ ] **QUEU-03**: Release pages have a "▶ Play Album" and "+ Queue Album" button
+- [x] **QUEU-02**: Artist page has a "Play All" and "+ Queue All" button for the artist's top tracks
+- [x] **QUEU-03**: Release pages have a "▶ Play Album" and "+ Queue Album" button
 - [x] **QUEU-04**: Library tracklist has ▶ Play and + Queue on every track row
 - [x] **QUEU-05**: Player bar shows current queue (accessible via queue icon)
 - [x] **QUEU-06**: Queue can be reordered and items removed
@@ -108,8 +108,8 @@
 | ARTP-07 | Phase 24: Artist Page | Complete |
 | ARTP-08 | Phase 24: Artist Page | Complete |
 | QUEU-01 | Phase 25: Queue System + Library | Complete |
-| QUEU-02 | Phase 25: Queue System + Library | Pending |
-| QUEU-03 | Phase 25: Queue System + Library | Pending |
+| QUEU-02 | Phase 25: Queue System + Library | Complete |
+| QUEU-03 | Phase 25: Queue System + Library | Complete |
 | QUEU-04 | Phase 25: Queue System + Library | Complete |
 | QUEU-05 | Phase 25: Queue System + Library | Complete |
 | QUEU-06 | Phase 25: Queue System + Library | Complete |

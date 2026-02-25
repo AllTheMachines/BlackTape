@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-24 after v1.4 milestone started)
 ## Current Position
 
 Phase: 25 of 27 (Queue System + Library)
-Plan: 1 of 4 in current phase (COMPLETE)
-Status: Phase 25 Plan 01 complete — queue persistence + TrackRow component, 0 TypeScript errors
-Last activity: 2026-02-25 — Phase 25 Plan 01 complete: queue localStorage persistence, playNextInQueue/isQueueActive/reorderQueue, TrackRow CSS-hover component (~2 min, 2 tasks, 2 files)
+Plan: 2 of 4 in current phase (COMPLETE)
+Status: Phase 25 Plan 02 complete — TrackRow wired into search/release/artist surfaces, 0 TypeScript errors
+Last activity: 2026-02-25 — Phase 25 Plan 02 complete: TrackRow in search results, Play Album/Queue Album on release page, Play All/Queue All on artist page (~4 min, 2 tasks, 3 files)
 
-Progress: [████░░░░░░] 20% (v1.4 — 1/5 phases complete, Phase 25 1/4 plans)
+Progress: [████░░░░░░] 20% (v1.4 — 1/5 phases complete, Phase 25 2/4 plans)
 
 ## Performance Metrics
 
@@ -39,6 +39,7 @@ Progress: [████░░░░░░] 20% (v1.4 — 1/5 phases complete, Ph
 | **Phase 23 Total** | **3 plans** | **5/5 DSYS requirements** | **Complete ✓** |
 | Phase 24 P02 | 0 | 0 tasks | 1 files |
 | Phase 25-queue-system-library P01 | 2 | 2 tasks | 2 files |
+| Phase 25-queue-system-library P02 | ~4min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -66,6 +67,10 @@ Progress: [████░░░░░░] 20% (v1.4 — 1/5 phases complete, Ph
 - [Phase 25-01]: saveQueueToStorage called in every mutation to ensure consistency regardless of which code path triggers the change
 - [Phase 25-01]: isQueueActive checks both tracks.length > 0 AND playerState.isPlaying — paused queue does NOT trigger insert-next
 - [Phase 25-01]: TrackRow hover swap is pure CSS opacity transitions — no JS state, simpler and more performant
+- [Phase 25-02]: Search page allPlayerTracks built as $derived for clean TrackRow contextTracks prop
+- [Phase 25-02]: Release page Play Album / Queue Album are intentional UI stubs — MB tracks lack local paths; matching deferred per CONTEXT.md
+- [Phase 25-02]: Artist page topPlayerTracks initialized as empty $state array — populated when local-to-MB matching lands
+- [Phase 25-02]: Top Tracks section placed above Discography in overview tab — establishes UI hierarchy now, wired later
 
 ### Pending Todos
 None
@@ -76,6 +81,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-25
-Stopped at: Completed 25-01-PLAN.md (Phase 25 Plan 01 — queue persistence + TrackRow component)
+Stopped at: Completed 25-02-PLAN.md (Phase 25 Plan 02 — TrackRow surface integration)
 Resume file: None
-Next: Phase 25 Plan 02 — TrackRow integration across search/artist/release surfaces
+Next: Phase 25 Plan 03 — Queue panel in player bar
