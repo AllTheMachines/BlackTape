@@ -46,6 +46,8 @@ Progress: [██████░░░░] 65% (v1.4 — Phase 26 complete, Phas
 | Phase 26 P04 | 2min | 1 tasks | 1 files |
 | **Phase 26 Total** | **4 plans** | **9/9 requirements (DISC-01..03, XLINK-01..05, CRAT-01)** | **Complete** |
 | Phase 27-search-knowledge-base P01 | 2min | 2 tasks | 1 files |
+| Phase 27-search-knowledge-base P03 | ~4min | 2 tasks | 2 files |
+| Phase 27-search-knowledge-base P02 | 1min | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -101,6 +103,12 @@ Progress: [██████░░░░] 65% (v1.4 — Phase 26 complete, Phas
 - [Phase 27-01]: match_type returned as SQL literal ('city' AS match_type) — avoids post-query transform, flows directly to ArtistResult
 - [Phase 27-01]: City search uses dual-path: ISO code on artists.country for country-level + artist_tags for city-level (MusicBrainz encodes cities as tags)
 - [Phase 27-01]: parseSearchIntent entity not lowercased — left as-is for display, callers normalize for DB queries
+- [Phase 27-02]: onmousedown used for suggestion clicks (not onclick) — blur fires before click, would close dropdown before click registers; mousedown fires first
+- [Phase 27-02]: handleBlur 150ms delay gives mousedown time to complete before showSuggestions is cleared
+- [Phase 27-02]: Autocomplete only in artist mode — tag mode has no autocomplete; city/label intent parsing is at search page level (Plan 03)
+- [Phase 27-03]: Tag mode bypasses intent parsing — mode toggle is explicit user intent; intent stays 'artist' type for chip display purposes
+- [Phase 27-03]: EMPTY_INTENT constant at module level for all empty/error return paths — avoids redundant object literals
+- [Phase 27-03]: data-testid removed from ArtistCard call — component does not spread restProps; plan spec was aspirational
 
 ### Pending Todos
 None
@@ -111,6 +119,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-25
-Stopped at: Completed 27-04-PLAN.md (Phase 27 Plan 04 — KB genre page redesign, KBAS-01)
+Stopped at: Completed 27-03-PLAN.md (Phase 27 Plan 03 — search intent routing, match badges, SRCH-02..04)
 Resume file: None
 Next: Phase 27 Plan 05 (test manifest for Plans 01-04)

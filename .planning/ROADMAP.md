@@ -123,4 +123,4 @@ Plans:
 | 24. Artist Page | 3/3 | Complete    | 2026-02-25 |
 | 25. Queue System + Library | 4/4 | Complete    | 2026-02-25 |
 | 26. Discover + Cross-Linking + Crate Fix | 4/4 | Complete    | 2026-02-25 |
-| 27. Search + Knowledge Base | 2/5 | In Progress|  |
+| 27. Search + Knowledge Base | 4/5 | In Progress|  |

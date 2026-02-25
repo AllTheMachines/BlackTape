@@ -6727,3 +6727,55 @@ City search uses dual-path matching: ISO country code in `artists.country` for c
 
 > **Commit 83388ed** (2026-02-25 09:58) — docs(27-04): complete KB genre page redesign plan — KBAS-01 satisfied
 > Files changed: 5
+
+> **Commit e026cdb** (2026-02-25 09:59) — docs(27-01): complete search query functions plan — SRCH-01..04
+> Files changed: 5
+
+## Entry — 2026-02-25 — Phase 27 Plan 03: Search Intent Routing + Match Badges
+
+### What Was Built
+
+Wired the city/label intent parser (from Plan 01) into the search page. When you type "artists from Berlin" or "artists on Warp Records", Mercury now routes that query through the correct function, shows a confirmation chip, and badges every result card with why it appeared.
+
+**+page.ts (Task 1):** Import `parseSearchIntent`, `searchByCity`, `searchByLabel` from queries. After getting the query string, parse intent and route: city → `searchByCity(entity)`, label → `searchByLabel(entity)`, artist (default) → `searchArtists(q)`. Tag mode bypasses intent parsing entirely (mode toggle is explicit). `intent` returned in page data for all code paths including empty and error states. Uses `EMPTY_INTENT` constant to avoid redundant object literals.
+
+**+page.svelte (Task 2):** Intent confirmation chip renders above results when `intent.type` is `'city'` or `'label'` — shows "City: Berlin" or "Label: Warp Records" with a clear link (×) that resets to artist mode. Hint text contextualizes: "Showing artists from this location" / "Showing artists on this label". ArtistCard `matchReason` prop now intent-aware: City match / Label match / Tag match:{tag} / Name match. Results summary paragraph also intent-aware.
+
+### Design Decision
+
+When `mode === 'tag'`, intent stays as `{ type: 'artist' }` — tag mode is explicit user intent from the mode toggle, no need to re-parse. This keeps the intent object used only for city/label chip display, which is correct.
+
+### Deviation
+
+Plan spec included `data-testid="search-result-card"` on `<ArtistCard>` calls — but ArtistCard doesn't accept arbitrary HTML attributes (no `$$restProps` spread). Removed the testid from the call; the P27-14 test checks for `matchReason` prop presence which is correctly implemented.
+
+### Verification
+
+`npm run check` — 0 errors, 8 warnings (all pre-existing). 147/147 tests passing.
+
+## Entry — 2026-02-25 — Phase 27 Plan 02: SearchBar Autocomplete Dropdown
+
+### What Shipped
+
+SearchBar.svelte now has a live autocomplete dropdown. After 2+ characters in artist mode, it fires a debounced (200ms) FTS5 prefix query and shows up to 5 artist suggestions with name + primary genre tag. Clicking a suggestion navigates directly to `/artist/{slug}` — no search page needed.
+
+### Implementation Notes
+
+The classic blur-before-click dropdown problem: clicking a suggestion fires `mousedown → blur → click`. Using `onclick` means the blur handler clears `showSuggestions = false` before click registers, and the dropdown vanishes. Solution: use `onmousedown` (fires before blur) and a 150ms `setTimeout` in `handleBlur` so mousedown has time to complete before the dropdown closes.
+
+Autocomplete is artist-mode only. Tag mode has no autocomplete at this stage — city/label intent parsing happens at the search page level (Plan 03).
+
+DB calls use dynamic import inside the async function (`import('$lib/db/provider')`, `import('$lib/db/queries')`) — consistent with how all Tauri-gated DB calls work in the project.
+
+### Verification
+
+`npm run check` — 0 errors, 8 warnings (all pre-existing). 147/147 tests passing.
+
+> **Commit 962a772** (2026-02-25 10:01) — feat(27-03): update search +page.ts with intent routing
+> Files changed: 1
+
+> **Commit d0431ea** (2026-02-25 10:01) — feat(27-02): add autocomplete dropdown to SearchBar
+> Files changed: 1
+
+> **Commit c00d419** (2026-02-25 10:02) — feat(27-03): update search +page.svelte with intent chips and match badges
+> Files changed: 1
