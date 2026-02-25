@@ -40,6 +40,20 @@
 		<SearchBar initialQuery={data.query} initialMode={data.mode as 'artist' | 'tag'} size="normal" />
 	</div>
 
+	{#if data.intent && (data.intent.type === 'city' || data.intent.type === 'label')}
+		<div class="intent-chip-bar">
+			<span class="intent-chip" data-testid="intent-chip">
+				{data.intent.type === 'city' ? 'City' : 'Label'}: {data.intent.entity}
+				<a href="/search?q={encodeURIComponent(data.query)}&mode=artist" class="intent-clear">×</a>
+			</span>
+			<span class="intent-hint">
+				{data.intent.type === 'city'
+					? 'Showing artists from this location'
+					: 'Showing artists on this label'}
+			</span>
+		</div>
+	{/if}
+
 	{#if data.error}
 		<p class="message">Search unavailable — please try again later.</p>
 	{:else if data.query}
@@ -79,7 +93,11 @@
 				{/if}
 
 				<p class="results-summary">
-					{#if data.matchedTag}
+					{#if data.intent?.type === 'city'}
+						Showing artists from {data.intent.entity} — {data.results.length} results
+					{:else if data.intent?.type === 'label'}
+						Showing artists on {data.intent.entity} — {data.results.length} results
+					{:else if data.matchedTag}
 						Showing artists tagged '{data.matchedTag}' — {data.results.length} results
 					{:else}
 						{data.results.length} results for '{data.query}'
@@ -90,9 +108,13 @@
 					{#each data.results as artist}
 						<ArtistCard
 							{artist}
-							matchReason={data.mode === 'tag'
-								? `Tagged: ${data.matchedTag}`
-								: 'Name match'}
+							matchReason={data.intent?.type === 'city'
+								? 'City match'
+								: data.intent?.type === 'label'
+									? 'Label match'
+									: data.mode === 'tag'
+										? `Tag match: ${data.matchedTag}`
+										: 'Name match'}
 						/>
 					{/each}
 				</div>
@@ -151,6 +173,45 @@
 		height: 1px;
 		background: var(--border-subtle);
 		margin: var(--space-lg) 0;
+	}
+
+	/* Intent confirmation chip */
+	.intent-chip-bar {
+		display: flex;
+		align-items: center;
+		gap: var(--space-md);
+		margin-bottom: var(--space-md);
+		padding: var(--space-xs) 0;
+	}
+
+	.intent-chip {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-xs);
+		padding: 3px var(--space-sm);
+		background: var(--acc-bg);
+		border: 1px solid var(--b-acc, rgba(196, 165, 90, 0.3));
+		border-radius: var(--r, 2px);
+		font-size: 0.78rem;
+		color: var(--acc, #c4a55a);
+		font-weight: 500;
+	}
+
+	.intent-clear {
+		color: var(--text-muted);
+		text-decoration: none;
+		font-size: 1rem;
+		line-height: 1;
+		margin-left: 2px;
+	}
+
+	.intent-clear:hover {
+		color: var(--text-primary);
+	}
+
+	.intent-hint {
+		font-size: 0.75rem;
+		color: var(--text-muted);
 	}
 
 	/* Discovery results */
