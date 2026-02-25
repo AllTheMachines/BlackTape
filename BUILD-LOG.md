@@ -7190,3 +7190,9 @@ Fix: renamed to `avatar.svelte.ts`, updated 5 import sites (AvatarEditor, Avatar
 
 > **Commit a62e73c** (2026-02-25 17:26) — wip: auto-save
 > Files changed: 2
+
+> **Commit 48a0aea** (2026-02-25 17:36) — wip: auto-save
+> Files changed: 1
+
+> **Commit 38709de** (2026-02-25 17:40) — chore: handoff — #4 compact list + #8 library cover art
+> Files changed: 1
