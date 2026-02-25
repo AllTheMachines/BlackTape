@@ -2181,8 +2181,54 @@ export const PHASE_24 = [
     method: 'code',
     fn: () => fileContains('src/routes/artist/[slug]/+page.svelte', 'Share')(),
   },
-  // P24-08 through P24-12 added by Plan 02 (discography filter + sort)
-  // P24-13 through P24-15 added by Plan 03 (release credits collapsible)
+  {
+    id: 'P24-08', phase: 24, area: 'Artist Page',
+    desc: 'Artist +page.svelte contains discographyFilter state',
+    method: 'code',
+    fn: () => fileContains('src/routes/artist/[slug]/+page.svelte', 'discographyFilter')(),
+  },
+  {
+    id: 'P24-09', phase: 24, area: 'Artist Page',
+    desc: 'Artist +page.svelte contains discography-controls testid',
+    method: 'code',
+    fn: () => fileContains('src/routes/artist/[slug]/+page.svelte', 'discography-controls')(),
+  },
+  {
+    id: 'P24-10', phase: 24, area: 'Artist Page',
+    desc: 'Artist +page.svelte contains filter-pill CSS class',
+    method: 'code',
+    fn: () => fileContains('src/routes/artist/[slug]/+page.svelte', 'filter-pill')(),
+  },
+  {
+    id: 'P24-11', phase: 24, area: 'Artist Page',
+    desc: 'Artist +page.svelte contains discographySort state',
+    method: 'code',
+    fn: () => fileContains('src/routes/artist/[slug]/+page.svelte', 'discographySort')(),
+  },
+  {
+    id: 'P24-12', phase: 24, area: 'Artist Page',
+    desc: 'Artist +page.svelte contains discography-empty testid (zero-result state)',
+    method: 'code',
+    fn: () => fileContains('src/routes/artist/[slug]/+page.svelte', 'discography-empty')(),
+  },
+  {
+    id: 'P24-13', phase: 24, area: 'Artist Page',
+    desc: 'Release +page.svelte contains creditsExpanded state',
+    method: 'code',
+    fn: () => fileContains('src/routes/artist/[slug]/release/[mbid]/+page.svelte', 'creditsExpanded')(),
+  },
+  {
+    id: 'P24-14', phase: 24, area: 'Artist Page',
+    desc: 'Release +page.svelte contains credits-toggle testid',
+    method: 'code',
+    fn: () => fileContains('src/routes/artist/[slug]/release/[mbid]/+page.svelte', 'credits-toggle')(),
+  },
+  {
+    id: 'P24-15', phase: 24, area: 'Artist Page',
+    desc: 'Release +page.ts fetches release credits with producer role',
+    method: 'code',
+    fn: () => fileContains('src/routes/artist/[slug]/release/[mbid]/+page.ts', 'producer')(),
+  },
 ];
 
 // ---------------------------------------------------------------------------
