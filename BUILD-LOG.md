@@ -6233,8 +6233,33 @@ After fix: Vite logs showed WebSocket connections and module requests from mercu
 > **Commit d39406f** (2026-02-25 01:38) — wip: auto-save
 > Files changed: 1
 
+## Entry 029 — 2026-02-25 — Phase 27: Search + Knowledge Base — Phase Plan Created
+
+Phase 26 is complete (all 9 requirements satisfied). Phase 27 is the final phase of v1.4 — search autocomplete, city/label search, result type badges, and KB genre page redesign.
+
+### Plan Structure (5 plans, 3 waves)
+
+**Wave 1 (parallel):**
+- **27-01** — Search backend: `parseSearchIntent`, `searchArtistsAutocomplete`, `searchByCity`, `searchByLabel` added to `queries.ts`. Intent parser handles "artists from Berlin" → city, "artists on Warp Records" → label. `ArtistResult` gains optional `match_type` field.
+- **27-04** — KB genre page redesign: type badge becomes a coloured pill inline with H1 (genre=grey, scene=amber, city=green). Key artists switch from ArtistCard grid to compact rows (name + tags). Genre Map live graph replaced with a styled "Coming Soon" placeholder. `GenreGraph` import removed.
+
+**Wave 2 (after Plan 01):**
+- **27-02** — SearchBar autocomplete: debounced (200ms), triggers at 2 characters in artist mode, shows dropdown with name + primary genre tag, click navigates directly to `/artist/{slug}`.
+- **27-03** — Search page wiring: routes queries through intent parser, renders city/label confirmation chips above results, passes matchReason badges to ArtistCard (Name match / Tag match / City match / Label match).
+
+**Wave 3 (after all):**
+- **27-05** — Test manifest: P27-01..P27-21 entries covering all 5 requirements (14 code checks, 7 skip).
+
+### Key Decisions
+
+City/label search uses the existing `artists.country` column (ISO codes + area names from MusicBrainz) for city matching, and `artist_tags` for label matching — labels appear as community tags in MusicBrainz data. No schema changes required; the data is already there.
+
+The natural language parsing is intentionally simple regex-based matching — "artists from X" / "in X" for city, "artists on X" / "label X" for label. No ML/NLP dependency. Claude's discretion on the exact patterns (CONTEXT.md specified this as discretion territory).
+
+KB genre page drops the live `<GenreGraph>` component entirely from this page (it's still used on the KB landing and other pages). The mini-graph was showing a force-layout of neighbors which is visually heavy and slow to load for what's essentially an orientation aid. A "Coming Soon" placeholder communicates intent without the overhead.
+
 <!-- status -->
-Phase 24 Plan 01 complete — ArtistRelationships.svelte + About tab + v1.4 tab tokens + Mastodon "Share" label. 3/3 tasks committed. 106 tests passing.
+Phase 27 planning complete — 5 plans created, 3-wave structure, 147 code checks passing. Ready to execute: /gsd:execute-phase 27
 <!-- /status -->
 
 > **Commit 6115fd0** (2026-02-25 01:40) — feat(24-01): fetch MB artist relationships in +page.ts
@@ -6635,3 +6660,9 @@ Verification: `npm run check` 0 errors. Test suite 134/134 passing.
 
 > **Commit 1480144** (2026-02-25 09:41) — wip: auto-save
 > Files changed: 1
+
+> **Commit 5f21257** (2026-02-25 09:46) — auto-save: 4 files @ 09:46
+> Files changed: 4
+
+> **Commit 80ced91** (2026-02-25 09:49) — docs(27): create phase plan
+> Files changed: 6
