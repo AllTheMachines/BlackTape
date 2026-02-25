@@ -6354,3 +6354,39 @@ The slug resolution is outside the main try/catch so it can gracefully handle pr
 
 > **Commit 4065594** (2026-02-25 05:08) — fix(25): revise plans based on checker feedback
 > Files changed: 4
+
+> **Commit d06836c** (2026-02-25 05:11) — wip: auto-save
+> Files changed: 1
+
+## Entry — 2026-02-25 — Phase 25 Plan 01: Queue Persistence + TrackRow
+
+Starting Phase 25 Plan 01. Building the two shared foundations for the queue system:
+
+1. `queue.svelte.ts` — localStorage persistence + `playNextInQueue` / `isQueueActive` / `reorderQueue`
+2. `TrackRow.svelte` — reusable track row with Spotify-style hover Play/Queue interaction
+
+### What shipped
+
+**queue.svelte.ts — persistence + new primitives:**
+- `saveQueueToStorage()` / `loadQueueFromStorage()` — serializes `{tracks, currentIndex}` to `localStorage.setItem('mercury:queue', ...)`
+- `restoreQueueFromStorage()` — exported for root layout mount; restores track + index, no auto-play
+- `playNextInQueue(track)` — inserts after current position and immediately plays; preserves queue context
+- `isQueueActive(): boolean` — true when queue has tracks and `playerState.isPlaying` is true
+- `reorderQueue(from, to)` — moves track with correct `currentIndex` adjustment (three-case logic)
+- All mutations (setQueue, addToQueue, addToQueueNext, removeFromQueue, clearQueue, playNext, playPrevious) now call `saveQueueToStorage()`
+
+**TrackRow.svelte — reusable track row:**
+- Spotify-style hover: track number fades out, play icon (filled triangle, amber) fades in — pure CSS, no JS state
+- `+ Queue` button at trailing edge: `opacity: 0` by default, `opacity: 1` on `.track-row:hover`
+- Play click: routes to `playNextInQueue` (active queue) or `setQueue(contextTracks ?? [track], index)` (idle)
+- Queue click: `addToQueue(track)` with `e.stopPropagation()`
+- Active track title: amber when `queueState.currentIndex` points to this track's path
+- Props: `track`, `index`, `contextTracks?`, `showArtist?`, `showAlbum?`, `showDuration?`, `data-testid?`
+
+TypeScript check: 0 errors, 593 files.
+
+> **Commit 0f3c484** (2026-02-25 05:14) — feat(25-01): queue persistence + new queue primitives
+> Files changed: 1
+
+> **Commit ab2d02a** (2026-02-25 05:15) — feat(25-01): TrackRow reusable component with hover Play/Queue
+> Files changed: 1
