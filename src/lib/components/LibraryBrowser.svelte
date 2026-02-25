@@ -85,9 +85,11 @@
 	}
 </script>
 
+<svelte:window onkeydown={(e) => { if (lightboxSrc && e.key === 'Escape') lightboxSrc = null; }} />
+
 {#if lightboxSrc}
 	<div class="lightbox-overlay" role="dialog" aria-modal="true" aria-label="Cover art">
-		<button class="lightbox-close-area" onclick={() => (lightboxSrc = null)} aria-label="Close"></button>
+		<button class="lightbox-close" onclick={() => (lightboxSrc = null)} aria-label="Close">×</button>
 		<img class="lightbox-img" src={lightboxSrc} alt="Album cover" />
 	</div>
 {/if}
@@ -460,21 +462,34 @@
 		z-index: 2000;
 	}
 
-	.lightbox-close-area {
+	.lightbox-close {
 		position: absolute;
-		inset: 0;
-		background: none;
-		border: none;
-		cursor: zoom-out;
+		top: 16px;
+		right: 20px;
+		width: 36px;
+		height: 36px;
+		background: rgba(255, 255, 255, 0.1);
+		border: 1px solid rgba(255, 255, 255, 0.2);
+		border-radius: 50%;
+		color: #fff;
+		font-size: 20px;
+		line-height: 1;
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		transition: background 0.15s;
+	}
+
+	.lightbox-close:hover {
+		background: rgba(255, 255, 255, 0.2);
 	}
 
 	.lightbox-img {
-		position: relative;
 		max-width: min(600px, 90vw);
 		max-height: 90vh;
 		border-radius: var(--r);
 		object-fit: contain;
 		box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6);
-		pointer-events: none;
 	}
 </style>
