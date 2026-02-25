@@ -6169,3 +6169,42 @@ The entire app now has a consistent design language. Every panel border is `--b-
 
 > **Commit bb9a218** (2026-02-25 01:14) — wip: auto-save
 > Files changed: 1
+
+> **Commit 6c26b70** (2026-02-25 01:16) — auto-save: 1 files @ 01:16
+> Files changed: 1
+
+## Entry 028 — 2026-02-25 — Critical Fix: Dev Mode Was Broken (custom-protocol)
+
+### Problem
+
+After Phase 23 executed cleanly (100/100 tests passing), the app visually showed zero changes. Debugging revealed mercury.exe was never connecting to the Vite dev server at all — it was always loading the old static `build/` folder from Feb 24.
+
+### Root Cause
+
+`src-tauri/Cargo.toml` had `custom-protocol` hardcoded directly in the `tauri` dependency features:
+
+```toml
+tauri = { version = "2", features = ["protocol-asset", "custom-protocol"] }
+```
+
+In Tauri 2.x, `tauri dev` runs `cargo run --no-default-features` to disable `custom-protocol` at the root level — which makes the app use `devUrl` (Vite) instead of `tauri://localhost` (embedded static assets). But `--no-default-features` only affects the ROOT package's default features. Since `custom-protocol` was a direct dependency feature (not a root feature), it was **always on**, `--no-default-features` was a no-op, and the app always served from `build/`.
+
+This means `npm run tauri dev` has never actually worked for live development on this project. Every "dev" run was loading the last production build.
+
+### Fix
+
+Added a root `[features]` section to gate `custom-protocol` correctly:
+
+```toml
+[features]
+custom-protocol = ["tauri/custom-protocol"]
+
+[dependencies]
+tauri = { version = "2", features = ["protocol-asset"] }  # custom-protocol removed
+```
+
+Now `cargo run --no-default-features` correctly disables `custom-protocol`, and `tauri dev` loads from Vite as intended.
+
+### Verification
+
+After fix: Vite logs showed WebSocket connections and module requests from mercury.exe immediately on launch. Phase 23 changes (grouped sidebar, new topbar, custom titlebar) became visible.
