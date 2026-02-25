@@ -439,6 +439,144 @@ code {
 .bg-scale-hex { font-size: 9px; font-family: var(--font-mono); color: var(--t-2); display: block; }
 
 /* ============================================================
+   SWATCH COLOR PICKER POPOVER
+   ============================================================ */
+
+.swatch-popover {
+  position: fixed;
+  background: var(--bg-3);
+  border: 1px solid var(--b-2);
+  border-radius: var(--card-radius);
+  padding: 14px;
+  z-index: 10000;
+  width: 268px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.8), 0 2px 8px rgba(0,0,0,0.4);
+  display: none;
+}
+
+.swatch-popover.open {
+  display: block;
+  animation: popIn 0.12s ease;
+}
+
+@keyframes popIn {
+  from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.pop-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.pop-token {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--acc);
+}
+
+.pop-close {
+  width: 20px;
+  height: 20px;
+  background: var(--bg-4);
+  border: 1px solid var(--b-2);
+  border-radius: 3px;
+  color: var(--t-3);
+  cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
+}
+
+.pop-close:hover { color: var(--t-1); border-color: var(--b-3); }
+
+.pop-picker-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.pop-picker {
+  width: 40px;
+  height: 32px;
+  border: 1px solid var(--b-2);
+  border-radius: var(--input-radius);
+  background: var(--bg-4);
+  cursor: pointer;
+  padding: 2px;
+  flex-shrink: 0;
+}
+
+.pop-hex {
+  flex: 1;
+  background: var(--bg-2);
+  border: 1px solid var(--b-2);
+  border-radius: var(--input-radius);
+  color: var(--t-1);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  padding: 6px 10px;
+  outline: none;
+  transition: border-color 0.12s;
+}
+
+.pop-hex:focus { border-color: var(--acc); }
+
+.pop-prompt-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--t-3);
+  margin-bottom: 6px;
+}
+
+.pop-prompt-box {
+  background: var(--bg-1);
+  border: 1px solid var(--b-1);
+  border-radius: var(--r);
+  padding: 9px 10px;
+  font-size: 11px;
+  color: var(--t-2);
+  line-height: 1.55;
+  margin-bottom: 10px;
+  word-break: break-word;
+  min-height: 52px;
+}
+
+.pop-prompt-box em {
+  font-style: normal;
+  color: var(--acc);
+}
+
+.pop-copy-btn {
+  width: 100%;
+  background: var(--acc);
+  color: #000;
+  border: none;
+  border-radius: var(--r);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 8px;
+  cursor: pointer;
+  letter-spacing: 0.06em;
+  transition: background 0.12s;
+}
+
+.pop-copy-btn:hover { background: #d4b56a; }
+.pop-copy-btn.copied { background: #3dba6a; color: #000; }
+
+/* Small edit trigger on each swatch */
+.color-swatch { position: relative; cursor: pointer; }
+.bg-scale-step { position: relative; }
+
+/* ============================================================
    SECTION 4 — COLOR SANDBOX
    ============================================================ */
 
@@ -1111,31 +1249,31 @@ code {
       <div class="ds-subsection">
         <div class="ds-subsection-title">Background Scale — Dark Layering System</div>
         <div class="bg-scale">
-          <div class="bg-scale-step" onclick="copyToClipboard('--bg-0', '#080808')">
+          <div class="bg-scale-step" data-token="--bg-0" data-hex="#080808" onclick="openSwatchPicker(event, this)">
             <div class="bg-scale-block" style="background:#080808; height:56px;"></div>
             <div class="bg-scale-info"><span class="bg-scale-var">--bg-0</span><span class="bg-scale-hex">#080808</span></div>
           </div>
-          <div class="bg-scale-step" onclick="copyToClipboard('--bg-1', '#0f0f0f')">
+          <div class="bg-scale-step" data-token="--bg-1" data-hex="#0f0f0f" onclick="openSwatchPicker(event, this)">
             <div class="bg-scale-block" style="background:#0f0f0f; height:52px;"></div>
             <div class="bg-scale-info"><span class="bg-scale-var">--bg-1</span><span class="bg-scale-hex">#0f0f0f</span></div>
           </div>
-          <div class="bg-scale-step" onclick="copyToClipboard('--bg-2', '#141414')">
+          <div class="bg-scale-step" data-token="--bg-2" data-hex="#141414" onclick="openSwatchPicker(event, this)">
             <div class="bg-scale-block" style="background:#141414; height:48px;"></div>
             <div class="bg-scale-info"><span class="bg-scale-var">--bg-2</span><span class="bg-scale-hex">#141414</span></div>
           </div>
-          <div class="bg-scale-step" onclick="copyToClipboard('--bg-3', '#1a1a1a')">
+          <div class="bg-scale-step" data-token="--bg-3" data-hex="#1a1a1a" onclick="openSwatchPicker(event, this)">
             <div class="bg-scale-block" style="background:#1a1a1a; height:44px;"></div>
             <div class="bg-scale-info"><span class="bg-scale-var">--bg-3</span><span class="bg-scale-hex">#1a1a1a</span></div>
           </div>
-          <div class="bg-scale-step" onclick="copyToClipboard('--bg-4', '#212121')">
+          <div class="bg-scale-step" data-token="--bg-4" data-hex="#212121" onclick="openSwatchPicker(event, this)">
             <div class="bg-scale-block" style="background:#212121; height:40px;"></div>
             <div class="bg-scale-info"><span class="bg-scale-var">--bg-4</span><span class="bg-scale-hex">#212121</span></div>
           </div>
-          <div class="bg-scale-step" onclick="copyToClipboard('--bg-5', '#292929')">
+          <div class="bg-scale-step" data-token="--bg-5" data-hex="#292929" onclick="openSwatchPicker(event, this)">
             <div class="bg-scale-block" style="background:#292929; height:36px;"></div>
             <div class="bg-scale-info"><span class="bg-scale-var">--bg-5</span><span class="bg-scale-hex">#292929</span></div>
           </div>
-          <div class="bg-scale-step" onclick="copyToClipboard('--bg-6', '#323232')">
+          <div class="bg-scale-step" data-token="--bg-6" data-hex="#323232" onclick="openSwatchPicker(event, this)">
             <div class="bg-scale-block" style="background:#323232; height:32px;"></div>
             <div class="bg-scale-info"><span class="bg-scale-var">--bg-6</span><span class="bg-scale-hex">#323232</span></div>
           </div>
@@ -1145,7 +1283,7 @@ code {
       <div class="ds-subsection">
         <div class="ds-subsection-title">Primary &amp; Accent</div>
         <div class="ds-grid-4">
-          <div class="color-swatch" onclick="copyToClipboard('--acc', '#c4a55a')">
+          <div class="color-swatch" data-token="--acc" data-hex="#c4a55a" onclick="openSwatchPicker(event, this)">
             <div class="color-swatch-block" style="background:#c4a55a;"></div>
             <div class="color-swatch-info">
               <div class="color-swatch-name">Accent Amber</div>
@@ -1153,7 +1291,7 @@ code {
               <div class="color-swatch-var">--acc</div>
             </div>
           </div>
-          <div class="color-swatch" onclick="copyToClipboard('--acc-bg', 'rgba(196,165,90,0.10)')">
+          <div class="color-swatch" data-token="--acc-bg" data-hex="#c4a55a" data-display="rgba(196,165,90,0.10)" onclick="openSwatchPicker(event, this)">
             <div class="color-swatch-block" style="background:rgba(196,165,90,0.10); border-bottom: 1px solid rgba(196,165,90,0.2);"></div>
             <div class="color-swatch-info">
               <div class="color-swatch-name">Accent BG</div>
@@ -1161,7 +1299,7 @@ code {
               <div class="color-swatch-var">--acc-bg</div>
             </div>
           </div>
-          <div class="color-swatch" onclick="copyToClipboard('--link-color', '#5b9bd5')">
+          <div class="color-swatch" data-token="--link-color" data-hex="#5b9bd5" onclick="openSwatchPicker(event, this)">
             <div class="color-swatch-block" style="background:#5b9bd5;"></div>
             <div class="color-swatch-info">
               <div class="color-swatch-name">Link / Tag Blue</div>
@@ -1169,7 +1307,7 @@ code {
               <div class="color-swatch-var">--link-color</div>
             </div>
           </div>
-          <div class="color-swatch" onclick="copyToClipboard('--tag-bg', '#0f1520')">
+          <div class="color-swatch" data-token="--tag-bg" data-hex="#0f1520" onclick="openSwatchPicker(event, this)">
             <div class="color-swatch-block" style="background:#0f1520;"></div>
             <div class="color-swatch-info">
               <div class="color-swatch-name">Tag BG</div>
@@ -1183,7 +1321,7 @@ code {
       <div class="ds-subsection">
         <div class="ds-subsection-title">Text Hierarchy</div>
         <div class="ds-grid-3">
-          <div class="color-swatch" onclick="copyToClipboard('--t-1', '#e0e0e0')">
+          <div class="color-swatch" data-token="--t-1" data-hex="#e0e0e0" onclick="openSwatchPicker(event, this)">
             <div class="color-swatch-block" style="background:#e0e0e0;"></div>
             <div class="color-swatch-info">
               <div class="color-swatch-name">Text Primary</div>
@@ -1191,7 +1329,7 @@ code {
               <div class="color-swatch-var">--t-1</div>
             </div>
           </div>
-          <div class="color-swatch" onclick="copyToClipboard('--t-2', '#888888')">
+          <div class="color-swatch" data-token="--t-2" data-hex="#888888" onclick="openSwatchPicker(event, this)">
             <div class="color-swatch-block" style="background:#888888;"></div>
             <div class="color-swatch-info">
               <div class="color-swatch-name">Text Secondary</div>
@@ -1199,7 +1337,7 @@ code {
               <div class="color-swatch-var">--t-2</div>
             </div>
           </div>
-          <div class="color-swatch" onclick="copyToClipboard('--t-3', '#464646')">
+          <div class="color-swatch" data-token="--t-3" data-hex="#464646" onclick="openSwatchPicker(event, this)">
             <div class="color-swatch-block" style="background:#464646;"></div>
             <div class="color-swatch-info">
               <div class="color-swatch-name">Text Muted</div>
@@ -1251,7 +1389,7 @@ code {
       <div class="ds-subsection">
         <div class="ds-subsection-title">Platform Brand Colors</div>
         <div class="ds-grid-4">
-          <div class="color-swatch" onclick="copyToClipboard('--bandcamp-color', '#1da0c3')">
+          <div class="color-swatch" data-token="--bandcamp-color" data-hex="#1da0c3" onclick="openSwatchPicker(event, this)">
             <div class="color-swatch-block" style="background:#1da0c3;"></div>
             <div class="color-swatch-info">
               <div class="color-swatch-name">Bandcamp</div>
@@ -1259,7 +1397,7 @@ code {
               <div class="color-swatch-var">--bandcamp-color</div>
             </div>
           </div>
-          <div class="color-swatch" onclick="copyToClipboard('--spotify-color', '#1db954')">
+          <div class="color-swatch" data-token="--spotify-color" data-hex="#1db954" onclick="openSwatchPicker(event, this)">
             <div class="color-swatch-block" style="background:#1db954;"></div>
             <div class="color-swatch-info">
               <div class="color-swatch-name">Spotify</div>
@@ -1267,7 +1405,7 @@ code {
               <div class="color-swatch-var">--spotify-color</div>
             </div>
           </div>
-          <div class="color-swatch" onclick="copyToClipboard('--soundcloud-color', '#ff5500')">
+          <div class="color-swatch" data-token="--soundcloud-color" data-hex="#ff5500" onclick="openSwatchPicker(event, this)">
             <div class="color-swatch-block" style="background:#ff5500;"></div>
             <div class="color-swatch-info">
               <div class="color-swatch-name">SoundCloud</div>
@@ -1275,7 +1413,7 @@ code {
               <div class="color-swatch-var">--soundcloud-color</div>
             </div>
           </div>
-          <div class="color-swatch" onclick="copyToClipboard('--youtube-color', '#ff0000')">
+          <div class="color-swatch" data-token="--youtube-color" data-hex="#ff0000" onclick="openSwatchPicker(event, this)">
             <div class="color-swatch-block" style="background:#ff0000;"></div>
             <div class="color-swatch-info">
               <div class="color-swatch-name">YouTube</div>
@@ -1705,6 +1843,21 @@ code {
   </main>
 </div>
 
+<!-- Swatch Color Picker Popover -->
+<div class="swatch-popover" id="swatchPopover">
+  <div class="pop-header">
+    <span class="pop-token" id="popToken">--acc</span>
+    <button class="pop-close" onclick="closeSwatchPopover()">&#x2715;</button>
+  </div>
+  <div class="pop-picker-row">
+    <input type="color" class="pop-picker" id="popPicker" oninput="onPopPickerChange(this.value)">
+    <input type="text" class="pop-hex" id="popHex" placeholder="#c4a55a" oninput="onPopHexInput(this.value)">
+  </div>
+  <div class="pop-prompt-label">Prompt to copy</div>
+  <div class="pop-prompt-box" id="popPrompt"></div>
+  <button class="pop-copy-btn" id="popCopyBtn" onclick="copySwatchPrompt()">Copy Prompt</button>
+</div>
+
 <!-- Toast notification -->
 <div class="ds-toast" id="toast">
   <span class="ds-toast-dot"></span>
@@ -1712,6 +1865,96 @@ code {
 </div>
 
 <script>
+// ============================================================
+//  SWATCH COLOR PICKER POPOVER
+// ============================================================
+
+let _popToken   = '';
+let _popOrigHex = '';
+let _popDisplay = ''; // for rgba tokens
+
+function openSwatchPicker(e, el) {
+  e.stopPropagation();
+
+  _popToken   = el.dataset.token;
+  _popOrigHex = el.dataset.hex;
+  _popDisplay = el.dataset.display || el.dataset.hex;
+
+  const pop = document.getElementById('swatchPopover');
+  document.getElementById('popToken').textContent = _popToken;
+  document.getElementById('popPicker').value = _popOrigHex;
+  document.getElementById('popHex').value = _popOrigHex;
+  updatePopPrompt(_popOrigHex);
+
+  // Position below the clicked element, keep inside viewport
+  const rect = el.getBoundingClientRect();
+  const popW = 268;
+  let left = rect.left;
+  let top  = rect.bottom + 8;
+
+  if (left + popW > window.innerWidth - 12) left = window.innerWidth - popW - 12;
+  if (top + 220 > window.innerHeight) top = rect.top - 220 - 8;
+
+  pop.style.left = left + 'px';
+  pop.style.top  = top  + 'px';
+  pop.classList.add('open');
+}
+
+function closeSwatchPopover() {
+  document.getElementById('swatchPopover').classList.remove('open');
+}
+
+function onPopPickerChange(val) {
+  document.getElementById('popHex').value = val;
+  updatePopPrompt(val);
+}
+
+function onPopHexInput(val) {
+  if (/^#[0-9a-fA-F]{6}$/.test(val)) {
+    document.getElementById('popPicker').value = val;
+    updatePopPrompt(val);
+  }
+}
+
+function updatePopPrompt(newHex) {
+  const isSame = newHex.toLowerCase() === _popOrigHex.toLowerCase();
+  const origDisplay = _popDisplay !== _popOrigHex ? _popDisplay : _popOrigHex;
+
+  const promptText = isSame
+    ? `Pick a new color above to generate a change prompt for ${_popToken}.`
+    : `In Mercury's design system (src/lib/styles/theme.css), change ${_popToken} from ${origDisplay} to ${newHex}.`;
+
+  document.getElementById('popPrompt').textContent = promptText;
+
+  const btn = document.getElementById('popCopyBtn');
+  btn.textContent = 'Copy Prompt';
+  btn.classList.remove('copied');
+  btn.disabled = isSame;
+  btn.style.opacity = isSame ? '0.4' : '1';
+}
+
+function copySwatchPrompt() {
+  const text = document.getElementById('popPrompt').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('popCopyBtn');
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'Copy Prompt';
+      btn.classList.remove('copied');
+    }, 1800);
+    showToast('Prompt copied');
+  });
+}
+
+// Close popover on outside click
+document.addEventListener('click', (e) => {
+  const pop = document.getElementById('swatchPopover');
+  if (pop.classList.contains('open') && !pop.contains(e.target)) {
+    closeSwatchPopover();
+  }
+});
+
 // ============================================================
 //  SANDBOX — defaults per target
 // ============================================================
