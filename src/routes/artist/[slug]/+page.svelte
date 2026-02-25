@@ -441,16 +441,44 @@
 				<section class="discography">
 					<h2 class="section-title">Discography</h2>
 
-					<div class="releases-grid">
-						{#each visibleReleases as release (release.mbid)}
-							<ReleaseCard {release} artistSlug={data.artist.slug} onplayinline={handlePlayInline} />
-						{/each}
+					<div class="discography-controls" data-testid="discography-controls">
+						<div class="filter-pills" data-testid="discography-filter">
+							{#each ([['all', 'All'], ['album', 'Albums'], ['ep', 'EPs'], ['single', 'Singles']] as const) as [val, label]}
+								<button
+									class="filter-pill"
+									class:active={discographyFilter === val}
+									onclick={() => discographyFilter = val}
+									data-testid="filter-{val}"
+								>{label}</button>
+							{/each}
+						</div>
+						<div class="sort-control">
+							<button
+								class="sort-btn"
+								class:active={discographySort === 'newest'}
+								onclick={() => discographySort = 'newest'}
+								data-testid="sort-newest"
+							>Newest</button>
+							<span class="sort-sep">/</span>
+							<button
+								class="sort-btn"
+								class:active={discographySort === 'oldest'}
+								onclick={() => discographySort = 'oldest'}
+								data-testid="sort-oldest"
+							>Oldest</button>
+						</div>
 					</div>
 
-					{#if data.releases.length > 50 && !showAllReleases}
-						<button class="show-more" onclick={() => showAllReleases = true}>
-							Show all {data.releases.length} releases
-						</button>
+					{#if filteredReleases().length === 0}
+						<p class="discography-empty" data-testid="discography-empty">
+							No {discographyFilter === 'ep' ? 'EPs' : discographyFilter === 'all' ? 'releases' : discographyFilter + 's'} for this artist.
+						</p>
+					{:else}
+						<div class="releases-grid">
+							{#each filteredReleases() as release (release.mbid)}
+								<ReleaseCard {release} artistSlug={data.artist.slug} onplayinline={handlePlayInline} />
+							{/each}
+						</div>
 					{/if}
 
 					{#if inlinePlayerHtml}
@@ -827,23 +855,84 @@
 		gap: var(--space-lg);
 	}
 
-	.show-more {
-		margin-top: var(--space-md);
-		background: var(--bg-elevated);
-		border: 1px solid var(--border-default);
-		border-radius: var(--card-radius);
-		color: var(--text-primary);
-		font-size: 0.9rem;
-		padding: var(--space-sm) var(--space-lg);
-		cursor: pointer;
-		align-self: flex-start;
-		transition: background 0.15s, border-color 0.15s;
+	/* ── Discography Controls ───────────────────────────── */
+	.discography-controls {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-md);
+		margin-bottom: var(--space-md);
+		flex-wrap: wrap;
 	}
 
-	.show-more:hover {
-		background: var(--bg-hover);
-		border-color: var(--border-hover);
+	.filter-pills {
+		display: flex;
+		gap: var(--space-xs);
 	}
+
+	.filter-pill {
+		height: 24px;
+		padding: 0 var(--space-sm);
+		background: var(--bg-4);
+		border: 1px solid var(--b-2);
+		border-radius: var(--r);
+		font-size: 0.75rem;
+		color: var(--t-3);
+		cursor: pointer;
+		white-space: nowrap;
+		transition: border-color 0.1s, color 0.1s, background 0.1s;
+	}
+
+	.filter-pill:hover {
+		border-color: var(--b-1);
+		color: var(--t-2);
+	}
+
+	.filter-pill.active {
+		background: var(--acc-bg);
+		border-color: var(--b-acc);
+		color: var(--acc);
+	}
+
+	.sort-control {
+		display: flex;
+		align-items: center;
+		gap: 4px;
+	}
+
+	.sort-btn {
+		background: none;
+		border: none;
+		padding: 2px 4px;
+		font-size: 0.75rem;
+		color: var(--t-3);
+		cursor: pointer;
+		transition: color 0.1s;
+	}
+
+	.sort-btn.active {
+		color: var(--t-1);
+		font-weight: 600;
+	}
+
+	.sort-btn:hover:not(.active) {
+		color: var(--t-2);
+	}
+
+	.sort-sep {
+		color: var(--t-3);
+		font-size: 0.75rem;
+		pointer-events: none;
+	}
+
+	.discography-empty {
+		color: var(--t-3);
+		font-size: 0.85rem;
+		font-style: italic;
+		padding: var(--space-md) 0;
+		margin: 0;
+	}
+
 
 	.inline-player {
 		margin-top: var(--space-md);
