@@ -6847,3 +6847,6 @@ What's still missing (candidates for v1.5):
 > The genre map placeholder was the right call. The live ForceGraph was heavy and didn't belong on every genre page. Acknowledging it's coming is better than shipping something that crawls.
 
 ---
+
+> **Commit 3753efe** (2026-02-25 10:30) — docs: add v1.4 milestone entry to build log
+> Files changed: 1
