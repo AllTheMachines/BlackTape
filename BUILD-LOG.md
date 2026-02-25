@@ -6850,3 +6850,6 @@ What's still missing (candidates for v1.5):
 
 > **Commit 3753efe** (2026-02-25 10:30) — docs: add v1.4 milestone entry to build log
 > Files changed: 1
+
+> **Commit a7c63a6** (2026-02-25 10:30) — wip: auto-save
+> Files changed: 53
