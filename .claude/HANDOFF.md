@@ -1,71 +1,53 @@
-# Work Handoff — 2026-02-25 (Night)
+# Work Handoff — 2026-02-25 (Evening)
 
-## Session Summary
+## Current Task
+GitHub issue triage — capturing backlog notes as tracked issues. No code was written this session.
 
-Fixed two major bugs:
-1. **IPC blob freeze** — library load was transferring all cover art blobs (up to 350MB) over IPC on every search and library load. Fixed with SQL-filtered search + separate album-level cover query.
-2. **"Not responding" freeze** — all library Rust commands were `pub fn` (synchronous), running on the WebView2 COM thread (Windows message pump). Made them all `async`. Also moved `loadLibrary()` from `+page.ts` to `onMount` + added loading overlay.
+## Context
+v1.4 "The Interface" is complete (shipped 2026-02-25). The session recovered from a CLI crash, then logged a full backlog of feature ideas and meta-tasks as GitHub issues. Previous session (before crash) had fixed IPC blob freeze + library "not responding" freeze — all committed and clean.
 
-Everything is committed. App is running in dev mode (`npm run tauri dev` backgrounded, process still alive).
+## Progress
 
-## Current State
+### Completed This Session
+- Resumed from crash using handoff
+- Created GitHub issues #33–#40:
+  - **#33** — Help system + About page overhaul (local HTML help docs, `?` buttons, third-person manifesto About)
+  - **#34** — Find a name for Mercury
+  - **#35** — Decide v1 feature scope (what ships vs. deferred)
+  - **#36** — Audit Mercury modularity (can features be disabled cleanly?)
+  - **#37** — Figure out marketing approach (Faceplate context)
+  - **#38** — Research scan of audiologs/roadmap for unimplemented features
+  - **#39** — Make a testing + debugging session video
+  - **#40** — GitHub stats threshold for donation button
 
-- **App:** Running in dev mode, no code changes pending
-- **Git:** Clean except `BUILD-LOG.md` (auto-save only, no actual changes to commit)
-- **All tests:** 164/164 passing, 43/43 Rust tests passing, 0 TS errors
+### Still Pending (from before crash)
+- Audit v1.3 milestone → `run /gsd:audit-milestone`
+- Archive v1.3 → `run /gsd:complete-milestone`
+- v1.4 may also need archiving (also marked complete in ROADMAP.md)
+- Start v1.5 planning → `run /gsd:new-milestone`
 
-## Open GitHub Issues
+## Open GitHub Issues (Pre-existing)
+- **#3** — Dark background + low-contrast typography
+- **#15** — MusicBrainz live update strategy
+- **#33–#40** — Newly created this session (see above)
 
-- **#3** — Dark background + low-contrast typography (visual accessibility) — untouched
-- **#15** — MusicBrainz live update strategy (enhancement/planning) — untouched
+## Key Decisions (This Session)
+- Help system: local HTML files opened in default browser via `shell.open()`, `HELP_BASE_URL` config for future swap to hosted URL
+- About page: third-person manifesto voice, no named founder
+- Skipped creating issues for: "check open issues resolved" (Steve said forget it), audiolog → GitHub Issues workflow (personal note)
 
-## Closed Issues — What Was Actually Done
-
-| # | What was done |
-|---|---------------|
-| #1 | Artist name in LibraryBrowser → clickable link to artist profile |
-| #2 | Closed as obsolete (filter bar removed in v1.3 redesign) |
-| #4 | Discover page switched to compact list (no broken image squares) |
-| #5 | Back button added to ControlBar in Tauri mode |
-| #6 | Time Machine slider capped at current year |
-| #7 | Crate Dig country filter fixed (Svelte 5 select binding bug) |
-| #8 | Library cover art — separate album-level cover query, no per-track blobs |
-| #9 | Profile 500 error — `$state()` in `.ts` file, renamed to `.svelte.ts` |
-| #10 | Volume persisted to localStorage |
-| #11 | Search autocomplete keyboard navigation (arrow keys, Enter, Escape) |
-| #12 | Spacebar toggles play/pause globally instead of restarting |
-| #13 | Duplicate streaming links deduplicated by hostname |
-| #14 | Play All / Queue All on artist page — **disabled with tooltip only, NOT implemented** |
-
-## Notable: #14 is Not Really Fixed
-
-Issue #14 (Play All / Queue All on artist page) was closed with just disabled buttons + "Library track matching coming soon" tooltip. The actual feature — cross-referencing MusicBrainz tracks against local library — is not built. Steve may want to reopen or track this separately.
-
-## Key Architecture Decisions Made This Session
-
-- Library load: tracks come without cover art; covers come separately via `get_album_covers()` (one per album-artist group)
-- `libraryState.coverMap: Map<string, string>` keyed by `"artist|||album"`
-- `groupByAlbum(tracks, coverMap?)` — optional second param
-- All library Tauri commands are now `async` — they run on tokio, not the main thread
-- `loadLibrary()` sets `isLoading = true/false`; library page shows overlay while loading
-- Navigation to library no longer blocks on data (instant SvelteKit transition)
+## Git Status
+- `BUILD-LOG.md` modified (+3 lines, git hook auto-append) — uncommitted but trivial
 
 ## Relevant Files
+- `.planning/ROADMAP.md` — v1.3 and v1.4 both complete, v1.5 TBD
+- `src/routes/about/+page.svelte` — current stub, needs overhaul (tracked in #33)
+- `src/lib/config.ts` — where `HELP_BASE_URL` would live (tracked in #33)
 
-- `src-tauri/src/scanner/mod.rs` — all commands now `async`
-- `src-tauri/src/library/db.rs` — `get_all_tracks()` strips cover art, `get_album_covers()` added
-- `src/lib/library/store.svelte.ts` — `isLoading`, `coverMap`, `buildCoverMap()`, `groupByAlbum(tracks, coverMap?)`
-- `src/lib/library/types.ts` — `AlbumCover` interface added
-- `src/routes/library/+page.ts` — minimal, no `loadLibrary()` call
-- `src/routes/library/+page.svelte` — loading overlay, `loadLibrary()` in `onMount`
-- `src/routes/search/+page.ts` — uses `searchLocalTracks()` (SQL filter, no blobs)
-
-## Next Steps (Steve's Call)
-
-1. Verify the fixes feel smooth in the running app
-2. Decide whether to tackle open issues (#3 contrast, #14 Play All) or move to next milestone work
-3. `#14` specifically — if Steve wants Play All to actually work, it needs a local library track matcher (match MB recording → local file by title/artist)
+## Next Steps
+1. `/gsd:audit-milestone` — audit v1.3 completion against original intent
+2. `/gsd:complete-milestone` — archive v1.3, set up for v1.4 archive or v1.5
+3. `/gsd:new-milestone` — define v1.5 scope (reference open issues #33–#40 as inputs)
 
 ## Resume Command
-
-After `/clear`, run `/resume`.
+After `/clear`, run `/resume` to continue.
