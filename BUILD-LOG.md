@@ -6669,3 +6669,58 @@ Verification: `npm run check` 0 errors. Test suite 134/134 passing.
 
 > **Commit 9696779** (2026-02-25 09:50) — docs(27): add build log entry for phase planning
 > Files changed: 1
+
+> **Commit da56201** (2026-02-25 09:53) — wip: auto-save
+> Files changed: 1
+
+## Phase 27 Plan 04 — KB Genre Page Redesign — 2026-02-25
+
+### What Was Built
+
+Redesigned `/kb/genre/[slug]` page to match the v1.4 design system and KBAS-01 spec. One file, complete visual overhaul.
+
+**Type badge pill:** The old plain-text `genre-type-badge` (rendered above the title on its own line) is replaced with a coloured `genre-type-pill` badge displayed inline next to the H1. Three type variants: genre (neutral grey border), scene (amber — `var(--acc)`), city (green `#4aad80`). Pill uses the same uppercase/letter-spacing pill pattern established across v1.4.
+
+**Compact key artists:** The `ArtistCard` grid (auto-fill, min 200px columns) is gone. In its place: a compact `key-artist-row` list — each row shows artist name + top 3 tags, 8 artists max. Dense and scannable. The Discover link below invites deeper browsing for anyone who wants more.
+
+**Genre Map placeholder:** The live `GenreGraph` (heavy D3 force simulation) is replaced with a styled placeholder box — dashed border, "Genre Map — Coming Soon" label, explanatory hint. Both `GenreGraph` and `ArtistCard` imports removed from the file entirely.
+
+**CSS:** All styles rewritten using v1.4 design tokens (`--bg-surface`, `--border-subtle`, `--text-muted`, `--acc`, `--r`, `--space-*`). No raw hex colours except where design tokens don't yet exist (green city colour).
+
+**Result:** `npm run check` 0 errors. 147 code tests pass.
+
+<!-- status -->
+Phase 27 Plan 04 complete — KB genre page redesigned. KBAS-01 satisfied.
+<!-- /status -->
+
+> **Commit 7c34869** (2026-02-25 09:56) — feat(27-01): add SearchIntent type, parseSearchIntent, and match_type field
+> Files changed: 1
+
+> **Commit 0e18ce5** (2026-02-25 09:56) — feat(27-04): redesign KB genre page — type pill, compact artist rows, map placeholder
+> Files changed: 1
+
+> **Commit d472f47** (2026-02-25 09:57) — feat(27-01): add searchArtistsAutocomplete, searchByCity, searchByLabel query functions
+> Files changed: 1
+
+## Entry — 2026-02-25 — Phase 27 Plan 01: Search Query Functions
+
+### What Was Built
+
+The query backend that powers all Phase 27 search features — intent parsing, autocomplete, and city/label search. Two tasks, ~2 minutes, one file touched.
+
+**SearchIntent + parseSearchIntent (Task 1):** Regex-based natural language parser that detects city intent ("artists from Berlin", "in Berlin") and label intent ("artists on Warp", "label Warp Records") from a raw query string. Returns a typed `SearchIntent` object with `type`, `raw`, and `entity` fields. Also added `match_type?: 'name' | 'tag' | 'city' | 'label'` to `ArtistResult` for badge rendering on the search page.
+
+**Three new query functions (Task 2):**
+- `searchArtistsAutocomplete` — FTS5 prefix search, orders by exact-prefix-first, returns 5 results with primary tag for disambiguation. Called after 2 characters typed.
+- `searchByCity` — searches `artist_tags` for city/area name matches AND `artists.country` for ISO code matches. Returns results with `'city' AS match_type` literal.
+- `searchByLabel` — searches `artist_tags` via LIKE for partial label name matching, ordered by MB vote count descending. Returns results with `'label' AS match_type` literal.
+
+### Design Decisions
+
+The `match_type` literal in the SQL SELECT (`'city' AS match_type`, `'label' AS match_type`) is a SQLite column alias returning a static string — this is how match type flows through to the UI without requiring a post-query transform. The existing `searchArtists` (name search) doesn't set this field, which is fine — `undefined` means no badge.
+
+City search uses dual-path matching: ISO country code in `artists.country` for country-level queries ("artists from Germany"), AND `artist_tags` for city-level queries ("artists from Berlin") since MusicBrainz encodes city associations as tags. This is the best available strategy given the schema.
+
+### Verification
+
+`npm run check` — 0 errors, 8 warnings (all pre-existing). Test suite 147/147 passing. All five exports confirmed present in queries.ts.

@@ -62,7 +62,7 @@
 
 ### Knowledge Base
 
-- [ ] **KBAS-01**: Knowledge Base genre pages are redesigned to match the v1.4 mockup (type badge, description panel, key artists, related genres with colour-coded type dots, genre map placeholder)
+- [x] **KBAS-01**: Knowledge Base genre pages are redesigned to match the v1.4 mockup (type badge, description panel, key artists, related genres with colour-coded type dots, genre map placeholder)
 
 ### Crate Digging
 
@@ -129,7 +129,7 @@
 | SRCH-02 | Phase 27: Search + Knowledge Base | Pending |
 | SRCH-03 | Phase 27: Search + Knowledge Base | Pending |
 | SRCH-04 | Phase 27: Search + Knowledge Base | Pending |
-| KBAS-01 | Phase 27: Search + Knowledge Base | Pending |
+| KBAS-01 | Phase 27: Search + Knowledge Base | Complete |
 
 **Coverage:**
 - v1.4 requirements: 35 total

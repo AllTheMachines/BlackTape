@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-24 after v1.4 milestone started)
 
 ## Current Position
 
-Phase: 27 of 27 (Autocomplete — next)
-Plan: 0 of ? in current phase (Phase 26 all 4 plans complete)
-Status: Phase 26 COMPLETE — all 9 requirements satisfied (DISC-01/02/03, XLINK-01..05, CRAT-01), 147 code checks passing
-Last activity: 2026-02-25 — Phase 26 Plan 04 complete: PHASE_26 test manifest added (P26-01..P26-16), 13 code checks + 3 skip, 0 failures
+Phase: 27 of 27 (Search Knowledge Base — active)
+Plan: 4 of ? in current phase (27-04 complete — KB genre page redesign)
+Status: Phase 27 active — Plan 04 complete: KB genre page redesigned with type pill, compact artist rows, genre map placeholder (KBAS-01)
+Last activity: 2026-02-25 — Phase 27 Plan 04 complete: KB genre page redesign — genre-type-pill, key-artist-row, genre-map-placeholder
 
-Progress: [██████░░░░] 62% (v1.4 — Phase 26 complete 4/4 plans, 3/4 phases)
+Progress: [██████░░░░] 65% (v1.4 — Phase 26 complete, Phase 27 plan 04/? done)
 
 ## Performance Metrics
 
@@ -93,6 +93,10 @@ Progress: [██████░░░░] 62% (v1.4 — Phase 26 complete 4/4 p
 - [Phase 26-02]: StyleMap initialTag sets hoveredTag after simulation tick(500) completes — pre-highlights incoming node without interfering with physics layout
 - [Phase 26-02]: XLINK-02 (KB → Discover) was already satisfied by existing KB genre page — no changes needed
 - [Phase 26]: [Phase 26-04]: Tests written against actual source patterns first run — all 13 code checks pass without needing source changes
+- [Phase 27-04]: Genre type pill placed inline with H1 (flex row) — tighter visual hierarchy per KBAS-01 spec
+- [Phase 27-04]: GenreGraph replaced with static placeholder — avoids heavy D3 simulation on sparse-data pages; honest "coming soon" UX
+- [Phase 27-04]: ArtistCard grid replaced by compact key-artist-row list — denser, more visible information per screen height
+- [Phase 27-04]: chip-type-dot.type-genre uses var(--text-muted) (neutral grey) — genre is default/baseline type; scene (amber) + city (green) are marked variants
 
 ### Pending Todos
 None
@@ -103,6 +107,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-25
-Stopped at: Completed 26-04-PLAN.md (Phase 26 Plan 04 — test manifest P26-01..P26-16, Phase 26 COMPLETE)
+Stopped at: Completed 27-04-PLAN.md (Phase 27 Plan 04 — KB genre page redesign, KBAS-01)
 Resume file: None
-Next: Phase 27 (Autocomplete — artist name search only)
+Next: Phase 27 Plan 05 (test manifest for Plans 01-04)
