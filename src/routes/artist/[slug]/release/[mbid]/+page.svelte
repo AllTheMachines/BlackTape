@@ -23,6 +23,15 @@
 	let tauriMode = $state(false);
 	let creditsExpanded = $state(false);
 
+	function handlePlayAlbum() {
+		// Stub: Play Album requires matching MusicBrainz release tracks to local library files.
+		// No local-library-to-MB matching mechanism exists yet. Deferred to a future phase.
+		// The button is present so the UI hierarchy is established; it will be wired when matching is built.
+	}
+	function handleQueueAlbum() {
+		// Stub: same constraint as handlePlayAlbum — deferred to local file matching phase.
+	}
+
 	/** Save to Shelf state (Tauri-only) */
 	let savedInCollections = $state<string[]>([]);
 	let showSaveDropdown = $state(false);
@@ -148,7 +157,18 @@
 						</div>
 					{/if}
 				</div>
-			</div>
+
+			{#if tauriMode}
+				<div class="album-actions" data-testid="album-actions">
+					<button class="btn-play-album" onclick={handlePlayAlbum} data-testid="play-album-btn">
+						Play Album
+					</button>
+					<button class="btn-queue-album" onclick={handleQueueAlbum} data-testid="queue-album-btn">
+						+ Queue Album
+					</button>
+				</div>
+			{/if}
+		</div>
 		</header>
 
 		<!-- Tracklist -->
@@ -330,6 +350,43 @@
 
 	.action-rows {
 		margin-top: var(--space-md);
+	}
+
+	.album-actions {
+		display: flex;
+		gap: 8px;
+		margin-top: 8px;
+	}
+
+	.btn-play-album {
+		background: var(--acc);
+		color: #000;
+		border: none;
+		padding: 6px 14px;
+		border-radius: var(--r);
+		font-size: 0.8rem;
+		font-weight: 600;
+		cursor: pointer;
+	}
+
+	.btn-play-album:hover {
+		background: var(--acc-bg-h);
+		color: var(--acc);
+		border: 1px solid var(--b-acc);
+	}
+
+	.btn-queue-album {
+		background: transparent;
+		color: var(--t-1);
+		border: 1px solid var(--b-2);
+		padding: 6px 14px;
+		border-radius: var(--r);
+		font-size: 0.8rem;
+		cursor: pointer;
+	}
+
+	.btn-queue-album:hover {
+		border-color: var(--b-3);
 	}
 
 	/* Tracklist */

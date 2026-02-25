@@ -1,6 +1,7 @@
 <script lang="ts">
 	import SearchBar from '$lib/components/SearchBar.svelte';
 	import ArtistCard from '$lib/components/ArtistCard.svelte';
+	import TrackRow from '$lib/components/TrackRow.svelte';
 	import { PROJECT_NAME } from '$lib/config';
 	import { isTauri } from '$lib/platform';
 	import type { LocalTrack } from '$lib/library/types';
@@ -25,20 +26,9 @@
 		};
 	}
 
-	async function playLocalTrack(track: LocalTrack, index: number) {
-		const { setQueue } = await import('$lib/player/queue.svelte');
-		const tracks = (data.localTracks ?? []).slice(0, MAX_LOCAL_RESULTS);
-		const playerTracks = tracks.map(toPlayerTrack);
-		setQueue(playerTracks, index);
-	}
-
-	function formatDuration(secs: number): string {
-		if (!isFinite(secs) || secs < 0) return '0:00';
-		const totalSeconds = Math.floor(secs);
-		const minutes = Math.floor(totalSeconds / 60);
-		const seconds = totalSeconds % 60;
-		return `${minutes}:${String(seconds).padStart(2, '0')}`;
-	}
+	const allPlayerTracks = $derived(
+		(data.localTracks ?? []).slice(0, MAX_LOCAL_RESULTS).map(toPlayerTrack)
+	);
 </script>
 
 <svelte:head>
@@ -59,23 +49,14 @@
 				<h2 class="section-title">Your Library</h2>
 				<div class="local-tracks">
 					{#each data.localTracks.slice(0, MAX_LOCAL_RESULTS) as track, i}
-						<button
-							class="local-track-row"
-							onclick={() => playLocalTrack(track, i)}
-							title="Play {track.title ?? 'Unknown'}"
-						>
-							<div class="local-track-info">
-								<span class="local-track-title">{track.title ?? 'Unknown Title'}</span>
-								<span class="local-track-meta">
-									{track.artist ?? 'Unknown Artist'}
-									{#if track.album}
-										<span class="local-meta-sep">&mdash;</span>
-										{track.album}
-									{/if}
-								</span>
-							</div>
-							<span class="local-track-duration">{formatDuration(track.duration_secs)}</span>
-						</button>
+						<TrackRow
+							track={toPlayerTrack(track)}
+							index={i}
+							contextTracks={allPlayerTracks}
+							showArtist={true}
+							showDuration={true}
+							data-testid="search-track-row"
+						/>
 					{/each}
 				</div>
 				{#if data.localTracks.length > MAX_LOCAL_RESULTS}
@@ -152,65 +133,6 @@
 		display: flex;
 		flex-direction: column;
 		gap: 1px;
-		background: var(--border-subtle);
-		border-radius: var(--card-radius);
-		overflow: hidden;
-	}
-
-	.local-track-row {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: var(--space-md);
-		padding: 8px var(--space-md);
-		background: var(--bg-surface);
-		border: none;
-		color: inherit;
-		cursor: pointer;
-		text-align: left;
-		transition: background 0.1s;
-		width: 100%;
-	}
-
-	.local-track-row:hover {
-		background: var(--bg-hover);
-	}
-
-	.local-track-info {
-		flex: 1;
-		min-width: 0;
-		display: flex;
-		flex-direction: column;
-		gap: 1px;
-	}
-
-	.local-track-title {
-		font-size: 0.85rem;
-		font-weight: 500;
-		color: var(--text-primary);
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	.local-track-meta {
-		font-size: 0.75rem;
-		color: var(--text-secondary);
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	.local-meta-sep {
-		margin: 0 0.3em;
-		color: var(--text-muted);
-	}
-
-	.local-track-duration {
-		font-size: 0.75rem;
-		color: var(--text-muted);
-		font-variant-numeric: tabular-nums;
-		flex-shrink: 0;
 	}
 
 	.see-all-link {
