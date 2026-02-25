@@ -2232,6 +2232,142 @@ export const PHASE_24 = [
 ];
 
 // ---------------------------------------------------------------------------
+// PHASE 25 — Queue System + Library
+// ---------------------------------------------------------------------------
+
+export const PHASE_25 = [
+  // Plan 01: Queue persistence + TrackRow
+  {
+    id: 'P25-01', phase: 25, area: 'Queue System',
+    desc: 'queue.svelte.ts exports restoreQueueFromStorage',
+    method: 'code',
+    fn: () => fileContains('src/lib/player/queue.svelte.ts', 'restoreQueueFromStorage')(),
+  },
+  {
+    id: 'P25-02', phase: 25, area: 'Queue System',
+    desc: 'queue.svelte.ts contains localStorage (persistence wired)',
+    method: 'code',
+    fn: () => fileContains('src/lib/player/queue.svelte.ts', 'localStorage')(),
+  },
+  {
+    id: 'P25-03', phase: 25, area: 'Queue System',
+    desc: 'queue.svelte.ts exports playNextInQueue',
+    method: 'code',
+    fn: () => fileContains('src/lib/player/queue.svelte.ts', 'playNextInQueue')(),
+  },
+  {
+    id: 'P25-04', phase: 25, area: 'Queue System',
+    desc: 'TrackRow.svelte component exists',
+    method: 'code',
+    fn: () => fileExists('src/lib/components/TrackRow.svelte'),
+  },
+  {
+    id: 'P25-05', phase: 25, area: 'Queue System',
+    desc: 'TrackRow.svelte has queue-btn testid',
+    method: 'code',
+    fn: () => fileContains('src/lib/components/TrackRow.svelte', 'queue-btn')(),
+  },
+  {
+    id: 'P25-06', phase: 25, area: 'Queue System',
+    desc: 'TrackRow.svelte imports addToQueue',
+    method: 'code',
+    fn: () => fileContains('src/lib/components/TrackRow.svelte', 'addToQueue')(),
+  },
+  // Plan 02: Track surfaces wired
+  {
+    id: 'P25-07', phase: 25, area: 'Queue System',
+    desc: 'Search page imports TrackRow',
+    method: 'code',
+    fn: () => fileContains('src/routes/search/+page.svelte', 'TrackRow')(),
+  },
+  {
+    id: 'P25-08', phase: 25, area: 'Queue System',
+    desc: 'Release page has play-album-btn testid',
+    method: 'code',
+    fn: () => fileContains('src/routes/artist/[slug]/release/[mbid]/+page.svelte', 'play-album-btn')(),
+  },
+  {
+    id: 'P25-09', phase: 25, area: 'Queue System',
+    desc: 'Release page has queue-album-btn testid',
+    method: 'code',
+    fn: () => fileContains('src/routes/artist/[slug]/release/[mbid]/+page.svelte', 'queue-album-btn')(),
+  },
+  {
+    id: 'P25-10', phase: 25, area: 'Queue System',
+    desc: 'Artist page has play-all-btn testid',
+    method: 'code',
+    fn: () => fileContains('src/routes/artist/[slug]/+page.svelte', 'play-all-btn')(),
+  },
+  {
+    id: 'P25-11', phase: 25, area: 'Queue System',
+    desc: 'Artist page has queue-all-btn testid',
+    method: 'code',
+    fn: () => fileContains('src/routes/artist/[slug]/+page.svelte', 'queue-all-btn')(),
+  },
+  // Plan 03: Queue panel + Library
+  {
+    id: 'P25-12', phase: 25, area: 'Queue System',
+    desc: 'Queue.svelte empty state shows correct guidance text',
+    method: 'code',
+    fn: () => fileContains('src/lib/components/Queue.svelte', 'Queue is empty. Hit + Queue on any track.')(),
+  },
+  {
+    id: 'P25-13', phase: 25, area: 'Queue System',
+    desc: 'Queue.svelte has draggable attribute (drag-reorder enabled)',
+    method: 'code',
+    fn: () => fileContains('src/lib/components/Queue.svelte', 'draggable')(),
+  },
+  {
+    id: 'P25-14', phase: 25, area: 'Queue System',
+    desc: 'Queue.svelte uses slide-up animation (panel attached to player bar)',
+    method: 'code',
+    fn: () => fileContains('src/lib/components/Queue.svelte', 'slide-up')(),
+  },
+  {
+    id: 'P25-15', phase: 25, area: 'Queue System',
+    desc: 'Player.svelte queue toggle has queue-toggle testid',
+    method: 'code',
+    fn: () => fileContains('src/lib/components/Player.svelte', 'queue-toggle')(),
+  },
+  {
+    id: 'P25-16', phase: 25, area: 'Queue System',
+    desc: 'Root layout calls restoreQueueFromStorage on mount',
+    method: 'code',
+    fn: () => fileContains('src/routes/+layout.svelte', 'restoreQueueFromStorage')(),
+  },
+  {
+    id: 'P25-17', phase: 25, area: 'Library',
+    desc: 'LibraryBrowser.svelte has album-list-pane testid (two-pane layout)',
+    method: 'code',
+    fn: () => fileContains('src/lib/components/LibraryBrowser.svelte', 'album-list-pane')(),
+  },
+  {
+    id: 'P25-18', phase: 25, area: 'Library',
+    desc: 'LibraryBrowser.svelte has track-pane testid',
+    method: 'code',
+    fn: () => fileContains('src/lib/components/LibraryBrowser.svelte', 'track-pane')(),
+  },
+  {
+    id: 'P25-19', phase: 25, area: 'Library',
+    desc: 'LibraryBrowser.svelte has amber left-border on selected album',
+    method: 'code',
+    fn: () => fileContains('src/lib/components/LibraryBrowser.svelte', 'border-left-color')(),
+  },
+  {
+    id: 'P25-20', phase: 25, area: 'Library',
+    desc: 'LibraryBrowser.svelte imports TrackRow',
+    method: 'code',
+    fn: () => fileContains('src/lib/components/LibraryBrowser.svelte', 'TrackRow')(),
+  },
+  {
+    id: 'P25-21', phase: 25, area: 'Library',
+    desc: 'LibraryBrowser.svelte has track-pane-column-headers element (LIBR-03: #/Title/Time/Actions)',
+    method: 'code',
+    fn: () => fileContains('src/lib/components/LibraryBrowser.svelte', 'track-pane-column-headers')(),
+  },
+];
+
+// ---------------------------------------------------------------------------
 // Build check — always runs last
 // ---------------------------------------------------------------------------
 
@@ -2271,5 +2407,6 @@ export const ALL_TESTS = [
   ...PHASE_22,
   ...PHASE_23,
   ...PHASE_24,
+  ...PHASE_25,
   ...BUILD,
 ];
