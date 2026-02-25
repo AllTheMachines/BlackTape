@@ -1,204 +1,92 @@
-# HANDOFF — UI Mockup Audit Fixes
+# HANDOFF — Post-UAT: 12 Issues Ready to Fix
 
 **Date:** 2026-02-25
-**Status:** Audit complete, NO fixes applied yet. Start here next session.
+**Status:** UAT session complete, 12 GitHub issues filed. Nothing started on fixes yet.
 
 ---
 
-## Context
+## What Just Happened
 
-Steve asked to compare the running app against the design mockups and fix all deviations. Full audit done. No code changed yet.
-
-**Mockup files:** `mockups/styles.css`, `mockups/01-artist.html`, `mockups/02-discover.html`, `mockups/03-library.html`, `mockups/04-genre.html`
+Steve did a 44-minute first-time user walkthrough of Mercury (screen recording). Processed with `/uat-review` skill: Whisper transcription → incident detection → frame extraction → GitHub issues. All 12 issues filed to `AllTheMachines/Mercury`.
 
 ---
 
-## Fixes To Apply
+## Open Issues (priority order)
 
-### 1. `src/lib/components/LibraryBrowser.svelte` — CRITICAL
+### Blockers — fix first
+| Issue | Title | Why urgent |
+|-------|-------|------------|
+| [#9](https://github.com/AllTheMachines/Mercury/issues/9) | Profile page always 500 Internal Error | Dead end on first nav |
+| [#4](https://github.com/AllTheMachines/Mercury/issues/4) | Discover page: gray boxes, images never load | App looks broken immediately |
+| [#8](https://github.com/AllTheMachines/Mercury/issues/8) | No album cover art anywhere (library + artist pages) | App feels empty everywhere |
+| [#7](https://github.com/AllTheMachines/Mercury/issues/7) | Crate Dig country filter does nothing | Core feature broken |
 
-**`.album-list-pane`** background wrong
-```css
-/* current */ background: var(--bg-2);
-/* fix */     background: var(--bg-1);
-```
+### Navigation bugs
+| Issue | Title |
+|-------|-------|
+| [#5](https://github.com/AllTheMachines/Mercury/issues/5) | Back navigation broken (KB → Style Map) |
+| [#3](https://github.com/AllTheMachines/Mercury/issues/3) | No home button; dark contrast throughout app |
 
-**`.album-list-item`** padding and gap wrong
-```css
-/* current */ gap: 10px; padding: 0 12px;
-/* fix */     gap: 9px;  padding: 0 10px;
-```
+### Playback bugs
+| Issue | Title |
+|-------|-------|
+| [#12](https://github.com/AllTheMachines/Mercury/issues/12) | Spacebar restarts playback instead of pausing |
+| [#14](https://github.com/AllTheMachines/Mercury/issues/14) | Play All / Queue All buttons do nothing |
 
-**`.album-thumb`** border color wrong
-```css
-/* current */ border: 1px solid var(--b-2);
-/* fix */     border: 1px solid var(--b-1);
-```
+### Data bugs
+| Issue | Title |
+|-------|-------|
+| [#6](https://github.com/AllTheMachines/Mercury/issues/6) | Time Machine shows future years (cap at current year) |
+| [#13](https://github.com/AllTheMachines/Mercury/issues/13) | Duplicate Deezer entries on artist page |
 
-**`.album-list-item:hover`** uses OKLCH var instead of spec hex
-```css
-/* current */ background: var(--bg-hover);
-/* fix */     background: #181818;
-```
-
-**`.album-list-item.selected`** missing explicit background
-```css
-/* add */ background: #1e1e1e;
-```
-
-**`.release-title`** wrong size and weight
-```css
-/* current */ font-size: 15px; font-weight: 500;
-/* fix */     font-size: 18px; font-weight: 300;
-```
-
-**`.release-artist`** wrong color, missing weight
-```css
-/* current */ color: var(--t-2);
-/* fix */     color: var(--acc); font-weight: 500;
-```
-
-**`.release-play-btn`** solid amber fill — should be accent outline style
-```css
-/* current */
-background: var(--acc);
-color: #000;
-border: none;
-
-/* fix */
-background: var(--acc-bg);
-border: 1px solid var(--b-acc);
-color: var(--acc);
-```
-
-**`.release-play-btn:hover`**
-```css
-/* current */ opacity: 0.85;
-/* fix */     background: var(--acc-bg-h); opacity: unset;
-```
-
-**`.track-pane-column-headers`** wrong bg, missing height
-```css
-/* current */ background: var(--bg-2); padding: 4px 8px;
-/* fix */     background: var(--bg-1); height: 28px; padding: 0 8px;
-```
-
-**`.track-pane-tracks`** remove excess padding
-```css
-/* current */ padding: 4px 0;
-/* fix */     padding: 0;
-```
+### Enhancements
+| Issue | Title |
+|-------|-------|
+| [#10](https://github.com/AllTheMachines/Mercury/issues/10) | Persist volume between sessions |
+| [#11](https://github.com/AllTheMachines/Mercury/issues/11) | Search dropdown: arrow key navigation |
 
 ---
 
-### 2. `src/lib/components/PanelLayout.svelte` — sidebar colors
+## Quick Wins (low effort, high impact)
 
-**`.sidebar-pane`**
-```css
-/* current */ background: var(--bg-base);
-/* fix */     background: var(--bg-1);
+**#6 — Time Machine future years** (5 min)
+```js
+// Cap slider max:
+const maxYear = Math.min(rangeMax, new Date().getFullYear());
+// Filter query:
+WHERE begin_year <= strftime('%Y', 'now')
 ```
 
-**`.sidebar-pane.collapsed`**
-```css
-/* current */ background: var(--bg-surface); border-right: 1px solid var(--border-subtle);
-/* fix */     background: var(--bg-1);
-```
+**#10 — Persist volume** (10 min)
+Save volume to SQLite settings on change, restore on startup. Default to 0.5 if no saved value.
 
-**`.left-sidebar:not(.collapsed)`**
-```css
-/* current */ border-right: 1px solid var(--border-subtle);
-/* fix */     border-right: 1px solid var(--b-1);
-```
+**#12 — Spacebar pause** (15 min)
+Global keydown handler — spacebar should call `player.togglePlay()`, not trigger a button click that restarts.
 
-**`.right-sidebar:not(.collapsed)`**
-```css
-/* current */ border-left: 1px solid var(--border-subtle);
-/* fix */     border-left: 1px solid var(--b-1);
-```
+**#13 — Deduplicate streaming links** (15 min)
+Group MusicBrainz relationships by domain before rendering. Keep first URL per domain.
 
 ---
 
-### 3. `src/routes/discover/+page.svelte` — filter panel polish
+## Profile 500 — Where to look
 
-**`.filter-heading`** — wrong padding, tracking, missing border-bottom
-```css
-/* current */ padding: 5px 12px; letter-spacing: 0.08em;
-/* fix */     padding: 10px 12px 8px; letter-spacing: 0.12em; border-bottom: 1px solid var(--b-1);
-```
-
-**`.filter-label`** — wrong tracking
-```css
-/* current */ letter-spacing: 0.06em;
-/* fix */     letter-spacing: 0.1em;
-```
-
-**`.results-toolbar`** — missing border-bottom
-```css
-/* add */ border-bottom: 1px solid var(--b-1);
-```
-
-**`.tag-chip`** (discover-local, not global) — height wrong
-```css
-/* current */ height: 20px;
-/* fix */     height: 22px;
-```
+The Profile route is crashing on load. Check:
+- `src/routes/profile/+page.svelte` or `+page.server.ts` load function
+- Any DB query that assumes rows exist (unhandled null from empty taste_tags/artist_anchors tables)
+- Run app in dev mode and check the terminal for the actual error stack
 
 ---
 
-### 4. `src/routes/artist/[slug]/+page.svelte` — button border-radius
+## Cover Art — Where to look
 
-These buttons use `border-radius: 4px` or `6px` — all should be `var(--r)` (2px square design):
-
-- `.rooms-link`: `6px` → `var(--r)`
-- `.embed-toggle`: `6px` → `var(--r)`
-- `.share-mastodon-btn`: `4px` → `var(--r)`
-- `.save-shelf-btn`: `4px` → `var(--r)`, also fix bad tokens: `var(--border)` → `var(--b-2)`, `var(--bg-secondary)` → `var(--bg-4)`, `var(--accent)` → `var(--acc)`
-- `.shelf-dropdown`: `4px` → `var(--r)`
-- `.mode-btn` (embed panel): `4px` → `var(--r)`
-- `.embed-action-btn`: `4px` → `var(--r)`
-- `.embed-curator-input`: `4px` → `var(--r)` (already gets it from global input rule — just remove local override)
-- `.embed-code`: `4px` → `var(--r)`
-- `.curator-handle-link`: `999px` (pill) → `var(--r)` (should be square chip)
+Two separate surfaces affected:
+1. **Library** — embedded ID3/FLAC art not being read during scan. Check `src/lib/tauri/scanner.ts` or equivalent — is `cover_art` being extracted from file metadata?
+2. **Artist pages / Discover grid** — Cover Art Archive URLs. Check if the CAA fetch is being blocked (CSP?) or if the URL construction is wrong.
 
 ---
 
-### 5. `src/lib/components/TrackRow.svelte` — minor height
+## Session Notes
 
-```css
-/* current */ min-height: 36px;
-/* fix */     min-height: 34px;
-```
-
-Leave `padding: 0 8px` and `border-radius: var(--r)` as-is — used in multiple contexts.
-
----
-
-### 6. `src/routes/kb/genre/[slug]/+page.svelte` — type badge
-
-Find the genre type pill/badge element and fix padding:
-```css
-/* current */ padding: 2px 8px;
-/* fix */     height: 18px; padding: 0 7px;
-```
-
----
-
-## Do NOT Change
-
-- `--header-height: 48px` — used in PanelLayout height calc, tuned for Titlebar+ControlBar stack
-- `--player-height: 72px` — same
-- `--card-radius` / `--input-radius` — legacy vars, not actively used by v1.4 components
-- Titlebar.svelte — Tauri-specific, not in mockup scope
-- SearchBar.svelte (large variant) — web-only landing page component, OKLCH vars intentional
-
----
-
-## After Fixing
-
-```bash
-npm run check           # 0 errors, 8 warnings (pre-existing)
-node tools/test-suite/run.mjs  # 164 passing
-```
-
-Then update BUILD-LOG.md with a mockup audit + polish entry.
+- Build log updated (Entry 2026-02-25 "First UAT Session")
+- UAT frames saved at: `C:\Users\User\AppData\Local\Temp\uat-review-20260225-142855\`
+- Recording: `D:\Projects\_videoTestingApps\2026-02-25 13-35-39.mkv`

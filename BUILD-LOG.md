@@ -7104,3 +7104,6 @@ The Profile 500 (#9) is a complete dead end that hits every new user immediately
 <!-- decision: UAT tooling is now proven — /uat-review skill processes any screen recording into filed GitHub issues. Use after every significant build session. -->
 The `/uat-review` skill is operational. Pipeline: OBS recording → Whisper transcription → incident detection → frame extraction → GitHub issue creation. ~15 minutes to process a 44-minute session end-to-end.
 <!-- /decision -->
+
+> **Commit ef64e8e** (2026-02-25 15:12) — wip: auto-save
+> Files changed: 1
