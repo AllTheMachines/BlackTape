@@ -6297,6 +6297,6 @@ The `+page.ts` load function now:
 
 The slug resolution is outside the main try/catch so it can gracefully handle provider-unavailable (web mode) separately.
 
-<!-- status -->
-Phase 24 plan 03 complete. All 15 P24 tests passing. Working on STATE.md + ROADMAP.md updates.
-<!-- /status -->
+
+> **Commit a190cbd** (2026-02-25 01:50) — docs(24-03): complete release credits + discography controls plan
+> Files changed: 5
