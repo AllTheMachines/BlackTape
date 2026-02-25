@@ -7418,3 +7418,6 @@ Fix: renamed to `avatar.svelte.ts`, updated 5 import sites (AvatarEditor, Avatar
 
 > **Commit a801f93** (2026-02-25 22:22) — wip: auto-save
 > Files changed: 7
+
+> **Commit bc32493** (2026-02-25 22:28) — fix: eliminate IPC blob transfer freeze on search and library load
+> Files changed: 5
