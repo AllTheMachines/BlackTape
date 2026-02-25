@@ -45,6 +45,7 @@ Progress: [██████░░░░] 65% (v1.4 — Phase 26 complete, Phas
 | **Phase 25 Total** | **4 plans** | **9/9 requirements (QUEU-01..06, LIBR-01..03)** | **Complete** |
 | Phase 26 P04 | 2min | 1 tasks | 1 files |
 | **Phase 26 Total** | **4 plans** | **9/9 requirements (DISC-01..03, XLINK-01..05, CRAT-01)** | **Complete** |
+| Phase 27-search-knowledge-base P01 | 2min | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -97,12 +98,15 @@ Progress: [██████░░░░] 65% (v1.4 — Phase 26 complete, Phas
 - [Phase 27-04]: GenreGraph replaced with static placeholder — avoids heavy D3 simulation on sparse-data pages; honest "coming soon" UX
 - [Phase 27-04]: ArtistCard grid replaced by compact key-artist-row list — denser, more visible information per screen height
 - [Phase 27-04]: chip-type-dot.type-genre uses var(--text-muted) (neutral grey) — genre is default/baseline type; scene (amber) + city (green) are marked variants
+- [Phase 27-01]: match_type returned as SQL literal ('city' AS match_type) — avoids post-query transform, flows directly to ArtistResult
+- [Phase 27-01]: City search uses dual-path: ISO code on artists.country for country-level + artist_tags for city-level (MusicBrainz encodes cities as tags)
+- [Phase 27-01]: parseSearchIntent entity not lowercased — left as-is for display, callers normalize for DB queries
 
 ### Pending Todos
 None
 
 ### Blockers/Concerns
-- [Phase 27] City/label search requires FTS5 schema changes or additional index columns — assess during Phase 27 planning
+- [Phase 27] City/label search RESOLVED — no schema changes needed; existing artist_tags table sufficient for city/label matching via LIKE queries
 
 ## Session Continuity
 

@@ -6724,3 +6724,6 @@ City search uses dual-path matching: ISO country code in `artists.country` for c
 ### Verification
 
 `npm run check` — 0 errors, 8 warnings (all pre-existing). Test suite 147/147 passing. All five exports confirmed present in queries.ts.
+
+> **Commit 83388ed** (2026-02-25 09:58) — docs(27-04): complete KB genre page redesign plan — KBAS-01 satisfied
+> Files changed: 5

@@ -55,10 +55,10 @@
 
 ### Search
 
-- [ ] **SRCH-01**: Search input shows autocomplete suggestions as the user types (artist names)
-- [ ] **SRCH-02**: Search can filter by city/location (e.g. "artists from Berlin")
-- [ ] **SRCH-03**: Search can filter by label name (e.g. "artists on Warp Records")
-- [ ] **SRCH-04**: Search results distinguish between artist matches and tag matches
+- [x] **SRCH-01**: Search input shows autocomplete suggestions as the user types (artist names)
+- [x] **SRCH-02**: Search can filter by city/location (e.g. "artists from Berlin")
+- [x] **SRCH-03**: Search can filter by label name (e.g. "artists on Warp Records")
+- [x] **SRCH-04**: Search results distinguish between artist matches and tag matches
 
 ### Knowledge Base
 
@@ -125,10 +125,10 @@
 | XLINK-04 | Phase 26: Discover + Cross-Linking + Crate Fix | Complete |
 | XLINK-05 | Phase 26: Discover + Cross-Linking + Crate Fix | Complete |
 | CRAT-01 | Phase 26: Discover + Cross-Linking + Crate Fix | Complete |
-| SRCH-01 | Phase 27: Search + Knowledge Base | Pending |
-| SRCH-02 | Phase 27: Search + Knowledge Base | Pending |
-| SRCH-03 | Phase 27: Search + Knowledge Base | Pending |
-| SRCH-04 | Phase 27: Search + Knowledge Base | Pending |
+| SRCH-01 | Phase 27: Search + Knowledge Base | Complete |
+| SRCH-02 | Phase 27: Search + Knowledge Base | Complete |
+| SRCH-03 | Phase 27: Search + Knowledge Base | Complete |
+| SRCH-04 | Phase 27: Search + Knowledge Base | Complete |
 | KBAS-01 | Phase 27: Search + Knowledge Base | Complete |
 
 **Coverage:**
