@@ -21,6 +21,8 @@ export interface ArtistResult {
 	slug: string;
 	country: string | null;
 	tags: string | null;
+	/** Optional uniqueness score (0–1000). Only populated by getDiscoveryArtists. */
+	uniqueness_score?: number | null;
 }
 
 /** Full artist record returned by single-artist lookup. */
@@ -320,6 +322,114 @@ export async function getDiscoveryRankedArtists(
 		 ORDER BY discovery_score DESC
 		 LIMIT ?`,
 		limit
+	);
+}
+
+/** Filter options for the Discover page filter panel */
+export interface DiscoverFilters {
+	tags?: string[];
+	country?: string;
+	era?: string; // e.g. "60s", "70s", "80s", "90s", "00s", "10s", "20s"
+}
+
+/**
+ * Return artists for the Discover page, supporting filter-aware queries.
+ *
+ * When tags are supplied, uses JOIN intersection (AND logic — all tags must match).
+ * When no filters are supplied, falls back to discovery_score ordering (same as
+ * getDiscoveryRankedArtists) so the page has a strong default state.
+ *
+ * The uniqueness_score (0–1000) is always computed for display as a progress bar.
+ */
+export async function getDiscoveryArtists(
+	db: DbProvider,
+	filters: DiscoverFilters = {},
+	limit = 50
+): Promise<ArtistResult[]> {
+	const { tags = [], country = '', era = '' } = filters;
+	const safeTags = tags.slice(0, 5);
+
+	// Decade range for era filter
+	const eraRanges: Record<string, [number, number]> = {
+		'60s': [1960, 1969],
+		'70s': [1970, 1979],
+		'80s': [1980, 1989],
+		'90s': [1990, 1999],
+		'00s': [2000, 2009],
+		'10s': [2010, 2019],
+		'20s': [2020, 2029]
+	};
+
+	const hasFilters = safeTags.length > 0 || country || era;
+
+	const params: unknown[] = [];
+	const whereClauses: string[] = [];
+
+	// Build tag JOIN clauses (each tag gets its own JOIN for AND intersection)
+	const tagJoins = safeTags
+		.map((t, i) => {
+			params.push(t);
+			return `JOIN artist_tags at${i} ON at${i}.artist_id = a.id AND at${i}.tag = ?`;
+		})
+		.join('\n  ');
+
+	// Base WHERE: must have at least one tag
+	whereClauses.push(`a.id IN (SELECT DISTINCT artist_id FROM artist_tags)`);
+
+	if (country) {
+		whereClauses.push(`a.country = ?`);
+		params.push(country);
+	}
+
+	if (era && eraRanges[era]) {
+		const [yearMin, yearMax] = eraRanges[era];
+		whereClauses.push(`a.begin_year BETWEEN ? AND ?`);
+		params.push(yearMin, yearMax);
+	}
+
+	const whereStr = whereClauses.length > 0 ? `WHERE ${whereClauses.join('\n  AND ')}` : '';
+
+	// Order: when filters present, order by uniqueness DESC; otherwise by discovery_score
+	const orderByExpr = hasFilters
+		? `uniqueness_score DESC`
+		: `COALESCE(
+		     (
+		       1.0 / NULLIF((SELECT COUNT(*) FROM artist_tags WHERE artist_id = a.id), 0)
+		       *
+		       (SELECT AVG(1.0 / NULLIF(ts2.artist_count, 0))
+		        FROM artist_tags at_ds
+		        JOIN tag_stats ts2 ON ts2.tag = at_ds.tag
+		        WHERE at_ds.artist_id = a.id)
+		       *
+		       CASE WHEN a.begin_year >= 2010 THEN 1.2 ELSE 1.0 END
+		       *
+		       CASE WHEN a.ended = 0 THEN 1.1 ELSE 1.0 END
+		     ),
+		     0
+		   ) DESC`;
+
+	params.push(limit);
+
+	return db.all<ArtistResult>(
+		`SELECT
+		   a.id, a.mbid, a.name, a.slug, a.country,
+		   (SELECT GROUP_CONCAT(at2.tag, ', ') FROM artist_tags at2 WHERE at2.artist_id = a.id) AS tags,
+		   ROUND(
+		     COALESCE(
+		       (SELECT AVG(1.0 / NULLIF(ts.artist_count, 0)) * 1000
+		        FROM artist_tags at3
+		        JOIN tag_stats ts ON ts.tag = at3.tag
+		        WHERE at3.artist_id = a.id),
+		       0
+		     ),
+		     2
+		   ) AS uniqueness_score
+		 FROM artists a
+		 ${tagJoins}
+		 ${whereStr}
+		 ORDER BY ${orderByExpr}
+		 LIMIT ?`,
+		...params
 	);
 }
 
