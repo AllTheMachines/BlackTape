@@ -6933,3 +6933,6 @@ Design audit fixes applied — LibraryBrowser, PanelLayout, Discover, Artist pag
 
 > **Commit 5ad3f7f** (2026-02-25 11:13) — wip: auto-save
 > Files changed: 1
+
+> **Commit 38c0a3b** (2026-02-25 11:16) — wip: auto-save
+> Files changed: 5
