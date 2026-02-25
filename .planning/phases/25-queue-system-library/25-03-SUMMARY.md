@@ -114,6 +114,15 @@ None - no external service configuration required.
 - Queue panel and Library two-pane layout are complete; all test artifacts (P25-12 through P25-21) will be verified when Plan 04 adds them to the test manifest
 - Phase 25 Plan 04 can proceed: test manifest updates + any final polish
 
+## Self-Check: PASSED
+
+All files verified present. All commits verified in git log. All must_haves/artifacts confirmed:
+- Queue.svelte: empty state text, draggable, slide-up, drag handle, drag-over class
+- Player.svelte: queue-toggle testid
+- layout.svelte: restoreQueueFromStorage import and call
+- LibraryBrowser.svelte: album-list-pane, track-pane, border-left-color, TrackRow, track-pane-column-headers
+- Library page: sort controls removed, sort initialized in onMount
+
 ---
 *Phase: 25-queue-system-library*
 *Completed: 2026-02-25*
