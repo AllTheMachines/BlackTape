@@ -44,7 +44,7 @@
 		await loadLibrary();
 	}
 
-	let albums = $derived(groupByAlbum(getSortedTracks()));
+	let albums = $derived(groupByAlbum(getSortedTracks(), libraryState.coverMap));
 	let trackCount = $derived(libraryState.tracks.length);
 	let hasLibrary = $derived(trackCount > 0);
 	let hasFolders = $derived(libraryState.folders.length > 0);

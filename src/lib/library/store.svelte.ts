@@ -5,17 +5,19 @@
  * Must use .svelte.ts extension for rune support.
  */
 
-import type { LocalTrack, MusicFolder, ScanProgress, LibraryAlbum } from './types';
+import type { LocalTrack, MusicFolder, ScanProgress, LibraryAlbum, AlbumCover } from './types';
 import {
 	getLibraryTracks,
 	getMusicFolders,
 	addMusicFolder,
-	scanMusicFolder
+	scanMusicFolder,
+	getAlbumCovers
 } from './scanner';
 
 export const libraryState = $state({
 	tracks: [] as LocalTrack[],
 	folders: [] as MusicFolder[],
+	coverMap: new Map<string, string>(),
 	isScanning: false,
 	scanProgress: null as ScanProgress | null,
 	isLoaded: false,
@@ -23,13 +25,31 @@ export const libraryState = $state({
 	sortAsc: true
 });
 
+/** Build a map keyed by "artist|||album" → cover_art_base64 (matches groupByAlbum key format) */
+function buildCoverMap(covers: AlbumCover[]): Map<string, string> {
+	const map = new Map<string, string>();
+	for (const c of covers) {
+		if (c.cover_art_base64) {
+			const artist = c.album_artist || 'Unknown Artist';
+			const album = c.album || 'Unknown Album';
+			map.set(`${artist}|||${album}`, c.cover_art_base64);
+		}
+	}
+	return map;
+}
+
 /**
  * Load the full library (tracks + folders) from the Tauri backend.
  */
 export async function loadLibrary(): Promise<void> {
-	const [tracks, folders] = await Promise.all([getLibraryTracks(), getMusicFolders()]);
+	const [tracks, folders, covers] = await Promise.all([
+		getLibraryTracks(),
+		getMusicFolders(),
+		getAlbumCovers()
+	]);
 	libraryState.tracks = tracks;
 	libraryState.folders = folders;
+	libraryState.coverMap = buildCoverMap(covers);
 	libraryState.isLoaded = true;
 }
 
@@ -47,9 +67,14 @@ export async function scanFolder(path: string): Promise<void> {
 		});
 
 		// Reload everything after scan completes
-		const [tracks, folders] = await Promise.all([getLibraryTracks(), getMusicFolders()]);
+		const [tracks, folders, covers] = await Promise.all([
+			getLibraryTracks(),
+			getMusicFolders(),
+			getAlbumCovers()
+		]);
 		libraryState.tracks = tracks;
 		libraryState.folders = folders;
+		libraryState.coverMap = buildCoverMap(covers);
 	} finally {
 		libraryState.isScanning = false;
 		libraryState.scanProgress = null;
@@ -60,7 +85,7 @@ export async function scanFolder(path: string): Promise<void> {
  * Group tracks into albums by album_artist (or artist) + album name.
  * Tracks within each album are sorted by disc_number then track_number.
  */
-export function groupByAlbum(tracks: LocalTrack[]): LibraryAlbum[] {
+export function groupByAlbum(tracks: LocalTrack[], coverMap?: Map<string, string>): LibraryAlbum[] {
 	const albumMap = new Map<string, LibraryAlbum>();
 
 	for (const track of tracks) {
@@ -70,19 +95,15 @@ export function groupByAlbum(tracks: LocalTrack[]): LibraryAlbum[] {
 
 		let album = albumMap.get(key);
 		if (!album) {
+			const cover = coverMap?.get(key) ?? track.cover_art_base64 ?? null;
 			album = {
 				name: albumName,
 				artist,
 				year: track.year,
 				tracks: [],
-				coverArtBase64: null
+				coverArtBase64: cover
 			};
 			albumMap.set(key, album);
-		}
-
-		// Use the first embedded cover art found across tracks in the album
-		if (!album.coverArtBase64 && track.cover_art_base64) {
-			album.coverArtBase64 = track.cover_art_base64;
 		}
 
 		album.tracks.push(track);

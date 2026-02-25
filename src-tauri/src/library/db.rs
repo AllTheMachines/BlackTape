@@ -107,7 +107,7 @@ pub fn get_all_tracks(conn: &Connection) -> Result<Vec<LocalTrack>, String> {
     let mut stmt = conn
         .prepare(
             "SELECT id, path, title, artist, album, album_artist, track_number, disc_number,
-                    genre, year, duration_secs, file_modified, created_at, cover_art_base64
+                    genre, year, duration_secs, file_modified, created_at
              FROM local_tracks
              ORDER BY album_artist, album, disc_number, track_number",
         )
@@ -129,7 +129,7 @@ pub fn get_all_tracks(conn: &Connection) -> Result<Vec<LocalTrack>, String> {
                 duration_secs: row.get(10)?,
                 file_modified: row.get(11)?,
                 created_at: row.get(12)?,
-                cover_art_base64: row.get(13)?,
+                cover_art_base64: None,
             })
         })
         .map_err(|e| format!("Failed to query tracks: {}", e))?

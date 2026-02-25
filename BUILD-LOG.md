@@ -4,6 +4,36 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-02-25 — Fix IPC Freeze on Search + Library Load
+
+The app was freezing and crashing because every search query and every library load was transferring all embedded cover art blobs over IPC — up to 350MB for a 2345-track library. Two related fixes.
+
+### Search fix (crash on "Radiohead")
+
+The old search called `get_library_tracks` (all 2345 tracks + their cover art), then filtered client-side. The fix:
+- New Rust function `search_tracks()` in `db.rs` — SQL LIKE filter on title/artist/album, returns `LocalTrack` with `cover_art_base64: None`
+- New Rust function `get_album_covers()` in `db.rs` — one cover per `(album, COALESCE(album_artist, artist))` group, separate lightweight query
+- New Tauri commands `search_local_tracks` and `get_album_covers` in `scanner/mod.rs`
+- `scanner.ts` TS wrappers for both
+- `search/+page.ts` — replaced `getLibraryTracks()` + client filter with `searchLocalTracks(q)` (single SQL call, no blob transfer)
+
+### Library loading fix (scroll freeze on large libraries)
+
+The library browser was still calling `getLibraryTracks()` which pulled every cover art blob. Fix:
+- `get_all_tracks()` in `db.rs` no longer selects `cover_art_base64` — sets it to `None` instead
+- `libraryState` gains a `coverMap: Map<string, string>` field (keyed by `"artist|||album"`)
+- `loadLibrary()` now calls `getAlbumCovers()` in parallel alongside tracks + folders, builds the cover map
+- `scanFolder()` also reloads covers after scan completes
+- `groupByAlbum(tracks, coverMap?)` — takes optional cover map; looks up cover from map first, falls back to track's own field (for backwards compatibility)
+- Library page `$derived` updated: `groupByAlbum(getSortedTracks(), libraryState.coverMap)`
+- `types.ts` — added `AlbumCover` interface mirroring Rust struct
+
+**Net result:** Library load transfers metadata only (no blobs). Covers come from a single album-level query — one row per album, not one row per track. For a 2345-track library with ~200 albums, this is a 10–100x reduction in IPC payload.
+
+43/43 Rust tests pass. 0 TS/Svelte errors. GH issues #4 and #8 closed.
+
+---
+
 ## Entry 2026-02-25 — UAT Issues #4 and #8 Closed
 
 ### #4 — Discover page: compact list layout
@@ -7385,3 +7415,6 @@ Fix: renamed to `avatar.svelte.ts`, updated 5 import sites (AvatarEditor, Avatar
 
 > **Commit f86fa53** (2026-02-25 22:16) — auto-save: 1 files @ 22:16
 > Files changed: 1
+
+> **Commit a801f93** (2026-02-25 22:22) — wip: auto-save
+> Files changed: 7

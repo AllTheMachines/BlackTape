@@ -37,6 +37,13 @@ export interface ScanProgress {
 	current_file: string;
 }
 
+/** Mirrors the Rust `AlbumCover` struct — one cover per album. */
+export interface AlbumCover {
+	album: string;
+	album_artist: string | null;
+	cover_art_base64: string | null;
+}
+
 /** Derived grouping for album display in the library browser */
 export interface LibraryAlbum {
 	name: string;
