@@ -467,6 +467,8 @@
 							<button
 								class="btn-play-all"
 								onclick={handlePlayAll}
+								disabled={topPlayerTracks.length === 0}
+								title={topPlayerTracks.length === 0 ? 'Library track matching coming soon' : undefined}
 								data-testid="play-all-btn"
 							>
 								Play All
@@ -474,6 +476,8 @@
 							<button
 								class="btn-queue-all"
 								onclick={handleQueueAll}
+								disabled={topPlayerTracks.length === 0}
+								title={topPlayerTracks.length === 0 ? 'Library track matching coming soon' : undefined}
 								data-testid="queue-all-btn"
 							>
 								+ Queue All

@@ -69,7 +69,7 @@
 				<div class="album-thumb">{getInitials(album.name)}</div>
 				<div class="album-list-info">
 					<div class="album-list-title">{album.name}</div>
-					<div class="album-list-artist">{album.artist}</div>
+					<a href="/search?q={encodeURIComponent(album.artist)}" class="album-list-artist" onclick={(e) => e.stopPropagation()}>{album.artist}</a>
 				</div>
 			</button>
 		{/each}
@@ -193,6 +193,12 @@
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
+		text-decoration: none;
+	}
+
+	.album-list-artist:hover {
+		color: var(--t-1);
+		text-decoration: underline;
 	}
 
 	.track-pane {

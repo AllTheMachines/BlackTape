@@ -24,6 +24,18 @@ function initAudio(): HTMLAudioElement {
 
 	audio = new Audio();
 
+	// Restore persisted volume
+	try {
+		const saved = localStorage.getItem('mercury-volume');
+		if (saved !== null) {
+			const vol = parseFloat(saved);
+			if (!isNaN(vol)) {
+				audio.volume = Math.max(0, Math.min(1, vol));
+				playerState.volume = audio.volume;
+			}
+		}
+	} catch { /* localStorage unavailable */ }
+
 	audio.addEventListener('timeupdate', () => {
 		playerState.currentTime = audio!.currentTime;
 
@@ -150,6 +162,8 @@ export function setVolume(vol: number): void {
 	const clamped = Math.max(0, Math.min(1, vol));
 	el.volume = clamped;
 	playerState.volume = clamped;
+
+	try { localStorage.setItem('mercury-volume', clamped.toString()); } catch { /* ignore */ }
 
 	if (clamped > 0) {
 		playerState.isMuted = false;

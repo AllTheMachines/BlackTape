@@ -61,7 +61,7 @@
 	role="button"
 	tabindex="0"
 	onclick={handlePlay}
-	onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') handlePlay(); }}
+	onkeydown={(e) => { if (e.key === 'Enter') handlePlay(); }}
 >
 	<!-- Track number / play icon column -->
 	<div class="track-num-col">

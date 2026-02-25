@@ -13,12 +13,14 @@
 
 	let suggestions = $state<Array<{ name: string; slug: string; tags: string | null }>>([]);
 	let showSuggestions = $state(false);
+	let activeIndex = $state(-1);
 	let debounceTimer = $state<ReturnType<typeof setTimeout> | null>(null);
 
 	async function fetchSuggestions(q: string) {
 		if (q.length < 2 || mode !== 'artist') {
 			suggestions = [];
 			showSuggestions = false;
+			activeIndex = -1;
 			return;
 		}
 		try {
@@ -41,13 +43,32 @@
 	function selectSuggestion(slug: string) {
 		showSuggestions = false;
 		suggestions = [];
+		activeIndex = -1;
 		goto(`/artist/${slug}`);
 	}
 
 	function handleBlur() {
 		setTimeout(() => {
 			showSuggestions = false;
+			activeIndex = -1;
 		}, 150);
+	}
+
+	function handleKeydown(e: KeyboardEvent) {
+		if (!showSuggestions || suggestions.length === 0) return;
+		if (e.key === 'ArrowDown') {
+			e.preventDefault();
+			activeIndex = Math.min(activeIndex + 1, suggestions.length - 1);
+		} else if (e.key === 'ArrowUp') {
+			e.preventDefault();
+			activeIndex = Math.max(activeIndex - 1, -1);
+		} else if (e.key === 'Enter' && activeIndex >= 0) {
+			e.preventDefault();
+			selectSuggestion(suggestions[activeIndex].slug);
+		} else if (e.key === 'Escape') {
+			showSuggestions = false;
+			activeIndex = -1;
+		}
 	}
 
 	function handleSubmit(e: Event) {
@@ -87,16 +108,18 @@
 			aria-label={mode === 'artist' ? 'Search artists' : 'Search by tag'}
 			oninput={handleInput}
 			onblur={handleBlur}
+			onkeydown={handleKeydown}
 		/>
 	</form>
 
 	{#if showSuggestions && suggestions.length > 0}
 		<ul class="autocomplete-list" role="listbox" data-testid="autocomplete-dropdown">
-			{#each suggestions as s}
-				<li role="option" aria-selected="false">
+			{#each suggestions as s, i}
+				<li role="option" aria-selected={activeIndex === i}>
 					<button
 						type="button"
 						class="autocomplete-item"
+						class:active={activeIndex === i}
 						onmousedown={() => selectSuggestion(s.slug)}
 						data-testid="autocomplete-item"
 					>
@@ -235,7 +258,8 @@
 		font-size: 0.9rem;
 	}
 
-	.autocomplete-item:hover {
+	.autocomplete-item:hover,
+	.autocomplete-item.active {
 		background: var(--bg-hover);
 	}
 

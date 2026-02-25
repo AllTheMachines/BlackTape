@@ -100,6 +100,17 @@ export const load: PageLoad = async ({ params, fetch }) => {
 				}
 			}
 		}
+
+		// Deduplicate streaming links by hostname (MusicBrainz sometimes has two Deezer URLs, etc.)
+		const seenStreamingHosts = new Set<string>();
+		categorizedLinks.streaming = categorizedLinks.streaming.filter((item) => {
+			try {
+				const host = new URL(item.url).hostname;
+				if (seenStreamingHosts.has(host)) return false;
+				seenStreamingHosts.add(host);
+				return true;
+			} catch { return true; }
+		});
 	} catch (err) {
 		console.error('Links fetch error:', err);
 	}

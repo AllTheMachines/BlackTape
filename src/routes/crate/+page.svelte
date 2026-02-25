@@ -89,7 +89,8 @@
 
 	let tagInput = $state(data.filters.tag ?? '');
 	let selectedCountryCode = $state(data.filters.country ?? '');
-	let selectedDecade = $state(decades[0]);
+	let selectedDecadeIndex = $state(0);
+	let selectedDecade = $derived(decades[selectedDecadeIndex]);
 	let loading = $state(false);
 	let artists = $state<ArtistResult[]>(data.artists);
 
@@ -137,9 +138,9 @@
 				placeholder="Genre tag (e.g. shoegaze)"
 				bind:value={tagInput}
 			/>
-			<select class="filter-select" bind:value={selectedDecade}>
-				{#each decades as d}
-					<option value={d}>{d.label}</option>
+			<select class="filter-select" bind:value={selectedDecadeIndex}>
+				{#each decades as d, i}
+					<option value={i}>{d.label}</option>
 				{/each}
 			</select>
 			<select class="filter-select" bind:value={selectedCountryCode}>

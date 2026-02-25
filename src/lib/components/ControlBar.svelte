@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
 	import { themeState } from '$lib/theme/engine.svelte';
 	import type { TemplateConfig } from '$lib/theme/templates';
 
@@ -50,8 +51,15 @@
 </script>
 
 <div class="control-bar" role="toolbar" aria-label="Global controls">
-	<!-- Left Group: Search -->
+	<!-- Left Group: Back button + Search -->
 	<div class="bar-group bar-left">
+		{#if $page.url.pathname !== '/'}
+			<button class="back-btn" onclick={() => history.back()} title="Go back" aria-label="Go back">
+				<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<polyline points="15 18 9 12 15 6" />
+				</svg>
+			</button>
+		{/if}
 		<form class="search-form" onsubmit={handleSearch}>
 			<label for="control-bar-search" class="sr-only">Search artists and tags</label>
 			<svg
@@ -199,6 +207,27 @@
 		display: flex;
 		align-items: center;
 		gap: 5px;
+	}
+
+	/* Back button */
+	.back-btn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 26px;
+		height: 26px;
+		background: var(--bg-4);
+		border: 1px solid var(--b-2);
+		border-radius: var(--r);
+		color: var(--t-3);
+		cursor: pointer;
+		flex-shrink: 0;
+		transition: color 0.1s, background 0.1s;
+	}
+
+	.back-btn:hover {
+		color: var(--t-1);
+		background: var(--bg-5);
 	}
 
 	/* Search */

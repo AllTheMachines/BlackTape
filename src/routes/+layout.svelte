@@ -21,6 +21,7 @@
 	import type { LayoutTemplate } from '$lib/theme/templates';
 	import { DEFAULT_TEMPLATE, LAYOUT_TEMPLATES, TEMPLATE_LIST, expandUserTemplate } from '$lib/theme/templates';
 	import { layoutState } from '$lib/theme/layout-state.svelte';
+	import { togglePlayPause } from '$lib/player/audio.svelte';
 	import { initNostr } from '$lib/comms/nostr.svelte.js';
 	import { subscribeToIncomingDMs } from '$lib/comms/dms.svelte.js';
 	import { totalUnread, chatState, openChat } from '$lib/comms/notifications.svelte.js';
@@ -86,6 +87,17 @@
 		}
 	});
 
+	/** Global spacebar handler: toggle play/pause unless a text input is focused. */
+	function handleGlobalKeydown(e: KeyboardEvent) {
+		if (e.key !== ' ') return;
+		const tag = (e.target as HTMLElement)?.tagName;
+		if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+		if ((e.target as HTMLElement)?.isContentEditable) return;
+		if (!playerState.currentTrack) return;
+		e.preventDefault();
+		togglePlayPause();
+	}
+
 	/** Handle template change from ControlBar or Settings. */
 	function handleTemplateChange(templateId: string) {
 		layoutState.template = templateId as LayoutTemplate;
@@ -94,6 +106,8 @@
 		}
 	}
 </script>
+
+<svelte:window onkeydown={handleGlobalKeydown} />
 
 <svelte:head>
 	<link rel="icon" href={favicon} />
