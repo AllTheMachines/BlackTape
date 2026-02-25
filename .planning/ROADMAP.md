@@ -86,7 +86,13 @@ Plans:
   3. Artist pages link to Style Map filtered by the artist's primary tag; KB genre pages link to Discover filtered by that genre
   4. Scene pages link to the KB for the scene's primary genre; Crate Dig results surface "Explore in Style Map" and "Open scene room" links; Time Machine results link to artist pages and KB era entries
   5. Crate Dig country filter is a dropdown of country names — no raw ISO code input required
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 26-01-PLAN.md — Discover page redesign: filter panel, live filtering, uniqueness score bar on artist cards
+- [ ] 26-02-PLAN.md — Discovery tool cross-linking: artist→Style Map, scene→KB, crate/time-machine links
+- [ ] 26-03-PLAN.md — Crate Dig country dropdown fix
+- [ ] 26-04-PLAN.md — Phase 26 test manifest (P26-01 through P26-16)
 
 ### Phase 27: Search + Knowledge Base
 **Goal**: Search finds artists by city and label in addition to name, shows autocomplete suggestions, distinguishes result types, and the KB genre pages match the v1.4 design
