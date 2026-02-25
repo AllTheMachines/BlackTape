@@ -6797,3 +6797,53 @@ DB calls use dynamic import inside the async function (`import('$lib/db/provider
 
 > **Commit 3d74cc0** (2026-02-25 10:13) — wip: auto-save
 > Files changed: 2
+
+> **Commit 876dfef** (2026-02-25 10:16) — auto-save: 1 files @ 10:16
+> Files changed: 1
+
+> **Commit b843755** (2026-02-25 10:28) — chore: archive v1.4 milestone — The Interface
+> Files changed: 57
+
+---
+
+## Entry — 2026-02-25 — v1.4 The Interface: SHIPPED
+
+### What Was Built
+
+Five phases, 19 plans, 35 requirements. In two days.
+
+v1.4 transforms Mercury from a functional prototype into something that actually feels like a real desktop application. The visual redesign touches every surface — consistent design tokens, square controls, layered dark panels, amber accent, custom Tauri titlebar that owns the window chrome. The kind of coherence that makes an app feel *intentional*.
+
+**Phase 23 — Design System Foundation:** CSS custom properties as the single source of truth. Every component references tokens, not raw hex. TagChip spec (22px height, 2px radius, amber active). Global base styles for buttons, inputs, badges, tab bars. The foundation everything else builds on.
+
+**Phase 24 — Artist Page:** The artist page was a dead end — bare text, no depth. Now it has MusicBrainz relationship data (band members, influenced-by, associated labels), linked release credits (producers, engineers), a working discography filter (All/Albums/EPs/Singles), date sort, and a Mastodon share button that actually says "Share" instead of just "↑".
+
+**Phase 25 — Queue System:** The single biggest UX gap from the v1.3 audit. TrackRow is a reusable component that now lives on every track surface — search results, artist page, release page, library. Every track row has ▶ Play and + Queue on hover. Release pages have Play Album and + Queue Album. Artist pages have Play All and + Queue All. The queue slides up from the player bar, supports drag-reorder, and persists across sessions via localStorage.
+
+**Phase 26 — Discover + Cross-Linking:** Discover got a proper filter panel (tag, country, era) with live URL-driven filtering and a scrollable artist card grid with uniqueness score bars. The seven discovery tools now reference each other — artist pages link to Style Map, scene pages link to KB, Crate Dig results surface "Explore in Style Map", Time Machine links to Discover. They feel like one ecosystem instead of seven separate tabs. Crate Dig country field is finally a proper dropdown (60 countries) instead of "type a raw ISO code and hope."
+
+**Phase 27 — Search + Knowledge Base:** Search can now parse natural language intent — "artists from Berlin" routes to a city search, "artists on Warp Records" routes to a label search. A confirmation chip tells you what Mercury understood. Every result has a match badge (Name match, Tag match, City match, Label match) so you know why it appeared. The SearchBar shows autocomplete suggestions after 2 characters — click one and go directly to the artist page without hitting Enter. KB genre pages got the v1.4 treatment: type badge pill, compact artist list, coming-soon genre map placeholder.
+
+### The Numbers
+
+- 5 phases, 19 plans
+- 87 files changed, +12,854 / −1,011 lines
+- 35/35 requirements checked off
+- 164 code tests passing, 0 failing
+- Tagged: v1.4, pushed to GitHub
+
+### State of the Codebase
+
+Mercury v1.4 is a desktop app that looks and feels like one. The design system is solid. The queue is real. The artist page has depth. Search has intelligence. Discovery tools talk to each other.
+
+What's still missing (candidates for v1.5):
+- Song title search (requires 35M recording index — significant DB size jump)
+- Genre Map (live ForceGraph on KB genre pages — currently placeholder)
+- More MusicBrainz relationship data on the surface
+- Further KB and discovery polish
+
+### Decision
+
+> The genre map placeholder was the right call. The live ForceGraph was heavy and didn't belong on every genre page. Acknowledging it's coming is better than shipping something that crawls.
+
+---
