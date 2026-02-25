@@ -1,16 +1,6 @@
 /**
- * Library page load — loads library data in Tauri context only.
+ * Library page load — library data is loaded in onMount to keep navigation instant.
  */
-
-import { isTauri } from '$lib/platform';
-
 export async function load() {
-	if (isTauri()) {
-		const { loadLibrary } = await import('$lib/library/store.svelte');
-		await loadLibrary();
-	}
-
-	return {
-		title: 'Library'
-	};
+	return { title: 'Library' };
 }

@@ -69,7 +69,7 @@ pub async fn scan_folder(
 }
 
 #[tauri::command]
-pub fn get_library_tracks(
+pub async fn get_library_tracks(
     state: tauri::State<'_, LibraryState>,
 ) -> Result<Vec<LocalTrack>, String> {
     let conn = state.0.lock().map_err(|e| format!("Lock error: {}", e))?;
@@ -77,7 +77,7 @@ pub fn get_library_tracks(
 }
 
 #[tauri::command]
-pub fn get_music_folders(
+pub async fn get_music_folders(
     state: tauri::State<'_, LibraryState>,
 ) -> Result<Vec<MusicFolder>, String> {
     let conn = state.0.lock().map_err(|e| format!("Lock error: {}", e))?;
@@ -85,7 +85,7 @@ pub fn get_music_folders(
 }
 
 #[tauri::command]
-pub fn add_music_folder(
+pub async fn add_music_folder(
     path: String,
     state: tauri::State<'_, LibraryState>,
 ) -> Result<(), String> {
@@ -94,7 +94,7 @@ pub fn add_music_folder(
 }
 
 #[tauri::command]
-pub fn remove_music_folder(
+pub async fn remove_music_folder(
     path: String,
     state: tauri::State<'_, LibraryState>,
 ) -> Result<(), String> {
@@ -105,7 +105,7 @@ pub fn remove_music_folder(
 /// Search library tracks by title/artist/album — SQL-filtered, no cover art in response.
 /// Safe to call from the search page (avoids loading all cover blobs over IPC).
 #[tauri::command]
-pub fn search_local_tracks(
+pub async fn search_local_tracks(
     query: String,
     state: tauri::State<'_, LibraryState>,
 ) -> Result<Vec<db::LocalTrack>, String> {
@@ -115,7 +115,7 @@ pub fn search_local_tracks(
 
 /// Get one cover per album — lightweight alternative to embedding art in every track row.
 #[tauri::command]
-pub fn get_album_covers(
+pub async fn get_album_covers(
     state: tauri::State<'_, LibraryState>,
 ) -> Result<Vec<db::AlbumCover>, String> {
     let conn = state.0.lock().map_err(|e| format!("Lock error: {}", e))?;
@@ -124,7 +124,7 @@ pub fn get_album_covers(
 
 /// Set a custom cover for all tracks in an album (matched by album name + artist).
 #[tauri::command]
-pub fn set_album_cover(
+pub async fn set_album_cover(
     album: String,
     artist: String,
     cover_art_base64: String,
@@ -137,7 +137,7 @@ pub fn set_album_cover(
 /// Backfill cover art for existing tracks that have no art stored yet.
 /// Reads only artwork (not full metadata) for each track with NULL cover_art_base64.
 #[tauri::command]
-pub fn refresh_covers(
+pub async fn refresh_covers(
     state: tauri::State<'_, LibraryState>,
 ) -> Result<u32, String> {
     let conn = state.0.lock().map_err(|e| format!("Lock error: {}", e))?;

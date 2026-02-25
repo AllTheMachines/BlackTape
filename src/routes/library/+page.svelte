@@ -12,10 +12,13 @@
 	let showFolderManager = $state(false);
 	let isRefreshingCovers = $state(false);
 
-	onMount(() => {
+	onMount(async () => {
 		libraryState.sortBy = 'added';
 		libraryState.sortAsc = false;
 		tauriMode = isTauri();
+		if (tauriMode && !libraryState.isLoaded) {
+			await loadLibrary();
+		}
 	});
 
 	async function handleAddFolder() {
@@ -59,10 +62,19 @@
 	<title>Library</title>
 </svelte:head>
 
+{#if libraryState.isLoading}
+	<div class="loading-overlay">
+		<div class="loading-dialog">
+			<div class="loading-spinner"></div>
+			<p>Loading library...</p>
+		</div>
+	</div>
+{/if}
+
 {#if isRefreshingCovers}
-	<div class="covers-overlay">
-		<div class="covers-dialog">
-			<div class="covers-spinner"></div>
+	<div class="loading-overlay">
+		<div class="loading-dialog">
+			<div class="loading-spinner"></div>
 			<p>Refreshing covers...</p>
 		</div>
 	</div>
@@ -381,8 +393,8 @@
 		margin: 0 0 var(--space-xl);
 	}
 
-	/* Refresh covers blocking overlay */
-	.covers-overlay {
+	/* Blocking overlay — used for initial load and cover refresh */
+	.loading-overlay {
 		position: fixed;
 		inset: 0;
 		background: rgba(0, 0, 0, 0.6);
@@ -392,7 +404,7 @@
 		z-index: 1000;
 	}
 
-	.covers-dialog {
+	.loading-dialog {
 		background: var(--bg-2);
 		border: 1px solid var(--b-1);
 		border-radius: var(--r-lg, 8px);
@@ -403,13 +415,13 @@
 		gap: 16px;
 	}
 
-	.covers-dialog p {
+	.loading-dialog p {
 		margin: 0;
 		font-size: 0.9rem;
 		color: var(--t-2);
 	}
 
-	.covers-spinner {
+	.loading-spinner {
 		width: 28px;
 		height: 28px;
 		border: 2px solid var(--b-2);

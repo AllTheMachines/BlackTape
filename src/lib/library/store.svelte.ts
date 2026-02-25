@@ -19,6 +19,7 @@ export const libraryState = $state({
 	folders: [] as MusicFolder[],
 	coverMap: new Map<string, string>(),
 	isScanning: false,
+	isLoading: false,
 	scanProgress: null as ScanProgress | null,
 	isLoaded: false,
 	sortBy: 'artist' as 'artist' | 'album' | 'title' | 'added',
@@ -42,15 +43,20 @@ function buildCoverMap(covers: AlbumCover[]): Map<string, string> {
  * Load the full library (tracks + folders) from the Tauri backend.
  */
 export async function loadLibrary(): Promise<void> {
-	const [tracks, folders, covers] = await Promise.all([
-		getLibraryTracks(),
-		getMusicFolders(),
-		getAlbumCovers()
-	]);
-	libraryState.tracks = tracks;
-	libraryState.folders = folders;
-	libraryState.coverMap = buildCoverMap(covers);
-	libraryState.isLoaded = true;
+	libraryState.isLoading = true;
+	try {
+		const [tracks, folders, covers] = await Promise.all([
+			getLibraryTracks(),
+			getMusicFolders(),
+			getAlbumCovers()
+		]);
+		libraryState.tracks = tracks;
+		libraryState.folders = folders;
+		libraryState.coverMap = buildCoverMap(covers);
+		libraryState.isLoaded = true;
+	} finally {
+		libraryState.isLoading = false;
+	}
 }
 
 /**
