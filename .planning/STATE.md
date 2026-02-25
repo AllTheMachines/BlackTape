@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-24 after v1.4 milestone started)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** v1.4 The Interface — Phase 24: Artist Page
+**Current focus:** v1.4 The Interface — Phase 25: Queue System + Library
 
 ## Current Position
 
-Phase: 24 of 27 (Artist Page)
-Plan: 3 of 3 in current phase (COMPLETE)
-Status: Phase 24 complete — all 3 plans executed, all 15 P24 tests passing
-Last activity: 2026-02-25 — Phase 24 Plan 03 complete: release credits collapsible, discography filter/sort, all 15 P24 tests (~8 min, 2 tasks + 1 deviation, 4 files)
+Phase: 25 of 27 (Queue System + Library)
+Plan: 1 of 4 in current phase (COMPLETE)
+Status: Phase 25 Plan 01 complete — queue persistence + TrackRow component, 0 TypeScript errors
+Last activity: 2026-02-25 — Phase 25 Plan 01 complete: queue localStorage persistence, playNextInQueue/isQueueActive/reorderQueue, TrackRow CSS-hover component (~2 min, 2 tasks, 2 files)
 
-Progress: [████░░░░░░] 20% (v1.4 — 1/5 phases complete, Phase 24 3/3 plans)
+Progress: [████░░░░░░] 20% (v1.4 — 1/5 phases complete, Phase 25 1/4 plans)
 
 ## Performance Metrics
 
@@ -63,6 +63,9 @@ Progress: [████░░░░░░] 20% (v1.4 — 1/5 phases complete, Ph
 - [24-03] rawCredits scoped outside try/catch so slug resolution via getProvider() can happen independently with its own graceful catch
 - [24-03] Existing release.credits (Credit[]) kept alongside new data.credits (CreditEntry[]) — serve different display purposes
 - [24-03] Discography filter uses $derived(() => ...) wrapping for callable derived function pattern in Svelte 5
+- [Phase 25-01]: saveQueueToStorage called in every mutation to ensure consistency regardless of which code path triggers the change
+- [Phase 25-01]: isQueueActive checks both tracks.length > 0 AND playerState.isPlaying — paused queue does NOT trigger insert-next
+- [Phase 25-01]: TrackRow hover swap is pure CSS opacity transitions — no JS state, simpler and more performant
 
 ### Pending Todos
 None
@@ -73,6 +76,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-25
-Stopped at: Completed 24-03-PLAN.md (Phase 24 Plan 03 — release credits + discography controls + full P24 test manifest)
+Stopped at: Completed 25-01-PLAN.md (Phase 25 Plan 01 — queue persistence + TrackRow component)
 Resume file: None
-Next: Phase 25 — Queue Management
+Next: Phase 25 Plan 02 — TrackRow integration across search/artist/release surfaces
