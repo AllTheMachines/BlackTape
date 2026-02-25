@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-24 after v1.4 milestone started)
 ## Current Position
 
 Phase: 24 of 27 (Artist Page)
-Plan: 1 of 3 in current phase
-Status: In progress — Plan 01 complete (MB relationships + About tab), Plans 02-03 pending
-Last activity: 2026-02-25 — Phase 24 Plan 01 complete: ArtistRelationships.svelte, About tab, v1.4 tab tokens, Mastodon Share label (~5 min, 3 tasks, 4 files)
+Plan: 3 of 3 in current phase (COMPLETE)
+Status: Phase 24 complete — all 3 plans executed, all 15 P24 tests passing
+Last activity: 2026-02-25 — Phase 24 Plan 03 complete: release credits collapsible, discography filter/sort, all 15 P24 tests (~8 min, 2 tasks + 1 deviation, 4 files)
 
-Progress: [████░░░░░░] 20% (v1.4 — 1/5 phases complete, Phase 24 1/3 plans)
+Progress: [████░░░░░░] 20% (v1.4 — 1/5 phases complete, Phase 24 3/3 plans)
 
 ## Performance Metrics
 
@@ -58,6 +58,9 @@ Progress: [████░░░░░░] 20% (v1.4 — 1/5 phases complete, Ph
 - [24-01] External MB artist links use musicbrainz.org/artist/{mbid} not local /artist/slug — relationship MBIDs don't map to local slugs without a DB lookup
 - [24-01] Test manifest scoped per plan — future-plan tests deferred to avoid pre-commit hook failures on unimplemented features
 - [24-01] About tab hidden entirely (not just empty) when hasRelationships is false — cleaner UX for artists with no MB relationship data
+- [24-03] rawCredits scoped outside try/catch so slug resolution via getProvider() can happen independently with its own graceful catch
+- [24-03] Existing release.credits (Credit[]) kept alongside new data.credits (CreditEntry[]) — serve different display purposes
+- [24-03] Discography filter uses $derived(() => ...) wrapping for callable derived function pattern in Svelte 5
 
 ### Pending Todos
 None
@@ -68,6 +71,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-25
-Stopped at: Completed 24-01-PLAN.md (Phase 24 Plan 01 — MB relationships + About tab)
+Stopped at: Completed 24-03-PLAN.md (Phase 24 Plan 03 — release credits + discography controls + full P24 test manifest)
 Resume file: None
-Next: Execute Phase 24 Plan 02 (discography filter/sort)
+Next: Phase 25 — Queue Management

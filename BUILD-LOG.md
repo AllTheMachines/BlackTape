@@ -6254,3 +6254,49 @@ Phase 24 Plan 01 complete — ArtistRelationships.svelte + About tab + v1.4 tab 
 
 > **Commit 0f8da51** (2026-02-25 01:46) — auto-save: 3 files @ 01:46
 > Files changed: 3
+
+> **Commit 003f3d8** (2026-02-25 01:47) — docs(24-01): complete artist page MB relationships plan
+> Files changed: 3
+
+> **Commit cf2943d** (2026-02-25 01:48) — feat(24-03): complete Phase 24 test manifest with all 15 P24 entries
+> Files changed: 1
+
+---
+
+## Entry — 2026-02-25 — Phase 24 Plan 03: Release Credits + Discography Controls
+
+Phase 24 Plan 03 complete. Release credits are now actionable — clicking a producer's name navigates to their Mercury artist page. Discography filter/sort also shipped in this plan (plan 02 was skipped in the orchestrator sequence).
+
+### What shipped
+
+**Release page collapsible Credits section:**
+- Credits button below the tracklist, collapsed by default
+- Expands to show role + artist name pairs from MusicBrainz `artist-rels` data
+- Producer, engineer, mix, lyricist, composer, performer, instrument, vocal roles included
+- Artists found in the local DB are rendered as `<a href="/artist/{slug}">` links
+- Artists not in the local DB render as plain text (graceful degradation for web/dev mode)
+- New `CreditEntry` type: `{ role, name, mbid, slug: string | null }`
+
+**Artist page discography filter + sort:**
+- Four filter pills: All / Albums / EPs / Singles
+- Active pill highlighted with amber (acc tokens)
+- Newest / Oldest sort toggle with reactive $derived state
+- Empty state message when a filter yields zero releases
+- Replaced old `showAllReleases` / `visibleReleases` pattern
+
+**Test suite:**
+- All 15 Phase 24 code tests in manifest — all passing
+
+### How it works
+
+The `+page.ts` load function now:
+1. Fetches MB release with `artist-rels` included
+2. Collects credits matching the CREDIT_ROLES set into `rawCredits[]`
+3. After the fetch try/catch, calls `getProvider()` and does parallel slug lookups
+4. Returns `credits: CreditEntry[]` alongside `release`
+
+The slug resolution is outside the main try/catch so it can gracefully handle provider-unavailable (web mode) separately.
+
+<!-- status -->
+Phase 24 plan 03 complete. All 15 P24 tests passing. Working on STATE.md + ROADMAP.md updates.
+<!-- /status -->

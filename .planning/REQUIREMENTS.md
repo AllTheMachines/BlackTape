@@ -19,7 +19,7 @@
 - [x] **ARTP-02**: Artist page displays band members sourced from MusicBrainz relationships
 - [x] **ARTP-03**: Artist page displays influenced-by and influenced artists from MusicBrainz relationships
 - [x] **ARTP-04**: Artist page displays associated labels from MusicBrainz relationships
-- [ ] **ARTP-05**: Release credits (producers, engineers, featured artists) are displayed and linked to their own artist pages
+- [x] **ARTP-05**: Release credits (producers, engineers, featured artists) are displayed and linked to their own artist pages
 - [ ] **ARTP-06**: Discography has a type filter — All / Albums / EPs / Singles
 - [ ] **ARTP-07**: Discography can be sorted by date (newest / oldest)
 - [ ] **ARTP-08**: Mastodon share button has a visible text label (not just "↑")
@@ -103,7 +103,7 @@
 | ARTP-02 | Phase 24: Artist Page | Complete |
 | ARTP-03 | Phase 24: Artist Page | Complete |
 | ARTP-04 | Phase 24: Artist Page | Complete |
-| ARTP-05 | Phase 24: Artist Page | Pending |
+| ARTP-05 | Phase 24: Artist Page | Complete |
 | ARTP-06 | Phase 24: Artist Page | Pending |
 | ARTP-07 | Phase 24: Artist Page | Pending |
 | ARTP-08 | Phase 24: Artist Page | Pending |

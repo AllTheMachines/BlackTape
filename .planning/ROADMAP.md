@@ -101,7 +101,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 23. Design System Foundation | 3/3 | Complete    | 2026-02-24 |
-| 24. Artist Page | 1/3 | In Progress|  |
+| 24. Artist Page | 2/3 | In Progress|  |
 | 25. Queue System + Library | 0/TBD | Not started | - |
 | 26. Discover + Cross-Linking + Crate Fix | 0/TBD | Not started | - |
 | 27. Search + Knowledge Base | 0/TBD | Not started | - |
