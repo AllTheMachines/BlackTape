@@ -6779,3 +6779,6 @@ DB calls use dynamic import inside the async function (`import('$lib/db/provider
 
 > **Commit c00d419** (2026-02-25 10:02) — feat(27-03): update search +page.svelte with intent chips and match badges
 > Files changed: 1
+
+> **Commit a5f410f** (2026-02-25 10:05) — docs(27-03): complete search intent routing plan — SRCH-02..04
+> Files changed: 4
