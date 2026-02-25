@@ -66,7 +66,7 @@
 
 ### Crate Digging
 
-- [ ] **CRAT-01**: Country filter uses a dropdown with country names (not raw ISO codes)
+- [x] **CRAT-01**: Country filter uses a dropdown with country names (not raw ISO codes)
 
 ## Future Requirements
 
@@ -124,7 +124,7 @@
 | XLINK-03 | Phase 26: Discover + Cross-Linking + Crate Fix | Pending |
 | XLINK-04 | Phase 26: Discover + Cross-Linking + Crate Fix | Pending |
 | XLINK-05 | Phase 26: Discover + Cross-Linking + Crate Fix | Pending |
-| CRAT-01 | Phase 26: Discover + Cross-Linking + Crate Fix | Pending |
+| CRAT-01 | Phase 26: Discover + Cross-Linking + Crate Fix | Complete |
 | SRCH-01 | Phase 27: Search + Knowledge Base | Pending |
 | SRCH-02 | Phase 27: Search + Knowledge Base | Pending |
 | SRCH-03 | Phase 27: Search + Knowledge Base | Pending |

@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-24 after v1.4 milestone started)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** v1.4 The Interface — Phase 25 COMPLETE, ready for Phase 26
+**Current focus:** v1.4 The Interface — Phase 26 in progress (Discover cross-linking + Crate Dig fix)
 
 ## Current Position
 
-Phase: 25 of 27 (Queue System + Library) — COMPLETE
-Plan: 4 of 4 in current phase (COMPLETE)
-Status: Phase 25 complete — all 4 plans done, 21 P25 test entries added, 134 code checks passing
-Last activity: 2026-02-25 — Phase 25 Plan 04 complete: PHASE_25 test manifest (21 entries, all passing, ~1 min, 1 task, 1 file)
+Phase: 26 of 27 (Discover Cross-linking + Crate Fix)
+Plan: 3 of 4 in current phase
+Status: Phase 26 Plan 03 complete — Crate Dig country dropdown (CRAT-01), 1 task, 1 file
+Last activity: 2026-02-25 — Phase 26 Plan 03 complete: Crate Dig country filter replaced with named-country dropdown (60 countries, ISO code mapping)
 
-Progress: [████░░░░░░] 25% (v1.4 — Phase 25 complete 4/4 plans, 1/4 phases)
+Progress: [█████░░░░░] 50% (v1.4 — Phase 26 in progress 3/4 plans, 2/4 phases)
 
 ## Performance Metrics
 
@@ -78,6 +78,9 @@ Progress: [████░░░░░░] 25% (v1.4 — Phase 25 complete 4/4 p
 - [Phase 25-03]: Library sort controls removed entirely — always 'added' descending per LIBR-02; set in onMount
 - [Phase 25-03]: Album auto-select uses $effect with !selectedAlbumKey guard to prevent reset when albums array updates
 - [Phase 25-04]: Tests written against exact strings already present in source — no source changes needed when manifest added after Plans 01-03
+- [Phase 26-03]: Native <select> used for country dropdown over datalist/combobox — simpler, accessible, no dependencies, consistent with decade dropdown
+- [Phase 26-03]: selectedCountryCode replaces country $state — select values are controlled strings, no trim() needed
+- [Phase 26-03]: 60 countries covers MusicBrainz strong-coverage territories without overwhelming list length
 
 ### Pending Todos
 None
@@ -88,6 +91,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-25
-Stopped at: Completed 25-04-PLAN.md (Phase 25 Plan 04 — Test manifest with 21 P25 entries)
+Stopped at: Completed 26-03-PLAN.md (Phase 26 Plan 03 — Crate Dig country dropdown)
 Resume file: None
-Next: Phase 26 (Cross-linking discovery tools) or Phase 27 (Autocomplete)
+Next: Phase 26 Plan 04 (test manifest — P26 tests)
