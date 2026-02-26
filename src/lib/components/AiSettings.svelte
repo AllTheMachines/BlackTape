@@ -363,36 +363,50 @@
 		</div>
 	{/if}
 
-	<!-- AI Auto-News: Provider Selection -->
+	<!-- AI Summary Provider — redesigned for clarity (#29) -->
 	<div class="settings-section">
 		<h3 class="settings-section-title">AI Summary Provider</h3>
-		<p class="settings-hint">Choose which AI provider generates artist summaries. A provider must be selected and API key entered for summaries to work.</p>
+		<p class="settings-hint">
+			Select the AI service that generates artist summaries. Each provider requires an API key.
+			Local AI (above) generates embeddings and recommendations — this provider is for text summaries only.
+		</p>
 
-		<div class="provider-list">
+		<div class="provider-grid">
 			{#each AI_PROVIDERS as provider (provider.id)}
+				{@const isSelected = aiState.selectedProviderName === provider.id}
 				<button
-					class="provider-option"
-					class:provider-option--selected={aiState.selectedProviderName === provider.id}
+					class="provider-card"
+					class:provider-card--selected={isSelected}
 					onclick={() => handleProviderSelect(provider.id)}
+					type="button"
 				>
-					<span class="provider-label">{provider.label}</span>
-					{#if provider.badge}
-						<span class="provider-badge">{provider.badge}</span>
+					<div class="provider-card-header">
+						<span class="provider-card-name">{provider.label}</span>
+						{#if provider.badge}
+							<span class="provider-card-badge">{provider.badge}</span>
+						{/if}
+						{#if isSelected}
+							<span class="provider-card-check">✓</span>
+						{/if}
+					</div>
+					<p class="provider-card-hint">{provider.instructions}</p>
+					{#if provider.affiliateUrl && isSelected}
+						<span
+							class="provider-card-key-btn"
+							role="link"
+							tabindex="0"
+							onclick={(e) => { e.stopPropagation(); openAffiliateUrl(provider.affiliateUrl!); }}
+							onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); openAffiliateUrl(provider.affiliateUrl!); } }}
+						>
+							Get API key ↗
+						</span>
 					{/if}
 				</button>
 			{/each}
 		</div>
 
-		{#if selectedProvider}
-			<p class="provider-instructions">{selectedProvider.instructions}</p>
-			{#if selectedProvider.affiliateUrl}
-				<button
-					class="provider-affiliate-btn"
-					onclick={() => openAffiliateUrl(selectedProvider!.affiliateUrl!)}
-				>
-					Get API key &#8599;
-				</button>
-			{/if}
+		{#if aiState.selectedProviderName && aiState.status === 'ready'}
+			<p class="provider-status-ready">✓ Connected and ready</p>
 		{/if}
 	</div>
 
@@ -809,77 +823,93 @@
 		line-height: 1.5;
 	}
 
-	.provider-list {
+	.provider-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+		gap: var(--space-sm, 8px);
+		margin-top: var(--space-sm, 8px);
+	}
+
+	.provider-card {
 		display: flex;
 		flex-direction: column;
-		gap: 0.4rem;
-		margin: 0.5rem 0;
-	}
-
-	.provider-option {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		padding: 0.5rem 0.75rem;
-		background: var(--bg-elevated);
-		border: 1px solid var(--border-subtle);
-		border-radius: var(--card-radius);
+		gap: 4px;
+		padding: var(--space-sm, 8px) var(--space-md, 12px);
+		background: var(--bg-surface, var(--bg-4));
+		border: 1px solid var(--border-subtle, var(--b-2));
+		border-radius: var(--card-radius, var(--r));
 		cursor: pointer;
 		text-align: left;
-		transition: border-color 0.15s;
-		font-size: 0.875rem;
-		font-family: var(--font-sans);
-		color: var(--text-primary);
+		transition: border-color 0.1s, background 0.1s;
 	}
 
-	.provider-option:hover {
-		border-color: var(--border-default);
+	.provider-card:hover {
+		border-color: var(--acc);
+		background: var(--bg-3, #1a1a1a);
 	}
 
-	.provider-option--selected {
-		border-color: var(--border-hover);
-		background: var(--bg-hover);
+	.provider-card--selected {
+		border-color: var(--acc);
+		background: var(--bg-3, #1a1a1a);
 	}
 
-	.provider-label {
+	.provider-card-header {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+	}
+
+	.provider-card-name {
+		font-size: 12px;
+		font-weight: 600;
+		color: var(--t-1, var(--text-primary));
 		flex: 1;
 	}
 
-	.provider-badge {
-		font-size: 0.65rem;
-		font-weight: 600;
-		padding: 0.1em 0.45em;
-		border-radius: 3px;
-		background: var(--bg-hover);
-		border: 1px solid var(--border-default);
-		color: var(--text-secondary);
-		opacity: 0.8;
-		white-space: nowrap;
+	.provider-card-badge {
+		font-size: 9px;
+		font-weight: 700;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		padding: 1px 5px;
+		background: var(--bg-4);
+		color: var(--t-3);
+		border: 1px solid var(--b-2);
+		border-radius: var(--r);
 	}
 
-	.provider-instructions {
-		font-size: 0.8rem;
-		color: var(--text-secondary);
-		margin: 0.4rem 0;
-		line-height: 1.5;
+	.provider-card-check {
+		font-size: 11px;
+		color: var(--acc);
+		font-weight: 700;
 	}
 
-	.provider-affiliate-btn {
-		display: inline-block;
-		padding: 0.3rem 0.75rem;
-		font-size: 0.8rem;
-		border: 1px solid var(--border-default);
-		border-radius: var(--card-radius);
+	.provider-card-hint {
+		font-size: 10px;
+		color: var(--t-3, var(--text-secondary));
+		line-height: 1.4;
+		margin: 0;
+	}
+
+	.provider-card-key-btn {
+		font-size: 10px;
+		color: var(--acc);
 		background: none;
+		border: none;
 		cursor: pointer;
-		color: var(--text-primary);
-		font-family: var(--font-sans);
-		transition: border-color 0.15s, color 0.15s;
-		margin-bottom: 0.25rem;
+		padding: 2px 0;
+		text-align: left;
+		font-family: inherit;
 	}
 
-	.provider-affiliate-btn:hover {
-		border-color: var(--border-hover);
+	.provider-card-key-btn:hover {
+		text-decoration: underline;
+	}
+
+	.provider-status-ready {
+		margin-top: 8px;
+		font-size: 11px;
+		color: var(--t-3);
 	}
 
 	.settings-toggle-row {
