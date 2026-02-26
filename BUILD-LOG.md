@@ -8430,3 +8430,30 @@ Fixed 8 of 11 Phase 28 bugs in commit `36bf980`. All 164 code tests passing.
 
 > **Commit fcca0cb** (2026-02-26 21:14) — docs(28-07): complete Phase 28 test manifest plan
 > Files changed: 3
+
+> **Commit 3424636** (2026-02-26 21:16) — auto-save: 3 files @ 21:16
+> Files changed: 2
+
+> **Commit f46f761** (2026-02-26 21:19) — docs(phase-28): complete phase execution — 13/13 verified
+> Files changed: 3
+
+## 2026-02-26 — Phase 28 Complete: UX Cleanup + Scope Reduction
+
+Executed all 7 plans in Phase 28 via GSD wave-based parallel execution. 13/13 must-haves verified. **183 code checks, 0 failing.** Phase 28 is the last phase in v1.0 — The Playback Milestone.
+
+**Wave 1 (parallel):**
+- **28-01** — Scenes removed from left sidebar nav. Coming-in-v2 banners added to Scenes and Rooms pages. Routes still reachable by direct URL.
+- **28-02** — Bug #26: official homepage links now sort first in artist page Links section (officialHomepageUrls Set + post-loop sort). Bug #41: streaming preference now loaded in artist page's own onMount, fixing first-render race condition.
+- **28-04** — All 6 discovery pages (Discover, Crate Dig, Explore, Time Machine, Style Map, Knowledge Base) now have `discover-mode-desc` header blocks explaining what each mode does. About page: proper Feedback section added with `mailto:feedback@blacktape.app`.
+
+**Wave 2 (parallel, after Wave 1):**
+- **28-03** — Bug #23: scene detection now seeds from local library artist names (get_library_tracks) alongside favorites. Bug #27: 12 dead domains (Geocities, MySpace, Grooveshark, Imeem, etc.) silently filtered from all artist page link categories via new `filterDeadLinks()` / `DEAD_DOMAINS` in categorize.ts.
+- **28-05** — AI provider selector redesigned from a confusing list to a card grid: each card shows name, Free/Paid badge, instructions, checkmark, and inline API key button. Artist page sharing: Mastodon-only replaced with a three-platform row (Mastodon → Bluesky → Twitter/X).
+- **28-06** — Search page: explicit Artist / Label / Song type chips above the SearchBar (type=label routes to searchByLabel, type=song surfaces library tracks). Left sidebar discovery section: when on a discovery route, shows only the active mode prominently + compact icon switcher for the other 4 modes.
+
+**Wave 3:**
+- **28-07** — PHASE_28 test array added to manifest.mjs with 21 entries covering all 13 requirements (19 code checks + 2 desktop-only skips).
+
+**Test suite: 183 passed / 0 failing.**
+
+This completes v1.0 — The Playback Milestone. All phases done.
