@@ -84,6 +84,10 @@
 </svelte:head>
 
 <div class="discover-page">
+	<div class="discover-mode-desc">
+		<h2>Discover</h2>
+		<p>Browse artists ranked by uniqueness. Filter by tag, era, or country. The more niche an artist, the higher they surface.</p>
+	</div>
 	<div class="discover-layout" class:filters-hidden={!showFilters}>
 		<!-- Left filter panel -->
 		<aside class="discover-filter-panel" class:hidden={!showFilters}>
@@ -193,6 +197,24 @@
 </div>
 
 <style>
+	.discover-mode-desc {
+		padding: 10px 16px 8px;
+		border-bottom: 1px solid var(--b-0);
+		background: var(--bg-1);
+	}
+	.discover-mode-desc h2 {
+		font-size: 13px;
+		font-weight: 600;
+		color: var(--t-2);
+		margin: 0 0 3px;
+	}
+	.discover-mode-desc p {
+		font-size: 11px;
+		color: var(--t-3);
+		margin: 0;
+		line-height: 1.5;
+	}
+
 	.discover-page {
 		height: 100%;
 		overflow: hidden;

@@ -115,9 +115,9 @@
 </svelte:head>
 
 <div class="time-machine">
-	<div class="tm-header">
-		<h1>Time Machine</h1>
-		<p class="tm-subtitle">Browse artists by the year they formed. Watch genres emerge over time.</p>
+	<div class="tm-header discover-mode-desc">
+		<h2>Time Machine</h2>
+		<p>Travel through music history by decade. See which genres defined each era and discover the artists who shaped them.</p>
 	</div>
 
 	<!-- Decade buttons -->
@@ -199,9 +199,24 @@
 
 <style>
 	.time-machine { max-width: 1100px; margin: 0 auto; padding: 20px; }
-	.tm-header { margin-bottom: 1.5rem; }
-	.tm-header h1 { font-size: 1.75rem; }
-	.tm-subtitle { color: var(--t-3); font-size: 0.9rem; margin-top: 0.25rem; }
+	.discover-mode-desc {
+		padding: 10px 16px 8px;
+		border-bottom: 1px solid var(--b-0);
+		background: var(--bg-1);
+		margin: -20px -20px 1.5rem;
+	}
+	.discover-mode-desc h2 {
+		font-size: 13px;
+		font-weight: 600;
+		color: var(--t-2);
+		margin: 0 0 3px;
+	}
+	.discover-mode-desc p {
+		font-size: 11px;
+		color: var(--t-3);
+		margin: 0;
+		line-height: 1.5;
+	}
 
 	.decade-buttons { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
 	.decade-btn {

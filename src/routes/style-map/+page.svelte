@@ -11,9 +11,9 @@
 </svelte:head>
 
 <div class="style-map-page">
-	<div class="page-header">
-		<h1 class="page-title">Style Map</h1>
-		<p class="page-desc">
+	<div class="page-header discover-mode-desc">
+		<h2>Style Map</h2>
+		<p>
 			How genres connect. Node size = how many artists. Edge weight = how often they appear together. Click a node to discover artists.
 		</p>
 	</div>
@@ -33,17 +33,23 @@
 		margin-bottom: var(--space-lg);
 	}
 
-	.page-title {
-		font-size: 1.5rem;
-		font-weight: 600;
-		color: var(--t-1);
-		margin: 0 0 var(--space-xs);
+	.discover-mode-desc {
+		padding: 10px 16px 8px;
+		border-bottom: 1px solid var(--b-0);
+		background: var(--bg-1);
+		margin: -20px -20px var(--space-lg);
 	}
-
-	.page-desc {
-		font-size: 0.875rem;
+	.discover-mode-desc h2 {
+		font-size: 13px;
+		font-weight: 600;
+		color: var(--t-2);
+		margin: 0 0 3px;
+	}
+	.discover-mode-desc p {
+		font-size: 11px;
 		color: var(--t-3);
 		margin: 0;
+		line-height: 1.5;
 	}
 
 	.empty-state {
