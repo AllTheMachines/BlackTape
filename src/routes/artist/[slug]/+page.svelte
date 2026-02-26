@@ -13,7 +13,7 @@
 	import SiteGenDialog from '$lib/components/SiteGenDialog.svelte';
 	import { LINK_CATEGORY_ORDER, LINK_CATEGORY_LABELS } from '$lib/embeds/types';
 	import { isTauri } from '$lib/platform';
-	import { streamingPref } from '$lib/theme/preferences.svelte';
+	import { streamingPref, loadStreamingPreference } from '$lib/theme/preferences.svelte';
 
 	import { openChat, chatState } from '$lib/comms/notifications.svelte.js';
 	import { generateEmbedSnippets } from '$lib/curator/embed-snippet';
@@ -79,6 +79,12 @@
 	onMount(() => {
 		tauriMode = isTauri();
 		if (!tauriMode) return;
+
+		// #41 fix: ensure streaming preference is fresh for sortedStreamingLinks derived.
+		// Layout loads it async in onMount too, but race condition means first render may
+		// see streamingPref.platform === '' before layout's load completes. Fire-and-forget
+		// here guarantees the artist page is self-sufficient regardless of load order.
+		loadStreamingPreference();
 
 		// Silent visit tracking — best-effort, never shown in UI
 		(async () => {
