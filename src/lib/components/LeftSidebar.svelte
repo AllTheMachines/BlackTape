@@ -4,17 +4,20 @@
 
 	const MAX_TAGS = 5;
 
+	// Discovery modes — condensed view when on any discovery route
+	const DISCOVERY_MODES = [
+		{ href: '/discover', label: 'Discover', icon: '◉' },
+		{ href: '/style-map', label: 'Style Map', icon: '⬡' },
+		{ href: '/kb', label: 'Knowledge Base', icon: '◈' },
+		{ href: '/time-machine', label: 'Time Machine', icon: '◷' },
+		{ href: '/crate', label: 'Crate Dig', icon: '▦' }
+	] as const;
+
 	// Navigation groups — Discover, Library, Account
 	const navGroups = [
 		{
 			label: 'Discover',
-			links: [
-				{ href: '/discover', label: 'Discover', icon: '◉' },
-				{ href: '/style-map', label: 'Style Map', icon: '⬡' },
-				{ href: '/kb', label: 'Knowledge Base', icon: '◈' },
-				{ href: '/time-machine', label: 'Time Machine', icon: '◷' },
-				{ href: '/crate', label: 'Crate Dig', icon: '▦' }
-			]
+			links: DISCOVERY_MODES as unknown as { href: string; label: string; icon: string }[]
 		},
 		{
 			label: 'Library',
@@ -31,7 +34,7 @@
 				{ href: '/about', label: 'About', icon: '◌' }
 			]
 		}
-	] as const;
+	];
 
 	// Discovery filter state — derived from URL so it stays in sync with TagFilter
 	let activeTags = $derived(
@@ -77,6 +80,12 @@
 
 	/** True when we're on the Discover page — show filter controls. */
 	let isOnDiscover = $derived($page.url.pathname === '/discover');
+
+	/** The active discovery mode, if we're on any discovery route. */
+	let activeDiscoveryMode = $derived(
+		DISCOVERY_MODES.find((m) => isActive(m.href)) ?? null
+	);
+	let isOnDiscovery = $derived(activeDiscoveryMode !== null);
 </script>
 
 <aside class="left-sidebar" aria-label="Navigation and discovery">
@@ -85,12 +94,42 @@
 		{#each navGroups as group}
 			<div class="nav-group">
 				<span class="nav-lbl">{group.label}</span>
-				{#each group.links as link}
-					<a href={link.href} class="nav-item" class:active={isActive(link.href)}>
-						<span class="nav-ico">{link.icon}</span>
-						{link.label}
-					</a>
-				{/each}
+				{#if group.label === 'Discover'}
+					{#if isOnDiscovery && activeDiscoveryMode}
+						<!-- Active discovery mode shown prominently with compact mode switcher -->
+						<div class="discovery-mode-switcher">
+							<div class="active-mode-row">
+								<span class="active-mode-icon">{activeDiscoveryMode.icon}</span>
+								<span class="active-mode-name">{activeDiscoveryMode.label}</span>
+							</div>
+							<div class="mode-switch-grid">
+								{#each DISCOVERY_MODES as mode}
+									<a
+										href={mode.href}
+										class="mode-switch-btn"
+										class:active={mode.href === activeDiscoveryMode.href}
+										title={mode.label}
+									>{mode.icon}</a>
+								{/each}
+							</div>
+						</div>
+					{:else}
+						<!-- Not on a discovery page — show full link list -->
+						{#each DISCOVERY_MODES as mode}
+							<a href={mode.href} class="nav-item" class:active={isActive(mode.href)}>
+								<span class="nav-ico">{mode.icon}</span>
+								{mode.label}
+							</a>
+						{/each}
+					{/if}
+				{:else}
+					{#each group.links as link}
+						<a href={link.href} class="nav-item" class:active={isActive(link.href)}>
+							<span class="nav-ico">{link.icon}</span>
+							{link.label}
+						</a>
+					{/each}
+				{/if}
 			</div>
 		{/each}
 	</nav>
@@ -208,6 +247,65 @@
 		font-size: 11px;
 		flex-shrink: 0;
 		color: inherit;
+	}
+
+	/* Discovery mode switcher — shown when on a discovery route */
+	.discovery-mode-switcher {
+		padding: 4px 12px 6px;
+	}
+
+	.active-mode-row {
+		display: flex;
+		align-items: center;
+		gap: 7px;
+		padding: 4px 0;
+		margin-bottom: 6px;
+	}
+
+	.active-mode-icon {
+		font-size: 14px;
+		color: var(--acc);
+		width: 14px;
+		text-align: center;
+		flex-shrink: 0;
+	}
+
+	.active-mode-name {
+		font-size: 12px;
+		font-weight: 600;
+		color: var(--t-1);
+	}
+
+	.mode-switch-grid {
+		display: flex;
+		gap: 4px;
+		flex-wrap: wrap;
+	}
+
+	.mode-switch-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 22px;
+		height: 22px;
+		border: 1px solid var(--b-2);
+		border-radius: var(--r);
+		background: var(--bg-4);
+		color: var(--t-3);
+		font-size: 11px;
+		text-decoration: none;
+		transition: all 0.1s;
+	}
+
+	.mode-switch-btn:hover {
+		border-color: var(--acc);
+		color: var(--t-1);
+	}
+
+	.mode-switch-btn.active {
+		background: var(--acc);
+		border-color: var(--acc);
+		color: var(--bg-1);
 	}
 
 	/* Discovery Filters */
