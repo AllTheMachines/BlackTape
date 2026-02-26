@@ -56,7 +56,11 @@ export const TASTE_PALETTE_KEYS: string[] = [
 	'--tag-border',
 	'--progress-color',
 	'--player-bg',
-	'--player-border'
+	'--player-border',
+	'--acc',
+	'--acc-bg',
+	'--acc-bg-h',
+	'--b-acc'
 ];
 
 /**
@@ -81,6 +85,11 @@ export function generatePalette(hue: number): Record<string, string> {
 		'--tag-border': `oklch(0.22 0.05 ${hue})`,
 		'--progress-color': `oklch(0.72 0.12 ${hue})`,
 		'--player-bg': `oklch(0.04 0.01 ${hue})`,
-		'--player-border': `oklch(0.10 0.015 ${hue})`
+		'--player-border': `oklch(0.10 0.015 ${hue})`,
+		/* Accent — the most visible theme color, used throughout the UI */
+		'--acc': `oklch(0.72 0.15 ${hue})`,
+		'--acc-bg': `oklch(0.72 0.15 ${hue} / 0.1)`,
+		'--acc-bg-h': `oklch(0.72 0.15 ${hue} / 0.18)`,
+		'--b-acc': `oklch(0.72 0.15 ${hue} / 0.3)`
 	};
 }

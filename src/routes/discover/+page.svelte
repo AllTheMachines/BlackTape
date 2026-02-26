@@ -76,6 +76,7 @@
 	}
 
 	let hasActiveFilters = $derived(data.tags.length > 0 || !!data.country || !!data.era);
+	let showFilters = $state(true);
 </script>
 
 <svelte:head>
@@ -83,10 +84,13 @@
 </svelte:head>
 
 <div class="discover-page">
-	<div class="discover-layout">
+	<div class="discover-layout" class:filters-hidden={!showFilters}>
 		<!-- Left filter panel -->
-		<aside class="discover-filter-panel">
-			<h2 class="filter-heading">Filters</h2>
+		<aside class="discover-filter-panel" class:hidden={!showFilters}>
+			<div class="filter-heading-row">
+				<h2 class="filter-heading">Filters</h2>
+				<button class="filter-toggle-btn" onclick={() => showFilters = !showFilters} title="Hide filters" aria-label="Hide filters">×</button>
+			</div>
 
 			<!-- Genre / Tag cloud -->
 			<div class="filter-section">
@@ -143,6 +147,9 @@
 		<div class="discover-results">
 			<!-- Active filter chips toolbar -->
 			<div class="results-toolbar">
+				{#if !showFilters}
+					<button class="show-filters-btn" onclick={() => showFilters = true} aria-label="Show filters">⊞ Filters</button>
+				{/if}
 				<div class="active-chips">
 					{#each data.tags as tag}
 						<button class="filter-chip active" onclick={() => toggleTag(tag)}>
@@ -198,6 +205,14 @@
 		overflow: hidden;
 	}
 
+	.discover-layout.filters-hidden {
+		grid-template-columns: 0 1fr;
+	}
+
+	.discover-filter-panel.hidden {
+		display: none;
+	}
+
 	/* ---- Filter panel ---- */
 	.discover-filter-panel {
 		background: var(--bg-1);
@@ -209,6 +224,13 @@
 		gap: 0;
 	}
 
+	.filter-heading-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		border-bottom: 1px solid var(--b-1);
+	}
+
 	.filter-heading {
 		font-size: 9px;
 		font-weight: 600;
@@ -217,7 +239,38 @@
 		color: var(--t-3);
 		margin: 0;
 		padding: 10px 12px 8px;
-		border-bottom: 1px solid var(--b-1);
+	}
+
+	.filter-toggle-btn {
+		background: none;
+		border: none;
+		color: var(--t-3);
+		font-size: 14px;
+		cursor: pointer;
+		padding: 0 10px;
+		line-height: 1;
+		height: 100%;
+	}
+
+	.filter-toggle-btn:hover {
+		color: var(--t-1);
+	}
+
+	.show-filters-btn {
+		background: none;
+		border: 1px solid var(--b-2);
+		border-radius: var(--r);
+		color: var(--t-3);
+		font-size: 0.75rem;
+		padding: 3px 8px;
+		cursor: pointer;
+		white-space: nowrap;
+		flex-shrink: 0;
+	}
+
+	.show-filters-btn:hover {
+		color: var(--t-1);
+		border-color: var(--b-3);
 	}
 
 	.filter-section {

@@ -248,8 +248,8 @@
 		bottom: var(--player);
 		left: 0;
 		right: 0;
-		background: var(--bg-1);
-		border-top: 1px solid var(--b-1);
+		background: var(--bg-2);
+		border-top: 1px solid var(--b-2);
 		z-index: 199;
 		animation: slide-up 0.2s ease-out;
 		max-height: 280px;
@@ -273,8 +273,8 @@
 		left: 0;
 		right: 0;
 		height: var(--player);
-		background: var(--bg-1);
-		border-top: 1px solid var(--b-1);
+		background: var(--bg-3);
+		border-top: 1px solid var(--b-2);
 		display: flex;
 		align-items: center;
 		padding: 0 14px;
@@ -336,7 +336,7 @@
 		background: var(--bg-4);
 		border: 1px solid var(--b-2);
 		border-radius: var(--r);
-		color: var(--t-3);
+		color: var(--t-2);
 		cursor: pointer;
 		transition: background 0.1s, color 0.1s;
 		position: relative;
@@ -344,7 +344,7 @@
 
 	.control-btn:hover {
 		background: var(--bg-5);
-		color: var(--t-2);
+		color: var(--t-1);
 	}
 
 	.control-btn.small {

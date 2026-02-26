@@ -14,8 +14,7 @@
 	import { LINK_CATEGORY_ORDER, LINK_CATEGORY_LABELS } from '$lib/embeds/types';
 	import { isTauri } from '$lib/platform';
 	import { streamingPref } from '$lib/theme/preferences.svelte';
-	import { getAiProvider } from '$lib/ai/engine';
-	import { PROMPTS } from '$lib/ai/prompts';
+
 	import { openChat, chatState } from '$lib/comms/notifications.svelte.js';
 	import { generateEmbedSnippets } from '$lib/curator/embed-snippet';
 	import { page } from '$app/stores';
@@ -67,20 +66,9 @@
 		return meta || year;
 	});
 
-	/** Bio expand/collapse state. */
+	/** Bio expand/collapse state (Wikipedia bio only — AI summary is in ArtistSummary component). */
 	let bioExpanded = $state(false);
-	let bioNeedsCollapse = $derived(data.bio ? data.bio.length > 500 : false);
-	let displayBio = $derived(
-		data.bio && !bioExpanded && bioNeedsCollapse
-			? data.bio.slice(0, 500) + '...'
-			: data.bio
-	);
-
-	/** AI-generated summary fallback when Wikipedia bio is unavailable. */
-	let aiBio = $state<string | null>(null);
-
-	/** The bio to display: Wikipedia bio takes priority, then AI-generated. */
-	let effectiveBio = $derived(data.bio || aiBio);
+	let effectiveBio = $derived(data.bio);
 	let effectiveBioNeedsCollapse = $derived(effectiveBio ? effectiveBio.length > 500 : false);
 	let effectiveDisplayBio = $derived(
 		effectiveBio && !bioExpanded && effectiveBioNeedsCollapse
@@ -109,25 +97,7 @@
 			shelfCollections = collectionsState.collections;
 			savedInCollections = await isInAnyCollection('artist', data.artist.mbid);
 
-			// Only generate AI bio when Wikipedia bio is missing and AI is ready
-			if (!data.bio) {
-				const provider = getAiProvider();
-				if (provider) {
-					try {
-						const tagsStr = data.artist.tags || '';
-						const country = data.artist.country || '';
-						const result = await provider.complete(
-							PROMPTS.artistSummary(data.artist.name, tagsStr, country),
-							{ temperature: 0.5, maxTokens: 200 }
-						);
-						if (result && result.trim()) {
-							aiBio = result.trim();
-						}
-					} catch {
-						// AI summary is best-effort — show nothing on failure
-					}
-				}
-			}
+			// AI bio removed — ArtistSummary component handles AI content (#21 fix)
 		})();
 	});
 
@@ -990,8 +960,8 @@
 
 	.releases-grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(108px, 1fr));
-		gap: 8px;
+		grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+		gap: 12px;
 		padding: 14px 20px;
 	}
 
