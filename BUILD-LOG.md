@@ -8415,3 +8415,6 @@ Fixed 8 of 11 Phase 28 bugs in commit `36bf980`. All 164 code tests passing.
 
 > **Commit 9d301cf** (2026-02-26 21:07) — feat(28-06): simplify discovery sidebar to show active mode only
 > Files changed: 1
+
+> **Commit 1bf5952** (2026-02-26 21:09) — docs(28-03): complete plan summary — scene library signal + dead link filter
+> Files changed: 4
