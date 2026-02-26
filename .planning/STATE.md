@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-25 after v1.4 milestone)
 
 ## Current Position
 
-Milestone: v1.4 The Interface — COMPLETE (shipped 2026-02-25)
-Phase: 27 of 27 — all phases complete
-Status: v1.4 archived. REQUIREMENTS.md deleted. ROADMAP.md collapsed. Ready for next milestone.
-Last activity: 2026-02-25 — v1.4 milestone complete: 5 phases, 19 plans, 35/35 requirements, 164 code checks passing
+Milestone: v1.5 UX Cleanup + Scope Reduction — IN PROGRESS
+Phase: 28 (28-ux-cleanup-scope-reduction) — Plan 02 of 7 complete
+Status: Executing Phase 28. Plans 28-01 and 28-02 complete.
+Last activity: 2026-02-26 — Phase 28 plan 02 complete: fixed Bug #26 (official links sort) + Bug #41 (streaming pref race)
 
-Progress: [██████████] 100% v1.4 complete
+Progress: [█░░░░░░░░░] Phase 28 in progress (2/7 plans done)
 
 ## Performance Metrics
 
@@ -114,6 +114,8 @@ Progress: [██████████] 100% v1.4 complete
 - [Phase 27-03]: data-testid removed from ArtistCard call — component does not spread restProps; plan spec was aspirational
 - [Phase 27-05]: Tests written against actual source strings verified before writing — no idealized strings used
 - [Phase 27-05]: 7 skip entries for desktop-only tests: live autocomplete, search interaction, visual redesign verification
+- [28-02]: officialHomepageUrls Set declared before MB relations loop, sort added after loop closes — minimal change, no restructuring of categorize logic
+- [28-02]: loadStreamingPreference() called fire-and-forget in artist page onMount — artist page self-sufficient; layout's load is bonus redundancy, not dependency
 
 ### Pending Todos
 None
@@ -124,6 +126,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-26
-Stopped at: Completed Phase 28 planning — 7 plans written (28-01-PLAN.md through 28-07-PLAN.md)
+Stopped at: Completed Phase 28 Plan 02 — Bug #26 (official links sort) + Bug #41 (streaming pref race fix)
 Resume file: None
-Next: Execute Phase 28 — run /gsd:execute-phase for Phase 28.
+Next: Continue Phase 28 — execute plans 03-07.
