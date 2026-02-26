@@ -1,75 +1,88 @@
 # Work Handoff — 2026-02-26
 
 ## Current Task
-Press screenshots for marketing BEFORE Phase 28. Script is written but binary launch needs a fix.
+Take press screenshots for marketing before executing Phase 28.
 
-## What Was Done This Session
+## Context
+Steve requested a full press screenshot set (12 shots + bonuses) using the real live database. The screenshot automation script is written and ready, but needs to be run with the Tauri app closed first. Phase 28 plans are already committed and ready to execute immediately after screenshots are done.
 
-### Press Screenshots (IN PROGRESS)
-- ✅ DB researched — live DB at `%APPDATA%/com.mercury.app/mercury.db` is 782MB, 2.8M artists, 241K tagged artists
-- ✅ Tags imported into pipeline dev DB (was empty — ran `pipeline/import-tags-only.mjs`)
-- ✅ Screenshot script fully rewritten: `tools/take-press-screenshots.mjs` — outputs to `press-screenshots/v2/`
-- ❌ Binary launch FAILING — mercury.exe exits immediately with "Failed to unregister class Chrome_WidgetWin_0"
+## Progress
 
-### Phase 28
-- ✅ Plans already committed (7 plans, 3 waves) — last commit: `plan(28): 7 plans in 3 waves`
-- ✅ Phase 28 is ready to execute after screenshots are done
+### Completed
+- ✅ Researched live DB — `%APPDATA%/com.mercury.app/mercury.db` is 782MB, 2.8M artists, 241K tagged artists
+- ✅ Found best artist slugs and filter combos from DB queries
+- ✅ Rewrote `tools/take-press-screenshots.mjs` with all 12 press shots + bonuses, outputs to `press-screenshots/v2/`
+- ✅ Pipeline dev DB tags imported (`pipeline/import-tags-only.mjs` — was empty, now 724 artists tagged)
+- ✅ Phase 28 plans committed (7 plans in 3 waves) — last commit: `plan(28): 7 plans in 3 waves`
 
-## Press Screenshot Fix Needed
+### In Progress
+- ❌ Screenshot script — written but failed to run because mercury.exe exits immediately
 
-### The Problem
-`mercury.exe` launched from the script exits immediately. The error is:
+### Remaining
+- Run the screenshot script successfully
+- Review the output in `press-screenshots/v2/`
+- Execute Phase 28 (`/gsd:execute-phase 28`)
+
+## Key Decisions
+- Screenshots go to `press-screenshots/v2/` (separate from old v1 shots)
+- Shot 4 target: **Skinfields** (slug=`skinfields`) — Very Niche, coldwave/darkwave/industrial, Europe, 19 clean quality tags
+- Shot 12 target: **Wavewulf** (slug=`wavewulf`) — NJ, 69 quality tags: ambient house, synthwave, electronica, nordic ambient, tim hecker
+- Using CDP port **9223** (not 9222) to avoid conflict with any running instance
+
+## The Blocker
+
+`mercury.exe` exits immediately when launched by the script with:
 ```
 [ERROR:ui\gfx\win\window_impl.cc:124] Failed to unregister class Chrome_WidgetWin_0. Error = 1411
 ```
-This happens because an existing Tauri/WebView2 instance is already running (from `npm run tauri dev`).
+**Cause:** Another Tauri/mercury window is open. The WebView2 class conflicts.
 
-### Solutions to Try
-**Option A (recommended):** Use CDP port 9222 on the ALREADY-RUNNING Tauri instance
-- The dev server is on port 5173 (confirmed running)
-- Check if WebView2 already has a CDP endpoint via: `curl http://127.0.0.1:9222/json`
-- The existing Tauri window might already have CDP if it was launched with the right env var
-
-**Option B:** Kill the existing Tauri window first, then relaunch with CDP
-```powershell
-taskkill /F /IM mercury.exe
-# Wait 2s
-# Then run the screenshot script
+**Fix:** Close any open BlackTape/mercury windows, then run:
+```
+node tools/take-press-screenshots.mjs
 ```
 
-**Option C:** Change the script to use the existing dev server via Playwright directly (non-Tauri)
-- Most features work fine in browser mode EXCEPT Tauri invoke() calls (DB queries)
-- Discover page needs DB → won't work
-- Artist pages (MusicBrainz API) → DO work in browser mode
-- Can use Playwright Chromium directly against localhost:5173
+## Key Filter Combos (confirmed from DB query)
+- `doom metal + Finland` → 100 artists (Shot 1)
+- `experimental,ambient,drone,industrial,noise rock` → many artists (Shot 3)
+- `black metal + Norway` → 244 artists (bonus)
+- `post-punk + United Kingdom` → 379 artists (bonus)
+- `krautrock + Germany` → 381 artists (bonus)
+- `shoegaze + Japan` → 43 artists (bonus)
 
-**Option D (best if Tauri window is open):** Re-enable CDP on running instance
-The test runner uses `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=9222`
-when spawning the binary. If the window is already open, this won't apply.
+## Relevant Files
+- `tools/take-press-screenshots.mjs` — the full screenshot automation script (READY TO RUN)
+- `press-screenshots/v2/` — output directory (created, empty)
+- `pipeline/import-tags-only.mjs` — re-imports tags without full pipeline re-run
+- `pipeline/query-live-db.cjs` — queries live AppData DB for research
+- `pipeline/find-screenshot-artists.cjs` — finds NICHE artists by uniqueness score
+- `pipeline/find-filter-combos.cjs` — checks filter combo result counts
+- `.planning/phases/28-ux-cleanup-scope-reduction/` — all 7 Phase 28 plans (committed, ready)
 
-### RECOMMENDED NEXT STEP
-1. Close the currently open Tauri/mercury window (if visible on screen)
+## Git Status
+```
+modified: BUILD-LOG.md (3 lines added)
+modified: parachord-reference (submodule)
+untracked: pipeline/find-filter-combos.cjs
+untracked: pipeline/find-screenshot-artists.cjs
+untracked: pipeline/query-live-db.cjs
+untracked: pipeline/check-db.cjs
+untracked: tools/check-db.cjs (actually tools/check-db.cjs)
+```
+No source code changes uncommitted. Safe to proceed.
+
+## Next Steps
+1. **Close any open BlackTape/mercury app window** visible on screen
 2. Run: `node tools/take-press-screenshots.mjs`
-3. The script will launch a fresh instance with CDP enabled
-
-### Screenshot Target Artists
-Researched from live DB — key artist slugs:
-- **Shot 4 (Very Niche artist):** `skinfields` — coldwave/darkwave/industrial, Europe, Very Niche score=553, 19 clean tags
-- **Shot 12 (dense tag cloud):** `wavewulf` — NJ, 69 quality tags: ambient house, synthwave, electronica, nordic ambient, tim hecker
-- **Shot 10 (search):** Use `/search?q=shoegaze&mode=tag` — 43 artists in Japan category
-
-### Key Filter Combos (confirmed results in DB)
-- `doom metal + Finland` → 100 artists ✓ (Shot 1)
-- `black metal + Norway` → 244 artists ✓ (bonus)
-- `post-punk + United Kingdom` → 379 artists ✓ (bonus)
-- `krautrock + Germany` → 381 artists ✓ (bonus)
-- `shoegaze + Japan` → 43 artists ✓
-- `experimental,ambient,drone,industrial,noise rock` → many ✓ (Shot 3)
+3. If binary still fails, launch manually in PowerShell to diagnose:
+   ```powershell
+   $env:WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS = "--remote-debugging-port=9223"
+   .\src-tauri\target\debug\mercury.exe
+   ```
+4. Review screenshots in `press-screenshots/v2/`
+5. Run Phase 28: `/gsd:execute-phase 28`
 
 ## v1.5 Plan Summary
-
-**Goal:** Make BlackTape fully playable. Spotify is the priority.
-
 | Phase | What | Status |
 |-------|------|--------|
 | 28 | UX Cleanup + Scope Reduction | Ready to execute |
@@ -77,14 +90,5 @@ Researched from live DB — key artist slugs:
 | 30 | Spotify UI Polish + Service Preference + Artist Claim Form | Planned |
 | 🚀 | **SHIP v1.5 after Phase 30** | — |
 
-## Next Steps
-1. **Fix binary launch issue** (see options above) and run screenshot script
-2. **Review screenshots** in `press-screenshots/v2/`
-3. **Start Phase 28** — run `/gsd:execute-phase 28`
-
-## Helper Scripts (in pipeline/)
-- `pipeline/import-tags-only.mjs` — re-imports tags without full pipeline re-run
-- `pipeline/query-live-db.cjs` — queries live AppData DB
-- `pipeline/find-screenshot-artists.cjs` — finds NICHE artists by score
-- `pipeline/find-filter-combos.cjs` — checks filter combo result counts
-- `pipeline/check-db.cjs` — checks pipeline dev DB
+## Resume Command
+After running `/clear`, run `/resume` to continue.
