@@ -1,448 +1,385 @@
 # Pitfalls Research
 
-**Domain:** Adding ActivityPub federation, Nostr listening rooms, artist tools, and sustainability links to an existing Tauri 2.0 + SvelteKit + Nostr desktop app
-**Researched:** 2026-02-24
-**Confidence:** HIGH (ActivityPub/AP serving constraints verified with official docs and implementation guides; Nostr NIP-53 verified against spec; adapter-static/+server.ts gap verified against Tauri community reports and codebase review; MusicBrainz URL types verified against live MB documentation)
+**Domain:** Multi-source streaming integration into an existing Tauri 2.0 / Svelte 5 desktop app (Spotify, YouTube, SoundCloud, Bandcamp)
+**Researched:** 2026-02-26
+**Confidence:** HIGH for Spotify/YouTube/Tauri-specific issues (multiple verified sources including official Spotify docs, live Tauri GitHub issues, and February 2026 Spotify policy changes). MEDIUM for SoundCloud/Bandcamp (official docs + community reports, no Tauri-specific issues found). MEDIUM for Spotify ToS implications (policy is actively changing as of this writing — verified against current official docs).
 
 ---
 
 ## Critical Pitfalls
 
-### Pitfall 1: ActivityPub Cannot Be Served from a Desktop App — It Needs a Publicly Reachable HTTP Server
+### Pitfall 1: Spotify Web Playback SDK Requires Widevine CDM — Does Not Work in WebView2
 
 **What goes wrong:**
-The plan is to expose artist pages, scenes, and collections as ActivityPub actors so the Fediverse can follow them. ActivityPub requires a publicly reachable HTTP server that:
-- Responds to WebFinger discovery at `/.well-known/webfinger` with correct `Content-Type: application/jrd+json`
-- Serves Actor JSON at stable URLs with `Content-Type: application/activity+json`
-- Receives `Follow` activity POSTs to an inbox (Mastodon will POST to the inbox when a user tries to follow)
-- Pushes `Create` activities to follower inboxes when new content appears (signed with RSA-SHA256 HTTP signatures)
-
-A Tauri desktop app running on a user's machine is behind a home router, behind NAT, with no stable domain name or IP, and with no open inbound port. Mastodon cannot reach it. The WebFinger DNS lookup will fail. There is no inbox to POST Follow activities to. **Outbound-only federation is half the protocol and produces a read-only ghost that cannot receive follows or push updates.**
+The Spotify Web Playback SDK uses Encrypted Media Extensions (EME) to decrypt Widevine-protected audio. When the SDK calls `navigator.requestMediaKeySystemAccess()`, WebView2 supports the EME API call (it is Chromium-based), but the actual Widevine Content Decryption Module is not available in the same way it is in a full Chrome or Edge browser. The result is a "Failed to initialize player" error after the SDK appears to load correctly. This is the same failure mode documented for Electron since 2018 in spotify/web-playback-sdk#41, and it remains unresolved for any desktop WebView wrapper.
 
 **Why it happens:**
-The AP spec reads like a data format spec. Developers assume "publish actor JSON = federated." But ActivityPub is a pub/sub messaging protocol. The fediverse needs to POST to your inbox to subscribe. You need to POST to follower inboxes when you publish. Both require a reachable server with a domain name.
+Chrome and Edge ship with Widevine CDM as a proprietary binary that is activated for those specific browser products. WebView2 — even though it is Edge-based — does not expose Widevine for arbitrary third-party web content in the same way. Spotify's SDK does not just check whether `navigator.requestMediaKeySystemAccess` exists; it checks whether the CDM can actually decrypt content. Developers test the SDK in a real Chrome browser where it works, then discover the failure only after implementing the entire integration.
 
 **How to avoid:**
-Accept the constraint and implement the read-only AP subset: generate static Actor JSON, WebFinger JSON, and Outbox JSON as files. Host them on a static file host (Netlify, Cloudflare Pages, GitHub Pages) under a real domain. This gives Fediverse users a stable URL to look at. To make follows actually work, a small serverless function or Cloudflare Worker is required for the inbox endpoint — it must receive Follow POSTs, verify HTTP signatures, store follower pub keys, and push Create activities to follower inboxes on new content. Without the inbox, the actor appears in search but cannot be followed.
+Do not use the Spotify Web Playback SDK in BlackTape. Use the Spotify Embed Player instead: `https://open.spotify.com/embed/artist/{id}?theme=0`. The embed iframe runs in a sandboxed Spotify context, handles its own DRM negotiation internally, and does not expose this failure mode. The tradeoff is loss of programmatic control (no play/pause from parent JS), but this is the only approach that reliably works in a desktop WebView.
 
-The $0 infrastructure constraint means: static hosting (free tier on Netlify/Cloudflare Pages) + serverless inbox function (Cloudflare Workers free tier: 100,000 requests/day). This is $0 if traffic stays below Cloudflare's free limits.
+The existing `spotifyEmbedUrl()` function in `src/lib/embeds/spotify.ts` is already on the correct path. Do not add a second Spotify integration path using the SDK.
 
 **Warning signs:**
-- Any plan that says "serve AP from localhost" or "serve from the Tauri app"
-- Any plan that skips inbox handling and assumes "follow" still works
-- Any plan that references "the existing +server.ts routes" as the delivery mechanism (see Pitfall 2)
+- Any plan or code that imports or loads `https://sdk.scdn.co/spotify-player.js`
+- `Spotify.Player` initialization returning `initialization_error` or `account_error`
+- Console deprecation warning about `requestMediaKeySystemAccess` in cross-origin iframes
+- DRM errors in DevTools → Media tab
 
-**Phase to address:** ActivityPub phase (AP architecture decision) — decide static-file-host + serverless-inbox before writing any AP code
+**Phase to address:**
+Before any Spotify work begins. Record this as an explicit architecture decision: embed iframe only, SDK not used.
 
 ---
 
-### Pitfall 2: The Existing +server.ts Routes Do Not Exist in the Built Tauri App
+### Pitfall 2: YouTube IFrame Error 153 in Tauri Production Builds
 
 **What goes wrong:**
-Mercury has `+server.ts` files under `src/routes/api/` (artist links, artist releases, RSS feeds, SoundCloud oEmbed, unfurl). These work in development (`npm run dev`) because SvelteKit's dev server handles the routes. In the built Tauri app (`npm run build` + `tauri build`), the app is served as a static SPA via `adapter-static` with `fallback: 'index.html'`. There is no Node.js runtime. All server routes are dead — calling `/api/artist/[mbid]/links` from inside the built app returns 404 (or the fallback index.html).
+YouTube's IFrame Player API requires a valid HTTP `Referer` header to verify the embedding origin. In Tauri production builds on Windows, the app is served from `http://tauri.localhost`. This custom protocol origin does not generate a valid Referer that YouTube accepts. YouTube returns Error 153 ("Video player configuration error") and the player renders blank. In development (`npm run tauri dev`), Tauri proxies to Vite at `http://localhost:5173` — a real HTTP URL — so the embed works. The failure is invisible until a production build is tested.
 
-Code review confirms: the `+page.ts` load function for artist pages already bypasses the `+server.ts` routes and calls MusicBrainz directly (`fetch('https://musicbrainz.org/ws/2/artist/...')`). The `+server.ts` files are dead code in the built app — they are only used by any external service that happens to call those URLs during dev.
-
-Any new v1.3 feature that creates `+server.ts` routes expecting them to work inside the Tauri app will silently fail at runtime, with no error during `npm run check` or `npm run build`.
+This is a confirmed, live issue: Tauri GitHub #14422 (closed December 2025 with a workaround reference, not a Tauri-side fix).
 
 **Why it happens:**
-The `+server.ts` pattern is idiomatic SvelteKit. It works in dev. The build completes without error. Developers assume it works. The discrepancy between dev behavior and built behavior is a well-known Tauri+SvelteKit gotcha that is not obvious until you test the built binary.
+YouTube requires API clients to identify themselves through the `Referer` header. Custom URL schemes (`tauri://`, `http://tauri.localhost`) do not satisfy this requirement because they are not recognized HTTP origins. Using `youtube-nocookie.com` embed URLs (already in the codebase) does not resolve this — the issue is at the protocol level, not the domain level.
 
 **How to avoid:**
-Never add `+server.ts` routes expecting them to run inside the Tauri app. For data fetching, call external APIs directly from `+page.ts` load functions (as the existing artist page already does). For backend logic, use Tauri commands (`invoke`) to call Rust code. For features that genuinely need a server (ActivityPub inbox, anything requiring secret keys), that server must be external to the Tauri binary.
+Two viable approaches:
 
-If an AP outbox/WebFinger serving component is added, test it as a separate Cloudflare Worker / Netlify Function — not as a `+server.ts` in the Mercury SvelteKit project.
+**Option A (recommended for BlackTape):** Implement the Error 153 fallback in the IFrame API `onError` handler. When YouTube fires error code 153, replace the player with a "Watch on YouTube" button linking to the video URL. This is low-effort, always works, and the user gets a clear action instead of a blank player. The embed works for users where it works; those where it fails get a direct link.
+
+**Option B:** Use `tauri-plugin-localhost` to serve the app from real `http://127.0.0.1:PORT` in production. This fixes YouTube but breaks Tauri IPC unless you explicitly add a remote capability in `capabilities/` granting that URL IPC access. This is a more invasive change with security surface implications and is not worth it for YouTube alone.
+
+Never rely solely on development testing for YouTube embeds. Every YouTube embed implementation must be smoke-tested in a production build (`npm run tauri build` → install → verify) before the phase is marked complete.
 
 **Warning signs:**
-- Any new `+server.ts` file that is not the RSS feed (those are also non-functional in the built app — they serve the external web, not the desktop client)
-- Feature spec that says "add an API route" without specifying it will run in a Cloudflare Worker, not in the Tauri app
-- Development testing passing but production testing never done
+- YouTube embeds work in `npm run tauri dev` but show a grey spinner or generic error in a production install
+- `onError` fires with code `153`
+- Console errors referencing `origin` or `referer` validation from YouTube
 
-**Phase to address:** ActivityPub phase and any phase adding data-fetching routes — establish the rule "no new +server.ts for in-app use" as a documented constraint before writing code
+**Phase to address:**
+YouTube embed implementation phase. The Error 153 fallback must be implemented as part of the initial work, not as a bug fix.
 
 ---
 
-### Pitfall 3: HTTP Signatures for ActivityPub Are Mandatory and Non-Trivial
+### Pitfall 3: Spotify OAuth — `localhost` as redirect_uri Is Now Rejected
 
 **What goes wrong:**
-Mastodon verifies every incoming ActivityPub request with HTTP signatures (RFC 9421 as of Mastodon 4.5). When Mercury pushes a `Create` activity to a follower's inbox, Mastodon will:
-1. Extract the `keyId` from the `Signature` header
-2. Fetch the Actor's public key from `keyId` URL
-3. Reconstruct the signed string from the headers list
-4. Verify the RSA-SHA256 signature
-
-If any of these steps fail — wrong header order, missing `Digest` header, wrong encoding, date outside 12 hours, missing or malformed `(request-target)` pseudo-header — Mastodon silently rejects the POST with a 401 or 403. The activity is never delivered. There is no error message. The actor appears to work but followers never see updates.
-
-Implementing correct HTTP signatures from scratch is error-prone. Common failures: incorrectly constructing the signing string from the `headers` parameter, forgetting the `Digest: SHA-256=...` header on POST requests, using the wrong base64 encoding scheme, key ID URL not resolving to a public key, date header more than 12 hours old (clock skew on the serverless function).
+Since November 27, 2025, Spotify's OAuth no longer accepts `http://localhost:*` as a valid redirect URI. Any OAuth flow that registers `http://localhost:PORT/callback` gets `INVALID_CLIENT: Insecure redirect URI`. This breaks the common Tauri desktop app pattern of spinning up a local HTTP server on localhost to catch the OAuth callback.
 
 **Why it happens:**
-HTTP signatures are documented but the documentation is spread across multiple specs (draft-cavage, RFC 9421, ActivityPub, Mastodon's own extension). Each implementation has subtle differences. Testing is hard because the only meaningful test is "does Mastodon accept it" — there is no offline validator.
+Spotify's February 2025 security changes enforced RFC 8252's distinction between `localhost` (a DNS hostname, not safe) and `127.0.0.1` (a loopback IP literal, allowed over HTTP). The deadline for all apps was November 27, 2025. Developers who registered callback URIs before this date may have existing configs using `localhost`, which stopped working after enforcement.
 
 **How to avoid:**
-Use an existing ActivityPub/HTTP signature library rather than implementing from scratch. In Rust: `activitypub_federation` crate (used by Lemmy) handles all signing. In Node.js / Cloudflare Workers: `@misskey-dev/node-http-message-signatures` or similar. Do not write signing code by hand.
+Two approaches, both valid:
 
-Generate a 2048-bit RSA keypair per Actor. Store the private key in the serverless function's environment variables (encrypted at rest by Cloudflare). Embed the public key in the Actor JSON. Never rotate the key unless absolutely necessary — key rotation requires updating the Actor JSON and invalidating all existing follows.
+**Option A:** Use `http://127.0.0.1/callback` as the redirect URI. Register this in the Spotify developer dashboard. Spotify allows dynamic ports on loopback IP literals — register without a port, supply the port at runtime. BlackTape spins up a temporary HTTP server on `127.0.0.1:PORT`, completes the OAuth flow, then shuts it down. The auth code arrives via that server.
+
+**Option B (cleaner for desktop):** Use a custom deep-link protocol via `tauri-plugin-deep-link`. Register `blacktape://callback` as the redirect URI in the Spotify developer dashboard. Tauri handles the protocol, delivers the URL to the app, and no temporary HTTP server is needed. This is the pattern recommended by Tauri's own OAuth documentation and avoids any port conflict concerns.
+
+Either way: never register `http://localhost` as a redirect URI in any new Spotify app configuration.
 
 **Warning signs:**
-- Custom signing string construction code
-- Any "it works in dev with a mock" comment
-- Mastodon follows appearing to succeed (the Follow POST is accepted) but `Create` activities never showing up in followers' feeds (signing only affects outbound pushes)
+- OAuth flow opens the Spotify login page but returns `INVALID_CLIENT: Insecure redirect URI`
+- Any redirect URI in config containing the string `localhost` (not `127.0.0.1`)
+- OAuth works in one network environment but fails in another
 
-**Phase to address:** ActivityPub phase — verify signing end-to-end with a live Mastodon test account before shipping
+**Phase to address:**
+Spotify OAuth phase, before any implementation. The redirect URI approach must be decided and registered in the Spotify developer dashboard before writing code.
 
 ---
 
-### Pitfall 4: Embed Synchronization for Listening Rooms Is Impossible at the Platform Level — Design Around It
+### Pitfall 4: Spotify Quota Mode — A Bundled client_id Cannot Scale Beyond 5 Users
 
 **What goes wrong:**
-The listening rooms feature plans synchronized embed playback via Nostr coordination. The naive design is: host publishes current track position via Nostr; guests receive it and seek to the same position in the iframe. This cannot work because:
+The plan to bundle a single Spotify `client_id` in the open-source app hits a hard wall: as of February 11, 2026, Spotify's Development Mode limits each Client ID to **5 authorized users**. User #6 attempting to authenticate with the same client_id gets an error. Extended quota mode (unlimited users) requires Spotify's formal approval and is now limited to legally registered businesses with 250,000+ monthly active users. BlackTape will not qualify.
 
-- **Bandcamp**: No postMessage API. The iframe has no JavaScript interface. You cannot programmatically seek, pause, or detect playback state from the parent page.
-- **Spotify**: The Spotify Web Playback SDK requires OAuth and a Premium account. The embed iframe does not expose a control API.
-- **SoundCloud**: Has a postMessage Widget API, but it is async and cannot seek to a specific timestamp without a race condition.
-- **YouTube**: Has a postMessage API that can seek, but it requires the `enablejsapi=1` parameter and the iframe to have loaded and signaled ready.
-
-Attempting to synchronize playback position across four platforms with incompatible APIs — over Nostr relays with 200-2000ms latency — will produce a feature that "works sometimes" for one platform and never works for others.
+This is a confirmed policy change: Spotify's February 2026 developer announcement, effective for new apps February 11, 2026 and existing apps from March 9, 2026.
 
 **Why it happens:**
-Developers imagine the host publishing `{ platform: 'bandcamp', trackId: 'X', position: 42 }` and guests seeking to second 42. This is technically sound as a data model but impossible at the embed layer — you cannot command the iframe.
+The intent of bundling a shared client_id is to make onboarding simpler — users do not need to create a Spotify developer account. But the 5-user dev mode cap makes this approach non-viable for any software distributed publicly.
 
 **How to avoid:**
-Reframe the feature. "Synchronized listening rooms" means the host controls which track/embed is playing, not what timestamp is active. The useful version of the feature is:
+Require each user to provide their own Spotify client_id. The Spotify developer dashboard is free; creating an app takes approximately 2 minutes. BlackTape's onboarding should include step-by-step instructions with screenshots. Each user's client_id is entered once in Settings → Streaming and stored in Tauri's secure store.
 
-- Host publishes a Nostr event: `{ embed: { platform, url } }` (what to listen to, not where in the track)
-- Guests receive it and the embed switches to that URL — they start from the beginning
-- Host controls are: "play this", "switch to this track", "end session"
-- No seek synchronization — accept that guests start fresh when track switches
-
-This is feasible because it only requires posting and receiving Nostr events, not controlling iframe playback state. The NIP-53 Live Activities spec (kind:30311 + kind:1311) already describes exactly this pattern for streaming URLs.
+Separate concern: PKCE flow with a public `client_id` (no `client_secret`) is cryptographically sound. The `client_id` is not sensitive and can appear in source code or docs. What cannot be in source code is a `client_secret`. Use PKCE, never Client Credentials flow.
 
 **Warning signs:**
-- Any design doc that shows `currentPosition: 42.3` in the Nostr event payload
-- Tests for "guests seek to host position"
-- Platform-specific seek code for Bandcamp (no API exists)
+- Any config file, `.env`, or bundled constant containing a Spotify `client_id` that is not per-user
+- Any plan to commit `client_secret` to source (PKCE requires no secret — if you have a secret in scope, you are on the wrong flow)
+- Spotify auth works for the developer but fails for a test user
 
-**Phase to address:** Listening rooms phase — establish "what we control vs. what we cannot" before any implementation
+**Phase to address:**
+Spotify OAuth architecture phase. The per-user client_id requirement shapes the entire onboarding UX design.
 
 ---
 
-### Pitfall 5: Nostr Event Clock Skew Breaks Listening Room State Ordering
+### Pitfall 5: Existing Local Player and Streaming Embeds Will Compete — Audio Plays Simultaneously
 
 **What goes wrong:**
-Listening room state is built from Nostr events sorted by `created_at` timestamp. Nostr's `created_at` is set by the client (no server-authoritative clock). Users' system clocks can be minutes apart. A guest with a clock 3 minutes ahead can publish a "change track" event that appears to come after the host's "end session" event, causing the room to re-open after it was closed. Events arrive out of insertion order from relays. The last-event-wins logic breaks.
+BlackTape already has a local file player: `audio.svelte.ts`, `playerState`, `queueState`. Adding streaming embed players (Spotify iframe, YouTube IFrame, SoundCloud widget, Bandcamp iframe) creates multiple audio sources that can play at the same time. The existing `playerState.isPlaying` only tracks the local file player. Scenario: a local track is playing, the user navigates to an artist page, clicks the SoundCloud embed — both play simultaneously.
 
-Additionally, Nostr relay latency varies from <100ms to >2000ms depending on the relay. Mercury's current relay pool (`nos.lol`, `relay.damus.io`, `nostr.mom`, `relay.nostr.band`) are general-purpose relays with no latency guarantees. For a listening room where the host changes tracks and expects guests to switch within 1-2 seconds, relay latency of 2000ms creates noticeable desync.
+Streaming embeds run in their own sandboxed iframe context. They are not `<audio>` elements that the parent page controls directly.
 
 **Why it happens:**
-Nostr is designed for social content where clock skew of a few minutes is irrelevant. Listening room state changes (track switches) are more time-sensitive. The NIP-53 pattern assumes state changes are low-frequency (stream goes live/ends) not high-frequency (track changes every 3 minutes).
+The local player was designed as a single-source audio system. Streaming embeds are independent autonomous contexts. No coordination layer exists between them. This gap is easy to miss because in testing you usually test one source at a time.
 
 **How to avoid:**
-- Use a monotonic event counter tag (`["seq", "N"]`) in addition to `created_at`. State machine advances on the highest `seq`, not the most recent `created_at`. Host increments `seq` on every state change.
-- Design listening rooms so only the host can change track (guest events are chat messages, not state changes). This eliminates most clock skew issues — only the host's clock matters for sequencing.
-- Accept latency. Frame the room switch as "host queues next track; guests receive and switch within ~5 seconds." Do not promise sub-second sync.
-- Subscribe to all listening room state events with `closeOnEose: false` and deduplicate by `seq` number, not by event ID or timestamp.
+Implement a global `activeSource` state before any streaming source is added:
+
+```typescript
+type AudioSource = 'local' | 'spotify' | 'youtube' | 'soundcloud' | 'bandcamp' | null;
+export const activeSource = $state({ current: null as AudioSource });
+```
+
+Rules:
+- When a streaming embed starts playing, set `activeSource.current` and pause the local audio element (`audio.pause()`).
+- When the local player resumes, set `activeSource.current = 'local'` and send pause signals to any open embeds.
+- Each embed container watches `activeSource` and calls its pause API when another source becomes active.
+
+Pause APIs available:
+- SoundCloud Widget API: `widget.pause()` via `SC.Widget(iframe)` — full programmatic control
+- YouTube IFrame API: `player.pauseVideo()` — available when `enablejsapi=1` is in the embed URL
+- Spotify embed iframe: no external control API — destroying and recreating the iframe is the only way to stop it
+- Bandcamp embed iframe: no external control API — same as Spotify
+
+For Spotify and Bandcamp, the practical approach is to unmount the iframe when another source becomes active and remount when selected again.
 
 **Warning signs:**
-- State machine based purely on `created_at` ordering
-- Guest-controlled track switching
-- UI showing "now at 0:42" (position sync — revisit Pitfall 4)
+- Playing a local file then clicking a SoundCloud embed results in both playing simultaneously
+- Navigating away from a page with an embed results in audio continuing from the unmounted component (ghost audio)
+- `playerState.isPlaying` is true while a streaming embed is also active
 
-**Phase to address:** Listening rooms phase — define the state machine and event schema before writing any subscription code
+**Phase to address:**
+The `activeSource` coordination state must be implemented first, before any individual streaming service integration. It cannot be retrofitted without touching every service implementation.
 
 ---
 
-### Pitfall 6: Patreon / Ko-fi MusicBrainz Coverage Is Sparse — Feature Must Degrade Gracefully
+## Moderate Pitfalls
+
+### Pitfall 6: Spotify Token Refresh Race Condition — PKCE Rotation Invalidates Old Tokens Immediately
 
 **What goes wrong:**
-The plan is to surface artist support links (Patreon, Ko-fi) from MusicBrainz URL relationships. MusicBrainz has `patronage` and `crowdfunding` relationship types and already maps `patreon.com` and `ko-fi.com` URLs to those types (confirmed in `categorize.ts`). The pitfall is data coverage: MusicBrainz's community-maintained URL relationships are filled in primarily for well-known artists. The long tail of niche/underground artists — Mercury's core audience — will have these fields empty the vast majority of the time.
-
-If the UI shows a "Support This Artist" section that appears only for 2% of artists and is blank for 98%, users will either not notice it or assume the feature is broken for most artists.
-
-**Why it happens:**
-MusicBrainz coverage for mainstream artists is high; for niche artists it is low. No official statistics exist on the coverage rate of `patronage`/`crowdfunding` relationship types, but community observation confirms it is sparse for the underground/experimental artists Mercury targets.
+Spotify's PKCE flow uses refresh token rotation: each refresh issues a new access token AND a new refresh token, and the old refresh token is immediately invalidated. If two API calls fire concurrently when a token is near expiry (both detect `expires_at` has passed, both attempt a refresh), the second refresh uses an already-invalidated refresh token and receives a 400 error. The user appears to be logged out mid-session.
 
 **How to avoid:**
-The `support` category in `CategorizedLinks` is already implemented — artist pages already receive Patreon/Ko-fi links when MB has them. The feature is already done for artists who have the data.
+Implement a single-flight token refresh: use a module-level Promise that, if already in progress, is returned to subsequent callers rather than starting a new refresh. Only one refresh can be in flight at a time.
 
-The implementation risk is in how the UI handles the empty case. Do not add a dedicated "Support This Artist" card that renders only sometimes — it will look like a broken feature. Instead, integrate support links seamlessly into the existing links section where `streaming`, `social`, and `official` links already appear. The `support` category links appear when data exists; the section does not render when empty. This is already how the existing link categories work.
-
-The secondary risk: do not make a MB data-import run specifically to populate support links before shipping. MusicBrainz data is live-fetched. Coverage will improve organically as the MB community adds data.
-
-**Warning signs:**
-- UI mockup showing "Support This Artist" as a dedicated hero card
-- Any plan to pre-populate or cache support link data
-- "Show a CTA to add this artist to MB" — adds complexity with low value
-
-**Phase to address:** Sustainability phase — confirm the UI degrade gracefully before writing any new link components
+Store the refresh token in Tauri's secure store (not `localStorage` and not Svelte `$state`). `localStorage` is accessible to any injected JavaScript. Svelte reactive state gets serialized by dev tools and may appear in logs. The access token can be in memory (it expires in 1 hour). The refresh token must be in secure persistent storage.
 
 ---
 
-### Pitfall 7: Artist Stats Dashboard Creates MusicBrainz API Rate Limit Pressure
+### Pitfall 7: Bandcamp Embeds Are Not Universal — Artist Controls Streaming Per-Release
 
 **What goes wrong:**
-The artist stats dashboard shows discovery metrics. If the stats page triggers new MB API calls (for artist metadata, tag recounts, or discovery signals), and many users browse the stats page for many artists in quick succession, Mercury will hit MusicBrainz's rate limit (1 request per second per IP) across all concurrent users. MB rate limiting returns HTTP 503 with a `Retry-After` header. The existing code already enforces a 1100ms delay between MB requests in the `+server.ts` routes — but those routes don't run in the built Tauri app. The `+page.ts` fetch calls to MB have no rate limiting logic at all.
+Not all Bandcamp releases are embeddable. Artists can disable streaming for individual tracks or entire releases. Some artists restrict embeds to specific allowlisted domains via Bandcamp Pro "exclusive embeds." When streaming is disabled, the embed iframe loads but shows no playable audio. MusicBrainz provides a Bandcamp URL at the artist level, not the release level — you cannot know in advance whether any given release has embeds enabled.
 
-**Why it happens:**
-Each user's desktop app makes MB API calls independently (good — no shared rate limit problem for that). The issue arises if the stats dashboard fires multiple MB API calls per page render without client-side caching. Each page navigation that calls `fetch('https://musicbrainz.org/...')` multiple times rapidly will exhaust the 1 req/sec limit for that user's IP.
+Additionally, Bandcamp imposes per-track streaming limits for free accounts. Tracks may stop streaming after N plays from a given IP, showing a "buy to unlock" state.
 
 **How to avoid:**
-The stats dashboard should be derived from the local SQLite database (artist tag counts, uniqueness scores, discovery timestamps) — not from new MB API calls. MB API data (releases, links) is already fetched when the user visits the artist page; the stats page should reuse that cached data, not re-fetch from MB. Implement an in-memory or SQLite-backed cache for MB responses (24hr TTL, matching the intent of the dead `+server.ts` `CACHE_TTL = 86400`).
+Treat Bandcamp embeds as "try and fallback." Load the embed iframe with a reasonable timeout. If no playable audio state is detected within ~5 seconds, collapse the embed section and show "Visit on Bandcamp" with a direct link. Do not use any Bandcamp API to pre-check embeddability — the Bandcamp API is deprecated and not publicly accessible.
 
-**Warning signs:**
-- Stats dashboard that triggers `fetch('https://musicbrainz.org/...')` directly
-- Multiple simultaneous MB API calls on the same page (releases + links + tags)
-- No request deduplication when navigating back to the same artist quickly
-
-**Phase to address:** Artist tools phase — define the data sources for the stats dashboard before implementation (local SQLite = yes; fresh MB calls = no)
+For the source URL: use the artist's Bandcamp page URL (artist-level) and let Bandcamp's own player surface whatever is streamable. Do not attempt release-specific embed URLs.
 
 ---
 
-### Pitfall 8: AI Auto-News Generation Without Rate Limiting and Source Attribution Will Hallucinate
+### Pitfall 8: SoundCloud Widget postMessage Can Fail When Multiple Iframes Are Present
 
 **What goes wrong:**
-AI auto-news for artist pages means asking the local AI model (Qwen2.5 3B via llama.cpp sidecar) to generate "news" about an artist. A 3B parameter model with a knowledge cutoff has no reliable knowledge of recent music releases, tours, or events. It will confidently generate plausible-sounding but factually wrong "news" — tour dates that never happened, albums that don't exist, collaborations that are made up. This is the hallucination failure mode, which is a fundamental property of these models at this size.
-
-Additionally, the existing AI bio generation (`PROMPTS.artistSummary`) is specifically scoped to summarize available context (tags + country). "Auto-news" without a reliable factual input source is a different and more dangerous prompt pattern.
-
-**Why it happens:**
-The feature is easy to add syntactically — add a prompt, get text. But LLMs don't know what they don't know. Qwen2.5 3B will generate text that reads as news without having any actual news.
+The SoundCloud HTML5 Widget API uses `window.postMessage` between the parent page and the widget iframe. This is standard and generally works correctly. However, a known issue (soundcloud/soundcloud-javascript#15) causes "Failed to execute 'postMessage' on 'DOMWindow'" errors when another iframe is also present on the same page. If an artist page shows a Spotify embed iframe AND a SoundCloud widget simultaneously, the postMessage routing can conflict.
 
 **How to avoid:**
-Reframe "AI auto-news" as "AI-enhanced recent activity from MB data" — the AI summarizes actual MusicBrainz release data (dates, albums, release types) into a readable paragraph, rather than inventing news. The source of truth is the MB release list already fetched for the artist page. The AI converts structured data to natural language (low hallucination risk) rather than inventing content (high hallucination risk).
+Show only one streaming embed at a time on the artist page (the selected service, based on user priority). Do not render all four service iframes simultaneously. Use the user's service priority order to determine which embed to show; let the user switch sources explicitly via source buttons. This avoids the multi-iframe postMessage conflict and also solves the simultaneous audio problem from Pitfall 5.
 
-Alternatively, scope it to "AI-written description of recent releases" — "Released three albums in the past two years: [Album A] (2023), [Album B] (2024), [Album C] (2024)" generated from MB data. Add a "Based on MusicBrainz data" attribution so users know it reflects catalog data, not news.
-
-**Warning signs:**
-- Prompts asking the model "What is new with [artist]?" without providing actual data as context
-- No source attribution in the output
-- No factual grounding step before the generation prompt
-
-**Phase to address:** Artist tools phase — define the prompt pattern (data-grounded summary, not free-form news) before implementation
+When using the SoundCloud Widget JS API for pause/play control, bind `SC.Widget(iframe)` explicitly to the specific iframe element, not to a string selector that might match multiple iframes.
 
 ---
 
-### Pitfall 9: Self-Hosted Static Site Generator Output Has XSS Risk from Artist Data
+### Pitfall 9: Tauri CSP Is Currently Null — Adding It Later Will Break All Embeds
 
 **What goes wrong:**
-The artist tools plan includes a self-hosted static site generator — Mercury generates HTML files from artist data for the artist to host themselves. Artist data comes from MusicBrainz (artist name, tags, biography). Wikipedia biography text (fetched from the Wikipedia API) is HTML-fragment content. If this HTML is injected directly into generated site templates without sanitization, a Wikipedia article that contains `<script>` tags or event handler attributes would produce a generated site with XSS.
-
-Additionally, artist name and tag values from MusicBrainz can contain special characters (`<`, `>`, `&`, `"`) that must be HTML-escaped before insertion into templates. Failure to escape produces malformed HTML.
-
-**Why it happens:**
-Template literals in JavaScript (`\`<h1>${artist.name}</h1>\``) do not automatically escape HTML. This is the standard XSS vector in hand-rolled HTML generators. Developers forget because they are used to frameworks that escape by default.
+`tauri.conf.json` currently has `"csp": null`, meaning Tauri injects no Content Security Policy. All embed iframes work freely. If CSP is ever added (for security hardening), the default Tauri CSP blocks all `frame-src` from third-party origins. Every embed iframe — Spotify, YouTube, SoundCloud, Bandcamp — breaks instantly. The Spotify Web Playback SDK (if ever revisited) also requires `script-src` for `sdk.scdn.co`.
 
 **How to avoid:**
-- Use a templating engine that escapes by default (`handlebars`, `mustache`, `eta`) rather than string interpolation
-- For Wikipedia bio HTML: sanitize with a trusted library (`DOMPurify` on the Node side during generation, or the `sanitize-html` npm package) before inserting into templates
-- Define an allowlist of HTML tags permitted in the generated output (typically just `<p>`, `<a>`, `<strong>`, `<em>`, `<br>`)
-- Test with an artist whose name contains `<script>alert('xss')</script>` before shipping
+Do not add CSP without also adding the required `frame-src` and `script-src` entries. If CSP is introduced, the minimum required additions are:
 
-**Warning signs:**
-- Template string interpolation: `` `<h1>${artistName}</h1>` `` without a prior escape call
-- Wikipedia bio inserted with `.innerHTML` or unescaped template rendering
-- No sanitization step in the generation pipeline
+```
+frame-src https://open.spotify.com https://www.youtube-nocookie.com https://w.soundcloud.com https://*.bandcamp.com;
+```
 
-**Phase to address:** Artist tools phase (site generator) — establish the template and sanitization approach before writing the generator
+Keep `"csp": null` for now — embeds are central to the product, and null CSP is appropriate while no server-side secrets are handled in the WebView. Document the required additions so if CSP is added in future it does not silently break everything.
 
 ---
 
-### Pitfall 10: ActivityPub Actor Private Key Must Not Live in the Desktop App
+### Pitfall 10: MusicBrainz Artist URLs Are Artist-Level — Track Resolution Is Not Possible Without Spotify API Access
 
 **What goes wrong:**
-ActivityPub actors require an RSA keypair. The private key is used to sign outgoing HTTP requests when pushing Create activities to follower inboxes. If the private key is stored in the desktop app (in the Tauri store, in IndexedDB, or in a local file), an attacker who compromises the user's machine can extract the private key and impersonate that actor on the Fediverse — posting arbitrary content to all followers, forever, until followers manually unfollow.
-
-Additionally, the desktop app cannot send signed HTTP requests to remote Mastodon inboxes because it is behind NAT (see Pitfall 1). So the private key in the desktop app is both insecure and non-functional.
-
-**Why it happens:**
-Mercury already uses Nostr keypairs stored locally (IndexedDB via NDK). It is tempting to apply the same pattern to ActivityPub. But Nostr keys and AP keys have different threat models: Nostr is used to sign social content; AP keys are used to push content to external servers. The push requires the key to be on a reachable server.
+MusicBrainz provides URLs like `https://open.spotify.com/artist/4Z8W4fKeB5YxbusRsdQVPb`. These are artist-level pages, not track or album pages. Mapping a specific MusicBrainz release to a Spotify album ID requires the Spotify Search API (`GET /search?type=album&q=...`), which is a Web API endpoint. As of the February 2026 changes, Spotify Web API access in development mode is restricted — and in any case requires valid OAuth tokens for the current user's account.
 
 **How to avoid:**
-The AP private key must live on the serverless infrastructure (Cloudflare Worker secrets, Netlify environment variables). It is generated once during setup and stored as an encrypted environment variable. The desktop app never sees the private key. The desktop app produces the content; the serverless layer signs and delivers it. This is the correct architecture and follows the $0 infrastructure constraint (Cloudflare secrets are free).
+Design streaming at the artist level, not the track level. "Play from Spotify" opens the Spotify artist embed, which shows the artist's popular tracks. For track-specific playback, the user interacts with the Spotify embed's own UI. This matches what the existing `spotifyEmbedUrl()` function already does correctly.
 
-**Warning signs:**
-- Any code that generates or stores an RSA keypair in the Tauri app
-- Any code that imports a private key from a Tauri store to sign HTTP requests
-- Any plan to sign AP activities client-side in the SvelteKit frontend
-
-**Phase to address:** ActivityPub phase — establish key architecture (serverless-only) as the first design decision
+Do not plan a "find this specific track on Spotify by MusicBrainz release ID" resolution flow — it requires Spotify API calls that depend on auth, quota mode, and rate limits. Accept the artist-level UX.
 
 ---
 
-### Pitfall 11: Pre-Commit Test Gate Will Not Catch Tauri Runtime Failures from New Routes
+### Pitfall 11: Spotify Developer Policy — Open Source Distribution Creates Real Risks
 
 **What goes wrong:**
-Mercury's pre-commit gate runs `npm run check` and `npm run build` (72 checks, code-only mode). Both will pass for any new `+server.ts` route, any new SvelteKit load function, and any new TypeScript module — regardless of whether they work in the built Tauri binary. The gate confirms: TypeScript compiles, SvelteKit build succeeds, Rust compiles. It does not confirm: "this feature works in the running Tauri app."
+Spotify's Developer Terms (v10, effective May 2025) state that Security Codes (client_id, client_secret) "must be embedded in your SDA in a secure manner not accessible by third parties" and that you cannot "sell, transfer, sublicense or otherwise disclose your account or Security Codes to any other party." Publishing a public Git repository with a bundled Spotify client_id and secret is arguably a violation of the "not accessible by third parties" requirement.
 
-For v1.3 features that involve new data flows (AP actor JSON generation, listening room state, stats dashboard), the code-only gate is necessary but not sufficient. Bugs that only manifest at runtime in the Tauri app — wrong API responses, missing Tauri plugin permissions, NDK connection failures in listening rooms, iframe embed URLs that 404 — will pass the gate and ship.
+The PKCE flow requires no `client_secret` — so for PKCE-only implementations, the client_id alone is in the code. The client_id is a public identifier (analogous to an OAuth app ID) and is generally considered safe to expose. This is community consensus and is how all public PKCE-based Spotify integrations work. The risk is low for client_id alone in PKCE flow.
 
-**Why it happens:**
-The 12 Tauri E2E tests require a running app and are deliberately excluded from the pre-commit gate (they are in the full suite). This was an accepted design decision for v1.2. For v1.3, each new major feature will have runtime behaviors that are not covered by existing E2E tests.
+The real risk: if a `client_secret` accidentally ends up in source code (from a developer testing Client Credentials flow and committing the result), the app could be terminated and the developer account flagged.
+
+Additionally, if the bundled client_id is used by many users and somehow attracts Spotify's attention, Spotify can terminate the client_id at any time without notice, breaking Spotify integration for all users instantly. With the per-user client_id model (Pitfall 4), this risk is distributed.
 
 **How to avoid:**
-After each v1.3 phase, add at least 2-3 Tauri E2E tests to the manifest (marked `requiresApp: true`). These tests run on the full suite, not the pre-commit gate. They verify that the new feature is reachable and renders correctly in the running app. The pre-commit gate remains fast; the full suite covers runtime behavior.
-
-Specifically:
-- AP phase: test that AP actor JSON is generated with correct `@context` and `type` fields
-- Listening rooms: test that a room can be created and the host embed loads
-- Stats dashboard: test that stats page renders with data
-- Support links: test that the `support` category links appear when MB data has them
-
-**Warning signs:**
-- "The build passes" being used as evidence that a feature works
-- New phases shipping with zero new E2E test entries in the manifest
-- Existing E2E tests not updated when routes or component structure changes
-
-**Phase to address:** Every v1.3 phase — add E2E test entries to the manifest as part of phase completion criteria
+- Use PKCE only — no `client_secret` anywhere
+- Per-user client_id (each user creates their own Spotify app) — distributes termination risk
+- If a single developer client_id is ever used for development/testing, ensure it is in `.env.local` (gitignored), never committed
+- Add a pre-commit hook check for Spotify client credential patterns in source files
 
 ---
 
 ## Technical Debt Patterns
 
-Shortcuts that seem reasonable but create long-term problems.
-
 | Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
 |----------|-------------------|----------------|-----------------|
-| Serving AP from the Tauri app | No extra infrastructure needed | Unreachable — AP is silently broken; users can never follow | Never |
-| Adding `+server.ts` routes for in-app use | Familiar SvelteKit pattern | Route is dead in built binary; silent failure at runtime | Never for in-app use; RSS feed routes exist for external web only |
-| Writing HTTP signature code from scratch | No library dependency | Mastodon silently rejects every signed request; undebuggable | Never — use a library |
-| Storing AP private key in Tauri store | Consistent with Nostr key pattern | Key exposed to machine compromise; key unusable for server-to-server signing anyway | Never |
-| "Synchronized" listening rooms with position data | Feature sounds impressive | Technically impossible across Bandcamp/Spotify/SoundCloud iframes | Never — reframe to track-switch-only coordination |
-| AI news generation without factual grounding | Easy to implement | Confident hallucinations presented as news; trust damage | Never for artist facts — always ground in MB data |
-| Artist stats that re-fetch MB data | Always fresh | Rate limit pressure; 1100ms delays per request; existing MB data is already fetched | Acceptable only if data is not already available locally |
-| HTML template string interpolation without escaping | Simple to write | XSS in generated sites | Never in HTML output — always use an escaping template engine |
+| Bundled shared Spotify client_id | Simpler user onboarding | Breaks at user #6; ToS grey area; single point of failure | Never for public release |
+| No active-source coordination (just implement one service at a time) | Faster first implementation | Ghost audio; simultaneous playback; impossible to retrofit cleanly | Never — build coordination layer first |
+| Only test YouTube in dev (not production builds) | Faster iteration | Error 153 ships to all users silently | Never — always smoke test production build |
+| Spotify access token in localStorage | Zero-friction implementation | Token readable by any injected JS | Never — use Tauri secure store |
+| `csp: null` stays as-is | All embeds work freely | Any XSS has no CSP mitigation | Acceptable for now; document what to add if CSP ever enabled |
+| Load all 4 service iframes simultaneously on artist page | All options visible immediately | Performance hit; postMessage conflicts; simultaneous audio | Never — lazy-load, one active iframe at a time |
 
 ---
 
 ## Integration Gotchas
 
-Common mistakes when connecting v1.3 features to external systems.
-
 | Integration | Common Mistake | Correct Approach |
 |-------------|----------------|------------------|
-| ActivityPub + Mastodon | Omitting the `Digest` header on POST requests | Always include `Digest: SHA-256=<base64-encoded-body-hash>` on any POST |
-| ActivityPub + Mastodon | `keyId` URL in signature does not resolve to the actor's public key | `keyId` must be a dereferenceable URL that returns the Actor JSON with `publicKey.publicKeyPem` |
-| ActivityPub + Mastodon | Date header more than 12 hours old (serverless function clock drift) | Ensure the serverless function's clock is synchronized; always use UTC; Cloudflare Workers use authoritative UTC |
-| MusicBrainz + Support Links | Expecting Patreon/Ko-fi on every artist | These fields are sparse; UI must render zero links as zero links, not as an error state |
-| Nostr (NDK) + Listening Rooms | Multiple subscriptions to the same room accumulating | Use the existing `activeSubscriptions` Set pattern; call the cleanup function returned by `subscribeToRoom` on component destroy |
-| Nostr + Clock Skew | Sorting room state by `created_at` alone | Add a `seq` monotonic counter tag; advance state on highest `seq`, not latest timestamp |
-| Bandcamp Embed + Listen Room Sync | Calling `postMessage` on a Bandcamp iframe | Bandcamp has no postMessage API; no seek or state control is possible |
-| SvelteKit adapter-static + AP routes | Writing `+server.ts` for AP actor responses | These routes are dead in the built Tauri app; AP serving must be a separate Cloudflare Worker |
-| AI (llama.cpp sidecar) + Artist News | Prompting "what is new with {artist}" | Model has a training cutoff and hallucinations; always provide MB data as context in the prompt |
-| Static Site Generator + Wikipedia HTML | Inserting raw Wikipedia API HTML into templates | Wikipedia HTML may contain inline scripts and event handlers; always sanitize before inserting |
+| Spotify OAuth | `http://localhost:PORT` as redirect_uri | `http://127.0.0.1/callback` or `blacktape://callback` via deep-link plugin |
+| Spotify OAuth | Committing `client_secret` to source | PKCE flow — no client_secret needed or used |
+| Spotify OAuth | Single bundled client_id for all users | Per-user client_id, entered in Settings onboarding |
+| Spotify Web Playback SDK | Implementing full SDK integration | Widevine CDM not available in WebView2 — use embed iframe only |
+| YouTube iframe | Only testing in `npm run tauri dev` | Always test in production build; Error 153 only manifests in production |
+| YouTube iframe | Assuming `youtube-nocookie.com` avoids Error 153 | It does not; the issue is at the Referer/protocol level, not the domain |
+| SoundCloud widget | Multiple SC iframes on same page | One active iframe at a time; destroy others when switching sources |
+| Bandcamp embed | Assuming all Bandcamp artists allow embedding | "Try and fallback" — detect no-audio state and show direct link |
+| Token refresh | Two concurrent API calls both attempt refresh | Single-flight mutex on refresh — second caller waits for in-progress refresh |
+| Audio coordination | Adding pause calls as an afterthought | activeSource state must be the architectural foundation, not a patch |
 
 ---
 
 ## Performance Traps
 
-Patterns that work at small scale but fail as usage grows.
-
 | Trap | Symptoms | Prevention | When It Breaks |
 |------|----------|------------|----------------|
-| Listening room subscribing to all kind:40 events to find Mercury rooms | Room list loads slowly as global Nostr event count grows | Use `#t: ['mercury']` filter in every subscription (already implemented in `loadRooms`); ensure this stays in place for listening room subscriptions | At ~10,000 Mercury-tagged events |
-| Stats dashboard re-fetching MB artist data on every visit | Stats page is slow; MB rate limit hit on rapid browsing | Cache MB responses in SQLite (24hr TTL) or in-memory `Map` per session | Immediately — 1 user rapidly browsing 10 artists hits 503 |
-| ActivityPub actor JSON regenerated on every follower check | Serverless function CPU time spikes | Pre-generate actor JSON as static files; only the inbox endpoint needs dynamic handling | At ~100 follow requests/hour |
-| AI auto-news generation blocking artist page render | Page appears stuck during LLM inference | Generate news in a background process; render page from existing data, progressively enhance with AI content | Immediately — llama.cpp 3B inference takes 2-10 seconds |
-| Nostr room subscriptions never closed on navigation | NDK subscription count grows with each room visited; memory leak | Return and call cleanup function from `subscribeToRoom` in `onDestroy`; test by navigating between 10 rooms | At ~5 rooms visited in a session |
+| Loading all 4 service iframes on artist page load | Slow page; 4 network requests; postMessage conflicts | Lazy-load: only load the iframe for the user's top-priority service; load others on demand | Immediately on any artist page |
+| Polling for SoundCloud play state | CPU and battery drain | Use SoundCloud Widget API event callbacks (`SC.Widget.Events.PLAY`) | Immediately |
+| Checking Spotify token expiry on every function call | Redundant comparisons; missed race condition | Check locally against stored `expires_at`; refresh only within 60 seconds of expiry | At scale |
+| Attempting to detect Bandcamp embed failure via timing | Race conditions; false positives on slow connections | Use iframe `load` event + DOM content inspection; not a fixed timeout | Varies by network |
 
 ---
 
 ## Security Mistakes
 
-Domain-specific security issues beyond general web security.
-
 | Mistake | Risk | Prevention |
 |---------|------|------------|
-| AP private key stored in Tauri/IndexedDB | Machine compromise = actor impersonated; key extracted offline | AP private key lives exclusively in Cloudflare Worker secrets; never in the desktop app |
-| Generating AP actor JSON with MBID in the stable URL, then allowing artist MBID to change | Fediverse followers lose the actor permanently (the ID must never change) | Use a Mercury-internal stable ID for AP actors, not the MBID; MB MBIDs are stable but this removes the dependency |
-| Site generator template injection via artist name | XSS in generated HTML files | Escape all MusicBrainz data before template insertion; use a library with auto-escaping |
-| Listening room that allows any pubkey to post state change events | Malicious user can hijack the room's embed for all guests | Gate state-change events on the host's pubkey; reject state changes from non-host pubkeys in the UI |
-| Nostr DM private key reused for AP HTTP signatures | If Nostr key is compromised, AP actor is also compromised | Use independent keypairs for Nostr (existing) and ActivityPub (new); never share keys across protocols |
+| Spotify access token in localStorage | Readable by any injected JS; survives browser sessions | Store in memory only (1-hour lifespan anyway); use Tauri secure store for refresh token |
+| Spotify refresh token in Svelte `$state` | Reactive state serializes to dev tools; may appear in logs | Never put tokens in reactive state; keep refresh token in Tauri secure store (`tauri-plugin-store`) |
+| Spotify `client_secret` in source code | Account termination if repo is public | PKCE flow — no secret required. If accidentally committed, rotate the Spotify app immediately |
+| Loading iframe content from user-supplied URLs | SSRF / open redirect in iframe context | Only load iframes from Spotify/YouTube/SoundCloud/Bandcamp domains; validate URL origin before constructing embed URL |
 
 ---
 
 ## UX Pitfalls
 
-Common user experience mistakes for these specific features.
-
 | Pitfall | User Impact | Better Approach |
 |---------|-------------|-----------------|
-| "Support This Artist" hero card that is empty 98% of the time | Users think the feature is broken; empty state looks like a bug | Render support links inline in the existing links section; section disappears when empty |
-| Listening room with a "Sync" button that doesn't work on Bandcamp | Users press Sync; nothing happens; frustration | Do not show a sync button; the room model is "host queues track; guests switch"; no explicit sync action |
-| ActivityPub "Follow on Mastodon" button that requires manual copy-paste | High friction; few users complete the action | Pre-fill the Mastodon search field by constructing a URL like `https://mastodon.social/authorize_interaction?uri=@actor@domain`; opens Mastodon search |
-| AI-generated news with no attribution | Users don't know the content is AI-generated; trust damage when it's wrong | Always label AI-generated content; "AI summary based on MusicBrainz catalog data" |
-| Backer credits screen that shows no content until a backer is added | Looks broken at launch | Ship with "Mercury is free and open. Help keep it that way — [donate link]" as static content; backer names appear below when they exist |
+| Spotify onboarding asks for "Client ID" with no explanation | User abandons setup | Guided onboarding: step-by-step with screenshots of Spotify developer dashboard; explain what the client_id is and that it is free |
+| YouTube player blank with no explanation when Error 153 occurs | User thinks the app is broken | Catch Error 153 in IFrame API `onError`, replace player area with "Watch on YouTube" button |
+| Bandcamp embed loads but no audio available | User thinks embed is broken | 5-second load timeout: if no playable content, show "Not available via embed — visit Bandcamp" with direct link |
+| Two audio sources playing simultaneously | Confusing, jarring | Active-source coordination: new source automatically pauses previous source |
+| Service badge on player bar shows wrong service | "Playing from Spotify" while SoundCloud is audible | Player badge must be derived from the same `activeSource` state that controls pause/play |
+| No indication Spotify Premium is required | Non-premium user authenticates successfully but gets no audio from embed | Detect account type after auth; show "Spotify Premium required for full playback" message before showing the embed for playback |
+| Incremental source appearance (sources appear one by one as resolution runs) | Confusing — user sees state flickering | Resolve all available sources before rendering; show a loading state, then all sources at once |
 
 ---
 
 ## "Looks Done But Isn't" Checklist
 
-Things that appear complete but are missing critical pieces.
-
-- [ ] **ActivityPub Actor JSON:** Confirm `id`, `inbox`, `outbox`, `publicKey`, `following`, `followers` are all present and resolve correctly — missing any one of these causes Mastodon to reject the actor silently
-- [ ] **ActivityPub WebFinger:** Confirm `Content-Type: application/jrd+json` is set — without it, Mastodon's actor lookup fails even if the JSON is correct
-- [ ] **HTTP Signatures:** Confirm a live Mastodon account can follow the AP actor successfully end-to-end — not just that the actor JSON looks right
-- [ ] **Listening Room Cleanup:** Confirm `subscribeToRoom` cleanup function is called on every route that opens a room; navigate away and back 5 times; verify subscription count does not grow
-- [ ] **Support Links Degrade:** Verify artist page with no MB support links renders correctly (no empty section, no broken UI)
-- [ ] **AI News Grounding:** Verify the AI news prompt includes actual MB release data as context, not just the artist name
-- [ ] **Stats Dashboard Data Source:** Confirm stats are derived from local SQLite (uniqueness scores, tag counts, discovery signals) not from new MB API calls
-- [ ] **Site Generator Escaping:** Generate a site for an artist whose name contains `"`, `<`, `>`, `&`; verify HTML is valid and unescaped characters do not appear
-- [ ] **Pre-commit Gate Still Passes:** After every new file/route/module is added, confirm `node tools/test-suite/run.mjs --code-only` passes all 72 checks
-- [ ] **Tauri E2E Tests Added:** Confirm new manifest entries exist for every major v1.3 feature before marking each phase complete
+- [ ] **Spotify OAuth:** Works in a production build (not just `npm run tauri dev`)? Redirect callback intercepted correctly?
+- [ ] **Spotify redirect_uri:** Registered URI uses `127.0.0.1` or custom protocol — never `localhost`?
+- [ ] **Spotify client_id:** Per-user (not bundled)? No `client_secret` anywhere in source or build artifacts?
+- [ ] **YouTube embeds:** Tested in a production `.msi` install? Error 153 fallback renders a "Watch on YouTube" button?
+- [ ] **Audio conflict:** Played a local file, then clicked a streaming embed — only one plays?
+- [ ] **Ghost audio:** Navigated away from an artist page while an embed was playing — audio stopped?
+- [ ] **Spotify token storage:** Refresh token in Tauri secure store (not localStorage or Svelte state)?
+- [ ] **Bandcamp streaming disabled:** Tested with an artist whose Bandcamp has streaming disabled — fallback renders correctly?
+- [ ] **PKCE only:** `npm run build` artifact contains no `client_secret` string?
+- [ ] **CSP documented:** If `csp: null` is ever changed, required `frame-src` entries are documented in a comment in `tauri.conf.json`?
 
 ---
 
 ## Recovery Strategies
 
-When pitfalls occur despite prevention, how to recover.
-
 | Pitfall | Recovery Cost | Recovery Steps |
 |---------|---------------|----------------|
-| AP serving from desktop discovered after implementation | HIGH | Extract AP serving to a Cloudflare Worker; repoint actor `id` to new domain; all existing follows break (actor ID changed) |
-| +server.ts route that silently fails in built app | MEDIUM | Move API call logic to +page.ts load function (direct fetch); or wrap in a Tauri command if server-side logic is needed |
-| HTTP signatures rejected by Mastodon | MEDIUM | Add debug logging to the signing function; compare against Mastodon's example signatures; use `activitypub_federation` Rust crate as reference |
-| Listening room with position sync shipped before embed API research | MEDIUM | Remove position sync; reframe to track-switch-only; update UI copy |
-| AI news hallucination complaint | LOW-MEDIUM | Add "Based on MusicBrainz data" attribution; update prompt to be data-grounded; do not need to remove the feature |
-| XSS in site generator output | HIGH | Hotfix: add HTML escaping/sanitization; regenerate affected sites; notify users whose sites were generated before the fix |
-| AP private key compromise (key stored in desktop app) | HIGH | Rotate key: generate new keypair, update actor JSON, wait for Mastodon instances to re-fetch actor key; existing signed content cannot be retroactively invalidated |
+| Spotify SDK (Widevine fails) discovered after implementation | HIGH — full rearchitecture | Replace SDK with `open.spotify.com/embed/*` iframe; remove SDK loading code and state management; re-implement around embed |
+| YouTube Error 153 ships without fallback | LOW — add fallback only | Add `onError` handler with code 153 detection; render "Watch on YouTube" button; ship as patch |
+| `localhost` redirect_uri rejected after deployment | MEDIUM — Spotify dashboard update + app config change | Update registered URI in Spotify dashboard to `127.0.0.1` or custom protocol; update app config; ship patch |
+| Bundled client_id hits 5-user limit | HIGH — UX rethink required | Implement per-user client_id entry flow; communicate to existing users; ship update |
+| Simultaneous audio discovered after multiple services ship | MEDIUM — architectural retrofit | Add `activeSource` state; wire pause calls into each service component; regression-test all services |
+| Spotify client_id terminated by Spotify | MEDIUM (per-user model) or HIGH (shared model) | Per-user: only that user needs a new client_id. Shared: all users broken simultaneously — ship app update with onboarding for per-user setup |
 
 ---
 
 ## Pitfall-to-Phase Mapping
 
-How roadmap phases should address these pitfalls.
-
 | Pitfall | Prevention Phase | Verification |
 |---------|------------------|--------------|
-| AP served from desktop (Pitfall 1) | ActivityPub phase — first design decision | A Mastodon account can look up and follow an actor; inbox receives Follow POST |
-| +server.ts dead in built app (Pitfall 2) | Every phase — no new +server.ts for in-app use | `npm run build` + `tauri build` + run app; all features work in binary |
-| HTTP signatures mandatory (Pitfall 3) | ActivityPub phase — use library, test with live Mastodon | A live Mastodon account receives a `Create` activity from Mercury |
-| Embed sync impossible (Pitfall 4) | Listening rooms phase — establish track-switch-only model before coding | No code references `currentPosition`; no seek calls to any embed API |
-| Nostr clock skew (Pitfall 5) | Listening rooms phase — define event schema with seq counter | Room state advances correctly when two events arrive with reversed timestamps |
-| Sparse MB support link coverage (Pitfall 6) | Sustainability phase — verify UI degrades correctly | Artist page with no support links has no empty UI component |
-| MB rate limit pressure (Pitfall 7) | Artist tools phase — define stats data sources as SQLite-first | Stats dashboard makes zero MB API calls on page render |
-| AI hallucination in news (Pitfall 8) | Artist tools phase — establish data-grounded prompt pattern | AI news prompt is audited to confirm MB release data is included as context |
-| XSS in site generator (Pitfall 9) | Artist tools phase (site generator) — use escaping template engine | Test with `<script>` in artist name; generated HTML is escaped |
-| AP private key in desktop app (Pitfall 10) | ActivityPub phase — first design decision (key on serverless only) | No RSA key generation code exists in the SvelteKit or Rust layer |
-| Pre-commit gate misses runtime failures (Pitfall 11) | Every v1.3 phase — add E2E tests to manifest | At least 2 new `requiresApp` manifest entries per phase |
+| Spotify SDK Widevine failure (P1) | Spotify architecture decision — first action | Architecture decision recorded: embed iframe only, no SDK |
+| YouTube Error 153 (P2) | YouTube embed implementation | Production build tested; Error 153 fallback renders correctly |
+| Spotify OAuth localhost rejection (P3) | Spotify OAuth implementation | Auth flow completes in production build; redirect URI is `127.0.0.1` or deep-link |
+| Spotify client_id quota (P4) | Spotify onboarding UX design | Onboarding UI prompts user for their own client_id; no bundled ID in source |
+| Audio conflict (P5) | Streaming coordination foundation — before any service | Local track + SoundCloud embed tested; only one plays |
+| Token refresh race condition (P6) | Spotify token management | Two concurrent API calls during expiry simulated; only one refresh fires |
+| Bandcamp unavailability (P7) | Bandcamp embed implementation | Artist with streaming disabled tested; fallback link renders |
+| SoundCloud postMessage conflict (P8) | SoundCloud embed implementation | Only one iframe active at a time; widget API binds to correct element |
+| CSP breaking embeds (P9) | Only if CSP is ever added | Smoke test all embeds after any CSP change |
+| Artist-level URL limitation (P10) | Spotify embed implementation | Embed shows artist page; no Spotify Search API calls in codebase |
+| ToS / client_secret risk (P11) | Spotify OAuth architecture | Pre-commit check for credential patterns; PKCE confirmed as sole auth method |
 
 ---
 
 ## Sources
 
-- ActivityPub W3C specification — inbox requirement for follow/push: https://www.w3.org/TR/activitypub/
-- Paul Kinlan — "Adding ActivityPub to your static site" — confirmed inbox cannot be static: https://paul.kinlan.me/adding-activity-pub-to-your-static-site/
-- Maho.dev — ActivityPub static site guide part 3 — content-type pitfalls, dual id/url problem, signing requirements: https://maho.dev/2024/02/a-guide-to-implementing-activitypub-in-a-static-site-or-any-website-part-3/
-- Mastodon ActivityPub documentation — actor requirements, inbox behavior: https://docs.joinmastodon.org/spec/activitypub/
-- Mastodon security documentation — HTTP signature requirements, RSA-SHA256, 12-hour date window: https://docs.joinmastodon.org/spec/security/
-- Tauri+SvelteKit +server.ts gap — community report confirming server routes dead in built app: https://github.com/tauri-apps/tauri/discussions/6423
-- Tauri official docs — SvelteKit setup confirms adapter-static, server routes not available: https://v2.tauri.app/start/frontend/sveltekit/
-- Nostr NIP-53 Live Activities specification — kind:30311 host/guest model, presence via kind:10312: https://github.com/nostr-protocol/nips/blob/master/53.md
-- SoundCloud Widget API — async postMessage, no seek timestamp guarantee: https://developers.soundcloud.com/docs/api/html5-widget
-- MusicBrainz artist-URL relationship types — patronage UUID `6f77d54e`, crowdfunding UUID `93883cf6`: https://musicbrainz.org/relationships/artist-url
-- Direct code review: `D:/Projects/Mercury/src/routes/artist/[slug]/+page.ts` — confirms artist page already calls MB directly, bypassing +server.ts
-- Direct code review: `D:/Projects/Mercury/src/lib/embeds/categorize.ts` — confirms `patreon.com` and `ko-fi.com` already in friendly name map; `patronage` → `support` category already mapped
-- Direct code review: `D:/Projects/Mercury/src/lib/comms/rooms.svelte.ts` — confirms `#t: ['mercury']` filter, `activeSubscriptions` Set dedup pattern, and cleanup function return pattern already established for NIP-28 rooms
+- [Spotify Web Playback SDK GitHub #41 — "Failed to initialize player" in Electron](https://github.com/spotify/web-playback-sdk/issues/41)
+- [Spotify Web Playback SDK GitHub #7 — Electron/desktop support discussion](https://github.com/spotify/web-playback-sdk/issues/7)
+- [Spotify Web Playback SDK GitHub #2 — Platform does not support requestMediaKeySystemAccess](https://github.com/spotify/web-playback-sdk/issues/2)
+- [Spotify developer blog — Increasing security requirements (Feb 2025)](https://developer.spotify.com/blog/2025-02-12-increasing-the-security-requirements-for-integrating-with-spotify)
+- [Spotify developer blog — OAuth Migration reminder (Oct 2025)](https://developer.spotify.com/blog/2025-10-14-reminder-oauth-migration-27-nov-2025)
+- [Spotify developer blog — Update on developer access (Feb 2026)](https://developer.spotify.com/blog/2026-02-06-update-on-developer-access-and-platform-security)
+- [Spotify docs — Redirect URIs](https://developer.spotify.com/documentation/web-api/concepts/redirect_uri)
+- [Spotify docs — Quota modes (5-user dev limit, 250k MAU for extended access)](https://developer.spotify.com/documentation/web-api/concepts/quota-modes)
+- [Spotify docs — Web API Changelog February 2026 (restricted endpoints)](https://developer.spotify.com/documentation/web-api/references/changes/february-2026)
+- [Spotify docs — Web Playback SDK (supported browsers, EME, HTTPS requirements)](https://developer.spotify.com/documentation/web-playback-sdk)
+- [Spotify Developer Terms v10 (Security Code requirements, distribution)](https://developer.spotify.com/terms)
+- [TechCrunch — Spotify changes dev mode API Feb 2026 (5-user cap, Premium requirement)](https://techcrunch.com/2026/02/06/spotify-changes-developer-mode-api-to-require-premium-accounts-limits-test-users/)
+- [Tauri GitHub #14422 — YouTube IFrame Error 153 in production (tauri:// protocol)](https://github.com/tauri-apps/tauri/issues/14422)
+- [Simon Willison's TIL — YouTube Error 153 cause (Referer policy)](https://simonwillison.net/2025/Dec/1/youtube-embed-153-error/)
+- [CORS Proxy blog — YouTube Error 153 in WebView environments](https://corsproxy.io/blog/fix-youtube-error-150-153-webview/)
+- [Tauri docs — CSP](https://v2.tauri.app/security/csp/)
+- [Tauri docs — Deep Linking plugin (custom protocol OAuth)](https://v2.tauri.app/plugin/deep-linking/)
+- [SoundCloud Widget API docs](https://developers.soundcloud.com/docs/api/html5-widget)
+- [SoundCloud JavaScript GitHub #15 — postMessage conflict with multiple iframes](https://github.com/soundcloud/soundcloud-javascript/issues/15)
+- [Bandcamp help — Streaming limits](https://get.bandcamp.help/hc/en-us/articles/23020694060183-What-are-streaming-limits-on-Bandcamp)
+- [Bandcamp help — Creating an embedded player](https://get.bandcamp.help/hc/en-us/articles/23020711574423-How-do-I-create-a-Bandcamp-embedded-player)
+- [Spotify community — DRM requires secure context (HTTPS)](https://community.spotify.com/t5/Spotify-for-Developers/DRM-might-not-be-available-from-unsecure-contexts/td-p/5972536)
+- [Spotify community — INVALID_CLIENT with custom URI schemes](https://community.spotify.com/t5/Spotify-for-Developers/INVALID-CLIENT-Insecure-redirect-URI-using-custom-URI/td-p/6919036)
+- Direct codebase review: `src/lib/embeds/spotify.ts`, `src/lib/embeds/youtube.ts`, `src/lib/player/state.svelte.ts`, `src/lib/player/queue.svelte.ts`, `src-tauri/tauri.conf.json`, `src-tauri/capabilities/default.json`
 
 ---
-*Pitfalls research for: Mercury v1.3 "The Open Network" — ActivityPub outbound, Nostr listening rooms, artist tools, sustainability links added to existing Tauri 2.0 + SvelteKit + NDK desktop app*
-*Researched: 2026-02-24*
+*Pitfalls research for: Multi-source streaming integration (Spotify, YouTube, SoundCloud, Bandcamp) added to existing Tauri 2.0 + Svelte 5 desktop app (BlackTape / Mercury v1.6)*
+*Researched: 2026-02-26*
