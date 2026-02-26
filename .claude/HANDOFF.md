@@ -1,50 +1,78 @@
 # Work Handoff — 2026-02-26
 
 ## Current Task
-Press screenshots — script is built, needs one more run with `npm run tauri dev`
-
-## Context
-Project was renamed from Mercury to BlackTape this session. All rename work is committed (b7e5917). Screenshots were attempted but failed due to WebView2 routing — fix is known and simple.
+Planning complete. Ready to execute Phase 28.
 
 ## What Was Done This Session
-- ✅ Renamed project: Mercury → BlackTape
-  - `src/lib/config.ts` — PROJECT_NAME, BLACKTAPE_PUBKEY
-  - `src-tauri/tauri.conf.json` — productName, identifier (`com.blacktape.app`), window title
-  - 20+ user-facing strings across all routes and components
-  - `static/logo.png` + `static/favicon.svg` copied from `/d/Projects/blacktapesite/static/`
-  - Test manifest P16-04 updated for BLACKTAPE_PUBKEY
-- ✅ 164 tests passing, 0 errors
+- ✅ Logo replaced on home page (`src/routes/+page.svelte`) — now uses `/logo.png` instead of text h1
+- ✅ Tagline updated to "Dig deeper." (`src/lib/config.ts`)
+- ✅ GitHub #34 closed — name is BlackTape
+- ✅ v1.5 plan fully rewritten (`.planning/v1.5-PLAN.md`)
+- ✅ ROADMAP.md updated with all v1.5 phases + ship marker
 
-## Screenshots Status
-**Script:** `tools/take-press-screenshots.mjs`
-**Problem:** Playwright's `page.goto()` and `window.location.href` both fail in the debug binary CDP context — WebView2 intercepts navigation and returns 404.
-**Root cause:** The debug binary needs the full `npm run tauri dev` environment (which proxies WebView navigation through Vite). Launching the binary standalone doesn't wire up routing correctly.
+## v1.5 Plan Summary
 
-**Fix (next session):**
-1. Run `npm run tauri dev` in a terminal (starts Vite + Tauri together)
-2. Once the app window is open, run: `node tools/take-press-screenshots.mjs`
-3. The script will connect via CDP and navigate through all pages
-4. Real data: 2.8M artists in `%APPDATA%/com.mercury.app/mercury.db` — cover art loads from Cover Art Archive
+**Goal:** Make BlackTape fully playable. Spotify is the priority.
 
-**Pages to screenshot (already in the script):**
-- Discover (artist grid, full of cover art)
-- Search results for jazz / hip-hop
-- Radiohead artist page (header + discography grid)
-- Aphex Twin, Boards of Canada artist pages
-- Style Map, Crate Dig, Time Machine, Scenes, KB Jazz, New & Rising
+| Phase | What | Status |
+|-------|------|--------|
+| 28 | UX Cleanup + Scope Reduction | Ready to start |
+| 29 | Spotify Full Integration ⭐ | Planned |
+| 30 | Spotify UI Polish + Service Preference + Artist Claim Form | Planned |
+| 🚀 | **SHIP v1.5 after Phase 30** | — |
+| 31 | Genre Map + Style Map + Time Machine | Post-ship |
+| 32 | Help System | Post-ship |
+| 33 | Artist Claims Database | Post-ship |
+| 35+ | YouTube, SoundCloud, Bandcamp | Post-ship |
 
-**Note on AppData path:** The Tauri binary still uses `com.mercury.app` (Rust binary name unchanged — Cargo.toml was intentionally not renamed). The real user DB is at `C:/Users/User/AppData/Roaming/com.mercury.app/mercury.db`. The `com.blacktape.app` identifier in tauri.conf.json only takes effect after a full `cargo build`.
+Full plan: `.planning/v1.5-PLAN.md`
+
+## Phase 28 Scope (start here)
+
+**Bugs:**
+- #41 — Streaming preference not reflected on artist page
+- #23 — Scene page local library not reflected
+- #26 — Artist's own website first in links
+- #27 — Validate/remove dead external links
+
+**Scope reduction (hide from nav, defer to v2):**
+- Scenes page
+- Listening Rooms
+- ActivityPub / DMs
+
+**Discovery UI simplification:**
+- Left sidebar: one active discovery mode
+- Right: discovery mode variants
+- Prominent descriptions on each mode (#31)
+
+**Polish:**
+- #29 — AI provider selector UX redesign
+- #32 — Per-platform social sharing on artist page
+- #24 — Style Map: square nodes + mouse wheel zoom
+- #25 — Time Machine: pagination + popularity sort
+- #28 — Search: type selector (Artist / Label / Song)
+- #30 — About page: replace GitHub link with feedback form
+
+## Open GitHub Bugs (2)
+- #41 — Streaming preference not reflected on artist page
+- #23 — Scene page local library not reflected in user's scene
+
+## Key Decisions Made This Session
+- "Spotify tracks first" = full Web Playback SDK integration, not just embeds. Users connect Spotify account, play any track directly in BlackTape. Spotify Premium required (Spotify's restriction).
+- Artist claim form ships in Phase 30 (it's just a form). Backend database TBD in Phase 33.
+- Other services (YouTube, SoundCloud, Bandcamp) deferred until after Spotify is solid.
+- Scenes, Listening Rooms, ActivityPub hidden from v1 nav — deferred to v2.
+- Ship line: after Phase 30.
+
+## App State
+- `npm run tauri dev` was running — may need to restart
+- Logo and tagline changes are live (HMR)
+- No uncommitted changes beyond auto-saves
 
 ## Git Status
-- All clean, no uncommitted changes
-- Last commit: `b7e5917` — rename: Mercury → BlackTape
+- Recent meaningful commits: logo/tagline changes are unsaved (only auto-saved)
+- Should commit: logo swap + tagline + planning files
 
 ## Next Steps
-1. Take screenshots — run `npm run tauri dev`, then `node tools/take-press-screenshots.mjs`
-2. Continue Phase 29 (Streaming API Integration) — was the active task before the rename
-   - Phase 29 plan: `.planning/v1.5-PLAN.md`
-   - Main work: mount `EmbedPlayer.svelte` on artist page (it exists but isn't used)
-   - Pre-fetch SoundCloud oEmbed in artist page load function
-
-## Resume Command
-After running `/clear`, run `/resume` to continue.
+1. Commit current changes (logo, tagline, planning files)
+2. Start Phase 28 — run `/gsd:plan-phase` for Phase 28
