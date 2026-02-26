@@ -72,9 +72,40 @@ Based on deep analysis, recommend:
 - Embedded players (no external app requirement like Parachord)
 - Server-side auth (no developer portal complexity)
 
+### Parachord UI/UX Deep Dive (Code + App Analyzed)
+
+**ResolverCard grid design** — how Parachord shows services:
+- 120x120px colored squares in grid layout
+- Priority number badge (top-left) — shows position: 1, 2, 3, etc.
+- Status indicator (top-right) — checkmark (enabled), "↑" (update available), yellow "!" (needs setup)
+- Drag-to-reorder with visual feedback — purple drop indicator on hover
+- Disabled/unavailable services shown as grayed out 50% opacity
+
+**Source badges on individual tracks:**
+- 20x20px colored squares showing available streaming sources
+- Resolver icon/logo inside each square
+- Opacity varies by confidence score (high confidence = 100%, low = 60%)
+- Clickable to play that specific track from that service
+- Sorted by resolver priority order
+
+**Drag-and-drop implementation:**
+- Only active (enabled) resolvers are draggable
+- Smooth visual feedback during drag (opacity fade, drop indicator)
+- Updates `resolverOrder` array in state
+- Order persists in localStorage
+- First service in order is default for that track
+
+**Mercury's Phase 30 approach (simpler):**
+- Use same grid + drag-to-reorder pattern (it works great)
+- Show 4 services only (Spotify, YouTube, SoundCloud, Bandcamp) — no extensibility
+- Priority numbers are optional (could simplify)
+- Skip incremental resolution — show all sources at once with loading spinner
+- Server-side auth (users don't see API key setup)
+
 ### Next: Phase 28 (Bug Fixes)
 
-Parachord analysis complete. Ready to start Phase 28: fix 9 open bugs.
+Parachord full analysis complete (architecture, code, UI patterns, app tested).
+Ready to start Phase 28: fix 9 open bugs.
 
 **Bugs to fix:**
 1. #16 — Player controls have no icons
@@ -7789,4 +7820,10 @@ Fix: renamed to `avatar.svelte.ts`, updated 5 import sites (AvatarEditor, Avatar
 > Files changed: 1
 
 > **Commit 36d1506** (2026-02-26 12:16) — auto-save: 1 files @ 12:16
+> Files changed: 1
+
+> **Commit cd89301** (2026-02-26 12:18) — wip: auto-save
+> Files changed: 1
+
+> **Commit 6c4c1a0** (2026-02-26 12:19) — docs: Parachord deep analysis — UI/UX patterns documented for Phase 30
 > Files changed: 1
