@@ -126,7 +126,7 @@
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-sm);
-		width: 180px;
+		width: 100%;
 		min-width: 0;
 	}
 
@@ -153,8 +153,8 @@
 	}
 
 	.cover-art {
-		width: 180px;
-		height: 180px;
+		width: 100%;
+		aspect-ratio: 1;
 		border-radius: var(--card-radius);
 		overflow: hidden;
 		background: var(--bg-elevated);
@@ -290,14 +290,4 @@
 		border-color: var(--youtube-color);
 	}
 
-	@media (max-width: 768px) {
-		.release-card {
-			width: 140px;
-		}
-
-		.cover-art {
-			width: 140px;
-			height: 140px;
-		}
-	}
 </style>

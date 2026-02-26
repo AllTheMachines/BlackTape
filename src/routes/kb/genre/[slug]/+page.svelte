@@ -139,14 +139,18 @@
 		</section>
 	{/if}
 
-	<!-- Genre Map placeholder (replaces live ForceGraph) -->
+	<!-- Genre Map — links to Style Map filtered for this genre -->
+	{#if data.genre.mb_tag}
 	<section class="genre-section genre-map-section" data-testid="genre-map-section">
 		<h2>Genre Map</h2>
 		<div class="genre-map-placeholder" data-testid="genre-map-placeholder">
-			<span class="placeholder-label">Genre Map — Coming Soon</span>
-			<p class="placeholder-hint">A visual map of how this genre connects to others is in development.</p>
+			<a href="/style-map?tag={encodeURIComponent(data.genre.mb_tag)}" class="map-link">
+				Explore {data.genre.name} in Style Map →
+			</a>
+			<p class="placeholder-hint">See how {data.genre.name} connects to related genres visually.</p>
 		</div>
 	</section>
+	{/if}
 
 	{#if data.genre.mb_tag}
 		<div class="discover-footer">
@@ -386,6 +390,17 @@
 		color: var(--t-3);
 		text-transform: uppercase;
 		letter-spacing: 0.06em;
+	}
+
+	.map-link {
+		font-size: 0.9rem;
+		color: var(--acc);
+		text-decoration: none;
+		font-weight: 500;
+	}
+
+	.map-link:hover {
+		text-decoration: underline;
 	}
 
 	.placeholder-hint {

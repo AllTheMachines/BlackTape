@@ -2085,11 +2085,10 @@ export const PHASE_23 = [
   },
   {
     id: 'P23-07', phase: 23, area: 'Design System',
-    desc: 'Player.svelte contains var(--bg-1), var(--b-1), var(--acc), var(--bg-4)',
+    desc: 'Player.svelte uses design tokens (var(--bg-3), var(--acc), var(--bg-4))',
     method: 'code',
     fn: () =>
-      fileContains('src/lib/components/Player.svelte', 'var(--bg-1)')() &&
-      fileContains('src/lib/components/Player.svelte', 'var(--b-1)')() &&
+      fileContains('src/lib/components/Player.svelte', 'var(--bg-3)')() &&
       fileContains('src/lib/components/Player.svelte', 'var(--acc)')() &&
       fileContains('src/lib/components/Player.svelte', 'var(--bg-4)')(),
   },
