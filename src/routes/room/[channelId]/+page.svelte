@@ -95,6 +95,11 @@
 </svelte:head>
 
 <div class="room-page" data-testid="room-page">
+	<div class="v2-notice">
+		<span class="v2-badge">Coming in v2</span>
+		Listening Rooms are being redesigned for a better community experience. Check back in the next major release.
+	</div>
+
 	{#if pageLoading}
 		<div class="room-loading" data-testid="room-loading">Connecting to room...</div>
 	{:else if roomNotFound}
@@ -299,6 +304,30 @@
 </div>
 
 <style>
+	.v2-notice {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: 8px 16px;
+		background: var(--bg-4);
+		border-bottom: 1px solid var(--b-1);
+		font-size: 11px;
+		color: var(--t-3);
+	}
+
+	.v2-badge {
+		background: var(--acc);
+		color: var(--bg-1);
+		font-size: 9px;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		padding: 2px 6px;
+		border-radius: var(--r);
+		white-space: nowrap;
+		flex-shrink: 0;
+	}
+
 	.room-page {		padding: 20px;
 	}
 
