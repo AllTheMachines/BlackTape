@@ -54,9 +54,18 @@ See `.planning/milestones/v1.4-ROADMAP.md`
 
 </details>
 
-### 📋 v1.5 (Planned)
+### 📋 v1.5 — The Playback Milestone (In Progress)
 
-*Next milestone — run `/gsd:new-milestone` to define scope.*
+- [ ] Phase 28: UX Cleanup + Scope Reduction (bugs, defer Scenes/chat, discovery simplification, polish)
+- [ ] Phase 29: Spotify Full Integration ⭐ (OAuth, Web Playback SDK, full track playback)
+- [ ] Phase 30: Spotify UI Polish + Service Preference
+- [ ] Phase 31: Genre Map + Style Map + Time Machine (visual discovery tools)
+- [ ] Phase 32: Help System
+- [ ] Phase 33: Artist Claim Form + Email Verification
+- [ ] Phase 34: Artist Claims Database (solution TBD)
+- [ ] Phase 35+: YouTube, SoundCloud, Bandcamp (after Spotify solid)
+
+Full plan: `.planning/v1.5-PLAN.md`
 
 ---
 
@@ -73,3 +82,10 @@ See `.planning/milestones/v1.4-ROADMAP.md`
 | 25. Queue System + Library | v1.4 | 4/4 | Complete | 2026-02-25 |
 | 26. Discover + Cross-Linking + Crate Fix | v1.4 | 4/4 | Complete | 2026-02-25 |
 | 27. Search + Knowledge Base | v1.4 | 5/5 | Complete | 2026-02-25 |
+| 28. UX Cleanup + Scope Reduction | v1.5 | 0/? | Planned | — |
+| 29. Spotify Full Integration | v1.5 | 0/? | Planned | — |
+| 30. Spotify UI Polish + Service Preference | v1.5 | 0/? | Planned | — |
+| 31. Genre Map + Style Map + Time Machine | v1.5 | 0/? | Planned | — |
+| 32. Help System | v1.5 | 0/? | Planned | — |
+| 33. Artist Claim Form | v1.5 | 0/? | Planned | — |
+| 34. Artist Claims Database | v1.5 | 0/? | Planned | — |
