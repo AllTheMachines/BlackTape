@@ -23,7 +23,12 @@
 
 <div class="titlebar">
 	<div class="drag-region" data-tauri-drag-region></div>
-	<span class="titlebar-logo">{PROJECT_NAME}</span>
+	<span class="titlebar-logo">
+		<svg class="logo-diamond" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+			<polygon points="16,4 28,16 16,28 4,16" fill="#c4a55a"/>
+		</svg>
+		{PROJECT_NAME}
+	</span>
 
 	{#if isTauri()}
 		<div class="titlebar-controls">
@@ -60,6 +65,9 @@
 	}
 
 	.titlebar-logo {
+		display: flex;
+		align-items: center;
+		gap: 6px;
 		font-size: 10px;
 		font-weight: 700;
 		letter-spacing: 0.12em;
@@ -68,6 +76,12 @@
 		pointer-events: none;
 		position: relative;
 		z-index: 1;
+	}
+
+	.logo-diamond {
+		width: 12px;
+		height: 12px;
+		flex-shrink: 0;
 	}
 
 	.titlebar-controls {
