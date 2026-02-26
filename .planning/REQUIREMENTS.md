@@ -1,0 +1,94 @@
+# Requirements: BlackTape
+
+**Defined:** 2026-02-27
+**Core Value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
+
+## v1.6 Requirements
+
+### Streaming Infrastructure (INFRA)
+
+- [ ] **INFRA-01**: User can set streaming service priority order via drag-to-reorder in Settings → Streaming (persisted across sessions)
+- [ ] **INFRA-02**: App prevents simultaneous playback — only one source (local player or streaming service) active at a time
+- [ ] **INFRA-03**: Artist page detects and shows which streaming services have content for the current artist (derived from existing MusicBrainz link data)
+
+### Spotify (SPOT)
+
+- [ ] **SPOT-01**: User can connect Spotify via guided step-by-step flow in Settings (enter own Client ID, PKCE OAuth, "Spotify Desktop required" clearly communicated throughout)
+- [ ] **SPOT-02**: App plays artist's top tracks in the user's running Spotify Desktop app via Spotify Connect API
+- [ ] **SPOT-03**: App shows clear feedback when Spotify Desktop is not detected (not running or no active device)
+- [ ] **SPOT-04**: User can disconnect and reconnect Spotify from Settings
+
+### YouTube (YT)
+
+- [ ] **YT-01**: Artist page shows YouTube embed player when a YouTube link is available
+- [ ] **YT-02**: YouTube embed falls back gracefully to "Watch on YouTube" external button when embed is blocked (Error 153 — must be verified in production .msi build)
+
+### SoundCloud (SC)
+
+- [ ] **SC-01**: Artist page shows SoundCloud embed player when a SoundCloud link is available
+- [ ] **SC-02**: SoundCloud embed pauses when a different streaming source becomes active
+
+### Bandcamp (BC)
+
+- [ ] **BC-01**: Artist page shows Bandcamp embed player when a Bandcamp link is available (gated on implementation spike validating the `url=` embed parameter — falls back to external link if spike fails)
+- [ ] **BC-02**: Release page "Play Album" button activates the Bandcamp embed for that specific release URL when available, otherwise activates artist-level embed
+
+### Player UX (PLAYER)
+
+- [ ] **PLAYER-01**: Player bar displays a service badge showing the currently active streaming source (e.g. "Spotify", "SoundCloud", "Bandcamp")
+- [ ] **PLAYER-02**: Artist page shows a source switcher — one button per available service, switching active source without navigating away
+- [ ] **PLAYER-03**: Release page "Play Album" button activates the best available streaming source for that release
+
+## Future Requirements
+
+### Spotify (deferred)
+
+- **SPOT-F01**: Bundled client_id for zero-setup Spotify connection — blocked by Spotify Feb 2026 policy (5-user dev cap, Extended Access requires 250k MAU)
+- **SPOT-F02**: Web Playback SDK in-app audio — blocked by Widevine CDM unavailability in Tauri WebView2 (unresolved since 2018)
+
+### YouTube (deferred)
+
+- **YT-F01**: YouTube search by artist name to find videos when only a channel URL is available — deferred due to Data API quota risk (100 units/query); v1.7+ candidate
+
+### Bandcamp (deferred)
+
+- **BC-F01**: Bandcamp track-level embed for specific songs — requires numeric track ID not available from MusicBrainz; deferred
+
+## Out of Scope
+
+| Feature | Reason |
+|---------|--------|
+| Spotify Web Playback SDK (in-app audio) | Widevine CDM not available in WebView2 — confirmed unresolved since 2018 |
+| Bundled Spotify client_id | Spotify Feb 2026 policy: dev cap = 5 users; Extended Access requires 250k MAU + legal entity |
+| Audio hosting of any kind | Core project constraint — audio lives on artist infrastructure, always |
+| Podcast / non-music content | Out of scope for a music discovery engine |
+
+## Traceability
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| INFRA-01 | Phase 29 | Pending |
+| INFRA-02 | Phase 29 | Pending |
+| INFRA-03 | Phase 29 | Pending |
+| SPOT-01 | Phase 30 | Pending |
+| SPOT-02 | Phase 30 | Pending |
+| SPOT-03 | Phase 30 | Pending |
+| SPOT-04 | Phase 30 | Pending |
+| YT-01 | Phase 31 | Pending |
+| YT-02 | Phase 31 | Pending |
+| SC-01 | Phase 31 | Pending |
+| SC-02 | Phase 31 | Pending |
+| BC-01 | Phase 31 | Pending |
+| BC-02 | Phase 32 | Pending |
+| PLAYER-01 | Phase 29 | Pending |
+| PLAYER-02 | Phase 31 | Pending |
+| PLAYER-03 | Phase 32 | Pending |
+
+**Coverage:**
+- v1.6 requirements: 15 total
+- Mapped to phases: 15
+- Unmapped: 0 ✓
+
+---
+*Requirements defined: 2026-02-27*
+*Last updated: 2026-02-27 after initial definition*
