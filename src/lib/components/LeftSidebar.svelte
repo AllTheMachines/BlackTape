@@ -13,8 +13,7 @@
 				{ href: '/style-map', label: 'Style Map', icon: '⬡' },
 				{ href: '/kb', label: 'Knowledge Base', icon: '◈' },
 				{ href: '/time-machine', label: 'Time Machine', icon: '◷' },
-				{ href: '/crate', label: 'Crate Dig', icon: '▦' },
-				{ href: '/scenes', label: 'Scenes', icon: '◎' }
+				{ href: '/crate', label: 'Crate Dig', icon: '▦' }
 			]
 		},
 		{
