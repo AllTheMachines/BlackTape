@@ -163,6 +163,39 @@ Phase 28 plans generated: 7 plans across 2 waves.
 
 All Wave 1 plans are independent — parallel execution. Wave 2 (tests) runs after all Wave 1 plans complete.
 
+## Entry 2026-02-26 — Phase 28 Plan 06: Search Type Selector + Discovery Sidebar Simplification
+
+Two polish items targeting search clarity and sidebar visual noise.
+
+### Search Type Selector (Polish #28)
+
+The top user friction point identified in the UX audit: no way to explicitly say "search songs" or "search labels" — users had to memorize query syntax or stumble onto intent parsing.
+
+Fix: Added a `Artists / Labels / Songs` chip selector above the SearchBar. Selecting a type sets a `type=` URL param:
+
+- **Artists** (default) — existing artist name + tag search behavior unchanged
+- **Labels** — routes directly to `searchByLabel()`, bypasses intent parsing
+- **Songs** — clears artist results, surfaces only local library tracks (your music)
+
+`+page.ts` extended: new `SearchType = 'artist' | 'tag' | 'label' | 'song'` type. Parses both `type=` and legacy `mode=` params for backward compatibility.
+
+`+page.svelte`: `search-type-selector` chip group added above the SearchBar. Active chip shown in amber. `initialMode` prop to SearchBar safely narrowed back to `'artist' | 'tag'`.
+
+### Discovery Sidebar Simplification
+
+Five discovery mode nav items cluttered the sidebar when you were already inside one of them. Changed behavior: when on any discovery route, the nav group collapses to show only the active mode name + a row of compact icon buttons for the others.
+
+`DISCOVERY_MODES` constant added (5 entries: Discover, Style Map, KB, Time Machine, Crate Dig). `activeDiscoveryMode` derived from current pathname. When `isOnDiscovery`:
+- Active mode shown as icon + name (prominent)
+- Other 4 modes shown as 22x22px icon buttons with title tooltips
+When NOT on a discovery page: standard 5-link list (unchanged).
+
+Matches the CONTEXT.md decision: "Left sidebar: show only the currently active discovery mode."
+
+164/164 code checks passing. 0 TS/Svelte errors.
+
+---
+
 ## Entry 2026-02-26 — Phase 28 Plan 01: Scope Reduction — Nav Cleanup + v2 Notices
 
 Removed Scenes from the left sidebar nav and added "Coming in v2" banners to the Scenes and Listening Rooms pages.
@@ -178,6 +211,64 @@ Removed Scenes from the left sidebar nav and added "Coming in v2" banners to the
 ### Why
 
 Phase 28 scope reduction: v1.5 is a polish release focused on discovery and UX, not community features. Scenes and Rooms work but are incomplete — hiding them from nav simplifies the new-user journey without deleting any code. They return properly in v2.
+
+164/164 code checks passing. 0 TS/Svelte errors.
+
+---
+
+## Entry 2026-02-26 — Phase 28 Plan 03: Bug Fixes #23 + #27
+
+Two bug fixes — both touched the artist discovery layer.
+
+### Bug #23: Scene detection now includes local library artists
+
+The scene algorithm was only counting favorited artists (by MBID) to determine if a scene was relevant to the user. This meant users who hadn't explicitly favorited artists — but had them in their music library — never saw scenes emerge from their own collection.
+
+Fix: In `detectScenes()`, load all library tracks via `get_library_tracks` and extract unique artist display names (lowercased). Then in `validateListenerOverlap()`, check both:
+1. Does the scene artist's MBID appear in the user's favorites? (existing check)
+2. Does the scene artist's display name appear in library artist names? (new check)
+
+The function signature changed: now takes `artistMbids`, `artistNames`, and `libraryArtistNames` as parameters. Graceful fallback — if `get_library_tracks` fails (library empty, Tauri unavailable), the Set is empty and the existing favorites-only logic runs unchanged.
+
+Files: `src/lib/scenes/detection.ts`
+
+### Bug #27: Dead domain blocklist for artist external links
+
+MusicBrainz stores historical data — artist pages were showing links to geocities.com, myspace.com, grooveshark.com, imeem.com (all shut down years ago). Clicking any of these results in a dead page, or worse, domain squatters.
+
+Fix: Added `DEAD_DOMAINS` Set to `src/lib/embeds/categorize.ts` — 12 permanently-dead domains including the Geocities variants, MySpace, iLike, Lala, Imeem, Bebo, Grooveshark, Ping, We7, Blip.fm, and Muxtape. Added `filterDeadLinks()` which strips any `CategorizedLink[]` of entries matching these domains.
+
+Applied in `src/routes/artist/[slug]/+page.ts` after the relations loop — all 6 link categories (streaming, social, official, info, support, other) are filtered silently. No error, no placeholder. Dead links simply don't appear.
+
+164/164 code checks passing. 0 TS/Svelte errors.
+
+---
+
+## Entry 2026-02-26 — Phase 28 Plan 05: AI Provider UX Redesign + Social Sharing Buttons
+
+Two polish items — both about legibility and discoverability.
+
+### Polish #29: AI Provider Selector Redesigned as Cards
+
+The old provider selector was a flat list of buttons — no indication of what was selected or what each provider requires. The new design uses a card grid:
+
+- **Grid layout:** `repeat(auto-fill, minmax(180px, 1fr))` — responsive, fits 2-3 cards depending on panel width
+- **Each card shows:** Provider name (bold), badge ("Free"/"Paid"), truncated instructions, and a checkmark + highlighted border when selected
+- **"Get API key" link** shown inline within the selected card, not below the whole list
+- **Status indicator** ("✓ Connected and ready") appears below the grid when provider is connected
+
+Removed all the old CSS: `.provider-list`, `.provider-option`, `.provider-option--selected`, `.provider-badge`, `.provider-instructions`, `.provider-affiliate-btn`. Replaced with `.provider-grid`, `.provider-card`, `.provider-card-*` pattern.
+
+One fix required: the plan had `<button>` nested inside `<button>` (the "Get API key" inner button inside the card button). Fixed by converting the inner button to a `<span role="link">` with keyboard handler — semantically clean, no hydration mismatch.
+
+### Polish #32: Twitter/X and Bluesky Share Buttons
+
+The artist page had a single "↑ Share" Mastodon button. Replaced with a three-button share row:
+- 🐘 Mastodon (first — project values: decentralized platforms get priority)
+- ☁ Bluesky (bsky.app intent compose URL)
+- ✕ Twitter/X (twitter.com intent tweet URL)
+
+Both new share URLs include the artist name + "discovered on BlackTape" and the current page URL via `$page.url.href`. Each button is a compact 26x26px icon button with tooltip title. The old `.share-mastodon-btn` CSS replaced with `.share-row` + `.share-btn` system.
 
 164/164 code checks passing. 0 TS/Svelte errors.
 
@@ -8303,3 +8394,24 @@ Fixed 8 of 11 Phase 28 bugs in commit `36bf980`. All 164 code tests passing.
 
 > **Commit cb7796d** (2026-02-26 21:01) — docs(28-04): complete discovery headers + feedback form plan
 > Files changed: 4
+
+> **Commit 75d3a8e** (2026-02-26 21:02) — docs(28-01): complete scope reduction nav cleanup plan
+> Files changed: 4
+
+> **Commit ebefd02** (2026-02-26 21:04) — fix(28-03): include local library artists in scene detection (#23)
+> Files changed: 1
+
+> **Commit d905c10** (2026-02-26 21:04) — feat(28-06): add Artist/Label/Song type selector to search page
+> Files changed: 2
+
+> **Commit 7c25379** (2026-02-26 21:05) — feat(28-05): redesign AI provider selector as card grid (#29)
+> Files changed: 1
+
+> **Commit a8ba90e** (2026-02-26 21:06) — fix(28-03): filter dead/defunct link domains from artist pages (#27)
+> Files changed: 2
+
+> **Commit 63ee180** (2026-02-26 21:07) — feat(28-05): add Twitter/X and Bluesky share buttons to artist page (#32)
+> Files changed: 1
+
+> **Commit 9d301cf** (2026-02-26 21:07) — feat(28-06): simplify discovery sidebar to show active mode only
+> Files changed: 1

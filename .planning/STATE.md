@@ -3,6 +3,19 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: — The Playback Milestone
 status: unknown
+last_updated: "2026-02-26T20:09:32.980Z"
+progress:
+  total_phases: 9
+  completed_phases: 8
+  total_plans: 32
+  completed_plans: 31
+---
+
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: — The Playback Milestone
+status: unknown
 last_updated: "2026-02-26T20:02:24.479Z"
 progress:
   total_phases: 9
@@ -36,11 +49,11 @@ See: .planning/PROJECT.md (updated 2026-02-25 after v1.4 milestone)
 ## Current Position
 
 Milestone: v1.5 UX Cleanup + Scope Reduction — IN PROGRESS
-Phase: 28 (28-ux-cleanup-scope-reduction) — Plan 02 of 7 complete
-Status: Executing Phase 28. Plans 28-01 and 28-02 complete.
-Last activity: 2026-02-26 — Phase 28 plan 02 complete: fixed Bug #26 (official links sort) + Bug #41 (streaming pref race)
+Phase: 28 (28-ux-cleanup-scope-reduction) — Plan 05 of 7 complete
+Status: Executing Phase 28. Plans 28-01, 28-02, 28-03, 28-04, 28-05 complete.
+Last activity: 2026-02-26 — Phase 28 plan 05 complete: Polish #29 (AI provider card grid) + Polish #32 (Twitter/Bluesky share buttons)
 
-Progress: [█░░░░░░░░░] Phase 28 in progress (2/7 plans done)
+Progress: [████░░░░░░] Phase 28 in progress (5/7 plans done)
 
 ## Performance Metrics
 
@@ -79,6 +92,7 @@ Progress: [█░░░░░░░░░] Phase 28 in progress (2/7 plans done)
 | **Phase 27 Total** | **5 plans** | **5/5 requirements (SRCH-01..04, KBAS-01)** | **Complete** |
 | Phase 28-ux-cleanup-scope-reduction P04 | 2min | 2 tasks | 7 files |
 | Phase 28-ux-cleanup-scope-reduction P01 | 4 | 2 tasks | 3 files |
+| Phase 28-ux-cleanup-scope-reduction P06 | 290 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -148,6 +162,12 @@ Progress: [█░░░░░░░░░] Phase 28 in progress (2/7 plans done)
 - [Phase 28-04]: Changed h1 to h2 inside discover-mode-desc blocks to avoid duplicate h1 headings on pages that already had h1 for page title
 - [Phase 28-01]: Scenes removed from navGroups only — route stays fully functional for direct URL access
 - [Phase 28-01]: v2-notice pattern established for deferred features: flex banner with accent badge + muted body text, all design tokens
+- [28-03]: libraryArtistNames populated in detectScenes() not validateListenerOverlap() — avoids one Tauri invoke per cluster (30 max)
+- [28-03]: filterDeadLinks applied inside if (mbLinksResponse.ok) block — import scope requires it; all 6 categories filtered in single for-of loop
+- [28-03]: Library name matching is case-insensitive toLowerCase().trim() — file tag capitalization differs from MusicBrainz canonical names
+- [Phase 28-06]: SearchType alias covers 4 modes; type= URL param parsed alongside legacy mode= for backward compat
+- [Phase 28-06]: Song mode returns empty artist results — local library tracks section surfaces the matches
+- [Phase 28-06]: Discovery sidebar: DISCOVERY_MODES shared constant, activeDiscoveryMode derived, compact icon switcher when on discovery route
 
 ### Pending Todos
 None
@@ -158,6 +178,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-26
-Stopped at: Completed Phase 28 Plan 04 — Polish #31 (discovery page headers) + Polish #30 (About feedback form)
+Stopped at: Completed Phase 28 Plan 03 — Bug #23 (library artists in scene detection) + Bug #27 (dead link filter)
 Resume file: None
 Next: Continue Phase 28 — execute plans 05-07.
