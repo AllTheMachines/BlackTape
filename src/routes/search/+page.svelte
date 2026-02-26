@@ -36,8 +36,29 @@
 </svelte:head>
 
 <div class="search-page">
+	<!-- Search type selector -->
+	<div class="search-type-selector">
+		{#each [['artist', 'Artists'], ['label', 'Labels'], ['song', 'Songs']] as const as [type, label]}
+			<a
+				href="/search?q={encodeURIComponent(data.query)}&type={type}"
+				class="type-chip"
+				class:active={
+					type === 'artist' ? (data.mode === 'artist' || data.mode === 'tag') :
+					type === 'label' ? data.mode === 'label' :
+					data.mode === 'song'
+				}
+			>
+				{label}
+			</a>
+		{/each}
+	</div>
+
 	<div class="search-header">
-		<SearchBar initialQuery={data.query} initialMode={data.mode as 'artist' | 'tag'} size="normal" />
+		<SearchBar
+			initialQuery={data.query}
+			initialMode={data.mode === 'tag' ? 'tag' : 'artist'}
+			size="normal"
+		/>
 	</div>
 
 	{#if data.intent && (data.intent.type === 'city' || data.intent.type === 'label')}
@@ -128,6 +149,36 @@
 <style>
 	.search-page {
 		padding: 20px;
+	}
+
+	/* Search type selector chips */
+	.search-type-selector {
+		display: flex;
+		gap: 6px;
+		padding-bottom: 12px;
+		border-bottom: 1px solid var(--b-1);
+		margin-bottom: 14px;
+	}
+
+	.type-chip {
+		padding: 3px 10px;
+		border: 1px solid var(--b-2);
+		border-radius: 12px;
+		font-size: 11px;
+		color: var(--t-3);
+		text-decoration: none;
+		transition: all 0.1s;
+	}
+
+	.type-chip:hover {
+		color: var(--t-1);
+		border-color: var(--b-3);
+	}
+
+	.type-chip.active {
+		background: var(--acc);
+		color: var(--bg-1);
+		border-color: var(--acc);
 	}
 
 	.search-header {
