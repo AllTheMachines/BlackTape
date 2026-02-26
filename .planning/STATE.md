@@ -49,11 +49,11 @@ See: .planning/PROJECT.md (updated 2026-02-25 after v1.4 milestone)
 ## Current Position
 
 Milestone: v1.5 UX Cleanup + Scope Reduction — IN PROGRESS
-Phase: 28 (28-ux-cleanup-scope-reduction) — Plan 05 of 7 complete
-Status: Executing Phase 28. Plans 28-01, 28-02, 28-03, 28-04, 28-05 complete.
-Last activity: 2026-02-26 — Phase 28 plan 05 complete: Polish #29 (AI provider card grid) + Polish #32 (Twitter/Bluesky share buttons)
+Phase: 28 (28-ux-cleanup-scope-reduction) — Plan 06 of 7 complete
+Status: Executing Phase 28. Plans 28-01 through 28-06 complete.
+Last activity: 2026-02-26 — Phase 28 plan 06 complete: Polish #28 (search type selector) + Discovery sidebar simplification
 
-Progress: [████░░░░░░] Phase 28 in progress (5/7 plans done)
+Progress: [█████░░░░░] Phase 28 in progress (6/7 plans done)
 
 ## Performance Metrics
 
