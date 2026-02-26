@@ -8490,3 +8490,9 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit 9a6489f** (2026-02-26 22:01) — wip: auto-save
 > Files changed: 2
+
+> **Commit b48515d** (2026-02-26 22:02) — wip: auto-save
+> Files changed: 1
+
+> **Commit 5050408** (2026-02-26 22:13) — docs: complete v1.6 project research — synthesize SUMMARY.md
+> Files changed: 2
