@@ -8421,3 +8421,12 @@ Fixed 8 of 11 Phase 28 bugs in commit `36bf980`. All 164 code tests passing.
 
 > **Commit e006e57** (2026-02-26 21:10) — docs(28-06): complete search type selector + discovery sidebar plan
 > Files changed: 3
+
+> **Commit d4260b1** (2026-02-26 21:10) — docs(28-05): complete AI provider card grid + social sharing plan
+> Files changed: 3
+
+> **Commit 9aadcd9** (2026-02-26 21:12) — feat(28-07): add PHASE_28 test entries to manifest
+> Files changed: 1
+
+> **Commit fcca0cb** (2026-02-26 21:14) — docs(28-07): complete Phase 28 test manifest plan
+> Files changed: 3
