@@ -1,14 +1,70 @@
 # Work Handoff — 2026-02-26
 
 ## Current Task
-Planning complete. Ready to execute Phase 28.
+Press screenshots for marketing BEFORE Phase 28. Script is written but binary launch needs a fix.
 
 ## What Was Done This Session
-- ✅ Logo replaced on home page (`src/routes/+page.svelte`) — now uses `/logo.png` instead of text h1
-- ✅ Tagline updated to "Dig deeper." (`src/lib/config.ts`)
-- ✅ GitHub #34 closed — name is BlackTape
-- ✅ v1.5 plan fully rewritten (`.planning/v1.5-PLAN.md`)
-- ✅ ROADMAP.md updated with all v1.5 phases + ship marker
+
+### Press Screenshots (IN PROGRESS)
+- ✅ DB researched — live DB at `%APPDATA%/com.mercury.app/mercury.db` is 782MB, 2.8M artists, 241K tagged artists
+- ✅ Tags imported into pipeline dev DB (was empty — ran `pipeline/import-tags-only.mjs`)
+- ✅ Screenshot script fully rewritten: `tools/take-press-screenshots.mjs` — outputs to `press-screenshots/v2/`
+- ❌ Binary launch FAILING — mercury.exe exits immediately with "Failed to unregister class Chrome_WidgetWin_0"
+
+### Phase 28
+- ✅ Plans already committed (7 plans, 3 waves) — last commit: `plan(28): 7 plans in 3 waves`
+- ✅ Phase 28 is ready to execute after screenshots are done
+
+## Press Screenshot Fix Needed
+
+### The Problem
+`mercury.exe` launched from the script exits immediately. The error is:
+```
+[ERROR:ui\gfx\win\window_impl.cc:124] Failed to unregister class Chrome_WidgetWin_0. Error = 1411
+```
+This happens because an existing Tauri/WebView2 instance is already running (from `npm run tauri dev`).
+
+### Solutions to Try
+**Option A (recommended):** Use CDP port 9222 on the ALREADY-RUNNING Tauri instance
+- The dev server is on port 5173 (confirmed running)
+- Check if WebView2 already has a CDP endpoint via: `curl http://127.0.0.1:9222/json`
+- The existing Tauri window might already have CDP if it was launched with the right env var
+
+**Option B:** Kill the existing Tauri window first, then relaunch with CDP
+```powershell
+taskkill /F /IM mercury.exe
+# Wait 2s
+# Then run the screenshot script
+```
+
+**Option C:** Change the script to use the existing dev server via Playwright directly (non-Tauri)
+- Most features work fine in browser mode EXCEPT Tauri invoke() calls (DB queries)
+- Discover page needs DB → won't work
+- Artist pages (MusicBrainz API) → DO work in browser mode
+- Can use Playwright Chromium directly against localhost:5173
+
+**Option D (best if Tauri window is open):** Re-enable CDP on running instance
+The test runner uses `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=9222`
+when spawning the binary. If the window is already open, this won't apply.
+
+### RECOMMENDED NEXT STEP
+1. Close the currently open Tauri/mercury window (if visible on screen)
+2. Run: `node tools/take-press-screenshots.mjs`
+3. The script will launch a fresh instance with CDP enabled
+
+### Screenshot Target Artists
+Researched from live DB — key artist slugs:
+- **Shot 4 (Very Niche artist):** `skinfields` — coldwave/darkwave/industrial, Europe, Very Niche score=553, 19 clean tags
+- **Shot 12 (dense tag cloud):** `wavewulf` — NJ, 69 quality tags: ambient house, synthwave, electronica, nordic ambient, tim hecker
+- **Shot 10 (search):** Use `/search?q=shoegaze&mode=tag` — 43 artists in Japan category
+
+### Key Filter Combos (confirmed results in DB)
+- `doom metal + Finland` → 100 artists ✓ (Shot 1)
+- `black metal + Norway` → 244 artists ✓ (bonus)
+- `post-punk + United Kingdom` → 379 artists ✓ (bonus)
+- `krautrock + Germany` → 381 artists ✓ (bonus)
+- `shoegaze + Japan` → 43 artists ✓
+- `experimental,ambient,drone,industrial,noise rock` → many ✓ (Shot 3)
 
 ## v1.5 Plan Summary
 
@@ -16,63 +72,19 @@ Planning complete. Ready to execute Phase 28.
 
 | Phase | What | Status |
 |-------|------|--------|
-| 28 | UX Cleanup + Scope Reduction | Ready to start |
+| 28 | UX Cleanup + Scope Reduction | Ready to execute |
 | 29 | Spotify Full Integration ⭐ | Planned |
 | 30 | Spotify UI Polish + Service Preference + Artist Claim Form | Planned |
 | 🚀 | **SHIP v1.5 after Phase 30** | — |
-| 31 | Genre Map + Style Map + Time Machine | Post-ship |
-| 32 | Help System | Post-ship |
-| 33 | Artist Claims Database | Post-ship |
-| 35+ | YouTube, SoundCloud, Bandcamp | Post-ship |
-
-Full plan: `.planning/v1.5-PLAN.md`
-
-## Phase 28 Scope (start here)
-
-**Bugs:**
-- #41 — Streaming preference not reflected on artist page
-- #23 — Scene page local library not reflected
-- #26 — Artist's own website first in links
-- #27 — Validate/remove dead external links
-
-**Scope reduction (hide from nav, defer to v2):**
-- Scenes page
-- Listening Rooms
-- ActivityPub / DMs
-
-**Discovery UI simplification:**
-- Left sidebar: one active discovery mode
-- Right: discovery mode variants
-- Prominent descriptions on each mode (#31)
-
-**Polish:**
-- #29 — AI provider selector UX redesign
-- #32 — Per-platform social sharing on artist page
-- #24 — Style Map: square nodes + mouse wheel zoom
-- #25 — Time Machine: pagination + popularity sort
-- #28 — Search: type selector (Artist / Label / Song)
-- #30 — About page: replace GitHub link with feedback form
-
-## Open GitHub Bugs (2)
-- #41 — Streaming preference not reflected on artist page
-- #23 — Scene page local library not reflected in user's scene
-
-## Key Decisions Made This Session
-- "Spotify tracks first" = full Web Playback SDK integration, not just embeds. Users connect Spotify account, play any track directly in BlackTape. Spotify Premium required (Spotify's restriction).
-- Artist claim form ships in Phase 30 (it's just a form). Backend database TBD in Phase 33.
-- Other services (YouTube, SoundCloud, Bandcamp) deferred until after Spotify is solid.
-- Scenes, Listening Rooms, ActivityPub hidden from v1 nav — deferred to v2.
-- Ship line: after Phase 30.
-
-## App State
-- `npm run tauri dev` was running — may need to restart
-- Logo and tagline changes are live (HMR)
-- No uncommitted changes beyond auto-saves
-
-## Git Status
-- Recent meaningful commits: logo/tagline changes are unsaved (only auto-saved)
-- Should commit: logo swap + tagline + planning files
 
 ## Next Steps
-1. Commit current changes (logo, tagline, planning files)
-2. Start Phase 28 — run `/gsd:plan-phase` for Phase 28
+1. **Fix binary launch issue** (see options above) and run screenshot script
+2. **Review screenshots** in `press-screenshots/v2/`
+3. **Start Phase 28** — run `/gsd:execute-phase 28`
+
+## Helper Scripts (in pipeline/)
+- `pipeline/import-tags-only.mjs` — re-imports tags without full pipeline re-run
+- `pipeline/query-live-db.cjs` — queries live AppData DB
+- `pipeline/find-screenshot-artists.cjs` — finds NICHE artists by score
+- `pipeline/find-filter-combos.cjs` — checks filter combo result counts
+- `pipeline/check-db.cjs` — checks pipeline dev DB
