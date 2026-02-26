@@ -39,7 +39,7 @@
 
 	<section id="support" class="about-section about-support-section">
 		<h2>Support</h2>
-		<p>Mercury runs on no ads, no tracking, no VC money — just people who care about music.</p>
+		<p>BlackTape runs on no ads, no tracking, no VC money — just people who care about music.</p>
 		<div class="support-links-row">
 			<!-- TODO: Replace placeholder URLs with real account URLs when Mercury's accounts are created -->
 			<a href="https://ko-fi.com/mercury" target="_blank" rel="noopener noreferrer" class="support-link-item">Ko-fi</a>

@@ -44,7 +44,7 @@
 		</div>
 	{:else if matchedArtist}
 		<div class="matched-section">
-			<div class="section-label">From Mercury index</div>
+			<div class="section-label">From BlackTape index</div>
 			<a href="/artist/{matchedArtist.slug}" class="matched-artist">
 				<span class="matched-name">{matchedArtist.name}</span>
 				{#if matchedArtist.country}
@@ -78,7 +78,7 @@
 		{/if}
 	{:else}
 		<div class="no-match">
-			<span class="no-match-text">Not found in Mercury index</span>
+			<span class="no-match-text">Not found in BlackTape index</span>
 		</div>
 	{/if}
 </div>

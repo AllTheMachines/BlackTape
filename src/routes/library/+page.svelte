@@ -90,7 +90,7 @@
 			</svg>
 		</div>
 		<h2>Library is available in the desktop app</h2>
-		<p>The local music library requires the Mercury desktop application to scan and play your music files.</p>
+		<p>The local music library requires the BlackTape desktop application to scan and play your music files.</p>
 	</div>
 {:else}
 	<div class="library-page">
@@ -171,7 +171,7 @@
 					</svg>
 				</div>
 				<h2>Add a music folder to get started</h2>
-				<p>Point Mercury at your music collection and it will scan for audio files, read metadata, and build your library.</p>
+				<p>Point BlackTape at your music collection and it will scan for audio files, read metadata, and build your library.</p>
 				<button class="btn btn-primary btn-lg" onclick={handleAddFolder}>
 					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 						<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />

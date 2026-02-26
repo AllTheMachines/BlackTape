@@ -263,7 +263,7 @@
 			</svg>
 		</div>
 		<h2>Settings are only available in the desktop app</h2>
-		<p>AI features and local configuration require the Mercury desktop application.</p>
+		<p>AI features and local configuration require the BlackTape desktop application.</p>
 	</div>
 {:else}
 	<div class="settings-page">
@@ -273,7 +273,7 @@
 		<div class="settings-section">
 			<h2>Appearance</h2>
 			<p class="section-desc">
-				Your taste shapes your colors. Choose how Mercury looks.
+				Your taste shapes your colors. Choose how BlackTape looks.
 			</p>
 
 			<div class="setting-row">

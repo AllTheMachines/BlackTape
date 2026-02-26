@@ -5,7 +5,7 @@
 <aside
 	class="chat-overlay"
 	class:open={chatState.open}
-	aria-label="Mercury Chat"
+	aria-label="BlackTape Chat"
 	aria-hidden={!chatState.open}
 >
 	<div class="chat-header">

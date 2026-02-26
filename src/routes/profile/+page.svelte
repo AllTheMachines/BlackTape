@@ -74,7 +74,7 @@
 </script>
 
 <svelte:head>
-	<title>Profile — Mercury</title>
+	<title>Profile — BlackTape</title>
 </svelte:head>
 
 {#if !tauriMode}

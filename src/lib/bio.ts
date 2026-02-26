@@ -24,7 +24,7 @@ export async function fetchWikipediaBio(wikiUrl: string): Promise<string | null>
 			`https://${lang}.wikipedia.org/api/rest_v1/page/summary/${title}`,
 			{
 				headers: {
-					'User-Agent': 'Mercury/0.1.0',
+					'User-Agent': 'BlackTape/0.1.0',
 					Accept: 'application/json'
 				}
 			}

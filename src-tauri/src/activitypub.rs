@@ -100,7 +100,7 @@ fn build_actor_json(identity: &ActorIdentity, pub_key_pem: &str) -> String {
         "url": url,
         "preferredUsername": identity.handle,
         "name": identity.display_name,
-        "summary": "Music curator on Mercury",
+        "summary": "Music curator on BlackTape",
         "inbox": format!("{}/ap/inbox", url),
         "outbox": format!("{}/ap/outbox.json", url),
         "followers": format!("{}/ap/followers.json", url),

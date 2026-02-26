@@ -49,7 +49,7 @@
 </script>
 
 <svelte:head>
-	<title>{data.genre ? `${data.genre.name} — Knowledge Base — Mercury` : 'Knowledge Base — Mercury'}</title>
+	<title>{data.genre ? `${data.genre.name} — Knowledge Base — BlackTape` : 'Knowledge Base — BlackTape'}</title>
 </svelte:head>
 
 {#if data.genre}

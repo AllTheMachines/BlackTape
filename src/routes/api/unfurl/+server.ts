@@ -32,7 +32,7 @@ export const POST: RequestHandler = async ({ request }) => {
 	const siteOrigin = new URL(request.url).origin;
 
 	if (!url.startsWith(siteOrigin)) {
-		return json({ error: 'Not a Mercury URL' }, { status: 400 });
+		return json({ error: 'Not a BlackTape URL' }, { status: 400 });
 	}
 
 	try {

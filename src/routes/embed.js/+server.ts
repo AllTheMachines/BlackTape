@@ -16,7 +16,7 @@ export function GET(): Response {
   var div = document.getElementById('mercury-embed');
   if (!div) return;
   var src = div.getAttribute('data-src');
-  var title = div.getAttribute('data-title') || 'Mercury artist';
+  var title = div.getAttribute('data-title') || 'BlackTape artist';
   var curator = div.getAttribute('data-curator');
   if (!src) return;
   // Inject iframe replacing the div

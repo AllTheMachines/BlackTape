@@ -28,11 +28,11 @@ export const GET: RequestHandler = async ({ params, request, url }) => {
 	const collectionUrl = `${SITE_URL}/profile`;
 
 	const feed = new Feed({
-		title: `Collection ${params.id} — Mercury (Desktop Only)`,
+		title: `Collection ${params.id} — BlackTape (Desktop Only)`,
 		id: collectionUrl,
 		link: collectionUrl,
 		description:
-			'This collection feed requires the Mercury desktop app. ' +
+			'This collection feed requires the BlackTape desktop app. ' +
 			'Download the app to manage collections and export them as RSS feeds.',
 		language: 'en',
 		copyright: 'Data from MusicBrainz (CC0)',
