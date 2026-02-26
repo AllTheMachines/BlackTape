@@ -4,43 +4,90 @@ A documentary record of building this project from idea to reality.
 
 ---
 
-## Entry 2026-02-26 — v1.5 Milestone Planning: Streaming Integration + Bug Fixes
+## Entry 2026-02-26 — v1.5 Parachord Analysis: Deep Code Review + Phase 30 Design
 
-### Decision: Continue with Mercury + Add Streaming APIs
+### Parachord Deep Dive (Architecture Analyzed)
 
-After comparing Mercury to Parachord (rebuilt Tomahawk music aggregator shipped in 1 month), confirmed they solve different problems:
-- **Parachord:** Eliminate app-switching friction (Spotify + YouTube + Bandcamp in one player)
-- **Mercury:** Discover music by taste, not algorithm (niche-first discovery + artist enablement)
+Downloaded and analyzed the Parachord codebase (Jason Herskowitz's Tomahawk rebuilt). Full technical analysis saved to auto-memory. Key findings:
 
-Mercury's advantages:
-- MusicBrainz/Discogs fully indexed locally (2.6M artists searchable from day one — Parachord can't replicate)
-- Inverse popularity scoring (uniqueness is the discovery mechanism)
-- Artist enablement tools (claiming profiles, specific tags)
-- Blog/curator tools (nobody else building for music writers)
+**Architecture:**
+- Electron + React, 53K line monolithic app.js
+- Plugin system: `.axe` files (JSON manifest + implementation functions)
+- Each resolver (service) has: id, name, version, capabilities, urlPatterns, weight (priority)
+- Source priority: `resolverOrder` array maintained in state, used for drag-to-reorder UI
 
-**Decision:** Add Spotify/YouTube/SoundCloud/Bandcamp playback APIs to Mercury. This gives us:
-- All of Parachord's aggregation features (play from any service)
-- PLUS Mercury's unique discovery + taste-based search
-- Result: single app for both aggregation AND discovery
+**How it works:**
+- User enables services (Spotify, Apple Music, YouTube, Bandcamp, etc.) in Settings > Plugins
+- Drag-to-reorder sets resolver priority (weight)
+- When resolving a track: try each resolver in order, first match wins
+- Multiple sources stored per track (for fallback)
+- Rate limiting only on Apple Music iTunes API (not MusicKit)
 
-### v1.5 Planning
+**What Parachord does well:**
+- Drag-to-reorder is intuitive, users immediately understand priority
+- Plugin pattern is clean (manifest + implementation)
+- Parallel resolution with smart rate limiting
+- Service switching mid-track works seamlessly
 
-**3 phases, 4-6 weeks:**
-1. **Phase 28:** Fix 9 open bugs (player UI, artist page layout, theme settings, filters, KB navigation)
-2. **Phase 29:** Integrate Spotify + YouTube + SoundCloud + Bandcamp playback
-3. **Phase 30:** Service preference selector + UI
+**What's broken:**
+- OAuth setup is confusing: Client ID, Redirect URI, manual reconnection
+- Requires Spotify Desktop app running in background (not user-friendly)
+- Users must create API keys from developer portals (high friction)
+- Incremental resolution UI (sources appear one-by-one) confuses users
+- Large monolithic codebase (hard to maintain, navigate)
 
-**Bugs to fix (#16, #17, #3, #20, #21, #26, #27, #22, #18, #19, #23):**
-- Player controls missing icons
-- Player bar too dark
-- Artist page album grid broken
-- Double description showing
-- Theme color picker non-functional
-- Filter panel doesn't toggle
-- KB map links don't work
-- Scene page doesn't reflect local library
+### Steve's Parachord Video Assessment (Analyzed)
 
-**Plan:** `.planning/v1.5-PLAN.md`
+Processed UAT video with Whisper transcription. Key observations:
+- Playlist names showing "untitled" (loading states are broken/confusing)
+- OAuth flow is "not easy" and requires too many steps
+- "Takes so long" to play (performance criticism)
+- **Validation of Mercury approach:** Steve explicitly noted "keep local data first, not Spotify first" — this validates Mercury's discovery-first philosophy
+
+### Phase 30 Design Decision
+
+Based on deep analysis, recommend:
+
+**What to steal from Parachord:**
+1. Drag-to-reorder for service priority (it works, don't reinvent)
+2. Service indicator on player bar ("Playing from Bandcamp")
+3. Available sources as badges/buttons (allows source switching)
+
+**What NOT to copy:**
+1. Plugin architecture — Mercury should hardcode 4 services only (no extensibility needed)
+2. User API key setup — Mercury handles server-side (users never see Client ID)
+3. Multi-step OAuth — simplify to one-click or skip (use Mercury's existing auth infrastructure)
+4. Incremental resolution UI — show loading state, then all sources at once (cleaner UX)
+
+**Phase 30 Implementation Plan:**
+- **Services:** Spotify, SoundCloud, Bandcamp, YouTube (hardcoded in src-tauri)
+- **Priority UI:** Settings > Streaming tab with drag-to-reorder list
+- **Service indicator:** Small badge on player bar ("S" for Spotify, "♪" for Bandcamp, etc.)
+- **Authentication:** Handle server-side (users see: "✓ Connected to Spotify")
+- **Philosophy:** Keep discovery-first. Streaming is a bonus, not the goal.
+
+**Mercury's competitive advantages:**
+- Discovery-first beats aggregation (uniqueness rewards niche artists)
+- No Spotify bias (helps underground indie artists)
+- Embedded players (no external app requirement like Parachord)
+- Server-side auth (no developer portal complexity)
+
+### Next: Phase 28 (Bug Fixes)
+
+Parachord analysis complete. Ready to start Phase 28: fix 9 open bugs.
+
+**Bugs to fix:**
+1. #16 — Player controls have no icons
+2. #17 — Player bar too dark (contrast issue)
+3. #3 — Dark/low-contrast typography
+4. #20 — Artist page album layout broken
+5. #21 — Double description on artist page
+6. #22 — Theme color picker non-functional
+7. #18 — Filter settings panel toggle broken
+8. #19 — KB genre/scene map link broken
+9. #23 — Scene page missing local library display
+
+**Timeline:** 1-2 weeks. Run full test suite after all bugs fixed.
 
 ---
 
@@ -7733,4 +7780,7 @@ Fix: renamed to `avatar.svelte.ts`, updated 5 import sites (AvatarEditor, Avatar
 > Files changed: 1
 
 > **Commit aabf00a** (2026-02-26 12:07) — wip: auto-save
+> Files changed: 1
+
+> **Commit e51db65** (2026-02-26 12:08) — wip: auto-save
 > Files changed: 1
