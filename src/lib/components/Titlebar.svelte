@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { PROJECT_NAME } from '$lib/config';
 	import { isTauri } from '$lib/platform';
+	import logoUrl from '$lib/assets/logo.png';
 
 	async function minimize() {
 		const { getCurrentWindow } = await import('@tauri-apps/api/window');
@@ -23,7 +24,7 @@
 
 <div class="titlebar">
 	<div class="drag-region" data-tauri-drag-region></div>
-	<img class="titlebar-logo" src="/logo.png" alt={PROJECT_NAME} />
+	<img class="titlebar-logo" src={logoUrl} alt={PROJECT_NAME} />
 
 	{#if isTauri()}
 		<div class="titlebar-controls">
