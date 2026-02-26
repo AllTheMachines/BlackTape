@@ -1,14 +1,18 @@
 /**
- * Press screenshot generator — uses the real Tauri app with real data.
+ * BlackTape Press Screenshot Automation — v2
  *
- * Launches the debug binary with CDP, navigates to visually rich pages,
- * captures 2× retina screenshots. Does NOT replace the user's real mercury.db.
+ * Launches the Tauri debug binary with CDP, connects Playwright,
+ * takes all press shots for marketing. Uses the real live database
+ * (782MB, 2.8M artists, 241K tagged).
  *
  * Run:  node tools/take-press-screenshots.mjs
  *
  * Requirements:
- *   - Dev server running on http://localhost:5173  (npm run dev)
- *   - Tauri debug binary built
+ *   - Dev server running on http://localhost:5173 (npm run dev)
+ *   - Tauri debug binary built at src-tauri/target/debug/mercury.exe
+ *   - Real mercury.db in %APPDATA%/com.mercury.app/mercury.db
+ *
+ * Output: press-screenshots/v2/
  */
 
 import { chromium } from 'playwright';
@@ -20,15 +24,20 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
-const OUT = path.join(ROOT, 'press-screenshots');
+// Output to v2 subfolder to keep separate from old shots
+const OUT = path.join(ROOT, 'press-screenshots', 'v2');
 const BINARY = path.join(ROOT, 'src-tauri', 'target', 'debug', 'mercury.exe');
-const CDP_PORT = 9222;
+const CDP_PORT = 9223; // use 9223 to avoid conflicting with any running instance on 9222
 const CDP_BASE = `http://127.0.0.1:${CDP_PORT}`;
 const http = createRequire(import.meta.url)('http');
 
 fs.mkdirSync(OUT, { recursive: true });
 
-function pollCdp(timeoutMs = 30000) {
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function pollCdp(timeoutMs = 35000) {
   return new Promise((resolve, reject) => {
     const deadline = Date.now() + timeoutMs;
     function attempt() {
@@ -41,37 +50,66 @@ function pollCdp(timeoutMs = 30000) {
       req.on('error', schedule);
     }
     function schedule() {
-      if (Date.now() >= deadline) return reject(new Error('CDP timeout'));
+      if (Date.now() >= deadline) return reject(new Error(`CDP not available after ${timeoutMs}ms`));
       setTimeout(attempt, 600);
     }
     attempt();
   });
 }
 
-async function save(page, name, { fullPage = false, scrollY = 0 } = {}) {
-  if (scrollY) await page.evaluate(y => window.scrollTo(0, y), scrollY);
-  await page.waitForTimeout(800);
-  const outPath = path.join(OUT, `${name}.png`);
-  await page.screenshot({ path: outPath, fullPage });
-  console.log(`  ✓ ${name}.png`);
-}
-
-let _baseUrl = 'http://localhost:5173';
-
-async function goto(page, path_, waitMs = 3500) {
-  // Use in-page navigation so SvelteKit's router handles the route
-  await page.evaluate(p => { window.location.href = p; }, path_);
+/**
+ * Navigate via SvelteKit router (in-page), wait for content to settle.
+ * waitMs: time after navigation to wait for API calls, images, etc.
+ */
+async function goto(page, route, waitMs = 4000) {
+  console.log(`  → ${route}`);
+  await page.evaluate(r => { window.location.href = r; }, route);
   await page.waitForLoadState('domcontentloaded').catch(() => {});
   await page.waitForTimeout(waitMs);
 }
 
+/**
+ * Save a screenshot with scroll offset.
+ * scrollY: pixels to scroll before shooting (0 = top)
+ * extraWait: ms to wait after scrolling
+ */
+async function save(page, filename, { scrollY = 0, extraWait = 0 } = {}) {
+  if (scrollY > 0) {
+    await page.evaluate(y => window.scrollTo(0, y), scrollY);
+    await page.waitForTimeout(600);
+  }
+  if (extraWait > 0) await page.waitForTimeout(extraWait);
+  const outPath = path.join(OUT, filename);
+  await page.screenshot({ path: outPath, fullPage: false });
+  console.log(`  ✓ ${filename}`);
+}
+
+/**
+ * Click element matching selector (non-fatal — logs if not found).
+ */
+async function tryClick(page, selector) {
+  try {
+    const el = page.locator(selector).first();
+    if (await el.isVisible({ timeout: 2000 })) {
+      await el.click();
+      return true;
+    }
+  } catch {}
+  return false;
+}
+
+// ---------------------------------------------------------------------------
+// Main
+// ---------------------------------------------------------------------------
+
 async function run() {
   if (!fs.existsSync(BINARY)) {
     console.error('Binary not found:', BINARY);
+    console.error('Build with: cd src-tauri && cargo build');
     process.exit(1);
   }
 
-  console.log('Launching Tauri app...');
+  console.log('Launching Tauri app (CDP port 9223)...');
   const proc = spawn(BINARY, [], {
     env: {
       ...process.env,
@@ -83,87 +121,201 @@ async function run() {
   proc.on('error', err => console.error('Process error:', err.message));
 
   console.log('Waiting for CDP...');
-  await pollCdp(30000);
-  await new Promise(r => setTimeout(r, 2000));
+  await pollCdp(35000);
+  // Extra settle time for WebView2 to finish loading SvelteKit
+  await new Promise(r => setTimeout(r, 3000));
 
   const browser = await chromium.connectOverCDP(CDP_BASE);
   const contexts = browser.contexts();
-  const pages = contexts[0]?.pages() ?? [];
-  const page = pages[0];
-
+  const page = contexts[0]?.pages()?.[0];
   if (!page) throw new Error('No page found via CDP');
-  await page.waitForLoadState('domcontentloaded');
+
+  await page.waitForLoadState('domcontentloaded').catch(() => {});
   await page.waitForTimeout(3000);
 
-  // Detect base URL from app (dev uses localhost:5173, prod uses tauri://localhost)
-  const currentUrl = page.url();
-  if (currentUrl.startsWith('tauri://')) {
-    _baseUrl = 'tauri://localhost';
-  } else if (currentUrl.includes('localhost:')) {
-    _baseUrl = currentUrl.replace(/\/$/, '').split('/').slice(0, 3).join('/');
-  }
-  console.log('Base URL:', _baseUrl);
+  console.log('Connected. App URL:', page.url());
+  console.log(`Output dir: ${OUT}\n`);
 
-  console.log('Connected. Taking screenshots...\n');
+  // ── Shot 1: Discover — doom metal + Finland (100 results) ─────────────────
+  console.log('Shot 1: Discover — doom metal + Finland');
+  await goto(page, '/discover?tags=doom+metal&country=Finland', 5000);
+  // Ensure filter panel is open
+  await tryClick(page, '.filter-toggle-btn');
+  await page.waitForTimeout(600);
+  await save(page, 'discover-niche-filters-doom-finland.png');
 
-  // ── 1. Discover (artist card grid with covers) ─────────────────────────
-  await goto(page, '/discover', 6000);
-  await save(page, '01-discover');
-  await save(page, '01-discover-full', { fullPage: true });
+  // ── Shot 2: Discover — raw uniqueness feed, no filters ────────────────────
+  console.log('Shot 2: Discover — raw uniqueness feed');
+  await goto(page, '/discover', 5000);
+  await save(page, 'discover-raw-uniqueness-feed.png');
 
-  // ── 2. Search for a busy genre ─────────────────────────────────────────
-  await goto(page, '/search?q=jazz', 7000);
-  await save(page, '02-search-jazz');
+  // ── Shot 3: Discover — 5 tags simultaneously ──────────────────────────────
+  console.log('Shot 3: Discover — multi-tag filter (experimental + ambient + drone + industrial + noise rock)');
+  await goto(page, '/discover?tags=experimental,ambient,drone,industrial,noise+rock', 5000);
+  await tryClick(page, '.filter-toggle-btn');
+  await page.waitForTimeout(600);
+  await save(page, 'discover-multi-tag-filter.png');
 
-  // ── 3. Radiohead artist page (lots of releases with cover art) ─────────
-  await goto(page, '/artist/radiohead', 8000);
-  await save(page, '03-artist-radiohead-header');
-  await save(page, '03-artist-radiohead-discography', { scrollY: 350 });
+  // ── Shot 4: Niche artist — Skinfields (Very Niche, coldwave/darkwave) ──────
+  // Skinfields: slug=skinfields, Very Niche score=553, country=Europe
+  // Tags: darkwave, experimental, industrial, minimal electronic, coldwave, dark electronic...
+  console.log('Shot 4: Artist — Skinfields (Very Niche, coldwave/darkwave/industrial)');
+  await goto(page, '/artist/skinfields', 8000); // MusicBrainz API needs time
+  await save(page, 'artist-niche-badge-obscure.png');
 
-  // ── 4. Try another well-known artist ───────────────────────────────────
-  await goto(page, '/artist/aphex-twin', 8000);
-  await save(page, '04-artist-aphex-twin');
+  // ── Shot 5: Same artist, scrolled to discography ───────────────────────────
+  console.log('Shot 5: Artist discography view — Skinfields scrolled down');
+  await save(page, 'artist-discography-view.png', { scrollY: 600, extraWait: 1500 });
 
-  // ── 5. Style Map ───────────────────────────────────────────────────────
-  await goto(page, '/style-map', 6000);
-  await save(page, '05-style-map');
+  // ── Shot 6: Artist stats/about tab ────────────────────────────────────────
+  console.log('Shot 6: Artist stats tab');
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.waitForTimeout(500);
+  const statsClicked = await tryClick(page, 'button:has-text("Stats")');
+  if (!statsClicked) await tryClick(page, '[role="tab"]:has-text("Stats")');
+  await page.waitForTimeout(2000);
+  await save(page, 'artist-stats-tab.png');
 
-  // ── 6. Crate Digging ───────────────────────────────────────────────────
-  await goto(page, '/crate-dig', 4000);
-  await save(page, '06-crate-dig');
-
-  // ── 7. Time Machine ────────────────────────────────────────────────────
+  // ── Shot 7: Time Machine ───────────────────────────────────────────────────
+  console.log('Shot 7: Time Machine');
   await goto(page, '/time-machine', 4000);
-  await save(page, '07-time-machine');
+  // Try years: 1991, 1988, 1994 — find one with results
+  for (const year of ['1991', '1988', '1994', '1983', '1979']) {
+    const yearInput = page.locator('input[type="range"]').first();
+    if (await yearInput.isVisible({ timeout: 2000 }).catch(() => false)) {
+      // Set range input to year value
+      await yearInput.evaluate((el, y) => {
+        el.value = y;
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+      }, year);
+      await page.waitForTimeout(2500);
+      // Check if there are results (no "no artists" message)
+      const noResults = await page.locator('text=No artists, text=no results, .empty-state').first().isVisible({ timeout: 1000 }).catch(() => false);
+      if (!noResults) {
+        console.log(`  Using year ${year}`);
+        await save(page, `time-machine-${year}.png`);
+        break;
+      }
+    } else {
+      // Try clicking the year or navigating with a URL param
+      await goto(page, `/time-machine?year=${year}`, 3000);
+      await save(page, `time-machine-${year}.png`);
+      break;
+    }
+  }
 
-  // ── 8. Scenes ──────────────────────────────────────────────────────────
-  await goto(page, '/scenes', 4000);
-  await save(page, '08-scenes');
+  // ── Shot 8: Knowledge Base ─────────────────────────────────────────────────
+  console.log('Shot 8: Knowledge Base genre graph');
+  await goto(page, '/kb', 6000); // genre graph may need time
+  // Only save if graph has content (not empty state)
+  const kbHasContent = await page.locator('canvas, .genre-graph, .kb-graph, svg').first().isVisible({ timeout: 3000 }).catch(() => false);
+  if (kbHasContent) {
+    await save(page, 'knowledge-base-genre-graph.png');
+  } else {
+    console.log('  KB graph not rendered — saving whatever is there');
+    await save(page, 'knowledge-base-genre-graph.png');
+  }
 
-  // ── 9. Knowledge Base genre page ───────────────────────────────────────
-  await goto(page, '/kb/genre/jazz', 6000);
-  await save(page, '09-kb-jazz');
+  // ── Shot 9: Crate Dig ─────────────────────────────────────────────────────
+  console.log('Shot 9: Crate Dig');
+  await goto(page, '/crate', 5000);
+  await save(page, 'crate-dig-loaded.png');
 
-  // ── 10. New & Rising ───────────────────────────────────────────────────
-  await goto(page, '/new-rising', 5000);
-  await save(page, '10-new-rising');
+  // ── Shot 10: Search results — shoegaze (tag search) ───────────────────────
+  console.log('Shot 10: Search — shoegaze (tag mode, real results)');
+  await goto(page, '/search?q=shoegaze&mode=tag', 6000);
+  await save(page, 'search-results-loaded.png');
 
-  // ── 11. Search — hip hop ───────────────────────────────────────────────
-  await goto(page, '/search?q=hip+hop', 7000);
-  await save(page, '11-search-hiphop');
+  // ── Shot 11: Listen On section — Skinfields ───────────────────────────────
+  console.log('Shot 11: Listen On section — Skinfields');
+  await goto(page, '/artist/skinfields', 7000);
+  // Scroll down slightly to where Listen On typically appears
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.waitForTimeout(500);
+  // Try to find the listen on section and crop to it
+  const listenOnEl = page.locator('.listen-on, .streaming-section, text=Listen On').first();
+  const listenVisible = await listenOnEl.isVisible({ timeout: 3000 }).catch(() => false);
+  if (listenVisible) {
+    await listenOnEl.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(600);
+    const box = await listenOnEl.boundingBox().catch(() => null);
+    if (box) {
+      const y = Math.max(0, box.y - 80);
+      const h = Math.min(500, box.height + 200);
+      await page.screenshot({
+        path: path.join(OUT, 'artist-listen-on-links.png'),
+        clip: { x: 0, y, width: 1440, height: h },
+      });
+      console.log('  ✓ artist-listen-on-links.png (cropped to Listen On)');
+    } else {
+      await save(page, 'artist-listen-on-links.png', { scrollY: 300 });
+    }
+  } else {
+    await save(page, 'artist-listen-on-links.png', { scrollY: 250 });
+  }
 
-  // ── 12. Portishead ─────────────────────────────────────────────────────
-  await goto(page, '/artist/portishead', 8000);
-  await save(page, '12-artist-portishead');
+  // ── Shot 12: Dense tag cloud — Wavewulf ───────────────────────────────────
+  // Wavewulf (NJ): 69 tags including ambient house, synthwave, electronica, new age, nordic ambient, tim hecker
+  console.log('Shot 12: Dense tag cloud — Wavewulf (69 quality tags)');
+  await goto(page, '/artist/wavewulf', 7000);
+  // Scroll to tags section
+  const tagsEl = page.locator('.tags-section, .tag-list, .artist-tags, .genre-tags').first();
+  const tagsVisible = await tagsEl.isVisible({ timeout: 3000 }).catch(() => false);
+  if (tagsVisible) {
+    await tagsEl.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(600);
+  } else {
+    await page.evaluate(() => window.scrollTo(0, 400));
+    await page.waitForTimeout(600);
+  }
+  await save(page, 'artist-tag-cloud-dense.png');
 
-  console.log('\nDone! Shutting down...');
+  // ── Bonus shots for variety ────────────────────────────────────────────────
+  console.log('\nBonus shots:');
+
+  console.log('  Black metal + Norway');
+  await goto(page, '/discover?tags=black+metal&country=Norway', 4000);
+  await tryClick(page, '.filter-toggle-btn');
+  await page.waitForTimeout(600);
+  await save(page, 'discover-niche-filters-black-metal-norway.png');
+
+  console.log('  Post-punk + UK');
+  await goto(page, '/discover?tags=post-punk&country=United+Kingdom', 4000);
+  await page.waitForTimeout(600);
+  await save(page, 'discover-niche-filters-post-punk-uk.png');
+
+  console.log('  Krautrock + Germany');
+  await goto(page, '/discover?tags=krautrock&country=Germany', 4000);
+  await page.waitForTimeout(600);
+  await save(page, 'discover-niche-filters-krautrock-germany.png');
+
+  console.log('  Shoegaze + Japan');
+  await goto(page, '/discover?tags=shoegaze&country=Japan', 4000);
+  await page.waitForTimeout(600);
+  await save(page, 'discover-niche-filters-shoegaze-japan.png');
+
+  // Full-page discover for density shot
+  console.log('  Doom metal USA full feed');
+  await goto(page, '/discover?tags=doom+metal&country=United+States', 4000);
+  await save(page, 'discover-doom-metal-usa.png');
+
+  // Explore page
+  console.log('  Explore page');
+  await goto(page, '/explore', 3000);
+  await save(page, 'explore-page.png');
+
+  console.log('\n=== All screenshots done ===');
+  console.log(`Saved to: ${OUT}`);
+  console.log('Files:');
+  fs.readdirSync(OUT).sort().forEach(f => console.log(`  ${f}`));
+
   try { await browser.close(); } catch (_) {}
   proc.kill();
-
-  console.log(`\nScreenshots saved to: press-screenshots/\n`);
 }
 
 run().catch(err => {
   console.error('Fatal:', err.message);
+  console.error(err.stack);
   process.exit(1);
 });
