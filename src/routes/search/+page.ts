@@ -15,21 +15,29 @@ import type { LocalTrack } from '$lib/library/types';
 
 export const prerender = true;
 
+type SearchType = 'artist' | 'tag' | 'label' | 'song';
+
 const EMPTY_INTENT: SearchIntent = { type: 'artist', raw: '', entity: '' };
 
 export const load: PageLoad = async ({ url }) => {
 	// During prerendering url.searchParams is unavailable — return empty placeholder.
 	// At runtime in Tauri the actual search runs via the Tauri commands below.
 	let q = '';
-	let mode: 'artist' | 'tag' = 'artist';
+	let mode: SearchType = 'artist';
 	try {
 		q = url.searchParams.get('q')?.trim() ?? '';
-		mode = url.searchParams.get('mode') === 'tag' ? 'tag' : 'artist';
+		const modeParam = url.searchParams.get('mode');
+		const typeParam = url.searchParams.get('type');
+
+		if (typeParam === 'label') mode = 'label';
+		else if (typeParam === 'song') mode = 'song';
+		else if (modeParam === 'tag') mode = 'tag';
+		else mode = 'artist';
 	} catch {
 		return {
 			results: [] as ArtistResult[],
 			query: '',
-			mode: 'artist' as const,
+			mode: 'artist' as SearchType,
 			matchedTag: null as string | null,
 			intent: EMPTY_INTENT,
 			error: false,
@@ -56,15 +64,21 @@ export const load: PageLoad = async ({ url }) => {
 
 		const provider = await getProvider();
 
-		// Parse intent from the query (unless mode toggle explicitly sets tag search).
+		// Parse intent from the query (unless mode toggle explicitly sets tag or label search).
 		// Tag mode uses its own search path — intent stays 'artist' for chip display purposes.
-		const intent: SearchIntent = mode === 'tag'
-			? { type: 'artist', raw: q, entity: q }
-			: parseSearchIntent(q);
+		const intent: SearchIntent =
+			mode === 'tag' || mode === 'label' || mode === 'song'
+				? { type: 'artist', raw: q, entity: q }
+				: parseSearchIntent(q);
 
 		let results: ArtistResult[];
 		if (mode === 'tag') {
 			results = await searchByTag(provider, q);
+		} else if (mode === 'label') {
+			results = await searchByLabel(provider, q);
+		} else if (mode === 'song') {
+			// Song mode — local library tracks only; no artist results
+			results = [];
 		} else if (intent.type === 'city') {
 			results = await searchByCity(provider, intent.entity);
 		} else if (intent.type === 'label') {
