@@ -7716,3 +7716,6 @@ Fix: renamed to `avatar.svelte.ts`, updated 5 import sites (AvatarEditor, Avatar
 
 > **Commit 4b2c242** (2026-02-26 11:55) — docs: v1.5 milestone planning complete — 3 phases ready
 > Files changed: 1
+
+> **Commit 2ca7986** (2026-02-26 11:55) — wip: auto-save
+> Files changed: 1
