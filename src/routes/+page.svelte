@@ -42,7 +42,7 @@
 	<DatabaseSetup {dbPath} onRetry={checkDatabase} />
 {:else}
 	<div class="hero">
-		<h1>{PROJECT_NAME}</h1>
+		<img src="/logo.png" alt={PROJECT_NAME} class="logo-img" />
 		<p class="tagline">{PROJECT_TAGLINE}</p>
 
 		<div class="search-container">
@@ -69,13 +69,10 @@
 		text-align: center;
 	}
 
-	h1 {
-		font-size: 3.5rem;
-		font-weight: 300;
-		letter-spacing: 0.15em;
-		text-transform: uppercase;
+	.logo-img {
+		height: 64px;
+		width: auto;
 		margin: 0 0 var(--space-sm);
-		color: var(--acc);
 	}
 
 	.tagline {
@@ -90,8 +87,8 @@
 	}
 
 	@media (max-width: 600px) {
-		h1 {
-			font-size: 2.2rem;
+		.logo-img {
+			height: 44px;
 		}
 
 		.tagline {
