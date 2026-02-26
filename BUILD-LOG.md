@@ -107,6 +107,27 @@ Based on deep analysis, recommend:
 Parachord full analysis complete (architecture, code, UI patterns, app tested).
 Ready to start Phase 28: fix 9 open bugs.
 
+---
+
+## Entry 2026-02-26 — Phase 28 Plans Complete
+
+Phase 28 plans generated: 7 plans across 2 waves.
+
+**Plan structure:**
+- Plan 01 (Wave 1): Scope reduction — remove Scenes/Rooms/ActivityPub from nav, add v2 banners
+- Plan 02 (Wave 1): Bug fixes #26 (official link sort first) + #41 (streaming pref on artist page)
+- Plan 03 (Wave 1): Bug fixes #23 (scene library detection) + #27 (dead link filter/blocklist)
+- Plan 04 (Wave 1): Polish #31 (discovery page descriptions) + #30 (About feedback form)
+- Plan 05 (Wave 1): Polish #29 (AI provider UX redesign) + #32 (social sharing — Twitter/Bluesky)
+- Plan 06 (Wave 1): Polish #28 (search type selector: Artist/Label/Song) + Discovery sidebar simplification
+- Plan 07 (Wave 2): Test manifest for all Phase 28 changes
+
+All Wave 1 plans are independent — parallel execution. Wave 2 (tests) runs after all Wave 1 plans complete.
+
+<!-- status -->
+Phase 28 plans written (7 plans, 2 waves). Ready for /gsd:execute-phase.
+<!-- /status -->
+
 **Bugs to fix:**
 1. #16 — Player controls have no icons
 2. #17 — Player bar too dark (contrast issue)
@@ -8111,3 +8132,12 @@ Fixed 8 of 11 Phase 28 bugs in commit `36bf980`. All 164 code tests passing.
 
 > **Commit 0876339** (2026-02-26 18:16) — auto-save: 2 files @ 18:16
 > Files changed: 1
+
+> **Commit 0d79074** (2026-02-26 18:19) — docs: session wrap-up — v1.5 plan finalized, Phase 28 ready
+> Files changed: 1
+
+> **Commit c85fadc** (2026-02-26 18:20) — docs(28): generate context from v1.5 plan
+> Files changed: 1
+
+> **Commit 58a8c9d** (2026-02-26 18:34) — plan(28): 7 plans in 3 waves — UX cleanup + scope reduction
+> Files changed: 7
