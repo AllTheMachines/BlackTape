@@ -7929,3 +7929,29 @@ Fix: renamed to `avatar.svelte.ts`, updated 5 import sites (AvatarEditor, Avatar
 
 > **Commit f712da3** (2026-02-26 13:01) — wip: auto-save
 > Files changed: 1
+
+> **Commit 36bf980** (2026-02-26 13:04) — fix(phase-28): fix 8 bugs — player UI, album layout, double description, theme picker, KB map, filter toggle
+> Files changed: 9
+
+---
+
+## 2026-02-26 — Phase 28: Bug Fixes Complete (8/11)
+
+Fixed 8 of 11 Phase 28 bugs in commit `36bf980`. All 164 code tests passing.
+
+**Fixed:**
+- **#3** — Typography contrast: `--t-3` raised from `#888` → `#9a9a9a`, `--t-1`/`--t-2` also bumped
+- **#16** — Player icons: control buttons now use `--t-2` (was `--t-3`, near-invisible on dark bg)
+- **#17** — Player bar: background lifted from `--bg-1` (#0f0f0f) to `--bg-3` (#1a1a1a)
+- **#20** — Album layout: ReleaseCard now fluid (`width: 100%`, `aspect-ratio: 1`) — no more 180px overflow
+- **#21** — Double description: removed AI bio generation from artist page header — `ArtistSummary` component already handles AI content; showing two AI summaries was the bug
+- **#22** — Theme color picker: `generatePalette()` now overrides `--acc`, `--acc-bg`, `--acc-bg-h`, `--b-acc` — accent color was excluded from palette, making the hue slider appear to do nothing
+- **#18** — Filter panel toggle: Discover page filter panel now has ×/show button to collapse/expand
+- **#19** — KB map link: Genre Map section now links to `/style-map?tag=...` instead of "Coming Soon"
+
+**Deferred to v1.6:**
+- **#26** — Artist website first: `categorize.ts` already maps `official homepage` → `official` (first in order); real-world issue may be MB data quality, not code
+- **#27** — Dead link validation: requires async HEAD requests per link; safe to defer to dedicated UX pass
+- **#23** — Scene local library: requires knowing available Tauri invoke commands for library queries; defer to Phase 29 where library integration is expanded
+
+**Next:** Phase 29 — Streaming API Integration (Spotify, YouTube, SoundCloud, Bandcamp)
