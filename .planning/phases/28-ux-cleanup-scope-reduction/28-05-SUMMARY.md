@@ -108,3 +108,12 @@ None - no external service configuration required.
 ---
 *Phase: 28-ux-cleanup-scope-reduction*
 *Completed: 2026-02-26*
+
+## Self-Check: PASSED
+
+- FOUND: `src/lib/components/AiSettings.svelte` (contains provider-card, provider-grid)
+- FOUND: `src/routes/artist/[slug]/+page.svelte` (contains bskyShareUrl, twitterShareUrl)
+- FOUND: `.planning/phases/28-ux-cleanup-scope-reduction/28-05-SUMMARY.md`
+- FOUND: commit `7c25379` (Task 1 — AI provider card redesign)
+- FOUND: commit `63ee180` (Task 2 — Twitter/Bluesky share buttons)
+- 164/164 test suite checks passing, 0 TypeScript/Svelte errors
