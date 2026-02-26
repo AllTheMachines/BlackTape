@@ -10,7 +10,7 @@ const os = require('os');
 const Database = require('better-sqlite3');
 
 const PIPELINE_DB = path.join(__dirname, 'data', 'mercury.db');
-const LIVE_DB = path.join(os.homedir(), 'AppData', 'Roaming', 'com.mercury.app', 'mercury.db');
+const LIVE_DB = path.join(os.homedir(), 'AppData', 'Roaming', 'com.blacktape.app', 'mercury.db');
 const SCHEMA = require('fs').readFileSync(path.join(__dirname, 'lib', 'schema.sql'), 'utf8');
 
 console.log('Pipeline DB:', PIPELINE_DB);
