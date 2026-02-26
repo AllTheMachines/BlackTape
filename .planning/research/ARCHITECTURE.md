@@ -1,324 +1,300 @@
 # Architecture Research
 
-**Domain:** v1.3 feature integration — ActivityPub outbound, Nostr listening rooms, artist tools, sustainability links
-**Researched:** 2026-02-24
-**Confidence:** HIGH for Nostr patterns (codebase verified), MEDIUM for ActivityPub desktop approach (no direct precedent found, pattern derived from static AP implementations), HIGH for artist tools and sustainability (pure internal extension of existing patterns)
+**Domain:** v1.6 streaming integration — multi-source playback in existing Tauri 2.0 + Svelte 5 app
+**Researched:** 2026-02-26
+**Confidence:** HIGH for Spotify PKCE + Web API patterns (verified against official docs), HIGH for SoundCloud oEmbed (confirmed docs), HIGH for YouTube Data API (confirmed docs), MEDIUM for Spotify Web Playback SDK in WebView2 (works in Chromium-based browsers, CSP known solvable in this codebase), LOW for Bandcamp embed from artist URL (no oEmbed, album ID required — see PITFALLS)
+
+---
+
+## Answering the Six Architecture Questions
+
+### Q1: Where does the Spotify token live?
+
+**Answer: `ai_settings` table in `taste.db` via existing `set_ai_setting` / `get_ai_setting` Tauri commands. No new Rust commands needed for storage.**
+
+The existing `ai_settings` key-value store (already used for theme preferences, layout preferences, streaming preference, private listening mode) is the right home for the Spotify token. Pattern is already established: `set_ai_setting({ key: 'spotify_access_token', value: token })`.
+
+**Token lifecycle design:**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  Token Storage: taste.db ai_settings table                       │
+│                                                                   │
+│  Keys:                                                            │
+│  - spotify_access_token  — Bearer token (expires ~1hr)            │
+│  - spotify_refresh_token — Refresh token (long-lived)             │
+│  - spotify_token_expires — Unix timestamp of expiration           │
+│  - spotify_client_id     — Bundled client ID (or user-provided)   │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**NOT stored in Svelte $state directly** — the token is sensitive and should not be reactive state that leaks into DevTools. Load it into a module-scoped variable in `src/lib/streaming/spotify-auth.ts` on demand. Expose only connection status (`connected: boolean`, `isPremium: boolean`) to reactive Svelte state.
+
+**Data flow:**
+
+```
+App cold start
+  → onMount: streaming/spotify-auth.ts checks taste.db for token
+  → if token exists and not expired: mark status = connected
+  → if token expired: call refresh endpoint silently
+  → if refresh fails: mark status = disconnected
+
+User navigates to artist page
+  → resolver checks streamingState.spotify.connected
+  → if connected: use token from module-scoped var
+  → if disconnected: show "Connect Spotify" button
+```
+
+**Why not tauri-plugin-secure-storage or Stronghold?**
+Those plugins add Cargo complexity and require additional permission configuration. The `ai_settings` table is already used for similarly sensitive settings (private mode, identity keys). For an open-source desktop app with bundled client ID, OS keyring is not meaningfully more secure. MEDIUM confidence this is acceptable — if Spotify's TOS review requires secure storage, it is a localized change.
+
+### Q2: Spotify URL to playable content — resolving artist ID and top tracks
+
+**Answer: Parse the artist ID directly from the MusicBrainz-provided Spotify URL. No search API call needed.**
+
+MusicBrainz stores Spotify artist page URLs in the format `https://open.spotify.com/artist/{ARTIST_ID}`. The artist ID is in the URL path.
+
+```typescript
+// Already possible with existing spotify.ts pattern
+function extractSpotifyArtistId(url: string): string | null {
+  const match = url.match(/open\.spotify\.com\/artist\/([a-zA-Z0-9]+)/);
+  return match?.[1] ?? null;
+}
+```
+
+Once the artist ID is known, the resolution chain is:
+
+```
+Step 1: GET /v1/artists/{artistId}/top-tracks?market=US
+  → Returns array of track objects, each with:
+    - uri: "spotify:track:{trackId}"
+    - name: track title
+    - preview_url: 30-second clip URL (may be null)
+    - duration_ms, explicit, album (with images)
+
+Step 2 (playback): PUT /v1/me/player/play?device_id={sdkDeviceId}
+  Body: { "uris": ["spotify:track:{id}", ...] }
+  Scope required: user-modify-playback-state
+  Note: Premium only. 204 on success.
+
+Step 3 (fallback, no Premium): Use preview_url for 30s clip via <audio>
+  OR render Spotify embed iframe (no Premium required for embed)
+```
+
+**For album playback from release pages:** MusicBrainz release-group data already includes Spotify album URLs (format: `open.spotify.com/album/{albumId}`). Extract the album ID, call `GET /v1/albums/{albumId}/tracks` to get the full tracklist with URIs, then `PUT /v1/me/player/play` with `context_uri: "spotify:album:{albumId}"`.
+
+**Scope requirements for the full flow:**
+- `user-read-private` — check Premium status
+- `user-modify-playback-state` — start/pause/skip via Web API
+- `streaming` — required for Web Playback SDK device registration
+
+### Q3: SoundCloud and Bandcamp embed URL construction from artist URLs
+
+**SoundCloud: oEmbed works directly with artist profile URLs. Confirmed.**
+
+SoundCloud's oEmbed endpoint accepts "any URL pointing to a user, set or track." A MusicBrainz-provided artist URL like `https://soundcloud.com/artistname` is a valid user URL. Passing it to the existing `soundcloudOembedUrl()` function in `src/lib/embeds/soundcloud.ts` is already correct.
+
+```
+Existing code (soundcloud.ts):
+  soundcloudOembedUrl(url) → "https://soundcloud.com/oembed?url={encoded}&format=json&maxheight=166"
+
+Result when called with artist profile URL:
+  → SoundCloud returns HTML for a widget player showing the artist's recent tracks
+  → Widget auto-plays from their latest public track
+  → No additional URL manipulation needed
+```
+
+The existing `soundcloudOembedUrl()` function already handles this correctly. The artist page load function already fetches this oEmbed HTML server-side. No changes needed for SoundCloud artist-level embedding — this already works.
+
+**Bandcamp: No oEmbed. No programmatic embed from artist URL. Embed requires album-specific numeric IDs.**
+
+Bandcamp embed URLs require a numeric album or track ID, e.g.:
+```
+https://bandcamp.com/EmbeddedPlayer/album=4178276839/size=large/...
+```
+
+This numeric ID is not the artist name, not the album slug, not anything available from a MusicBrainz artist URL. There is no Bandcamp oEmbed endpoint. There is no Bandcamp public API that maps artist URLs to album IDs.
+
+**Viable approaches ranked:**
+
+1. **Scrape the og:video meta tag from the Bandcamp album page** — Bandcamp's album pages include `<meta property="og:video:secure_url" content="https://bandcamp.com/EmbeddedPlayer.swf?...">`. Parse the numeric ID from that. This is fragile (depends on Bandcamp page structure) and is fetch-dependent.
+
+2. **Use MusicBrainz release-group streaming links** — The artist page already fetches release-group data including URL relationships. If a release has a Bandcamp URL like `https://artist.bandcamp.com/album/album-slug`, that is an album page URL. Fetching that page to extract the embed ID is the cleanest available path.
+
+3. **External link only (current behavior, acceptable default)** — Show "Listen on Bandcamp" as an external link. The artist already has this via `categorizedLinks.streaming`. For the streaming integration, Bandcamp remains "click to open" unless the embed ID is resolved.
+
+**Recommendation: Keep Bandcamp as external-link-only in the service resolver for v1.6. The complexity of Bandcamp ID scraping is high, the reliability is low, and the Spotify/SoundCloud/YouTube integrations already cover playable audio.**
+
+### Q4: YouTube — finding a playable video from a channel URL
+
+**Answer: Two-step process. Step 1: Extract or resolve channel ID. Step 2: Search channel videos by artist name + track name.**
+
+MusicBrainz YouTube URLs come in several formats:
+- `https://www.youtube.com/channel/UCxxxxx` — has channel ID directly in URL
+- `https://www.youtube.com/@handle` — handle format (post-2022)
+- `https://www.youtube.com/c/customname` — legacy custom URL
+- `https://www.youtube.com/user/username` — legacy user URL
+
+**Step 1: Get channel ID**
+
+For `/channel/UCxxxxx` URLs: extract the ID directly with regex.
+
+For `/@handle` URLs: use `GET /youtube/v3/channels?part=id&forHandle=@handle&key={apiKey}` (forHandle parameter added January 2024, confirmed current).
+
+For legacy `/c/` and `/user/` URLs: use `GET /youtube/v3/channels?part=id&forUsername={name}&key={apiKey}`.
+
+**Step 2: Search for a specific video**
+
+```
+GET /youtube/v3/search?part=snippet
+  &channelId={channelId}
+  &q={artistName}+{trackTitle}
+  &type=video
+  &maxResults=5
+  &key={apiKey}
+```
+
+Returns video IDs. Use the first result. Embed with:
+```
+https://www.youtube-nocookie.com/embed/{videoId}
+```
+
+**The quota cost problem:** Each YouTube Data API search costs 100 quota units. The daily default quota is 10,000 units. 100 searches per day before hitting limits. This means YouTube search should be on-demand (user clicks "Find on YouTube"), not eager (resolved at page load for every artist).
+
+**Fallback: no YouTube Data API key.** Build an alternative approach using the YouTube channel URL directly:
+- Open the channel URL in a browser tab (Tauri `open()`) when user clicks
+- OR construct a YouTube search URL: `https://www.youtube.com/results?search_query={artistName}+{trackTitle}` — opens in browser, no API key needed
+
+**Recommendation: YouTube integration in v1.6 should be embed-only for artists whose MusicBrainz YouTube URL is already a video URL (has `/watch?v=` or `youtu.be/`), with a "Search on YouTube" external link for channel-only URLs. The Data API search path is a v1.7+ feature due to quota complexity.**
+
+### Q5: Resolution strategy — eager vs on-demand
+
+**Answer: Lazy/on-demand resolution, not eager. Resolve the preferred service when the user clicks play.**
+
+**Why not eager (resolve all services at page load):**
+- Artist pages already make 4 MusicBrainz API calls at load time (links, releases, relationships, bio). Adding 1-3 more external API calls at load (Spotify top-tracks, SoundCloud oEmbed) degrades perceived load time.
+- YouTube search (100 units/query) at page load would exhaust daily quota quickly.
+- Most users will not click play on every artist they visit — resolution is wasted for browse-only sessions.
+- Spotify token may not be present for all users — silent failure at load creates confusing states.
+
+**Correct pattern — lazy resolver:**
+
+```
+User arrives at artist page
+  → page loads, links resolved (existing behavior, unchanged)
+  → StreamingPanel component shows available services
+    (based only on which platform URLs exist in links data — no API calls yet)
+
+User clicks service badge or "Play" button
+  → resolver fires for that service only
+  → Spotify: call /artists/{id}/top-tracks, start Web Playback SDK
+  → SoundCloud: oEmbed already fetched at page load (existing behavior, keep)
+  → YouTube: open external search link (or embed if video URL known)
+  → show loading state while resolving
+```
+
+**Exception: SoundCloud oEmbed can stay eager.** The existing page load function already fetches SoundCloud oEmbed HTML. This is a single small HTTP call and it's already wired. Keep it.
+
+**Service availability detection (zero API calls):**
+```typescript
+// Determine which services have content — from existing links data
+const available = {
+  spotify: links.spotify.length > 0,     // has Spotify artist URL
+  soundcloud: links.soundcloud.length > 0, // has SoundCloud URL
+  youtube: links.youtube.length > 0,      // has YouTube URL
+  bandcamp: links.bandcamp.length > 0,    // has Bandcamp URL
+};
+```
+
+This drives the StreamingPanel UI without any new API calls.
+
+### Q6: New Svelte stores/modules needed vs existing stores to modify
+
+**New stores/modules:**
+
+| File | Purpose | New or Modified |
+|------|---------|-----------------|
+| `src/lib/streaming/spotify-auth.ts` | PKCE OAuth flow, token management, refresh | NEW |
+| `src/lib/streaming/spotify-player.ts` | Web Playback SDK wrapper, device ID management | NEW |
+| `src/lib/streaming/resolver.ts` | Per-artist service resolution dispatch | NEW |
+| `src/lib/streaming/state.svelte.ts` | Reactive: connection status, active source, device ID | NEW |
+| `src/lib/streaming/service-priority.svelte.ts` | Ordered service list, persistence to taste.db | NEW |
+
+**Existing stores/modules to modify:**
+
+| File | What Changes |
+|------|-------------|
+| `src/lib/player/state.svelte.ts` | Add `activeSource` field: `'local' \| 'spotify' \| 'soundcloud' \| 'youtube' \| 'bandcamp' \| null` |
+| `src/lib/theme/preferences.svelte.ts` | `streamingPref.platform` (single string) → `streamingPref.priorityOrder` (ordered array). Breaking change, migration needed. |
+| `src/routes/settings/+page.svelte` | Replace single-select dropdown with drag-to-reorder list for service priority |
+| `src/routes/artist/[slug]/+page.ts` | No changes needed — links data is already correct |
+| `src/routes/artist/[slug]/+page.svelte` | Add `<StreamingPanel>` component, source switcher buttons |
 
 ---
 
 ## System Overview
 
-Mercury v1.3 adds four feature areas to an existing Tauri 2.0 desktop app. The architecture challenge is that three of these features involve "reaching out" to the open web — ActivityPub federation, Nostr coordination, and MusicBrainz link extensions — from within a desktop app that has no externally-accessible server.
-
-The core architectural constraint that shapes all v1.3 decisions:
-
-**Mercury is a Tauri desktop app. It has no public IP, no DNS entry, no server. The world cannot reach it. It can only reach out.**
-
-This means:
-- ActivityPub outbound = generate static JSON-LD files that the user hosts, OR proxy via a relay endpoint
-- Listening rooms = Nostr-coordinated (relay-mediated, no P2P required)
-- Artist tools and sustainability = purely local reads from existing data sources
-
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
-│                       Mercury Desktop (v1.3)                          │
+│  Artist Page (+page.svelte)                                            │
 │                                                                        │
-│  ┌─────────────────┐  ┌────────────────┐  ┌──────────────────────┐   │
-│  │  SvelteKit UI   │  │  Tauri (Rust)  │  │   Existing Subsystems │   │
-│  │                 │  │                │  │   - Scanner/library   │   │
-│  │  + AP Export UI │  │  + stats cmds  │  │   - taste.db/mercury  │   │
-│  │  + Listening Rm │  │  + file write  │  │   - AI sidecar        │   │
-│  │  + Artist Tools │  │  + axum server │  │   - NDK/Nostr         │   │
-│  │  + Sustainability│  │    (optional)  │  │   - MusicBrainz fetch │   │
-│  └────────┬────────┘  └───────┬────────┘  └──────────────────────┘   │
-│           │                   │                                        │
-│      NDK (Nostr)         taste.db / mercury.db                        │
-│           │                                                            │
-└───────────┼────────────────────────────────────────────────────────────┘
-            │
-     ┌──────┴──────────────────────────────┐
-     │         Nostr Relay Pool             │
-     │  wss://nos.lol, relay.damus.io, ...  │
-     │                                      │
-     │  Listening rooms: kind:30311 events  │
-     │  Now-playing: kind:30315 events      │
-     └─────────────────────────────────────┘
+│  ┌────────────────────────────────┐  ┌───────────────────────────┐    │
+│  │ StreamingPanel.svelte           │  │ Existing artist page       │    │
+│  │ - available service badges      │  │ content (links, releases,  │    │
+│  │ - active source indicator       │  │ bio, relationships, tags)  │    │
+│  │ - "Play" button per service     │  └───────────────────────────┘    │
+│  │ - source switcher               │                                    │
+│  └──────────────┬─────────────────┘                                    │
+│                 │ on play click                                          │
+│  ┌──────────────▼─────────────────────────────────────────────────┐   │
+│  │ resolver.ts — dispatches by service + priority                   │   │
+│  └──┬──────────────┬──────────────────────┬───────────────────┬───┘   │
+│     │              │                       │                   │        │
+│  Spotify        SoundCloud              YouTube             Bandcamp    │
+│  ┌──▼──┐        ┌──▼──┐              ┌──▼──┐             ┌──▼──┐      │
+│  │ SDK  │        │oEmbed│              │ open │             │ open │     │
+│  │player│        │iframe│              │extern│             │extern│     │
+│  └──┬──┘        └──┬──┘              └─────┘             └─────┘      │
+│     │              │                                                     │
+│  ┌──▼──────────────▼──────────────────────────────────────────────┐   │
+│  │ Player Bar (existing) — Player.svelte                            │   │
+│  │ + service badge (NEW)                                            │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+│  ┌──────────────────────────────────────────────────────────────────┐  │
+│  │ streaming/state.svelte.ts (NEW)                                    │  │
+│  │ - spotify: { connected, isPremium, deviceId }                      │  │
+│  │ - activeSource: 'local' | 'spotify' | 'soundcloud' | ...           │  │
+│  │ - servicePriority: ['bandcamp', 'spotify', 'soundcloud', 'youtube'] │  │
+│  └──────────────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────────────┘
 
-     ActivityPub outbound (offline-generated files):
-     User uploads AP JSON-LD to their own hosting
-     OR Mercury proxies through a minimal relay endpoint
+External APIs called at resolution time (not page load):
+  - Spotify: /v1/artists/{id}/top-tracks (with Bearer token)
+  - Spotify: /v1/me/player/play (with device_id, Premium only)
+  - YouTube Data API: optional, on-demand only, quota-gated
 ```
 
 ---
 
-## Feature Architecture by Area
-
-### 1. ActivityPub Outbound
-
-#### The Desktop Constraint
-
-ActivityPub requires that the Fediverse be able to send HTTP GET to an actor endpoint and HTTP POST to an inbox. A desktop app cannot serve these — it has no public URL. There are two viable patterns:
-
-**Pattern A — Static File Export (Recommended)**
-Mercury generates AP JSON-LD files to disk. The user uploads them to their own web hosting (Bandcamp pages, Neocities, GitHub Pages, any static host). Mercury acts as a "build tool" for AP identity, not a live server.
-
-This is the same pattern used by static site AP implementations (maho.dev guide, lesspub). The approach is used by Mastodon-compatible blogs. It does not require inbox handling for basic Fediverse follow — followers will follow the actor, and the actor's outbox delivers updates they subscribed to.
-
-**Pattern B — Relay Endpoint (Future)**
-Mercury could POST to a lightweight relay service (e.g., a simple Cloudflare Worker) that holds the actor files and forwards inbox POSTs to a Nostr event. This is out of scope for v1.3 — it requires infrastructure.
-
-#### Required Files for AP Actor (Pattern A)
-
-A Fediverse-followable actor needs five static files:
-
-| File | Path on hosting | Content-Type |
-|------|----------------|--------------|
-| Webfinger | `/.well-known/webfinger` | `application/jrd+json` |
-| Actor | `/@mercury` or `/actor` | `application/activity+json` |
-| Outbox | `/outbox` | `application/activity+json` |
-| Public key | Part of actor JSON | N/A |
-| (Optional) Followers | `/followers` | `application/activity+json` |
-
-The outbox lists Create activities for new discoveries (new scene, new curator pick, new rising artist). Each activity contains an Article or Note object.
-
-#### HTTP Signatures Problem
-
-To SEND activities (Follow, Create, Announce), AP requires RSA HTTP signatures with a ±30 second validity window. This is non-trivial to implement. For v1.3 "outbound only" (Fediverse can follow Mercury actor and see updates), Mercury does NOT need to send activities — it only needs a readable outbox. Followers discover it via webfinger, subscribe, and periodically poll the outbox. No signature generation required for outbox serving.
-
-If Mercury wants to actively NOTIFY followers (push model), it would need to POST to each follower's inbox with HTTP signatures. This should be deferred to a future phase or the relay-endpoint pattern.
-
-#### New Components for AP Outbound
-
-**New: `src/lib/activitypub/`**
-- `types.ts` — TypeScript types for AP Actor, Outbox, OrderedCollection, Create, Article
-- `generator.ts` — builds AP JSON-LD objects from Mercury data (artist pages, scenes, collections)
-- `keypair.ts` — RSA keypair generation for actor public key (stored in taste.db)
-- `export.ts` — orchestrates file generation, calls `write_json_to_path` Tauri command
-
-**New: `src/routes/settings/activitypub/+page.svelte`**
-- UI for setting actor identity (handle, display name, hosting URL)
-- Export button that triggers file generation
-- Instructions for uploading to hosting
-
-**Modified: `src-tauri/src/ai/taste_db.rs`**
-- New table: `ap_settings` (actor_handle, hosting_url, rsa_private_key_pem, created_at)
-- New table: `ap_outbox` (activity_id, activity_type, content_json, published_at)
-- New Tauri commands: `get_ap_settings`, `set_ap_settings`, `append_ap_activity`
-
-**Data flow:**
-```
-User clicks "Export AP files"
-    → generator.ts builds Actor JSON + Outbox JSON from mercury.db + taste.db
-    → Tauri command write_json_to_path writes files to chosen folder
-    → User uploads folder to their hosting
-    → Fediverse users search @handle@theirhostingdomain
-    → Mastodon fetches /.well-known/webfinger → actor → outbox
-    → Follow established (client-pull model, no Mercury inbox needed)
-```
-
-#### What AP Objects Represent
-
-| Mercury Concept | AP Object Type | Actor Type |
-|-----------------|---------------|-----------|
-| User's curation identity | Person actor | Published at user's hosting |
-| Scene | Group actor (future) | N/A for v1.3 |
-| Collection | OrderedCollection | Part of outbox |
-| Artist discovery | Create/Article activity | In outbox |
-
-For v1.3, one Actor per user (their curator identity). Scene actors are future work — they require deciding who "owns" the scene's AP identity.
-
----
-
-### 2. Listening Rooms
-
-#### Protocol Choice: NIP-38 + Custom kind, Not NIP-53
-
-**NIP-53 (kind:30311)** is designed for live streaming events with streaming URLs, participant management, and recording archives. It's overkill for synchronized embed playback and implies audio infrastructure.
-
-**NIP-38 (kind:30315)** is user status — "I'm listening to X right now." It's per-person, not room-based.
-
-**The right approach for Mercury listening rooms:** Extend NIP-28 (the existing scene rooms infrastructure) with a custom "now playing" event. Mercury already has NIP-28 rooms working with NDK. Listening rooms are NIP-28 rooms with an additional synchronized state layer.
-
-**Custom event: kind:10311 (Mercury Listening Room State)**
-
-This is an ephemeral replaceable event (NIP-16 ephemeral convention) that the room host broadcasts to update "now playing" state. Guests subscribe to it and sync their embed player.
-
-```
-kind: 10311
-tags: [
-  ['e', roomChannelId, '', 'root'],  // links to NIP-28 room
-  ['d', 'now-playing'],              // addressable by room
-  ['url', embedUrl],                 // e.g. https://bandcamp.com/EmbeddedPlayer/...
-  ['platform', 'bandcamp'],          // bandcamp | spotify | youtube | soundcloud
-  ['track', trackTitle],
-  ['artist', artistName],
-  ['mbid', artistMbid],
-  ['expiration', unixTimestamp]      // when the embed session ends
-]
-content: '' // empty, all data in tags
-```
-
-**Why not use NIP-38 (kind:30315):** NIP-38 is per-user status, not per-room coordination. Multiple people in a room each publishing 30315 would collide. The room-scoped kind:10311 is cleaner: one host, one authoritative now-playing state, all guests subscribe to it.
-
-**Why a custom kind:** The Nostr ecosystem for synchronized music playback is not standardized. NIP-1945 (M3U playlists) exists as a proposal but is not a standard. Mercury should use the most natural extension of its existing NIP-28 infrastructure rather than waiting for a standard that may never arrive.
-
-#### Listening Room Architecture
-
-**Host flow:**
-```
-Host opens Listening Room UI
-    → host selects artist + embed URL from artist page
-    → NDK publishes kind:10311 with embed URL + expiration
-    → host also broadcasts as kind:30315 for NIP-38 status (optional interop)
-    → room participants see new now-playing event
-    → EmbedPlayer renders the URL in an iframe
-```
-
-**Guest flow:**
-```
-Guest joins listening room (NIP-28 room)
-    → NDK subscribes to kind:10311 with '#e': [channelId]
-    → on event: extract url + platform tags
-    → EmbedPlayer renders the embed (same component used on artist pages)
-    → on new kind:10311 from host: update embed (host changed track)
-    → on expiration: show "listening session ended" state
-```
-
-**Sync model:** Embed iframes are not byte-synchronized (impossible without audio hosting). The sync is "load the same embed URL at approximately the same time." This is the only viable model without audio hosting. Users click play in their own iframe. The host sets the track; guests load the same track and press play themselves.
-
-#### New Components for Listening Rooms
-
-**New: `src/lib/comms/listening-rooms.svelte.ts`**
-- `createListeningRoom(channelId, embedUrl, platform, trackTitle, artistMbid)` — publishes kind:10311
-- `subscribeToListeningRoom(channelId)` — subscribes to kind:10311 for the channel
-- `listeningRoomState` — reactive $state for current now-playing embed URL
-
-**Modified: `src/lib/comms/rooms.svelte.ts`**
-- Room UI shows "Now Playing" section when kind:10311 exists for the room
-- Host-only controls: "Set Now Playing" button
-
-**Modified: `src/routes/scenes/[slug]/+page.svelte`** (or room detail page)
-- Render `<EmbedPlayer>` inside the room when kind:10311 active
-- Host controls: select from artist's embeds
-
-**No new Rust commands needed.** Listening rooms are pure NDK/frontend work. The existing `write_json_to_path` command handles any persistence needed.
-
----
-
-### 3. Artist Tools
-
-Three tools in one feature area. Each is architecturally independent.
-
-#### 3a. Discovery Stats Dashboard
-
-Reads from `mercury.db` to show an artist's discoverability signals: how many times they appear in tag searches, their uniqueness score, their position in the niche-first ranking.
-
-**New: `src/routes/artist/[slug]/stats/+page.svelte`**
-- "Artist Insights" tab on artist pages
-- Reads: tag count, artist count per tag (from `tag_stats`), uniqueness score calculation
-- Shows: "Your uniqueness score is X. You appear in Y tag combinations. Most distinctive tag: Z."
-
-**New: `src/lib/stats/artist-stats.ts`**
-- `getArtistDiscoveryStats(slug)` — queries mercury.db via existing Tauri commands
-- Computes uniqueness score (same algorithm as search ranking — read from existing queries)
-- Returns stats object for UI rendering
-
-**No new Rust commands needed.** `query_mercury_db` already exists as a passthrough command. Stats queries are SQL against the existing `artists`, `artist_tags`, and `tag_stats` tables.
-
-#### 3b. AI Auto-News
-
-Uses the existing llama-server sidecar to generate a short "what's happening with this artist" blurb, informed by their MusicBrainz data (latest release year, tags, country). No scraping, no live web search — pure generation from local data.
-
-**New: `src/lib/ai/prompts.ts`** (extend existing file)
-- `artistNews(artistName, tags, country, latestReleaseYear)` — prompt for a 2-3 sentence "what's new" style blurb
-- Explicitly instructs model to stick to known facts from the provided data
-
-**New: `src/lib/stats/artist-news.ts`**
-- `generateArtistNews(artist)` — calls AI engine with artistNews prompt
-- Caches result in `taste.db` (new `artist_news_cache` table, key: mbid, value: blurb, generated_at)
-
-**Modified: `src-tauri/src/ai/taste_db.rs`**
-- New table: `artist_news_cache (mbid TEXT PK, blurb TEXT, generated_at INTEGER)`
-- New Tauri commands: `get_artist_news_cache`, `set_artist_news_cache`
-
-#### 3c. Self-Hosted Static Site Generator
-
-Generates a minimal HTML/CSS static site for an artist page — something the user can host on Neocities, GitHub Pages, or any static host. Not "claiming" the artist (no artist login), just generating a static representation of Mercury's view of them.
-
-**New: `src/lib/sitegen/`**
-- `types.ts` — SiteGenOptions (artist mbid, output path, include sections)
-- `template.ts` — HTML template string (embedded CSS, no external dependencies)
-- `generator.ts` — assembles HTML from MusicBrainz data + Mercury tags + cover art URL
-- `export.ts` — calls `write_json_to_path` (or a new Tauri file write command) for HTML output
-
-The generated HTML file is self-contained: inline CSS, links to external embed players, links back to Mercury app (deep link if user has it installed). No server required to host.
-
-**New Rust command: `write_text_to_path(path: String, content: String)`**
-- `write_json_to_path` already exists for JSON. A text variant handles HTML output.
-- Lives in `src-tauri/src/ai/taste_db.rs` alongside existing file write commands.
-
----
-
-### 4. Sustainability Links
-
-This is the simplest feature architecturally — it extends the existing MusicBrainz link categorization.
-
-#### Artist Support Links (MusicBrainz)
-
-The categorize.ts module already maps MB relation type `'patronage'` and `'crowdfunding'` to the `'support'` link category. The artist links API (`/api/artist/[mbid]/links`) already returns `categorized.support[]`. The artist page template just needs to render this section if `support.length > 0`.
-
-**Modified: `src/routes/artist/[slug]/+page.svelte`**
-- Add "Support This Artist" section that renders `categorized.support` links
-- Extend FRIENDLY_NAMES in `categorize.ts` to add: `buymeacoffee.com`, `opencollective.com`, `gofundme.com`
-
-**No new API routes, no new Rust commands.** Pure frontend render of existing data.
-
-#### Mercury Project Funding Links
-
-A static section in the About/Settings page showing Mercury's own funding links (Open Collective, GitHub Sponsors, etc.). These are hardcoded — Mercury is not fetching its own funding data from anywhere.
-
-**Modified: `src/routes/about/+page.svelte`**
-- "Support Mercury" section with static links
-- No new infrastructure
-
-#### Backer Credits Screen
-
-A credits screen showing Nostr kind:30000 list (bookmarks/lists) or a signed JSON file that Mercury reads from a known Nostr public key (Mercury's own pubkey). Backers are Nostr pubkeys that Mercury resolves to display names via NDK.
-
-**New: `src/routes/about/backers/+page.svelte`**
-- Fetches kind:30000 or kind:10000 (follows list) from Mercury's pubkey on Nostr
-- Resolves pubkeys to NIP-01 profiles (kind:0 metadata events)
-- Renders display names/avatars
-
-**Modified: `src/lib/comms/nostr.svelte.ts`**
-- Add `fetchBackerList(mercuryPubkey)` — fetches kind:30000 from relay, resolves profiles
-
-No new Rust commands. Pure NDK work.
-
----
-
-## Component Map: New vs Modified
-
-| Component | Status | Area |
-|-----------|--------|------|
-| `src/lib/activitypub/types.ts` | NEW | AP Outbound |
-| `src/lib/activitypub/generator.ts` | NEW | AP Outbound |
-| `src/lib/activitypub/keypair.ts` | NEW | AP Outbound |
-| `src/lib/activitypub/export.ts` | NEW | AP Outbound |
-| `src/routes/settings/activitypub/+page.svelte` | NEW | AP Outbound |
-| `src/lib/comms/listening-rooms.svelte.ts` | NEW | Listening Rooms |
-| `src/lib/stats/artist-stats.ts` | NEW | Artist Tools |
-| `src/lib/stats/artist-news.ts` | NEW | Artist Tools |
-| `src/lib/sitegen/` (module) | NEW | Artist Tools |
-| `src/routes/artist/[slug]/stats/+page.svelte` | NEW | Artist Tools |
-| `src/routes/about/backers/+page.svelte` | NEW | Sustainability |
-| `src-tauri/src/ai/taste_db.rs` | MODIFIED | AP + Artist Tools |
-| `src/lib/embeds/categorize.ts` | MODIFIED | Sustainability |
-| `src/lib/ai/prompts.ts` | MODIFIED | Artist Tools |
-| `src/lib/comms/rooms.svelte.ts` | MODIFIED | Listening Rooms |
-| `src/lib/comms/nostr.svelte.ts` | MODIFIED | Sustainability |
-| `src/routes/artist/[slug]/+page.svelte` | MODIFIED | Sustainability |
-| `src/routes/about/+page.svelte` | MODIFIED | Sustainability |
+## Component Responsibilities
+
+| Component | Responsibility | Status |
+|-----------|---------------|--------|
+| `StreamingPanel.svelte` | Shows available service badges, play buttons, active source, source switcher | NEW |
+| `SpotifyPlayer.svelte` | Hosts the Web Playback SDK `<script>` tag, initializes player, exposes deviceId | NEW |
+| `ServiceBadge.svelte` | Small badge in Player bar showing active service (Spotify/SC/YT) | NEW |
+| `streaming/spotify-auth.ts` | PKCE flow, token exchange, refresh, status check | NEW |
+| `streaming/spotify-player.ts` | SDK initialization, `window.Spotify.Player` lifecycle, device readiness | NEW |
+| `streaming/resolver.ts` | Given artist links + priority order → dispatch to correct service path | NEW |
+| `streaming/state.svelte.ts` | Global reactive streaming state (connection, activeSource, deviceId) | NEW |
+| `streaming/service-priority.svelte.ts` | Ordered service list, load/save to taste.db | NEW |
+| `player/state.svelte.ts` | Add `activeSource` field to existing `playerState` | MODIFIED |
+| `theme/preferences.svelte.ts` | Migrate `streamingPref.platform` (string) to `streamingPref.priorityOrder` (array) | MODIFIED |
+| `settings/+page.svelte` | Replace platform dropdown with drag-to-reorder Streaming section | MODIFIED |
+| `settings/+page.svelte` | Add Spotify connect/disconnect card with OAuth trigger | MODIFIED |
+| `artist/[slug]/+page.svelte` | Add `<StreamingPanel>` in artist page layout | MODIFIED |
+| `artist/[slug]/release/[mbid]/+page.svelte` | Add "Play Album" button that triggers Spotify album playback | MODIFIED |
 
 ---
 
@@ -327,181 +303,242 @@ No new Rust commands. Pure NDK work.
 ```
 src/
 ├── lib/
-│   ├── activitypub/                # NEW — AP static file generation
-│   │   ├── types.ts                # AP Actor, Outbox, Create, Article types
-│   │   ├── generator.ts            # Builds AP JSON-LD from Mercury data
-│   │   ├── keypair.ts              # RSA keypair for AP actor public key
-│   │   └── export.ts              # File generation orchestration
-│   ├── comms/
-│   │   ├── listening-rooms.svelte.ts  # NEW — kind:10311 publish/subscribe
-│   │   ├── nostr.svelte.ts         # MODIFIED — add fetchBackerList
-│   │   └── rooms.svelte.ts         # MODIFIED — add now-playing UI hooks
-│   ├── stats/                      # NEW — discovery analytics
-│   │   ├── artist-stats.ts         # Queries mercury.db for discoverability signals
-│   │   └── artist-news.ts          # AI auto-news generation + cache
-│   └── sitegen/                    # NEW — static site generator
-│       ├── types.ts                # SiteGenOptions
-│       ├── template.ts             # Inline HTML/CSS template
-│       ├── generator.ts            # Assembles HTML from MB data
-│       └── export.ts              # Calls Tauri write command
-└── routes/
-    ├── artist/[slug]/
-    │   ├── +page.svelte            # MODIFIED — add support links section
-    │   └── stats/
-    │       └── +page.svelte        # NEW — discovery stats dashboard
-    ├── settings/
-    │   └── activitypub/
-    │       └── +page.svelte        # NEW — AP export UI
-    └── about/
-        ├── +page.svelte            # MODIFIED — Mercury funding section
-        └── backers/
-            └── +page.svelte        # NEW — backer credits
-
-src-tauri/src/ai/
-└── taste_db.rs                     # MODIFIED — new tables + commands
+│   └── streaming/               # NEW module — all streaming integration
+│       ├── state.svelte.ts      # Reactive: connection status, active source
+│       ├── spotify-auth.ts      # PKCE OAuth flow, token lifecycle
+│       ├── spotify-player.ts    # Web Playback SDK wrapper
+│       ├── resolver.ts          # Service dispatch (given links + priority → action)
+│       ├── service-priority.svelte.ts  # Ordered service list, persisted
+│       └── index.ts             # Barrel export
+├── components/
+│   ├── StreamingPanel.svelte    # NEW — artist page service selector
+│   ├── SpotifyPlayer.svelte     # NEW — SDK host component (loads script tag)
+│   └── ServiceBadge.svelte      # NEW — player bar active source badge
 ```
 
 ---
 
 ## Architectural Patterns
 
-### Pattern 1: Offline-First Generation (AP Outbound)
+### Pattern 1: Lazy Resolution — No API Calls at Page Load
 
-**What:** Mercury generates static JSON-LD files to disk instead of serving them live. The user hosts them on their own web infrastructure.
+**What:** Service availability is detected from existing `links` data (which platforms have URLs). API calls to resolve actual playable content only fire when the user clicks play for a specific service.
 
-**When to use:** Any feature that needs to expose Mercury data to the web but where Mercury cannot act as a live server. AP outbound is the primary case. This pattern also applies to static site generation for artist pages.
+**When to use:** Always, for streaming resolution. Page load is already network-heavy (4 MusicBrainz API calls). Do not add to it.
 
-**Trade-offs:** Requires user action (upload files). No inbox (Mercury cannot receive follows or replies directly). Cannot do push delivery without HTTP signatures. But: zero infrastructure cost, works offline, no API rate limits, completely user-controlled.
+**Trade-offs:** User sees a brief loading state when clicking play. Acceptable — this is the same pattern streaming services use themselves. The alternative (eager resolution at load) wastes network/quota on browse-only sessions.
 
-**Example structure of generated actor.json:**
-```json
-{
-  "@context": ["https://www.w3.org/ns/activitystreams", "https://w3id.org/security/v1"],
-  "id": "https://user-domain.com/@mercury",
-  "type": "Person",
-  "preferredUsername": "mercury",
-  "name": "Steve's Mercury Curation",
-  "summary": "Electronic music discovery — curated by a human",
-  "inbox": "https://user-domain.com/inbox",
-  "outbox": "https://user-domain.com/outbox",
-  "publicKey": {
-    "id": "https://user-domain.com/@mercury#main-key",
-    "owner": "https://user-domain.com/@mercury",
-    "publicKeyPem": "-----BEGIN PUBLIC KEY-----\n..."
+**Example — StreamingPanel click handler:**
+```typescript
+// resolver.ts
+async function resolveAndPlay(service: PlatformType, links: PlatformLinks): Promise<void> {
+  switch (service) {
+    case 'spotify': {
+      const artistId = extractSpotifyArtistId(links.spotify[0]);
+      if (!artistId) return;
+      const token = await getSpotifyToken(); // from taste.db module var
+      const tracks = await fetchTopTracks(artistId, token);
+      const uris = tracks.map(t => t.uri);
+      await startPlayback(uris, streamingState.spotify.deviceId, token);
+      streamingState.activeSource = 'spotify';
+      break;
+    }
+    case 'soundcloud': {
+      // oEmbed already fetched at page load — embed HTML in page data
+      // Just signal to render the SoundCloud iframe
+      streamingState.activeSource = 'soundcloud';
+      break;
+    }
+    case 'youtube': {
+      // If URL is a video URL (youtubeEmbedUrl returns non-null): embed it
+      // If URL is channel: open external link
+      const embedUrl = youtubeEmbedUrl(links.youtube[0]);
+      if (embedUrl) {
+        streamingState.youtubeEmbedUrl = embedUrl;
+        streamingState.activeSource = 'youtube';
+      } else {
+        await open(links.youtube[0]); // Tauri shell open
+      }
+      break;
+    }
+    case 'bandcamp': {
+      await open(links.bandcamp[0]); // External only — no embed construction
+      break;
+    }
   }
 }
 ```
 
-### Pattern 2: Relay-Mediated Coordination (Listening Rooms)
+### Pattern 2: Spotify Web Playback SDK via Script Tag in SpotifyPlayer.svelte
 
-**What:** The Nostr relay pool acts as the coordination layer. The host publishes a replaceable kind:10311 event; guests subscribe to it via NDK. No P2P connection between users.
+**What:** The Web Playback SDK requires a `<script src="https://sdk.scdn.co/spotify-player.js">` tag. This is loaded once, as a component, in the root layout. The SDK sets `window.Spotify` and calls `window.onSpotifyWebPlaybackSDKReady`.
 
-**When to use:** Any feature requiring real-time state synchronization between Mercury users. The pattern already works for DMs (NIP-17) and scene rooms (NIP-28). Extend it for listening rooms.
+**When to use:** Inject the SDK script when the user has a Spotify token (connected). Do not load it for non-connected users.
 
-**Trade-offs:** Depends on relay availability. No byte-level audio sync (impossible without hosting). Relay latency (~100ms) means "sync" is within seconds, not milliseconds. Acceptable for "load the same embed" use case.
+**Trade-offs:** The SDK script cannot be bundled with the app — it must load from Spotify's CDN. The current Tauri config has `"csp": null` (CSP disabled), so there is no blocking issue. If CSP is ever enabled, add `https://sdk.scdn.co` to `script-src`.
 
-**Example subscription:**
+**Required scopes for full SDK use:**
+- `streaming` — required for SDK player registration (without this, SDK device won't register)
+- `user-read-private` — required to verify Premium status
+- `user-modify-playback-state` — required for `PUT /v1/me/player/play` API call
+
+**Example — SpotifyPlayer.svelte:**
 ```typescript
-// listening-rooms.svelte.ts
-const sub = ndk.subscribe({
-  kinds: [10311],
-  '#e': [channelId],
-  limit: 1
-}, { closeOnEose: false });
+// In onMount — load SDK script when Spotify is connected
+onMount(() => {
+  if (!streamingState.spotify.connected) return;
 
-sub.on('event', (event) => {
-  const url = event.tags.find(t => t[0] === 'url')?.[1];
-  const platform = event.tags.find(t => t[0] === 'platform')?.[1];
-  if (url) listeningRoomState.nowPlaying = { url, platform };
+  window.onSpotifyWebPlaybackSDKReady = () => {
+    const player = new window.Spotify.Player({
+      name: 'BlackTape Player',
+      getOAuthToken: cb => {
+        getSpotifyToken().then(token => cb(token));
+      },
+      volume: 0.8
+    });
+
+    player.addListener('ready', ({ device_id }) => {
+      streamingState.spotify.deviceId = device_id;
+    });
+
+    player.connect();
+  };
+
+  const script = document.createElement('script');
+  script.src = 'https://sdk.scdn.co/spotify-player.js';
+  document.body.appendChild(script);
 });
 ```
 
-### Pattern 3: Extend Existing Tauri Commands (Artist Tools)
+### Pattern 3: Token Storage via Existing ai_settings Pattern
 
-**What:** New features query existing databases (mercury.db, taste.db) via existing Tauri commands (`query_mercury_db`, `get_ai_setting`) rather than adding new commands for every query.
+**What:** Spotify access token, refresh token, and expiry stored as key-value rows in `taste.db` using the existing `set_ai_setting` / `get_ai_setting` Tauri commands. Module-scoped variables in `spotify-auth.ts` cache the token in memory for the session.
 
-**When to use:** When the data already exists and the query is a straightforward SELECT. Artist stats, for example, are pure reads from `tag_stats` and `artist_tags` — no new schema, no new command.
+**When to use:** For any session-persistent credential that does not need reactive UI display. The token itself should never appear in $state.
 
-**Trade-offs:** `query_mercury_db` is a passthrough that accepts raw SQL strings. This is fine for internal use but not a public API. New tables (artist_news_cache, ap_settings) DO need dedicated commands because they require specific upsert logic.
+**Trade-offs:** `ai_settings` is not designed for security — it's a plaintext SQLite table. Acceptable for an open-source desktop app where the user owns their machine. The Spotify PKCE flow does not use client secrets, so token exposure risk is limited.
 
-**When to add new Tauri commands:** Only when a write operation needs custom logic (upsert, conflict resolution, atomic multi-step writes). For reads, use `query_mercury_db` with a typed TypeScript wrapper.
+**Example — spotify-auth.ts module pattern:**
+```typescript
+// Module-scoped — not reactive $state
+let cachedToken: string | null = null;
+let tokenExpiry: number = 0;
 
-### Pattern 4: MB Link Category Extension (Sustainability)
+export async function getSpotifyToken(): Promise<string | null> {
+  if (cachedToken && Date.now() < tokenExpiry) return cachedToken;
+  // Load from taste.db
+  const { invoke } = await import('@tauri-apps/api/core');
+  cachedToken = await invoke('get_ai_setting', { key: 'spotify_access_token' });
+  const expiryStr = await invoke<string | null>('get_ai_setting', { key: 'spotify_token_expires' });
+  tokenExpiry = expiryStr ? parseInt(expiryStr) : 0;
 
-**What:** MusicBrainz URL relationships already flow through `categorize.ts`. Adding new support platforms is a pure data extension — add entries to the FRIENDLY_NAMES map and the category is automatically rendered.
+  if (Date.now() >= tokenExpiry) {
+    // Token expired — attempt refresh
+    cachedToken = await refreshSpotifyToken();
+  }
+  return cachedToken;
+}
+```
 
-**When to use:** Any new external platform that MusicBrainz tracks. The pattern is already established for Patreon and Ko-fi. Extend it for Buy Me a Coffee, Open Collective, and GoFundMe.
+### Pattern 4: Service Priority as Ordered Array
 
-**Trade-offs:** Dependent on MusicBrainz data quality. Artists who haven't linked their Patreon on MusicBrainz won't appear. This is correct — Mercury does not store artist data, it surfaces what MusicBrainz knows.
+**What:** The existing `streamingPref.platform` (single string) is insufficient for v1.6. Service priority needs to be an ordered array — the first service in the list is tried first when the user clicks play. This matches the Parachord drag-to-reorder pattern but simpler.
+
+**When to use:** Replace the existing `preferred_platform` ai_settings key with a `service_priority_order` key holding a JSON array.
+
+**Trade-offs:** Breaking change from v1.5 preference. Handle gracefully: if `service_priority_order` is not set, derive default order from `preferred_platform` (if set) with others appended, then fall back to `['bandcamp', 'spotify', 'soundcloud', 'youtube']`.
+
+**Persistence pattern (matches existing):**
+```typescript
+// service-priority.svelte.ts
+export const servicePriorityState = $state({
+  order: ['bandcamp', 'spotify', 'soundcloud', 'youtube'] as PlatformType[]
+});
+
+export async function saveServicePriority(order: PlatformType[]): Promise<void> {
+  const { invoke } = await import('@tauri-apps/api/core');
+  await invoke('set_ai_setting', { key: 'service_priority_order', value: JSON.stringify(order) });
+  servicePriorityState.order = order;
+}
+```
 
 ---
 
 ## Data Flow
 
-### ActivityPub Export Flow
+### Spotify OAuth (PKCE) Flow
+
+The existing `tauri-plugin-oauth` (already in `Cargo.toml`) and `@fabianlars/tauri-plugin-oauth` (already in `src/lib/taste/import/spotify.ts`) handle the localhost redirect server. The new Spotify auth for playback reuses this exact pattern.
 
 ```
-User → Settings → AP Export page
-    → Fills in: hosting URL, display name, handle
-    → Clicks "Generate & Export"
-    → activitypub/generator.ts builds:
-        ├── /.well-known/webfinger  (JSON)
-        ├── /actor                  (JSON-LD)
-        ├── /outbox                 (JSON-LD OrderedCollection)
-        └── /outbox/page-1          (JSON-LD OrderedCollectionPage)
-    → For each: invoke('write_json_to_path', { path, content })
-    → UI shows "Files written to [folder]. Upload to your hosting."
-
-User uploads to hosting
-    → Fediverse user searches @handle@user-domain.com
-    → Mastodon fetches /.well-known/webfinger
-    → Mastodon fetches /actor (Content-Type: application/activity+json)
-    → Mastodon fetches /outbox
-    → Follow established (client-pull: Mastodon polls outbox for updates)
+User clicks "Connect Spotify" in Settings
+  → spotify-auth.ts: generatePKCE() → verifier + challenge
+  → tauri-plugin-oauth: start() → get ephemeral port
+  → open() Spotify auth URL with:
+      scope: "streaming user-read-private user-modify-playback-state"
+      redirect_uri: "http://localhost:{port}/callback"
+  → Browser opens Spotify login
+  → Spotify redirects to localhost callback
+  → tauri-plugin-oauth: onUrl() catches redirect URL
+  → Extract code from URL
+  → POST to /api/token with code + verifier
+  → Receive access_token + refresh_token + expires_in
+  → Store all three in taste.db via set_ai_setting
+  → Verify Premium: GET /v1/me → check product === 'premium'
+  → Update streamingState.spotify: { connected: true, isPremium: true/false }
+  → SpotifyPlayer.svelte detects connected=true, loads SDK script
+  → SDK fires onSpotifyWebPlaybackSDKReady
+  → Player initializes, 'ready' event → store device_id in streamingState
 ```
 
-### Listening Room Flow
+**Bundled client ID decision:** The Spotify Client ID is registered once for BlackTape and bundled into the app. Users do not need to create their own Spotify developer app. This removes the biggest UX friction from the existing import flow. The redirect URI `http://localhost:{dynamic_port}/callback` must be registered in the Spotify dashboard with multiple port variations, OR use a wildcard if Spotify allows it (they do allow `http://localhost` as a wildcard redirect for PKCE).
+
+### Artist Page Streaming Resolution Flow
 
 ```
-Host selects track on artist page
-    → clicks "Share to Room"
-    → selects destination room (NIP-28 channel)
-    → listening-rooms.svelte.ts publishes kind:10311:
-        tags: [['e', channelId], ['url', embedUrl], ['platform', 'bandcamp'],
-               ['artist', name], ['expiration', ts]]
-    → NDK sends to relay pool
+User visits /artist/{slug}
+  → page load: existing MB API calls (links, releases, bio, relationships)
+  → links.spotify = ["https://open.spotify.com/artist/4Z8W..."] (or [])
+  → links.soundcloud = ["https://soundcloud.com/artistname"] (or [])
+  → links.youtube = ["https://www.youtube.com/@channel"] (or [])
+  → links.bandcamp = ["https://artist.bandcamp.com"] (or [])
+  → SoundCloud oEmbed fetch (existing, keep): soundcloudOembedHtml in page data
+  → Page renders with StreamingPanel showing available service badges
 
-Guest in room receives kind:10311
-    → subscribeToListeningRoom subscription fires
-    → listeningRoomState.nowPlaying updated
-    → EmbedPlayer component re-renders with new URL
-    → Guest clicks play in their iframe (no automatic play — browser policy)
+User clicks "Play" (top-priority service, auto-selected based on servicePriorityState.order)
+  → resolver.ts: find first service in priority order with an available URL
+  → Dispatch to service handler (see Pattern 1 above)
+  → Show loading state on StreamingPanel
+
+User clicks different service badge (source switcher)
+  → Same resolver dispatch with explicit service override
+  → streamingState.activeSource updates
+  → Player bar ServiceBadge updates reactively
+
+Spotify playback starts:
+  → SDK player ready, device registered
+  → PUT /v1/me/player/play → Spotify streams to SDK player
+  → SDK's 'player_state_changed' event → update playerState.currentTrack
+  → Player bar shows track title + artist (from SDK state)
+  → ServiceBadge shows "S" (Spotify)
 ```
 
-### Artist Stats Flow
+### Player Bar Integration
+
+The existing Player.svelte shows local file playback state. For streaming services:
 
 ```
-User visits artist page → clicks "Stats" tab
-    → artist-stats.ts calls query_mercury_db with:
-        SELECT at.tag, ts.artist_count
-        FROM artist_tags at
-        JOIN tag_stats ts ON ts.tag = at.tag
-        WHERE at.artist_id = (SELECT id FROM artists WHERE mbid = ?)
-        ORDER BY ts.artist_count ASC  -- rarest first
-    → Computes uniqueness score: avg(1/artist_count) across tags
-    → Returns { topTags, rarestTag, uniquenessScore, tagCount }
-    → UI renders discoverability dashboard
+playerState.currentTrack (existing PlayerTrack interface)
+  → needs no change for SoundCloud/YouTube/Bandcamp (embed iframes are self-contained)
+  → for Spotify SDK: sync SDK player_state_changed to playerState.currentTrack
+    (title, artist, album from Spotify SDK state object)
+
+playerState.activeSource (NEW field on playerState)
+  → drives ServiceBadge rendering in Player.svelte
+  → 'local' | 'spotify' | 'soundcloud' | 'youtube' | 'bandcamp' | null
 ```
 
-### Sustainability Support Links Flow
-
-```
-Artist page loads
-    → existing /api/artist/[mbid]/links fetch runs
-    → categorize.ts maps 'patronage'/'crowdfunding' MB types to 'support' category
-    → response.categorized.support[] now includes Patreon, Ko-fi, etc.
-    → artist page renders "Support This Artist" section (new, was previously unused)
-```
+**Player controls for Spotify:** The existing play/pause/next controls in Player.svelte call `audio.svelte.ts` functions. For Spotify, these need to delegate to the SDK player. Pattern: check `playerState.activeSource` in each control function, conditionally call SDK or audio element.
 
 ---
 
@@ -511,163 +548,184 @@ Artist page loads
 
 | Service | Integration Pattern | Notes |
 |---------|---------------------|-------|
-| Nostr Relays | NDK subscribe/publish — existing | kind:10311 is new event kind, no relay config change needed |
-| MusicBrainz API | Existing live fetch via `/api/artist/[mbid]/links` | No change — sustainability links already categorized |
-| Fediverse (Mastodon) | Static file serve via user's hosting — not Mercury serving | Mercury only generates files; hosting is user responsibility |
-| ActivityPub RSA | Client-side RSA keygen in browser (WebCrypto API) | No server-side crypto needed for outbox-only pattern |
+| Spotify OAuth | PKCE via existing tauri-plugin-oauth + @fabianlars/tauri-plugin-oauth | Same pattern as existing import flow — reuse exactly |
+| Spotify Web API | Bearer token, fetch from Svelte side | `GET /artists/{id}/top-tracks`, `GET /albums/{id}/tracks` |
+| Spotify Web Playback SDK | Script tag loaded at runtime from `sdk.scdn.co` | Premium required. CSP currently null — no blocking. |
+| Spotify Connect API | `PUT /me/player/play?device_id={id}` | Requires `user-modify-playback-state` scope. Premium only. |
+| SoundCloud oEmbed | Existing `soundcloudOembedUrl()` function, fetched at page load | Already works. Artist profile URL accepted. No changes needed. |
+| YouTube embed | `youtubeEmbedUrl()` returns null for channel URLs. Channel URLs → open() | On-demand only. Data API search is v1.7+ feature. |
+| YouTube Data API | Optional, on-demand channel→video resolution | 100 units/query. Avoid for v1.6. |
+| Bandcamp | External link only. No embed construction. | Requires numeric album ID not available from MusicBrainz URLs. |
 
 ### Internal Boundaries
 
 | Boundary | Communication | Notes |
 |----------|---------------|-------|
-| AP generator ↔ Tauri | invoke('write_json_to_path') | Existing command, no change |
-| Listening rooms ↔ NDK | ndkState.ndk.subscribe/publish | Same pattern as rooms.svelte.ts |
-| Artist stats ↔ mercury.db | invoke('query_mercury_db', { sql }) | Existing command, no change |
-| Artist news ↔ AI engine | aiEngine.complete(prompt) | Existing engine singleton |
-| Artist news cache ↔ taste.db | New Tauri commands (get/set_artist_news_cache) | New commands, same pattern |
-| AP settings ↔ taste.db | New Tauri commands (get/set_ap_settings) | New commands, same pattern |
-| Backer credits ↔ Nostr | ndkState.ndk.fetchEvents({ kinds: [30000] }) | Existing NDK pattern |
-
-### Listening Room ↔ Embed Player
-
-The `EmbedPlayer` component is already used on artist pages. For listening rooms, it needs a new invocation pattern — driven by reactive state instead of page-load props.
-
-```typescript
-// Current (page-load driven):
-<EmbedPlayer url={bandcampUrl} platform="bandcamp" />
-
-// New (state-driven for rooms):
-{#if listeningRoomState.nowPlaying}
-  <EmbedPlayer
-    url={listeningRoomState.nowPlaying.url}
-    platform={listeningRoomState.nowPlaying.platform}
-  />
-{/if}
-```
-
-No changes to EmbedPlayer component itself — it's stateless, accepts props. The change is in the consuming component.
+| `spotify-auth.ts` ↔ `taste.db` | `invoke('get_ai_setting')`, `invoke('set_ai_setting')` | No new Rust commands needed |
+| `streaming/state.svelte.ts` ↔ `player/state.svelte.ts` | `activeSource` field on playerState | Minimal coupling — only one field added |
+| `SpotifyPlayer.svelte` ↔ `streaming/state.svelte.ts` | Writes `deviceId` to streamingState on SDK ready event | One-way: SDK → state |
+| `resolver.ts` ↔ `streaming/state.svelte.ts` | Writes `activeSource` after successful resolution | One-way: resolver → state |
+| `StreamingPanel.svelte` ↔ `resolver.ts` | Function call on button click | No reactive binding — imperative dispatch |
+| `service-priority.svelte.ts` ↔ `taste.db` | `invoke('set_ai_setting', { key: 'service_priority_order' })` | Same pattern as layout template storage |
+| `settings/+page.svelte` ↔ `service-priority.svelte.ts` | Imports `servicePriorityState`, calls `saveServicePriority()` | Replace existing platform dropdown |
+| Player.svelte ↔ Spotify SDK | On play/pause/next: check `activeSource`, delegate to SDK or audio element | SDK player is module-scoped in `spotify-player.ts` |
 
 ---
 
 ## Build Order (Recommended)
 
-Dependencies drive the order. Features are ordered from least-dependent to most-dependent.
+Dependencies drive the order. Each phase is independently shippable.
 
-**Phase 1: Sustainability Links (no new architecture)**
-- Extend categorize.ts FRIENDLY_NAMES
-- Render `categorized.support` on artist page
-- Add Mercury funding section to about page
-- Add backer credits page (NDK fetchEvents pattern already exists)
-- Dependency: none (pure extension of existing patterns)
+**Phase 1: Streaming state module + Settings UI (no actual playback)**
+- `src/lib/streaming/state.svelte.ts` — baseline reactive state
+- `src/lib/streaming/service-priority.svelte.ts` — load/save ordered list
+- `settings/+page.svelte` — drag-to-reorder replacing dropdown
+- `ServiceBadge.svelte` — stub, renders service name from `playerState.activeSource`
+- Dependency: none (pure new code + UI change)
 - Risk: LOW
+- Value: Settings UI ready, foundation laid
 
-**Phase 2: Artist Tools — Stats Dashboard**
-- New stats module querying existing mercury.db via existing command
-- New artist stats tab/route
-- Dependency: none beyond mercury.db existing
-- Risk: LOW
+**Phase 2: Spotify PKCE OAuth + token storage (no playback yet)**
+- `src/lib/streaming/spotify-auth.ts` — full PKCE flow, token management
+- Settings Spotify card: "Connect Spotify", status display, disconnect
+- Token stored to taste.db, `streamingState.spotify.connected` updates
+- Premium check via `/v1/me`
+- Dependency: `tauri-plugin-oauth` + `tauri-plugin-shell` (both already in Cargo.toml)
+- Risk: MEDIUM — OAuth flow is existing pattern but new scopes
+- Value: Spotify connection established, users can verify auth works
 
-**Phase 3: Artist Tools — AI Auto-News**
-- New prompt in prompts.ts
-- New cache table in taste.db (new Rust commands)
-- New artist-news.ts module
-- Dependency: AI sidecar must be running (existing, user-optional)
-- Risk: LOW-MEDIUM (depends on AI sidecar being initialized)
+**Phase 3: Spotify Web Playback SDK + top tracks resolution**
+- `src/lib/streaming/spotify-player.ts` — SDK wrapper
+- `SpotifyPlayer.svelte` — loads script tag, initializes player
+- `src/lib/streaming/resolver.ts` — Spotify path: extract artist ID → top tracks → start playback
+- `StreamingPanel.svelte` — available badges, play button, loading state
+- `artist/[slug]/+page.svelte` — add StreamingPanel
+- `player/state.svelte.ts` — add `activeSource` field
+- `Player.svelte` — add ServiceBadge, delegate play/pause/next to SDK when `activeSource === 'spotify'`
+- Dependency: Phase 2 complete (need token + deviceId)
+- Risk: HIGH — SDK integration in WebView2, Premium required for full test
+- Value: Core Spotify playback working
 
-**Phase 4: Artist Tools — Static Site Generator**
-- New sitegen module
-- New write_text_to_path Rust command
-- Dependency: MusicBrainz live fetch (existing), cover art URL pattern (existing)
-- Risk: LOW
+**Phase 4: SoundCloud integration (already mostly working)**
+- Confirm existing oEmbed fetch flows correctly through to StreamingPanel
+- Wire SoundCloud embed display through `streamingState.activeSource = 'soundcloud'`
+- Add SoundCloud to resolver dispatch
+- `recordEmbedPlay` hook for SoundCloud plays (already in playback.svelte.ts)
+- Dependency: StreamingPanel from Phase 3
+- Risk: LOW — existing oEmbed fetch already works
+- Value: SoundCloud playable from StreamingPanel
 
-**Phase 5: Listening Rooms**
-- New listening-rooms.svelte.ts (extends NDK, extends NIP-28 rooms)
-- Modify rooms UI to show now-playing section
-- Dependency: NDK initialized (existing), NIP-28 rooms (existing)
-- Risk: MEDIUM (new Nostr event kind, behavior depends on relay propagation speed)
+**Phase 5: YouTube embed integration**
+- Wire existing `youtubeEmbedUrl()` result through StreamingPanel
+- For channel URLs: "Open on YouTube" button using Tauri `open()`
+- Update resolver dispatch for YouTube
+- Dependency: StreamingPanel from Phase 3
+- Risk: LOW — embed path is trivial. Channel→video only opens external.
+- Value: YouTube video URLs play in-app, channel URLs open browser
 
-**Phase 6: ActivityPub Outbound**
-- New activitypub module
-- New AP settings in taste.db (new Rust commands)
-- New settings UI page
-- Dependency: write_json_to_path command (existing), RSA keygen (WebCrypto, no dependency)
-- Risk: MEDIUM (AP JSON-LD format must be Mastodon-compatible — requires test with real Mastodon instance)
+**Phase 6: Release page album playback**
+- `artist/[slug]/release/[mbid]/+page.svelte` — "Play Album" button
+- Parse Spotify album ID from release link if present
+- `GET /v1/albums/{albumId}/tracks` → get URIs
+- `PUT /v1/me/player/play` with `context_uri: "spotify:album:{id}"` OR uri list
+- Populate queue with album tracks (title, artist from Spotify API response)
+- Dependency: Phase 3 complete (Spotify player + token)
+- Risk: MEDIUM — needs album tracklist integration with existing queue system
+- Value: "Play Album" feature complete
 
 **Rationale for this order:**
-- Sustainability first: zero risk, immediate value, validates existing link pipeline
-- Stats before AI news: stats don't need AI; AI news builds on stats data
-- Site generator before listening rooms: both are independent but sitegen is simpler
-- Listening rooms before AP: AP is the most complex and least reversible
-- AP last: if it doesn't work perfectly, no other features are blocked
+- State module first so all subsequent phases have a consistent integration target
+- OAuth before SDK — can't test SDK without a valid token
+- SDK before SoundCloud/YouTube — StreamingPanel is the shared UI component; build it once
+- SoundCloud before YouTube — SoundCloud embed is already 90% working; quick win
+- Release page album playback last — depends on Spotify working AND queue integration
 
 ---
 
 ## Anti-Patterns
 
-### Anti-Pattern 1: Serving AP Endpoints from Tauri
+### Anti-Pattern 1: Calling Spotify API from Rust Tauri Commands
 
-**What people do:** Spawn an Axum HTTP server inside Tauri on a local port and try to proxy it through NAT/UPnP to the internet.
+**What people do:** Create a Rust Tauri command `get_top_tracks(artist_id, token)` that calls the Spotify API server-side.
 
-**Why it's wrong:** Desktop apps behind NAT/firewalls cannot reliably accept inbound connections. UPnP is disabled on most corporate/university networks. The user's IP changes (DHCP). The app must be running for the endpoint to be reachable — the actor disappears when Mercury closes.
+**Why it's wrong:** There is no server-side in this app — "Rust Tauri command" IS the desktop app process. The token is already on the Svelte side (loaded from taste.db). Making it cross the JS-Rust boundary twice for a simple HTTPS call adds latency and complexity with no benefit. The SvelteKit frontend can call Spotify's API directly using `fetch()`.
 
-**Do this instead:** Generate static JSON-LD files for the user to host. Accept the limitation: Mercury's AP implementation is outbound-only (readable outbox, no live inbox). This matches what static site AP implementations do and is fully Mastodon-compatible for the follow use case.
+**Do this instead:** Call Spotify API directly from TypeScript modules using `fetch()`. The Tauri WebView2 context supports standard fetch. Token never needs to cross to Rust.
 
-### Anti-Pattern 2: Per-User Listening Sync via Relay Timing
+### Anti-Pattern 2: Eager SDK Loading for All Users
 
-**What people do:** Broadcast a timestamp with the kind:10311 event and have guests seek to that timestamp to "sync."
+**What people do:** Unconditionally load `<script src="https://sdk.scdn.co/spotify-player.js">` in the root layout for all users.
 
-**Why it's wrong:** Embed players (Bandcamp, Spotify, YouTube) do not expose a seek API from the embedding page. Bandcamp specifically runs in an iframe with no postMessage interface for seeking. You cannot programmatically seek an embedded player from the parent page.
+**Why it's wrong:** The SDK script is loaded from Spotify's CDN, adding latency and a third-party network request for every user, including those who will never connect Spotify. It also initializes a Spotify Connect device registration even for disconnected users.
 
-**Do this instead:** Accept that "sync" means "load the same embed." The host picks the track; guests load it and press play themselves. This is enough for a social listening room — the shared experience is the track choice, not the playback position.
+**Do this instead:** Load the SDK script dynamically in `SpotifyPlayer.svelte` only when `streamingState.spotify.connected === true`. This component is mounted conditionally in the root layout.
 
-### Anti-Pattern 3: Artist News Without Hallucination Guard
+### Anti-Pattern 3: Storing the Token in Svelte $state
 
-**What people do:** Prompt the AI for artist news without constraining it to provided facts.
+**What people do:** `export const spotifyToken = $state('')` to make the token reactive and available everywhere.
 
-**Why it's wrong:** The Qwen2.5 3B model (Mercury's local model) will hallucinate tour dates, album titles, and news events if asked open-endedly. This is worse than no news at all — it's misinformation about real artists.
+**Why it's wrong:** Svelte 5 $state is DevTools-inspectable. Tokens in reactive state show up in component trees. The token changes infrequently (hourly refresh) — it does not need to be reactive. What components need is `connected: boolean` and `isPremium: boolean`, not the token string.
 
-**Do this instead:** Constrain the prompt to only the data Mercury has: tags, country, latest release year from MusicBrainz. The prompt should say "Based ONLY on: tags=[X], country=[Y], latest release year=[Z]. Do not state facts you are not certain of." Include a disclaimer in the UI: "AI-generated from MusicBrainz metadata — not a news feed."
+**Do this instead:** Keep the token in a module-scoped variable in `spotify-auth.ts`. Export only status booleans to `streamingState`. Any code that needs the token calls `getSpotifyToken()` which handles the module-scoped cache + refresh.
 
-### Anti-Pattern 4: Kind:30000 as Backer Registry
+### Anti-Pattern 4: Constructing Bandcamp Embed URLs from Artist Page URLs
 
-**What people do:** Publish backers as a kind:30000 (bookmarks list) from Mercury's pubkey and expect clients to interpret it as a backer list.
+**What people do:** Try to scrape artist.bandcamp.com pages at page load to extract numeric album IDs for embed construction.
 
-**Why it's wrong:** kind:30000 is for personal bookmarks, not public registries. Any Nostr client will show it as "Steve's bookmarks" not "Mercury backers."
+**Why it's wrong:** Bandcamp actively blocks automated scraping. The artist page HTML structure is not stable. This would add a fragile web-scraping dependency to the page load path and frequently break. The resulting embed covers only one album (whichever happens to be featured), not the artist's catalog.
 
-**Do this instead:** Use kind:30000 with a specific `d` tag (`d = "mercury-backers"`) to make it an addressable list (kind:30000 with `d` tag = NIP-51 addressable set). Or use a signed JSON file in the Mercury repo that NDK fetches as a raw event. The latter is more reliable for a public registry.
+**Do this instead:** Bandcamp stays as external-link-only. Show a "Listen on Bandcamp" button that opens the artist's Bandcamp page in the system browser via Tauri `open()`. Users who want Bandcamp follow the link to their site.
+
+### Anti-Pattern 5: Calling YouTube Data API at Page Load
+
+**What people do:** At artist page load, call the YouTube Data API `search.list` to find a video by artist name, and pre-resolve the embed URL.
+
+**Why it's wrong:** Each `search.list` call costs 100 quota units. The default daily quota is 10,000 units. At 100 artists viewed per day, quota is exhausted. Most artists in the BlackTape database (2.8M artists) have YouTube channel URLs from MusicBrainz — search would fire for all of them. YouTube would also throttle or suspend the API key.
+
+**Do this instead:** For artists whose MusicBrainz YouTube URL is a video URL (`youtubeEmbedUrl()` returns non-null), embed directly. For channel URLs, show "Search on YouTube" which opens `youtube.com/results?search_query=...` in the browser — no API call, no quota.
+
+### Anti-Pattern 6: Single Spotify Device for Multiple Artist Pages
+
+**What people do:** Keep the same Spotify SDK player device connected for the lifetime of the app session without handling state between page navigations.
+
+**Why it's wrong:** When navigating from artist A to artist B and clicking play, the new top tracks must replace the queue. If the SDK player is in an unknown state from the previous artist (mid-track, paused, etc.), `PUT /v1/me/player/play` with new URIs may fail or be ignored.
+
+**Do this instead:** Before each play call, verify the device is still registered (listen for `ready` event, handle `not_ready`). When switching artists, explicitly stop current playback before queuing new tracks. The `clearQueue()` → `setQueue()` pattern from the local player should apply to the streaming resolver too.
 
 ---
 
 ## Scaling Considerations
 
-This is a desktop app — "scaling" means "as the user's data grows."
+This is a desktop app. "Scaling" means "as user sessions get longer and artist browsing increases."
 
-| Concern | At current scale | At 5x data |
-|---------|-----------------|------------|
-| AP outbox size | 10-50 activities, single JSON file | Split into paginated pages (AP supports OrderedCollectionPage) |
-| Artist stats query | Sub-millisecond on mercury.db | No change — indexed query |
-| Artist news cache | 1 row per mbid in taste.db | Negligible growth |
-| Listening room subscriptions | 1 NDK subscription per room | NDK handles multiple subscriptions; close on leave |
-| Backer list | Fetched live from relay each load | Cache locally in taste.db with TTL |
+| Concern | Current scale | At heavy use (100+ artist visits/session) |
+|---------|--------------|------------------------------------------|
+| Spotify token refresh | Hourly, on first API call after expiry | Transparent to user — module-scoped refresh |
+| YouTube quota | 0 used (no Data API calls in v1.6) | 0 used — stays external links |
+| SoundCloud oEmbed requests | 1 per artist page load (existing) | Unchanged — artist page fetches only |
+| taste.db ai_settings rows | 4 new rows (tokens + expiry) | Constant — keys are updated, not appended |
+| SDK device registration | Once per app session | SDK auto-reconnects on disconnect events |
 
-### Key Bottleneck: AP Outbox Rebuild
-
-Every time the user generates AP files, the outbox is rebuilt from scratch. At >100 activities, this involves reading all AP activities from taste.db, constructing a paginated collection, and writing multiple JSON files. This should be fast (<1 second) but deserves a loading indicator in the UI.
+**Key bottleneck: Spotify API rate limits.** Spotify's Web API has undocumented per-second rate limits (roughly 30 req/sec for most endpoints). Fetching top tracks per artist visit is fine for normal use. If a user rapidly clicks through many artists, consider a 500ms debounce before firing `get-top-tracks`.
 
 ---
 
 ## Sources
 
-- ActivityPub W3C Spec: [W3C ActivityPub](https://www.w3.org/TR/activitypub/)
-- Static site AP implementation guide: [maho.dev guide part 3](https://maho.dev/2024/02/a-guide-to-implementing-activitypub-in-a-static-site-or-any-website-part-3/)
-- Mastodon basic AP server guide: [Mastodon Blog — Implement a basic AP server](https://blog.joinmastodon.org/2018/06/how-to-implement-a-basic-activitypub-server/)
-- NIP-28 (scene rooms — already in codebase): [github.com/nostr-protocol/nips/blob/master/28.md](https://github.com/nostr-protocol/nips/blob/master/28.md)
-- NIP-38 (user status / music listening): [nips.nostr.com/38](https://nips.nostr.com/38)
-- NIP-53 (live activities): [nips.nostr.com/53](https://nips.nostr.com/53)
-- activitypub_federation Rust crate: [docs.rs/activitypub_federation](https://docs.rs/activitypub_federation/latest/activitypub_federation/) — noted for future use if live inbox is needed
-- Direct codebase inspection: `src/lib/comms/rooms.svelte.ts`, `src/lib/comms/nostr.svelte.ts`, `src/lib/embeds/categorize.ts`, `src/routes/api/artist/[mbid]/links/+server.ts`, `src-tauri/src/lib.rs`, `src-tauri/Cargo.toml`
+- Spotify Web Playback SDK docs: [developer.spotify.com/documentation/web-playback-sdk](https://developer.spotify.com/documentation/web-playback-sdk)
+- Spotify Web Playback SDK Getting Started: [developer.spotify.com/documentation/web-playback-sdk/tutorials/getting-started](https://developer.spotify.com/documentation/web-playback-sdk/tutorials/getting-started)
+- Spotify Start Playback endpoint: [developer.spotify.com/documentation/web-api/reference/start-a-users-playback](https://developer.spotify.com/documentation/web-api/reference/start-a-users-playback)
+- Spotify Get Artist Top Tracks: [developer.spotify.com/documentation/web-api/reference/get-an-artists-top-tracks](https://developer.spotify.com/documentation/web-api/reference/get-an-artists-top-tracks)
+- Spotify Embeds (artist pages supported): [developer.spotify.com/documentation/embeds/tutorials/creating-an-embed](https://developer.spotify.com/documentation/embeds/tutorials/creating-an-embed)
+- Spotify PKCE OAuth flow: [developer.spotify.com/documentation/web-api/tutorials/code-pkce-flow](https://developer.spotify.com/documentation/web-api/tutorials/code-pkce-flow)
+- Spotify OAuth migration (PKCE required after Nov 2025): [developer.spotify.com/blog/2025-10-14-reminder-oauth-migration-27-nov-2025](https://developer.spotify.com/blog/2025-10-14-reminder-oauth-migration-27-nov-2025)
+- SoundCloud oEmbed API: [developers.soundcloud.com/docs/oembed](https://developers.soundcloud.com/docs/oembed)
+- YouTube Data API search.list (channelId + type=video, 100 units/call): [developers.google.com/youtube/v3/docs/search/list](https://developers.google.com/youtube/v3/docs/search/list)
+- YouTube channels.list forHandle parameter (Jan 2024): [developers.google.com/youtube/v3/guides/working_with_channel_ids](https://developers.google.com/youtube/v3/guides/working_with_channel_ids)
+- Tauri CSP documentation: [v2.tauri.app/security/csp](https://v2.tauri.app/security/csp/) — current config has `"csp": null` (disabled), confirmed in tauri.conf.json
+- Existing codebase: `src/lib/taste/import/spotify.ts` (PKCE + tauri-plugin-oauth pattern), `src/lib/embeds/spotify.ts` (artist ID extraction), `src/lib/embeds/soundcloud.ts` (oEmbed URL construction), `src/lib/embeds/youtube.ts` (video vs channel detection), `src/lib/embeds/bandcamp.ts` (external-link-only, confirmed rationale), `src/lib/player/queue.svelte.ts` (queue management), `src/lib/player/audio.svelte.ts` (playback engine), `src/lib/theme/preferences.svelte.ts` (ai_settings storage pattern), `src-tauri/Cargo.toml` (tauri-plugin-oauth already present), `src-tauri/tauri.conf.json` (CSP null, asset protocol enabled)
 
 ---
 
-*Architecture research for: Mercury v1.3 — The Open Network feature integration*
-*Researched: 2026-02-24*
+*Architecture research for: BlackTape v1.6 — The Playback Milestone*
+*Researched: 2026-02-26*
