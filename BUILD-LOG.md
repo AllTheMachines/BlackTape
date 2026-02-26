@@ -8300,3 +8300,6 @@ Fixed 8 of 11 Phase 28 bugs in commit `36bf980`. All 164 code tests passing.
 
 > **Commit 7e6c7ac** (2026-02-26 21:00) — docs(28-02): complete artist page link sort + streaming pref fix plan
 > Files changed: 3
+
+> **Commit cb7796d** (2026-02-26 21:01) — docs(28-04): complete discovery headers + feedback form plan
+> Files changed: 4

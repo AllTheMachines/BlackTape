@@ -3,6 +3,19 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: — The Playback Milestone
 status: unknown
+last_updated: "2026-02-26T20:02:24.479Z"
+progress:
+  total_phases: 9
+  completed_phases: 8
+  total_plans: 32
+  completed_plans: 28
+---
+
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: — The Playback Milestone
+status: unknown
 last_updated: "2026-02-26T20:00:49.618Z"
 progress:
   total_phases: 9
@@ -65,6 +78,7 @@ Progress: [█░░░░░░░░░] Phase 28 in progress (2/7 plans done)
 | Phase 27-search-knowledge-base P05 | 4min | 1 tasks | 1 files |
 | **Phase 27 Total** | **5 plans** | **5/5 requirements (SRCH-01..04, KBAS-01)** | **Complete** |
 | Phase 28-ux-cleanup-scope-reduction P04 | 2min | 2 tasks | 7 files |
+| Phase 28-ux-cleanup-scope-reduction P01 | 4 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -132,6 +146,8 @@ Progress: [█░░░░░░░░░] Phase 28 in progress (2/7 plans done)
 - [28-02]: loadStreamingPreference() called fire-and-forget in artist page onMount — artist page self-sufficient; layout's load is bonus redundancy, not dependency
 - [Phase 28-04]: Used existing page header containers (kb-header, tm-header, crate-header, page-header) by adding discover-mode-desc as additional class rather than inserting new DOM nodes
 - [Phase 28-04]: Changed h1 to h2 inside discover-mode-desc blocks to avoid duplicate h1 headings on pages that already had h1 for page title
+- [Phase 28-01]: Scenes removed from navGroups only — route stays fully functional for direct URL access
+- [Phase 28-01]: v2-notice pattern established for deferred features: flex banner with accent badge + muted body text, all design tokens
 
 ### Pending Todos
 None
