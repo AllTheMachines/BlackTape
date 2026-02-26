@@ -105,3 +105,19 @@
 
 ---
 
+## v1.5 Streaming Integration (In Progress)
+
+**Phases:** 28–30 (estimated 4-6 weeks)
+
+**Goals:**
+1. Fix all open bugs (9 issues)
+2. Integrate Spotify, YouTube, SoundCloud, Bandcamp playback APIs
+3. Multi-source player with service switching in UI
+
+**Key work:**
+- Phase 28: Bug fixes (player UI, artist page layout, theme/settings, filters, KB links)
+- Phase 29: Streaming API integration (Spotify auth + playback, YouTube embed, SoundCloud, Bandcamp)
+- Phase 30: Player service selector UX + preference persistence
+
+---
+

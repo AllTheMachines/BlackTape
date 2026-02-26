@@ -4,6 +4,46 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-02-26 — v1.5 Milestone Planning: Streaming Integration + Bug Fixes
+
+### Decision: Continue with Mercury + Add Streaming APIs
+
+After comparing Mercury to Parachord (rebuilt Tomahawk music aggregator shipped in 1 month), confirmed they solve different problems:
+- **Parachord:** Eliminate app-switching friction (Spotify + YouTube + Bandcamp in one player)
+- **Mercury:** Discover music by taste, not algorithm (niche-first discovery + artist enablement)
+
+Mercury's advantages:
+- MusicBrainz/Discogs fully indexed locally (2.6M artists searchable from day one — Parachord can't replicate)
+- Inverse popularity scoring (uniqueness is the discovery mechanism)
+- Artist enablement tools (claiming profiles, specific tags)
+- Blog/curator tools (nobody else building for music writers)
+
+**Decision:** Add Spotify/YouTube/SoundCloud/Bandcamp playback APIs to Mercury. This gives us:
+- All of Parachord's aggregation features (play from any service)
+- PLUS Mercury's unique discovery + taste-based search
+- Result: single app for both aggregation AND discovery
+
+### v1.5 Planning
+
+**3 phases, 4-6 weeks:**
+1. **Phase 28:** Fix 9 open bugs (player UI, artist page layout, theme settings, filters, KB navigation)
+2. **Phase 29:** Integrate Spotify + YouTube + SoundCloud + Bandcamp playback
+3. **Phase 30:** Service preference selector + UI
+
+**Bugs to fix (#16, #17, #3, #20, #21, #26, #27, #22, #18, #19, #23):**
+- Player controls missing icons
+- Player bar too dark
+- Artist page album grid broken
+- Double description showing
+- Theme color picker non-functional
+- Filter panel doesn't toggle
+- KB map links don't work
+- Scene page doesn't reflect local library
+
+**Plan:** `.planning/v1.5-PLAN.md`
+
+---
+
 ## Entry 2026-02-25 — Fix "Not Responding" Freeze on Library Load
 
 Steve noticed "Mercury (not responding)" on the title bar during library loads and searches, even after the cover art blob fix.
@@ -7633,4 +7673,7 @@ Fix: renamed to `avatar.svelte.ts`, updated 5 import sites (AvatarEditor, Avatar
 > Files changed: 1
 
 > **Commit 6bb3068** (2026-02-26 11:17) — wip: auto-save
+> Files changed: 1
+
+> **Commit de48fbb** (2026-02-26 11:17) — wip: auto-save
 > Files changed: 1
