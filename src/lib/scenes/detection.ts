@@ -211,10 +211,15 @@ export async function isNovelTagCombination(
 /**
  * Tauri-only. Gets user's favorite_artists via invoke, returns count of how
  * many appear in the candidate scene's artist MBIDs.
+ * Also checks local library artists (by name) as a secondary signal (#23 fix).
  * If not in Tauri context, returns 0.
- * Minimum viable scene = 2 of the user's favorites appear in scene artists.
+ * Minimum viable scene = 2 of the user's favorites or library artists appear in scene artists.
  */
-export async function validateListenerOverlap(artistMbids: string[]): Promise<number> {
+export async function validateListenerOverlap(
+	artistMbids: string[],
+	artistNames: string[],
+	libraryArtistNames: Set<string>
+): Promise<number> {
 	if (!isTauri()) return 0;
 
 	try {
@@ -222,7 +227,15 @@ export async function validateListenerOverlap(artistMbids: string[]): Promise<nu
 		const favorites = await invoke<Array<{ artist_mbid: string }>>('get_favorite_artists');
 		const favSet = new Set(favorites.map((f) => f.artist_mbid));
 
-		return artistMbids.filter((mbid) => favSet.has(mbid)).length;
+		let count = 0;
+		for (let i = 0; i < artistMbids.length; i++) {
+			const mbid = artistMbids[i];
+			const name = artistNames[i]?.toLowerCase().trim() ?? '';
+			if (favSet.has(mbid) || libraryArtistNames.has(name)) {
+				count++;
+			}
+		}
+		return count;
 	} catch {
 		return 0;
 	}
@@ -264,6 +277,20 @@ export async function detectScenes(): Promise<DetectedScene[]> {
 		const db = await getProvider();
 		const invoke = await getInvoke();
 
+		// Load local library artist names as secondary scene signal (#23 fix)
+		let libraryArtistNames = new Set<string>();
+		try {
+			const libraryTracks = await invoke<Array<{ artist: string | null; album_artist: string | null }>>(
+				'get_library_tracks'
+			);
+			for (const track of libraryTracks) {
+				const name = track.album_artist ?? track.artist;
+				if (name) libraryArtistNames.add(name.toLowerCase().trim());
+			}
+		} catch {
+			// get_library_tracks not available or library empty — graceful fallback
+		}
+
 		// Step 1: Find tag cluster seeds
 		const seeds = await findTagClusterSeeds(db);
 		if (seeds.length === 0) return [];
@@ -281,8 +308,12 @@ export async function detectScenes(): Promise<DetectedScene[]> {
 			// Must have at least 3 artists to qualify as a scene
 			if (artists.length < 3) continue;
 
-			// Check listener overlap (how many of user's favorites are in this scene)
-			const listenerCount = await validateListenerOverlap(artists.map((a) => a.mbid));
+			// Check listener overlap (favorites MBIDs + library artist names — #23 fix)
+			const listenerCount = await validateListenerOverlap(
+				artists.map((a) => a.mbid),
+				artists.map((a) => a.name),
+				libraryArtistNames
+			);
 
 			// Skip scenes with no connection to the user's taste
 			if (listenerCount === 0) continue;
