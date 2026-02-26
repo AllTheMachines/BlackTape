@@ -126,9 +126,9 @@
 			<p>Crate Digging Mode is available in the {PROJECT_NAME} desktop app.</p>
 		</div>
 	{:else}
-		<div class="crate-header">
-			<h1 class="page-title">Crate Digging</h1>
-			<p class="page-desc">Serendipitous discovery. Pick a filter, flip the crate.</p>
+		<div class="crate-header discover-mode-desc">
+			<h2>Crate Digging</h2>
+			<p>Serendipitous discovery. Pick a filter, flip the crate — random artists surface from the bottom of the pile.</p>
 		</div>
 
 		<div class="filters">
@@ -184,17 +184,23 @@
 	.crate-page {		padding: 20px;
 	}
 
-	.page-title {
-		font-size: 1.5rem;
-		font-weight: 600;
-		color: var(--t-1);
-		margin: 0 0 var(--space-xs);
+	.discover-mode-desc {
+		padding: 10px 16px 8px;
+		border-bottom: 1px solid var(--b-0);
+		background: var(--bg-1);
+		margin: -20px -20px 20px;
 	}
-
-	.page-desc {
+	.discover-mode-desc h2 {
+		font-size: 13px;
+		font-weight: 600;
+		color: var(--t-2);
+		margin: 0 0 3px;
+	}
+	.discover-mode-desc p {
+		font-size: 11px;
 		color: var(--t-3);
-		font-size: 0.875rem;
-		margin: 0 0 var(--space-lg);
+		margin: 0;
+		line-height: 1.5;
 	}
 
 	.filters {

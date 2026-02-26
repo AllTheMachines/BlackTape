@@ -303,6 +303,10 @@
 	</div>
 {:else}
 	<div class="explore-page">
+		<div class="discover-mode-desc">
+			<h2>Explore</h2>
+			<p>AI-powered open-ended discovery. Describe what you're looking for in plain language — the AI finds artists that match your vibe.</p>
+		</div>
 		<div class="page-header">
 			<h1>Explore</h1>
 			{#if !tasteProfile.isLoaded}
@@ -480,6 +484,26 @@
 		background: var(--bg-3);
 		border-color: var(--b-3);
 		text-decoration: none;
+	}
+
+	/* Description header */
+	.discover-mode-desc {
+		padding: 10px 16px 8px;
+		border-bottom: 1px solid var(--b-0);
+		background: var(--bg-1);
+		margin: -20px -20px 20px;
+	}
+	.discover-mode-desc h2 {
+		font-size: 13px;
+		font-weight: 600;
+		color: var(--t-2);
+		margin: 0 0 3px;
+	}
+	.discover-mode-desc p {
+		font-size: 11px;
+		color: var(--t-3);
+		margin: 0;
+		line-height: 1.5;
 	}
 
 	/* Explore page layout */

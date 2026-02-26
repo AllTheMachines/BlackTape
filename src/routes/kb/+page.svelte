@@ -36,10 +36,10 @@
 </svelte:head>
 
 <div class="kb-landing">
-	<div class="kb-header">
-		<h1>Knowledge Base</h1>
-		<p class="kb-subtitle">
-			The genre and scene map. Click a node to explore its history, key artists, and connections.
+	<div class="kb-header discover-mode-desc">
+		<h2>Knowledge Base</h2>
+		<p>
+			Genre deep dives. Each genre page shows its defining artists, related scenes, origin story, and connections to other genres.
 		</p>
 
 		{#if isTauri() && !tasteProfile.isLoaded}
@@ -74,17 +74,23 @@
 		margin-bottom: var(--space-lg, 1.5rem);
 	}
 
-	.kb-header h1 {
-		font-size: 1.75rem;
-		font-weight: 600;
-		color: var(--t-1);
-		margin: 0 0 var(--space-xs, 0.5rem);
+	.discover-mode-desc {
+		padding: 10px 16px 8px;
+		border-bottom: 1px solid var(--b-0);
+		background: var(--bg-1);
+		margin: -20px -20px var(--space-lg, 1.5rem);
 	}
-
-	.kb-subtitle {
+	.discover-mode-desc h2 {
+		font-size: 13px;
+		font-weight: 600;
+		color: var(--t-2);
+		margin: 0 0 3px;
+	}
+	.discover-mode-desc p {
+		font-size: 11px;
 		color: var(--t-3);
-		font-size: 0.875rem;
 		margin: 0;
+		line-height: 1.5;
 	}
 
 	.taste-loading {
