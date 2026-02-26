@@ -21,9 +21,25 @@ Merged 2906 genres + 2733 relationships from Wikidata (via `pipeline/build-genre
 ### Screenshot Status
 17/18 shots good. KB graph pending. Keeper shots: shoegaze-japan, Skinfields overview, Skinfields stats.
 
-<!-- status -->
-Press screenshots 17/18 complete. KB graph issue under investigation. Wikipedia thumbnails shipped.
-<!-- /status -->
+## Entry 2026-02-26 — Press Screenshots v3: 49-Shot Automated Run
+
+Rewrote the screenshot script from scratch for a full 50-shot marketing set. New script: `tools/take-press-screenshots-v3.mjs`. Output: `press-screenshots/v3/`.
+
+### What's New in v3
+
+**Artist page discography shots (20)** — The core visual hook. Script searches for each artist by name, clicks the first result, scrolls to position the releases grid with ~200px of header/tag context above it, then waits up to 15s for Cover Art Archive images to load. Only takes the screenshot when ≥4 covers are confirmed loaded (via `img.complete && naturalHeight > 0`). Artists that passed: Aphex Twin (32 covers), Autechre (32), Four Tet (29), Massive Attack (31), Portishead (26), The Cure (31), Siouxsie (31), Gang of Four (20), Nick Cave (33), Birthday Party (29), PiL (32), Einstürzende Neubauten (33), Throbbing Gristle (31), Tangerine Dream (39), Klaus Schulze (39), MBV (26), Slowdive (28), Cocteau Twins (33), Beach House (34), Mazzy Star (28). Artists skipped (Cover Art Archive slow/sparse): Boards of Canada, Burial, Bauhaus, Wire, Can, Cluster, Neu!, Actress.
+
+**Search grids (8/8)** — krautrock (26 images), post-punk (42), ambient (36), jazz (48), dream pop (37), noise rock (25), psychedelic rock (38), electronic (42). All images loaded via Wikipedia thumbnail system.
+
+**Crate Dig (5/5)** — shoegaze/90s (4 imgs), krautrock/70s (8), ambient/80s (9), dream pop/90s (8), ambient/any (3). Jazz and electronic combos failed image threshold (Cover Art Archive slow for those genres).
+
+**Discover lists (8/8)** — All new country + genre combos: ambient Iceland, jazz USA (50 results), hip-hop USA (50), electronic Germany (50), indie rock Australia (50), metal Finland (50), folk Ireland (50), noise rock Japan (41).
+
+**Time Machine (4/4)** — 1979 (15 images), 1983 (7), 1991 (10), 1994 (7). All with loaded Wikipedia artist thumbnails.
+
+**Other (4/5)** — Settings page, Aphex Twin stats tab, The Cure stats tab, Dead Can Dance about tab (bio content). Library empty in test env (skipped), new-rising had no images.
+
+**Total: 49/50** — One "other" slot unfilled (empty library + new-rising had no thumbnails). All priority categories hit target.
 
 ---
 
@@ -8205,4 +8221,7 @@ Fixed 8 of 11 Phase 28 bugs in commit `36bf980`. All 164 code tests passing.
 > Files changed: 2
 
 > **Commit 5608d0b** (2026-02-26 19:46) — auto-save: 2 files @ 19:46
+> Files changed: 1
+
+> **Commit ad9f7e0** (2026-02-26 19:47) — wip: auto-save
 > Files changed: 1
