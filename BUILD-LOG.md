@@ -7982,3 +7982,9 @@ Fixed 8 of 11 Phase 28 bugs in commit `36bf980`. All 164 code tests passing.
 
 > **Commit 8bd8177** (2026-02-26 14:14) — wip: auto-save
 > Files changed: 1
+
+> **Commit 2f02e10** (2026-02-26 14:16) — auto-save: 2 files @ 14:16
+> Files changed: 1
+
+> **Commit b7e5917** (2026-02-26 14:29) — rename: Mercury → BlackTape
+> Files changed: 27
