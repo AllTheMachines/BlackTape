@@ -67,19 +67,20 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-02-25 after v1.4 milestone)
+See: .planning/PROJECT.md (updated 2026-02-26 after v1.6 milestone start)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Planning v1.5 — run `/gsd:new-milestone` to define next milestone scope
+**Current focus:** v1.6 — The Playback Milestone (defining requirements)
 
 ## Current Position
 
-Milestone: v1.5 UX Cleanup + Scope Reduction — IN PROGRESS
-Phase: 28 (28-ux-cleanup-scope-reduction) — Plan 06 of 7 complete
-Status: Phase 28 complete. All 7 plans executed.
-Last activity: 2026-02-26 — Phase 28 plan 07 complete: PHASE_28 test manifest (21 tests, 183 passing, 0 failing)
+Milestone: v1.6 — The Playback Milestone
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-02-26 — Milestone v1.6 started (v1.5 shipped Phase 28 complete)
 
-Progress: [██████████] Phase 28 complete (7/7 plans done)
+Progress: [░░░░░░░░░░] 0% — requirements phase
 
 ## Performance Metrics
 

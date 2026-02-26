@@ -105,19 +105,39 @@
 
 ---
 
-## v1.5 Streaming Integration (In Progress)
+## v1.5 UX Cleanup + Scope Reduction (Shipped: 2026-02-26)
 
-**Phases:** 28–30 (estimated 4-6 weeks)
+**Phases completed:** 1 phase (28), 7 plans
+**Timeline:** 1 day (2026-02-26)
+
+**Delivered:** Focused UX cleanup and scope reduction — scenes deferred, dead links filtered, search redesigned with 4 modes (artist/tag/song/label), discovery sidebar added, share flow improved, streaming preference UI established.
+
+**Key accomplishments:**
+1. Scenes removed from nav (v2 notice, route preserved for direct access)
+2. Dead link filtering on artist pages — all 6 link categories filtered before display
+3. Library name detection for scene detection — case-insensitive matching against local music files
+4. Search UI redesign — 4 search type pills (Artist / Tag / Song / Label), legacy `mode=` param preserved for backward compat
+5. Discovery sidebar — compact icon switcher for all discovery tools, active route highlighted
+6. Share improvements — Mastodon first (platform values), Twitter/Bluesky via Web Share API
+7. Streaming preference UI — provider-card grid pattern in Settings, preference persistence
+8. Test manifest — 183 tests passing (19 PHASE_28 code checks + existing suite)
+
+**Archive:** `.planning/milestones/v1.5-ROADMAP.md`, `.planning/milestones/v1.5-REQUIREMENTS.md`
+
+---
+
+## v1.6 The Playback Milestone (In Progress)
+
+**Phases:** 29+ (starting 2026-02-26)
 
 **Goals:**
-1. Fix all open bugs (9 issues)
-2. Integrate Spotify, YouTube, SoundCloud, Bandcamp playback APIs
-3. Multi-source player with service switching in UI
-
-**Key work:**
-- Phase 28: Bug fixes (player UI, artist page layout, theme/settings, filters, KB links)
-- Phase 29: Streaming API integration (Spotify auth + playback, YouTube embed, SoundCloud, Bandcamp)
-- Phase 30: Player service selector UX + preference persistence
+1. Spotify integration — PKCE OAuth (bundled client ID), guided step-by-step connection, Web Playback SDK full track streaming
+2. YouTube integration — IFrame player (fallback: open-in-browser), no auth required
+3. SoundCloud integration — Widget API embeds, no auth
+4. Bandcamp integration — embed player, no auth
+5. Service resolution — detect available sources per artist, priority order with drag-to-reorder
+6. Player bar service indicator + source switcher on artist pages
+7. Release page album playback with full track queue
 
 ---
 

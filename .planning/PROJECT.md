@@ -4,9 +4,19 @@
 
 A music discovery engine that indexes 2.8M+ artists from open databases, lets you explore through atomic tags, and embeds players from wherever the music already lives — Bandcamp, Spotify, SoundCloud, YouTube. Runs as a Tauri desktop app with a local SQLite database (offline-first). Not a platform. Not a streaming service. A search engine that becomes an ecosystem — with a consistent design system, full queue management, artist relationship data, cross-linked discovery tools, and intelligent search.
 
-v1.4 shipped: visual redesign complete — design system, queue management, artist relationships, discovery cross-linking, search autocomplete + intent parsing, KB genre pages.
+v1.5 shipped: UX cleanup — search type pills, discovery sidebar, dead link filtering, streaming preference UI. v1.6 in progress: multi-source streaming integration (Spotify, YouTube, SoundCloud, Bandcamp).
 
-## Previous: v1.4 Shipped (2026-02-25)
+## Current Milestone: v1.6 — The Playback Milestone
+
+**Goal:** Wire up multi-source streaming so users can play full tracks from any artist page, with Spotify premium playback, YouTube embeds, SoundCloud and Bandcamp — service priority set once, plays automatically.
+
+**Target features:**
+- Spotify PKCE OAuth with guided onboarding (bundled client ID)
+- YouTube IFrame player (fallback: open in browser)
+- SoundCloud + Bandcamp embed players
+- Service resolution per-artist + source switcher UI
+- Drag-to-reorder service priority in Settings
+- Player bar service badge + release page album playback
 
 ## Core Value
 
@@ -56,7 +66,18 @@ Uniqueness is rewarded — the more niche you are, the more discoverable you bec
 
 ### Active
 
-*(Defined in next milestone — run `/gsd:new-milestone` to scope v1.5)*
+<!-- v1.6 — The Playback Milestone -->
+
+- [ ] User can connect Spotify via guided in-app OAuth flow (bundled client ID, no developer portal)
+- [ ] User can play full tracks from Spotify Premium within the app (Web Playback SDK)
+- [ ] User can play tracks via YouTube IFrame player (fallback: open in browser)
+- [ ] User can play tracks via SoundCloud embed
+- [ ] User can play tracks via Bandcamp embed
+- [ ] App detects which services have content for each artist and shows available sources
+- [ ] User can set streaming service priority order (drag-to-reorder in Settings → Streaming)
+- [ ] Player bar shows which service is currently playing (service badge)
+- [ ] User can switch source mid-session from artist page (source switcher buttons)
+- [ ] User can play a full album from release page with track queue populated from tracklist
 
 ### Out of Scope
 
