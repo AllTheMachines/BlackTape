@@ -59,6 +59,7 @@ See `.planning/milestones/v1.4-ROADMAP.md`
 - [ ] Phase 28: UX Cleanup + Scope Reduction (bugs, defer Scenes/chat, discovery simplification, polish)
 - [ ] Phase 29: Spotify Full Integration ⭐ (OAuth, Web Playback SDK, full track playback)
 - [ ] Phase 30: Spotify UI Polish + Service Preference
+- [ ] **🚀 SHIP v1.5 after Phase 30**
 - [ ] Phase 31: Genre Map + Style Map + Time Machine (visual discovery tools)
 - [ ] Phase 32: Help System
 - [ ] Phase 33: Artist Claim Form + Email Verification
