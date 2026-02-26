@@ -1,6 +1,6 @@
 // The one variable. Change this, everything follows.
 export const PROJECT_NAME = 'BlackTape';
-export const PROJECT_TAGLINE = 'A music search engine with taste.';
+export const PROJECT_TAGLINE = 'Dig Deeper.';
 
 // BlackTape's project Nostr public key (hex) — used for backer list fetch.
 // Placeholder: fill in once the BlackTape Nostr identity keypair is generated.
