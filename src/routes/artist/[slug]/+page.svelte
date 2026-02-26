@@ -167,6 +167,16 @@
 		`https://sharetomastodon.github.io/?text=${encodeURIComponent(`${data.artist.name} on Mercury — mercury://artist/${data.artist.mbid}`)}`
 	);
 
+	/** Twitter/X share URL */
+	let twitterShareUrl = $derived(
+		`https://twitter.com/intent/tweet?text=${encodeURIComponent(`${data.artist.name} — discovered on BlackTape`)}&url=${encodeURIComponent($page.url.href)}`
+	);
+
+	/** Bluesky share URL */
+	let bskyShareUrl = $derived(
+		`https://bsky.app/intent/compose?text=${encodeURIComponent(`${data.artist.name} — discovered on BlackTape ${$page.url.href}`)}`
+	);
+
 	/** Icon prefix for funding platform links. */
 	function supportIcon(label: string): string {
 		const l = label.toLowerCase();
@@ -292,14 +302,17 @@
 					{/if}
 				</div>
 			{/if}
-			<a
-				href={mastodonShareUrl}
-				target="_blank"
-				rel="noopener noreferrer"
-				class="share-mastodon-btn"
-				aria-label="Share on Mastodon"
-				title="Share on Mastodon"
-			>↑ Share</a>
+			<div class="share-row">
+				<a href={mastodonShareUrl} target="_blank" rel="noopener noreferrer" class="share-btn share-btn--mastodon" title="Share on Mastodon">
+					<span class="share-icon">&#x1F418;</span>
+				</a>
+				<a href={bskyShareUrl} target="_blank" rel="noopener noreferrer" class="share-btn share-btn--bsky" title="Share on Bluesky">
+					<span class="share-icon">&#x2601;</span>
+				</a>
+				<a href={twitterShareUrl} target="_blank" rel="noopener noreferrer" class="share-btn share-btn--twitter" title="Share on Twitter/X">
+					<span class="share-icon">&#x2715;</span>
+				</a>
+			</div>
 			{#if tauriMode}
 				<button
 					class="export-site-btn"
@@ -1369,22 +1382,36 @@
 		color: var(--link-color, #7ab4d8);
 	}
 
-	/* ── Mastodon Share Button ───────────────────────────── */
-	.share-mastodon-btn {
-		font-size: 0.85rem;
-		color: var(--t-3);
-		text-decoration: none;
-		padding: 0.25rem 0.5rem;
-		border: 1px solid var(--b-1);
+	/* ── Share Row ───────────────────────────────────────── */
+	.share-row {
+		display: flex;
+		gap: 4px;
+		align-items: center;
+	}
+
+	.share-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 26px;
+		height: 26px;
+		background: var(--bg-4);
+		border: 1px solid var(--b-2);
 		border-radius: var(--r);
-		line-height: 1;
-		transition: color 0.15s, border-color 0.15s;
+		text-decoration: none;
+		font-size: 12px;
+		transition: border-color 0.1s, background 0.1s;
 		flex-shrink: 0;
 	}
 
-	.share-mastodon-btn:hover {
-		color: var(--t-2);
-		border-color: var(--t-3);
+	.share-btn:hover {
+		background: var(--bg-3);
+		border-color: var(--b-3);
+		text-decoration: none;
+	}
+
+	.share-icon {
+		line-height: 1;
 	}
 
 	/* ── Responsive ────────────────────────────────────── */
