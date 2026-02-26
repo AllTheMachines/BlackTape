@@ -107,54 +107,54 @@ async function run() {
   console.log('Connected. Taking screenshots...\n');
 
   // ── 1. Discover (artist card grid with covers) ─────────────────────────
-  await goto(page, '/discover', 4000);
+  await goto(page, '/discover', 6000);
   await save(page, '01-discover');
   await save(page, '01-discover-full', { fullPage: true });
 
   // ── 2. Search for a busy genre ─────────────────────────────────────────
-  await goto(page, '/search?q=jazz', 4000);
+  await goto(page, '/search?q=jazz', 7000);
   await save(page, '02-search-jazz');
 
   // ── 3. Radiohead artist page (lots of releases with cover art) ─────────
-  await goto(page, '/artist/radiohead', 5000);
+  await goto(page, '/artist/radiohead', 8000);
   await save(page, '03-artist-radiohead-header');
   await save(page, '03-artist-radiohead-discography', { scrollY: 350 });
 
   // ── 4. Try another well-known artist ───────────────────────────────────
-  await goto(page, '/artist/aphex-twin', 5000);
+  await goto(page, '/artist/aphex-twin', 8000);
   await save(page, '04-artist-aphex-twin');
 
   // ── 5. Style Map ───────────────────────────────────────────────────────
-  await goto(page, '/style-map', 5000);
+  await goto(page, '/style-map', 6000);
   await save(page, '05-style-map');
 
   // ── 6. Crate Digging ───────────────────────────────────────────────────
-  await goto(page, '/crate-dig', 3000);
+  await goto(page, '/crate-dig', 4000);
   await save(page, '06-crate-dig');
 
   // ── 7. Time Machine ────────────────────────────────────────────────────
-  await goto(page, '/time-machine', 3000);
+  await goto(page, '/time-machine', 4000);
   await save(page, '07-time-machine');
 
   // ── 8. Scenes ──────────────────────────────────────────────────────────
-  await goto(page, '/scenes', 3000);
+  await goto(page, '/scenes', 4000);
   await save(page, '08-scenes');
 
   // ── 9. Knowledge Base genre page ───────────────────────────────────────
-  await goto(page, '/kb/genre/jazz', 4000);
+  await goto(page, '/kb/genre/jazz', 6000);
   await save(page, '09-kb-jazz');
 
   // ── 10. New & Rising ───────────────────────────────────────────────────
-  await goto(page, '/new-rising', 3000);
+  await goto(page, '/new-rising', 5000);
   await save(page, '10-new-rising');
 
   // ── 11. Search — hip hop ───────────────────────────────────────────────
-  await goto(page, '/search?q=hip+hop', 4000);
+  await goto(page, '/search?q=hip+hop', 7000);
   await save(page, '11-search-hiphop');
 
-  // ── 12. Boards of Canada ───────────────────────────────────────────────
-  await goto(page, '/artist/boards-of-canada', 5000);
-  await save(page, '12-artist-boards-of-canada');
+  // ── 12. Portishead ─────────────────────────────────────────────────────
+  await goto(page, '/artist/portishead', 8000);
+  await save(page, '12-artist-portishead');
 
   console.log('\nDone! Shutting down...');
   try { await browser.close(); } catch (_) {}
