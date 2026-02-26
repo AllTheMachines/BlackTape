@@ -65,7 +65,7 @@ export const load: PageLoad = async ({ params, fetch }) => {
 				}>;
 			};
 
-			const { categorizeByRelationType, detectPlatform, labelFromUrl, emptyCategorizedLinks } =
+			const { categorizeByRelationType, detectPlatform, labelFromUrl, emptyCategorizedLinks, filterDeadLinks } =
 				await import('$lib/embeds/categorize');
 
 			categorizedLinks = emptyCategorizedLinks();
@@ -117,6 +117,11 @@ export const load: PageLoad = async ({ params, fetch }) => {
 					});
 				}
 			}
+
+			// #27 fix: remove known-dead domain links
+			for (const category of Object.keys(categorizedLinks) as Array<keyof typeof categorizedLinks>) {
+				categorizedLinks[category] = filterDeadLinks(categorizedLinks[category]);
+			}
 		}
 
 		// Deduplicate streaming links by hostname (MusicBrainz sometimes has two Deezer URLs, etc.)
@@ -129,6 +134,7 @@ export const load: PageLoad = async ({ params, fetch }) => {
 				return true;
 			} catch { return true; }
 		});
+
 	} catch (err) {
 		console.error('Links fetch error:', err);
 	}

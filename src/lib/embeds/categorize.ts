@@ -131,3 +131,50 @@ export function emptyCategorizedLinks(): Record<LinkCategory, CategorizedLink[]>
 		other: []
 	};
 }
+
+/**
+ * Domains known to be permanently dead, defunct, or no longer hosting music content.
+ * Links from these domains are silently removed from artist pages.
+ * Updated: Phase 28.
+ */
+export const DEAD_DOMAINS = new Set([
+	// Geocities variants (closed 2009)
+	'geocities.com',
+	'geocities.yahoo.com',
+	'uk.geocities.com',
+	// MySpace original (musical content removed 2019)
+	'myspace.com',
+	// iLike (acquired/shut down)
+	'ilike.com',
+	// Lala (acquired by Apple, shut down 2010)
+	'lala.com',
+	// Imeem (acquired/shut down 2009)
+	'imeem.com',
+	// Bebo Music (shut down)
+	'bebo.com',
+	// Grooveshark (shut down 2015)
+	'grooveshark.com',
+	// Ping (Apple social, shut down 2012)
+	'ping.fm',
+	// We7 / 7digital streaming (We7 shut down)
+	'we7.com',
+	// Blip.fm (shut down 2015)
+	'blip.fm',
+	// Muxtape (shut down 2008)
+	'muxtape.com',
+]);
+
+/**
+ * Filter a list of CategorizedLinks, removing any with URLs from dead domains.
+ * Silent removal — no error, no placeholder.
+ */
+export function filterDeadLinks(links: CategorizedLink[]): CategorizedLink[] {
+	return links.filter((link) => {
+		try {
+			const hostname = new URL(link.url).hostname.replace(/^www\./, '');
+			return !DEAD_DOMAINS.has(hostname);
+		} catch {
+			return true; // keep malformed URLs as-is
+		}
+	});
+}
