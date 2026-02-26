@@ -2611,6 +2611,150 @@ export const PHASE_27 = [
 ];
 
 // ---------------------------------------------------------------------------
+// PHASE 28 — UX Cleanup + Scope Reduction
+// ---------------------------------------------------------------------------
+
+export const PHASE_28 = [
+  // SCOPE-01..03: Scope reduction (nav)
+  {
+    id: 'P28-01', phase: 28, area: 'Nav',
+    desc: 'LeftSidebar no longer has /scenes nav link',
+    method: 'code',
+    fn: () => !fileContains('src/lib/components/LeftSidebar.svelte', "href: '/scenes'")(),
+  },
+  {
+    id: 'P28-02', phase: 28, area: 'Nav',
+    desc: 'Scenes page has v2-notice banner',
+    method: 'code',
+    fn: () => fileContains('src/routes/scenes/+page.svelte', 'v2-notice')(),
+  },
+  {
+    id: 'P28-03', phase: 28, area: 'Nav',
+    desc: 'Scenes page v2 notice visible in desktop app',
+    method: 'skip',
+    reason: 'Requires running desktop app — visual verification',
+  },
+  // BUG-26: Official links sort first
+  {
+    id: 'P28-04', phase: 28, area: 'Artist Page',
+    desc: 'Artist page +page.ts contains officialHomepageUrls sort fix',
+    method: 'code',
+    fn: () => fileContains('src/routes/artist/[slug]/+page.ts', 'officialHomepageUrls')(),
+  },
+  // BUG-41: Streaming pref on artist page
+  {
+    id: 'P28-05', phase: 28, area: 'Artist Page',
+    desc: 'Artist page calls loadStreamingPreference in onMount',
+    method: 'code',
+    fn: () => fileContains('src/routes/artist/[slug]/+page.svelte', 'loadStreamingPreference')(),
+  },
+  // BUG-23: Scene library detection
+  {
+    id: 'P28-06', phase: 28, area: 'Scenes',
+    desc: 'Scene detection uses libraryArtistNames from local library',
+    method: 'code',
+    fn: () => fileContains('src/lib/scenes/detection.ts', 'libraryArtistNames')(),
+  },
+  // BUG-27: Dead link filter
+  {
+    id: 'P28-07', phase: 28, area: 'Artist Page',
+    desc: 'categorize.ts exports filterDeadLinks function',
+    method: 'code',
+    fn: () => fileContains('src/lib/embeds/categorize.ts', 'filterDeadLinks')(),
+  },
+  {
+    id: 'P28-08', phase: 28, area: 'Artist Page',
+    desc: 'categorize.ts contains DEAD_DOMAINS set with geocities',
+    method: 'code',
+    fn: () => fileContains('src/lib/embeds/categorize.ts', 'geocities.com')(),
+  },
+  {
+    id: 'P28-09', phase: 28, area: 'Artist Page',
+    desc: 'Artist +page.ts applies filterDeadLinks to categorizedLinks',
+    method: 'code',
+    fn: () => fileContains('src/routes/artist/[slug]/+page.ts', 'filterDeadLinks')(),
+  },
+  // POLISH-31: Discovery descriptions
+  {
+    id: 'P28-10', phase: 28, area: 'Discovery',
+    desc: 'Discover page has discover-mode-desc block',
+    method: 'code',
+    fn: () => fileContains('src/routes/discover/+page.svelte', 'discover-mode-desc')(),
+  },
+  {
+    id: 'P28-11', phase: 28, area: 'Discovery',
+    desc: 'Explore page has discover-mode-desc block',
+    method: 'code',
+    fn: () => fileContains('src/routes/explore/+page.svelte', 'discover-mode-desc')(),
+  },
+  {
+    id: 'P28-12', phase: 28, area: 'Discovery',
+    desc: 'Time Machine page has discover-mode-desc block',
+    method: 'code',
+    fn: () => fileContains('src/routes/time-machine/+page.svelte', 'discover-mode-desc')(),
+  },
+  {
+    id: 'P28-13', phase: 28, area: 'Discovery',
+    desc: 'Style Map page has discover-mode-desc block',
+    method: 'code',
+    fn: () => fileContains('src/routes/style-map/+page.svelte', 'discover-mode-desc')(),
+  },
+  {
+    id: 'P28-14', phase: 28, area: 'Discovery',
+    desc: 'KB page has discover-mode-desc block',
+    method: 'code',
+    fn: () => fileContains('src/routes/kb/+page.svelte', 'discover-mode-desc')(),
+  },
+  // POLISH-30: About feedback form
+  {
+    id: 'P28-15', phase: 28, area: 'About',
+    desc: 'About page has feedback mailto link',
+    method: 'code',
+    fn: () => fileContains('src/routes/about/+page.svelte', 'mailto:')(),
+  },
+  // POLISH-29: AI provider UX redesign
+  {
+    id: 'P28-16', phase: 28, area: 'Settings',
+    desc: 'AiSettings has provider-card class (redesigned provider selector)',
+    method: 'code',
+    fn: () => fileContains('src/lib/components/AiSettings.svelte', 'provider-card')(),
+  },
+  // POLISH-32: Social sharing
+  {
+    id: 'P28-17', phase: 28, area: 'Artist Page',
+    desc: 'Artist page has Bluesky share URL',
+    method: 'code',
+    fn: () => fileContains('src/routes/artist/[slug]/+page.svelte', 'bskyShareUrl')(),
+  },
+  {
+    id: 'P28-18', phase: 28, area: 'Artist Page',
+    desc: 'Artist page has Twitter/X share URL',
+    method: 'code',
+    fn: () => fileContains('src/routes/artist/[slug]/+page.svelte', 'twitterShareUrl')(),
+  },
+  // POLISH-28: Search type selector
+  {
+    id: 'P28-19', phase: 28, area: 'Search',
+    desc: 'Search page has search-type-selector block',
+    method: 'code',
+    fn: () => fileContains('src/routes/search/+page.svelte', 'search-type-selector')(),
+  },
+  // DISCO-SIMP: Discovery sidebar simplification
+  {
+    id: 'P28-20', phase: 28, area: 'Nav',
+    desc: 'LeftSidebar has discovery-mode-switcher (active mode shown prominently)',
+    method: 'code',
+    fn: () => fileContains('src/lib/components/LeftSidebar.svelte', 'discovery-mode-switcher')(),
+  },
+  {
+    id: 'P28-21', phase: 28, area: 'Nav',
+    desc: 'Discovery sidebar simplification visible in desktop app',
+    method: 'skip',
+    reason: 'Requires running desktop app — visual verification of mode switcher',
+  },
+];
+
+// ---------------------------------------------------------------------------
 // Build check — always runs last
 // ---------------------------------------------------------------------------
 
@@ -2653,5 +2797,6 @@ export const ALL_TESTS = [
   ...PHASE_25,
   ...PHASE_26,
   ...PHASE_27,
+  ...PHASE_28,
   ...BUILD,
 ];
