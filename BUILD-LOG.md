@@ -8517,3 +8517,12 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit 87eaf54** (2026-02-27 00:34) — wip: auto-save
 > Files changed: 1
+
+> **Commit b593f2b** (2026-02-27 00:36) — wip: auto-save
+> Files changed: 1
+
+> **Commit 48bf6a6** (2026-02-27 00:38) — docs: define milestone v1.6 requirements (15 requirements)
+> Files changed: 1
+
+> **Commit 962da72** (2026-02-27 00:41) — docs: create milestone v1.6 roadmap (4 phases, 15 requirements)
+> Files changed: 2
