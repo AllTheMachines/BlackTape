@@ -8460,3 +8460,6 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit 263b314** (2026-02-26 21:20) — docs: Phase 28 complete — UX cleanup session log
 > Files changed: 1
+
+> **Commit 8ea93eb** (2026-02-26 21:20) — wip: auto-save
+> Files changed: 1
