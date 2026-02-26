@@ -1,3 +1,16 @@
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: — The Playback Milestone
+status: unknown
+last_updated: "2026-02-26T20:00:49.618Z"
+progress:
+  total_phases: 9
+  completed_phases: 8
+  total_plans: 32
+  completed_plans: 27
+---
+
 # Project State
 
 ## Project Reference
@@ -51,6 +64,7 @@ Progress: [█░░░░░░░░░] Phase 28 in progress (2/7 plans done)
 | Phase 27-search-knowledge-base P04 | ~5min | 1 tasks | 1 files |
 | Phase 27-search-knowledge-base P05 | 4min | 1 tasks | 1 files |
 | **Phase 27 Total** | **5 plans** | **5/5 requirements (SRCH-01..04, KBAS-01)** | **Complete** |
+| Phase 28-ux-cleanup-scope-reduction P04 | 2min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -116,6 +130,8 @@ Progress: [█░░░░░░░░░] Phase 28 in progress (2/7 plans done)
 - [Phase 27-05]: 7 skip entries for desktop-only tests: live autocomplete, search interaction, visual redesign verification
 - [28-02]: officialHomepageUrls Set declared before MB relations loop, sort added after loop closes — minimal change, no restructuring of categorize logic
 - [28-02]: loadStreamingPreference() called fire-and-forget in artist page onMount — artist page self-sufficient; layout's load is bonus redundancy, not dependency
+- [Phase 28-04]: Used existing page header containers (kb-header, tm-header, crate-header, page-header) by adding discover-mode-desc as additional class rather than inserting new DOM nodes
+- [Phase 28-04]: Changed h1 to h2 inside discover-mode-desc blocks to avoid duplicate h1 headings on pages that already had h1 for page title
 
 ### Pending Todos
 None
@@ -126,6 +142,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-26
-Stopped at: Completed Phase 28 Plan 02 — Bug #26 (official links sort) + Bug #41 (streaming pref race fix)
+Stopped at: Completed Phase 28 Plan 04 — Polish #31 (discovery page headers) + Polish #30 (About feedback form)
 Resume file: None
-Next: Continue Phase 28 — execute plans 03-07.
+Next: Continue Phase 28 — execute plans 05-07.

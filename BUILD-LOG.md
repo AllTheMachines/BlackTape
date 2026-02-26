@@ -163,9 +163,48 @@ Phase 28 plans generated: 7 plans across 2 waves.
 
 All Wave 1 plans are independent — parallel execution. Wave 2 (tests) runs after all Wave 1 plans complete.
 
-<!-- status -->
-Phase 28 plans written (7 plans, 2 waves). Ready for /gsd:execute-phase.
-<!-- /status -->
+## Entry 2026-02-26 — Phase 28 Plan 01: Scope Reduction — Nav Cleanup + v2 Notices
+
+Removed Scenes from the left sidebar nav and added "Coming in v2" banners to the Scenes and Listening Rooms pages.
+
+### What changed
+
+**LeftSidebar.svelte** — Removed `/scenes` from the Discover navGroup. Rooms and ActivityPub were never in the nav (confirmed absent). Remaining nav: Discover, Style Map, KB, Time Machine, Crate Dig, Library, Explore, Profile, Settings, About.
+
+**Scenes page** — Added a compact `v2-notice` banner at the top: "COMING IN V2 — Scenes are being redesigned for a better community experience." Uses design tokens (bg-4, b-1, t-3, acc, bg-1, r). Existing functionality unchanged — power users with bookmarks can still reach the page.
+
+**Room page** — Same banner style: "COMING IN V2 — Listening Rooms are being redesigned..." Routes stay functional, just hidden from nav.
+
+### Why
+
+Phase 28 scope reduction: v1.5 is a polish release focused on discovery and UX, not community features. Scenes and Rooms work but are incomplete — hiding them from nav simplifies the new-user journey without deleting any code. They return properly in v2.
+
+164/164 code checks passing. 0 TS/Svelte errors.
+
+---
+
+## Entry 2026-02-26 — Phase 28 Plan 04: Discovery Page Headers + Feedback Form
+
+Quick polish run — added self-describing headers to all 6 discovery pages and a feedback form to the About page.
+
+### Discovery Mode Headers (#31)
+
+Every discovery page now opens with a compact `discover-mode-desc` header block explaining what it does. Users landing cold from cross-links (or from the nav) now immediately understand the mode without having to poke around:
+
+- **Discover** — "Browse artists ranked by uniqueness..."
+- **Crate Digging** — "Serendipitous discovery. Pick a filter, flip the crate..."
+- **Explore** — "AI-powered open-ended discovery..."
+- **Time Machine** — "Travel through music history by decade..."
+- **Style Map** — "How genres connect. Node size = how many artists..."
+- **Knowledge Base** — "Genre deep dives. Each genre page shows its defining artists..."
+
+Consistent visual treatment: 13px bold heading, 11px body in `var(--t-3)`, `var(--bg-1)` background, border-bottom separator. Minimal footprint — doesn't interfere with any existing layout.
+
+### About Page Feedback Form (#30)
+
+Added a Feedback section above the CTAs with a direct `mailto:feedback@blacktape.app` link. Also added a "Send feedback" button in the CTA row alongside the existing GitHub link. Non-technical users who find a bug or have a suggestion now have a direct path that doesn't require a GitHub account.
+
+Both tasks committed, 164/164 code checks passing.
 
 **Bugs to fix:**
 1. #16 — Player controls have no icons
@@ -8237,3 +8276,27 @@ Fixed 8 of 11 Phase 28 bugs in commit `36bf980`. All 164 code tests passing.
 
 > **Commit 323d3f7** (2026-02-26 20:44) — wip: auto-save
 > Files changed: 2
+
+> **Commit 44399f1** (2026-02-26 20:46) — auto-save: 2 files @ 20:46
+> Files changed: 1
+
+> **Commit 9668e80** (2026-02-26 20:57) — fix(28-02): sort official homepage link first in artist page Links section
+> Files changed: 1
+
+> **Commit bdb9abd** (2026-02-26 20:57) — feat(28-01): remove Scenes from left sidebar nav
+> Files changed: 1
+
+> **Commit cfc038a** (2026-02-26 20:58) — fix(28-02): load streaming preference in artist page onMount
+> Files changed: 1
+
+> **Commit cf4d99b** (2026-02-26 20:58) — feat(28-04): add discover-mode-desc headers to all 6 discovery pages (#31)
+> Files changed: 6
+
+> **Commit 9c13aaa** (2026-02-26 20:59) — feat(28-04): add feedback section and mailto link to About page (#30)
+> Files changed: 1
+
+> **Commit b3dc60c** (2026-02-26 21:00) — feat(28-01): add coming-in-v2 notice to Scenes and Room pages
+> Files changed: 2
+
+> **Commit 7e6c7ac** (2026-02-26 21:00) — docs(28-02): complete artist page link sort + streaming pref fix plan
+> Files changed: 3
