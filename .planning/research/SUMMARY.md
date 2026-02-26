@@ -1,216 +1,375 @@
 # Project Research Summary
 
-**Project:** Mercury — v1.3 "The Open Network"
-**Domain:** Open-network integration for a Tauri desktop music discovery engine — ActivityPub outbound, Nostr listening rooms, artist tools, sustainability
-**Researched:** 2026-02-24
-**Confidence:** HIGH (stack verified against codebase; features scoped against hard desktop constraints; architecture derived from existing patterns; pitfalls verified with official docs)
+**Project:** BlackTape (Mercury v1.6 — The Playback Milestone)
+**Domain:** Multi-source streaming integration (Spotify, YouTube, SoundCloud, Bandcamp) into existing Tauri 2.0 + Svelte 5 desktop app
+**Researched:** 2026-02-26
+**Confidence:** HIGH (platform constraints and policy facts), MEDIUM (implementation details in Tauri WebView2 context)
+
+---
+
+## CONFLICTS REQUIRING HUMAN RESOLUTION
+
+Two direct contradictions exist across research files. These must be resolved before roadmap phases are finalized.
+
+---
+
+### CONFLICT 1: Bandcamp Embed — `url=` Parameter vs. Numeric ID Required
+
+**Status: UNRESOLVED — implementation spike required.**
+
+**FEATURES.md says (HIGH confidence):**
+Bandcamp added a `url=` parameter to the EmbeddedPlayer that accepts a URL-encoded Bandcamp page URL directly. No numeric album ID needed. Format:
+```
+https://bandcamp.com/EmbeddedPlayer/url={ENCODED_URL}/size=large/bgcol=1d1d1d/linkcol=ffffff/minimal=true/transparent=true/
+```
+Source cited: Bluesky social-app PR #6761, which demonstrates this working. This would fully unblock Bandcamp embeds for v1.6 — any MusicBrainz-sourced Bandcamp URL could be embedded directly.
+
+**ARCHITECTURE.md says (HIGH confidence based on official docs):**
+Bandcamp embed URLs require a numeric album ID (`album=4178276839`) not present in MusicBrainz artist URLs. There is no Bandcamp oEmbed endpoint. No Bandcamp API maps artist URLs to album IDs. Recommendation: keep Bandcamp as external-link-only.
+
+**Why this matters:**
+If the `url=` parameter works, Bandcamp embed becomes a LOW-complexity P1 feature that unblocks album playback on release pages. If it does not work, Bandcamp stays external-link-only and the release page "Play Album" feature relies solely on SoundCloud/Spotify/YouTube fallbacks.
+
+**Recommended resolution:**
+Spike this in the first 30 minutes of Phase 3 implementation. Create a test HTML file with:
+```html
+<iframe src="https://bandcamp.com/EmbeddedPlayer/url=https%3A%2F%2Fburial.bandcamp.com%2Falbum%2Funtrue/size=large/transparent=true/"></iframe>
+```
+If it renders and plays: FEATURES.md is correct. Update ARCHITECTURE.md and implement accordingly.
+If it fails with an error or blank iframe: ARCHITECTURE.md is correct. Defer Bandcamp embed to v1.7.
+
+Do not build the `bandcampEmbedUrl()` function or the EmbedPlayer Bandcamp iframe path until the spike confirms the approach.
+
+---
+
+### CONFLICT 2: Spotify Web Playback SDK in Tauri WebView2
+
+**Status: RESOLVED — SDK not viable. Embed iframe only.**
+
+**STACK.md says (MEDIUM confidence):**
+WebView2 is Chromium-based and supports EME. Whether the Spotify Web Playback SDK works in Tauri WebView2 is unconfirmed. Recommends validating in an implementation spike.
+
+**PITFALLS.md says (HIGH confidence):**
+The Spotify Web Playback SDK definitively does not work in WebView2. WebView2 does not expose the Widevine CDM to third-party web content even though it is Edge-based. The SDK calls `navigator.requestMediaKeySystemAccess()` and the EME API exists, but the CDM cannot actually decrypt Spotify's protected audio. This failure is documented since 2018 in spotify/web-playback-sdk#41 and applies to all desktop WebView wrappers including Electron and Tauri WebView2.
+
+**Resolution:**
+PITFALLS.md is correct. The STACK.md finding was hedged at MEDIUM confidence and explicitly deferred to a spike. PITFALLS.md has three verified GitHub issue sources (spotify/web-playback-sdk #2, #7, #41) confirming this failure persists across Electron and WebView2 environments with no resolution since 2018.
+
+**Additionally:** FEATURES.md confirms a compounding Spotify policy constraint: as of February 2026, Development Mode is limited to 5 authorized users per Client ID, and extended access requires a legally registered organization with 250K+ MAU. A bundled Client ID distributed in an open-source app would hit the 5-user cap immediately.
+
+**Action recorded:** Spotify Web Playback SDK is not used in BlackTape. The existing `spotifyEmbedUrl()` function in `src/lib/embeds/spotify.ts` is the correct and only Spotify integration path. No OAuth for playback is needed. Spotify embeds deliver full tracks for Premium users already logged into Spotify in WebView2, and 30-second previews for free or logged-out users — with no app-side auth required.
+
+---
 
 ## Executive Summary
 
-Mercury v1.3 adds four feature areas to a working Tauri 2.0 desktop app that already has a full Nostr stack (NDK v3, NIP-17 DMs, NIP-28 scene rooms), MusicBrainz live-data integration, embedded players, and a local AI sidecar. The most important research conclusion is that the existing codebase already delivers most of v1.3's infrastructure: zero new npm packages are needed, artist support links are already implemented end-to-end (they just need UI rendering), and listening rooms extend NIP-28 infrastructure that is already working. The net-new engineering work is smaller than the feature list implies.
+BlackTape v1.6 adds multi-source streaming playback to an existing discovery engine. The app already has embed infrastructure for all four target platforms (Spotify, YouTube, SoundCloud, Bandcamp) plus a complete player, queue, and link categorization system built on MusicBrainz data. V1.6 is not building streaming from scratch — it is wiring the existing infrastructure into a cohesive playback experience with service priority, source switching, and album playback from release pages.
 
-The central architectural constraint that shapes every v1.3 decision is that Mercury is a Tauri desktop app with no public IP, no DNS entry, and no always-on server. This rules out true ActivityPub federation (Mastodon requires a reachable inbox), rules out per-user AP handles, and makes "synchronized audio playback" across third-party embeds impossible. The correct scoping for ActivityPub is static JSON-LD export that the user hosts themselves — not a live AP server running inside Tauri. Listening room sync means "everyone loads the same embed URL" — not timestamp-level position synchronization across incompatible iframe APIs. Any plan that ignores these constraints will produce features that appear to work in development and silently fail in production.
+The research reveals that the realistic scope of v1.6 is significantly simpler than originally planned, and in a good way. Spotify's February 2026 policy changes and the confirmed Widevine CDM failure in WebView2 (Conflict 2, resolved) eliminate the Spotify Web Playback SDK entirely. Spotify integration is the embed iframe that already exists. SoundCloud is already the most complete integration in the codebase (oEmbed + Widget API hooks already wired). YouTube works via existing embed but requires an Error 153 fallback for production builds. Bandcamp is the open question (Conflict 1, pending a 30-minute spike). The bulk of v1.6 engineering is: service priority UI (replace single dropdown with ordered list), source switcher on artist pages, player bar service badge, and activating the Bandcamp embed path.
 
-The five new Rust dependencies (axum, tower, rsa, sha2, minijinja) cover the only genuinely new territory: an embedded HTTP server for AP serving in a future live-server scenario, RSA signing for AP HTTP signatures, and a Jinja2 template engine for the artist static site generator. These are additive and low-risk. The recommended build order starts with sustainability links (zero new architecture, immediate value), progresses through artist tools (all extend existing patterns), then listening rooms (extend NIP-28), and places ActivityPub last (highest complexity, most likely to require iteration). This order ensures that if any phase hits unexpected complexity, no downstream phases are blocked.
+The critical pre-implementation action is establishing an `activeSource` coordination state before touching any streaming service. Without it, multiple audio sources play simultaneously and the problem cannot be cleanly retrofitted. This is the architectural foundation for the entire milestone. Once that is in place, each service can be added incrementally with low risk using the existing `src/lib/embeds/` infrastructure as the building blocks.
+
+---
 
 ## Key Findings
 
 ### Recommended Stack
 
-The stack for v1.3 is almost entirely what already exists. Every TypeScript/Svelte capability needed — Nostr event publish/subscribe, RSS feed generation, D3 charts, embedded player state management, MusicBrainz live fetch — is already installed and working. The gap is on the Rust side: an embedded HTTP server (axum) is needed if Mercury ever serves AP endpoints live rather than exporting static files, RSA signing (rsa + sha2 crates) is needed for AP HTTP signature compliance, and a template engine (minijinja) is needed to generate the artist static site HTML without unmanageable string concatenation.
+The stack for v1.6 requires minimal new dependencies. Everything critical is already installed. Net-new additions are: `@tauri-apps/plugin-store` (npm) and `tauri-plugin-store` (Rust) for preference and token storage, and `@types/spotify-web-playback-sdk` (dev devDep) for TypeScript types on the embed helper functions. The SoundCloud Widget API and YouTube IFrame API are CDN scripts loaded at runtime if programmatic control is needed; neither requires an npm package. The PKCE OAuth infrastructure (`tauri-plugin-oauth`, `@fabianlars/tauri-plugin-oauth`) is already installed and proven in the existing Spotify taste-import flow.
 
-The most critical stack decision confirmed by research: do not use actix-web (runtime conflict with Tauri's Tokio), do not use warp (unmaintained since 2022), do not write HTTP signature code from scratch (Mastodon silently rejects malformed signatures with no useful error). axum is the only Rust HTTP library that runs on `tauri::async_runtime::spawn` without spawning a separate thread.
+**Core technologies (existing, no changes needed):**
+- Tauri 2.0 + WebView2 (Windows): desktop shell
+- `tauri-plugin-oauth` + `@fabianlars/tauri-plugin-oauth`: OAuth redirect server — already installed, reuse the pattern from the taste-import flow
+- `src/lib/embeds/spotify.ts`, `youtube.ts`, `soundcloud.ts`, `bandcamp.ts`: embed URL generators — extend, do not replace
+- `src/lib/player/`: complete player module — add `activeSource` field only
+- `tauri-plugin-shell`: already installed, used for opening external URLs
 
-**Core new technologies (Rust-side only):**
-- `axum ^0.8` (Rust): Embedded HTTP server for AP endpoint serving — Tokio-native, no runtime conflict with Tauri
-- `tower ^0.5` (Rust): Middleware layer required by axum for CORS and routing
-- `rsa ^0.9` (Rust): RSA-SHA256 signing for ActivityPub HTTP signatures (cavage-12 draft) — pure Rust, no OpenSSL system dependency
-- `sha2 ^0.10` (Rust): SHA-256 Digest header generation for AP signed requests
-- `minijinja ^2.0` (Rust): Jinja2-compatible HTML template rendering for the artist static site generator
+**New additions:**
+- `@tauri-apps/plugin-store` + `tauri-plugin-store` (Rust): token and preference storage (do not use Stronghold — deprecated and removed in Tauri v3)
+- `@types/spotify-web-playback-sdk` (devDep): TypeScript type definitions
+- SoundCloud Widget API (CDN, runtime): programmatic pause/play control of SC embed
+- YouTube IFrame API (CDN, optional): programmatic control if needed
 
-**Zero new npm packages:** All JS/TS functionality uses existing NDK, feed, SvelteKit, and D3 capabilities. This is a firm finding from codebase inspection, not an assumption.
+**Critical platform fact:** On Windows, Tauri serves the app from `http://tauri.localhost`. This is a real HTTP origin that satisfies YouTube's embed validation. YouTube IFrame Error 153 only affects macOS/Linux (not applicable here — BlackTape is Windows-only). However, Error 153 does manifest in production `.msi` installs in some environments (see Pitfalls). Always test YouTube in a production build, not just `npm run tauri dev`.
 
-See `.planning/research/STACK.md` for the complete version compatibility table, alternatives considered, and installation instructions.
+**Spotify redirect URI:** Must use `http://127.0.0.1` (loopback IP literal), never `http://localhost`. `localhost` as hostname has been rejected by Spotify since November 27, 2025. The `tauri-plugin-oauth` dynamic port pattern is compatible — register `http://127.0.0.1` without a port, supply port at runtime.
+
+See `.planning/research/STACK.md` for the complete version table, alternatives considered (including why Stronghold is ruled out), and installation commands.
 
 ### Expected Features
 
-Mercury v1.3 has a clear priority tier based on research. P1 features are all either already implemented (support links) or extend proven patterns with low new risk (share-to-Fediverse, AI news via existing sidecar, sustainability screens). P2 features involve new architecture (AP export, listening rooms) and warrant dedicated research-phase attention during planning. AP WebFinger and true bidirectional federation are architectural non-starters under the $0/no-server constraint and should not appear in the v1.3 roadmap at all.
+**Must have (v1.6 core — P1):**
+- Bandcamp embed plays in-app (pending Conflict 1 spike — P1 if `url=` works, deferred to v1.7 if not)
+- Auto-load preferred service embed without requiring a click-to-reveal
+- Service priority as an ordered list, not a single dropdown — persisted across sessions
+- Source switcher on artist page ("Also on: [SC] [YT]") after initial embed loads
+- Player bar service badge ("via Bandcamp" / "via SoundCloud") derived from `activeSource`
+- "Play Album" on release pages reveals the best available streaming embed for that release
+- SoundCloud Widget API play/pause control verified working for queue integration
 
-**Must have (v1.3 core — P1):**
-- Artist support links (Patreon/Ko-fi/crowdfunding from MusicBrainz) — already implemented in `categorize.ts`, needs UI rendering only
-- Share-to-Fediverse links — URL-scheme button, zero AP protocol work required
-- Mercury funding links (Ko-fi/GitHub Sponsors in About screen) — static content
-- Backer credits screen — static JSON + NDK Nostr list event
-- Listening room host controls + guest track sync — extend NIP-28 with kind:10311 events
-- Artist stats: search impressions + profile views — new SQLite schema + event hooks
-- AI auto-news on artist profiles — new prompt in `prompts.ts`, reuses llama.cpp sidecar
+**Should have (v1.6.x — P2, after P1 stable):**
+- Spotify UX guidance: inline callout "For full tracks, log in to Spotify in BlackTape" when Spotify is active service
+- YouTube "Watch on YouTube" CTA clarity when only a channel URL exists (not a video URL)
+- Bandcamp embed dark-theme parameters matching current app theme CSS variables
 
-**Should have (v1.3 after P1 stabilizes — P2):**
-- ActivityPub JSON-LD export (static files the user self-hosts) — new `src/lib/activitypub/` module
-- Listening room participant list — NIP-38/NIP-53 presence events
-- Listening room chat integration — NIP-28 already built for scene rooms
-- Artist static site generator — new `src/lib/sitegen/` module + Rust `write_text_to_path` command
+**Defer to v1.7+:**
+- Queue-level track resolution (populate queue with individual tracks resolved to service URLs via APIs — requires API quotas and rate limit handling)
+- Spotify extended access + Web Playback SDK (requires organization status + 250K MAU — not feasible at current scale)
+- SoundCloud track-level embed (embed specific tracks; currently only artist page oEmbed)
+- YouTube Data API search (100 units per query, 10,000 units/day default — exhausted at 100 artist visits/day)
 
-**Defer to v1.4+:**
-- AP WebFinger + true Fediverse follow functionality — requires infrastructure (hosted server) incompatible with $0 desktop constraint
-- Tag trend sparklines in artist tools — requires historical tag co-occurrence schema (significant data work)
-- NIP-53 Live Activity discovery for listening rooms — nice-to-have discoverability, not core UX
+**Hard anti-features (never for v1.6):**
+- Spotify Web Playback SDK (Widevine CDM not available in WebView2 — Conflict 2 resolved)
+- Bundled shared Spotify `client_id` (5-user Development Mode cap as of February 2026)
+- Cross-platform artist search to find content not in MusicBrainz (requires API keys, unreliable name matching, wrong-region results)
+- YouTube Data API calls at page load (quota exhaustion; 100 units per search)
+- Bandcamp scraping for numeric IDs (fragile, against ToS — superseded by `url=` spike if Conflict 1 resolves favorably)
 
-**Hard anti-features (never):**
-- Full bidirectional AP federation from the Tauri app — always-on server requirement contradicts desktop architecture
-- Serving AP endpoints live from the desktop app — NAT/firewall make the desktop unreachable
-- Audio hosting or relay of any kind — violates Mercury's core rule
-- Affiliate commissions on support links — conflict of interest
-- Artist claiming, accounts, or verification — Mercury has no auth, no server
-
-See `.planning/research/FEATURES.md` for the complete prioritization matrix, dependency graph, and desktop constraint analysis per feature area.
+See `.planning/research/FEATURES.md` for the complete prioritization matrix, feature dependency graph, and competitor comparison table against Parachord.
 
 ### Architecture Approach
 
-All four v1.3 feature areas share a common pattern: they extend Mercury's existing module boundaries rather than introducing new architectural layers. Sustainability links are pure frontend extensions of `categorize.ts`. Artist tools are new queries against existing databases via the existing `query_mercury_db` Tauri command. Listening rooms extend `rooms.svelte.ts` with a new kind:10311 event type. ActivityPub adds a new `src/lib/activitypub/` module that writes static JSON files to disk via the existing `write_json_to_path` Tauri command. The only genuinely new Rust commands are for new SQLite tables (artist_news_cache, ap_settings) that require upsert logic.
+The architecture centers on a new `src/lib/streaming/` module that sits between the existing artist page and the existing player. Service availability is detected from `PlatformLinks` (already populated from MusicBrainz data — zero new API calls at page load). Resolution fires lazily when the user clicks play for a specific service. A `resolver.ts` dispatches to the correct embed path based on user service priority. A global `activeSource` state coordinates pause/play across local and streaming audio to prevent simultaneous playback. Token and priority data is stored in the existing `ai_settings` table in `taste.db` using the `set_ai_setting`/`get_ai_setting` Tauri command pattern already used throughout the app for preferences. No new Rust commands are required.
 
 **Major new components:**
-1. `src/lib/activitypub/` — AP JSON-LD type definitions, generator, keypair handling, and file export orchestration
-2. `src/lib/comms/listening-rooms.svelte.ts` — kind:10311 publish/subscribe; reactive `listeningRoomState`; cleanup pattern matching existing `rooms.svelte.ts`
-3. `src/lib/stats/` — `artist-stats.ts` (SQLite queries for discoverability signals) and `artist-news.ts` (AI prompt + cache)
-4. `src/lib/sitegen/` — HTML template types, minijinja-rendered template, generator, and file export
-5. New routes: `settings/activitypub/`, `artist/[slug]/stats/`, `about/backers/`
-6. Modified: `categorize.ts` (support links), `rooms.svelte.ts` (now-playing section), `prompts.ts` (news prompt), `taste_db.rs` (new tables)
+1. `src/lib/streaming/state.svelte.ts` (NEW) — reactive: active source, service connection status
+2. `src/lib/streaming/resolver.ts` (NEW) — given artist links + priority order, dispatches to correct embed path
+3. `src/lib/streaming/service-priority.svelte.ts` (NEW) — ordered service list, persisted to `taste.db`
+4. `StreamingPanel.svelte` (NEW) — artist page UI: available service badges, play button, source switcher
+5. `ServiceBadge.svelte` (NEW) — player bar: "via {Service}" label derived from `activeSource`
 
-**Key architectural patterns to follow:**
-- **Offline-first generation:** Generate static files to disk; user hosts them. Do not attempt to serve live from the Tauri process.
-- **Relay-mediated coordination:** Nostr relay pool is the sync layer for listening rooms. No P2P, no Mercury relay.
-- **Extend existing Tauri commands:** Use `query_mercury_db` for reads; add new Rust commands only for writes with custom upsert logic.
-- **MB link category extension:** New support platforms go into `categorize.ts` FRIENDLY_NAMES — zero new API routes.
+**Modified existing files:**
+6. `player/state.svelte.ts` — add `activeSource: 'local' | 'spotify' | 'soundcloud' | 'youtube' | 'bandcamp' | null`
+7. `theme/preferences.svelte.ts` — migrate `streamingPref.platform` (string) to `streamingPref.priorityOrder` (ordered array); migration guard required for existing saved preferences
+8. `settings/+page.svelte` — replace platform dropdown with drag-to-reorder streaming section
 
-See `.planning/research/ARCHITECTURE.md` for the complete component map, data flow diagrams, and recommended build order.
+**Key patterns:**
+- Lazy resolution: availability shown from existing link data; API calls fire only on user-initiated play
+- One active iframe at a time: show only the selected service embed; unmount others to prevent simultaneous audio and SoundCloud postMessage conflicts
+- `activeSource` as architectural foundation: must be built before any individual service implementation
+- OAuth token stored as module-scoped variable in `spotify-auth.ts`, not in Svelte `$state` (keeps token out of DevTools and serialized component state)
+
+See `.planning/research/ARCHITECTURE.md` for the complete component map, data flow diagrams, anti-patterns, and the recommended 6-phase build order with risk assessment per phase.
 
 ### Critical Pitfalls
 
-Research identified 11 pitfalls. The five most impactful — all of which must be addressed before code is written, not discovered during implementation:
+1. **Spotify Web Playback SDK fails in WebView2 (Widevine CDM unavailable)** — Do not use the SDK. Embed iframe only. This is a confirmed architecture decision, not a test question. See Conflict 2 resolution. (PITFALLS.md Pitfall 1)
 
-1. **ActivityPub cannot be served from a Tauri desktop app** — The desktop has no public IP, no stable domain, no inbound ports. Mastodon cannot reach it to POST Follow activities. Any plan to serve AP from the Tauri process produces an actor that appears in Mastodon search but cannot be followed. Prevention: scope v1.3 AP to static JSON-LD export only; user uploads to their own static host; defer live inbox to a future serverless Worker implementation.
+2. **Multiple audio sources play simultaneously without an `activeSource` coordination layer** — Build `activeSource` state first, before any service integration. It cannot be cleanly retrofitted after multiple services are implemented. SoundCloud supports programmatic pause via Widget API; YouTube via IFrame API `pauseVideo()`; Spotify and Bandcamp iframes have no external control API and must be unmounted to stop them. (PITFALLS.md Pitfall 5)
 
-2. **`+server.ts` routes are dead in the built Tauri binary** — SvelteKit's `adapter-static` produces an SPA with no server runtime. Any `+server.ts` route silently returns 404 or the fallback `index.html` in the built app. It works in `npm run dev` and passes `npm run build` without error, making this invisible until runtime testing. Prevention: never add `+server.ts` for in-app use; all data fetching goes through `+page.ts` direct fetch or Tauri `invoke()` commands.
+3. **YouTube IFrame Error 153 in production builds** — YouTube embeds work in `npm run tauri dev` but can fail in production builds with Error 153. Always test YouTube in a production build (`.msi` install). Implement the Error 153 fallback (`onError` handler replacing the player with a "Watch on YouTube" button) as part of initial implementation, not as a post-ship bug fix. (PITFALLS.md Pitfall 2)
 
-3. **HTTP signatures for AP push delivery are mandatory and non-trivial** — Mastodon verifies RSA-SHA256 HTTP signatures on every inbound POST. Incorrect header ordering, missing `Digest` header, wrong base64 encoding, or a `keyId` that doesn't resolve to the actor's public key results in silent 401/403 rejection with no error message. Prevention: use the `rsa` crate with the established cavage-12 signing pattern; verify end-to-end with a live Mastodon test account before shipping the AP phase; never write signing code by hand.
+4. **Spotify OAuth: `localhost` redirect URI rejected since November 2025** — Register and use `http://127.0.0.1` (loopback IP literal), not `http://localhost`. The `tauri-plugin-oauth` dynamic port pattern is compatible with the loopback IP approach. Any OAuth phase must have this constraint in the spec before code is written. (PITFALLS.md Pitfall 3)
 
-4. **Listening room embed synchronization is impossible at the iframe API level** — Bandcamp has no postMessage API. Spotify's Web Playback SDK requires Premium OAuth. SoundCloud's Widget API is async with no timestamp seek guarantee. YouTube requires `enablejsapi=1` and load signaling. Position-level sync across four platforms over Nostr relay latency of 200-2000ms is not technically achievable. Prevention: reframe the feature as "host controls which track/embed is active; guests load the same embed URL." Track switching is the sync primitive, not timestamp seeking.
+5. **Spotify client_id 5-user Development Mode cap (February 2026)** — Do not bundle a shared `client_id`. Each user provides their own from the Spotify developer dashboard (free, takes ~2 minutes). Follow the same per-user client_id model as the existing taste-import flow. (PITFALLS.md Pitfall 4)
 
-5. **AI auto-news will hallucinate without factual grounding** — Qwen2.5 3B has a training cutoff and no access to current events. Prompting it with only an artist name will produce confident, plausible, and factually wrong "news" (tour dates, albums, collaborations that don't exist). Prevention: the prompt must include actual MusicBrainz release data (album titles, years, release types) as context; the AI converts structured data to natural language, it does not invent news; always label output as "AI summary based on MusicBrainz catalog data."
+6. **Spotify token refresh race condition** — PKCE refresh token rotation immediately invalidates the old refresh token. Two concurrent near-expiry API calls can both attempt refresh; the second receives a 400 on an already-invalidated token. Implement a single-flight mutex: if a refresh is in progress, subsequent callers wait for the in-progress Promise rather than starting a new one. (PITFALLS.md Pitfall 6)
 
-See `.planning/research/PITFALLS.md` for the complete 11-pitfall breakdown, integration gotchas, performance traps, security mistakes, UX pitfalls, and the "looks done but isn't" verification checklist.
+7. **Bandcamp embeds not universally available** — Artists can disable streaming per-release; Bandcamp Pro allows domain-restricted embeds; free accounts have per-track streaming limits. Implement "try and fallback": if no playable audio state is detected within 5 seconds of iframe load, collapse the embed and show "Visit on Bandcamp" with a direct link. (PITFALLS.md Pitfall 7)
+
+See `.planning/research/PITFALLS.md` for the complete 11-pitfall breakdown including moderate pitfalls, integration gotchas, performance traps, security mistakes, UX pitfalls, and the "looks done but isn't" verification checklist.
+
+---
 
 ## Implications for Roadmap
 
-The research is unambiguous about phase ordering: dependencies, risk profile, and the "no new architecture needed" principle for the early phases all point to the same sequence. The 6-phase order from ARCHITECTURE.md is validated by all four research files.
+Based on combined research, a six-phase structure is recommended. The ordering is driven by hard dependencies: `activeSource` state must exist before any service; Settings UI can be built standalone to validate the priority persistence migration; services proceed in order of integration completeness and risk; release page album playback comes last because it depends on the full streaming foundation being stable and on the Bandcamp spike outcome.
 
-### Phase 1: Sustainability Links
-**Rationale:** Zero new architecture. The `support` link category is already implemented in `categorize.ts` — this phase is rendering what already exists plus adding static screens. Delivers immediate user-visible value with no implementation risk. Validates the end-to-end link pipeline before more complex phases depend on it.
-**Delivers:** Artist support links (Patreon/Ko-fi visually differentiated on artist pages), share-to-Fediverse button, Mercury funding links in About screen, backer credits screen fetched via NDK.
-**Addresses:** All P1 sustainability features from FEATURES.md; share-to-Fediverse (P1, zero AP protocol work).
-**Avoids:** Pitfall 6 (sparse MB coverage) — confirm UI degrades gracefully with no support links before any other phase lands.
-**Research flag:** Standard patterns. Skip research-phase. All code paths are established.
+---
 
-### Phase 2: Artist Stats Dashboard
-**Rationale:** Pure SQLite reads against existing tables via the existing `query_mercury_db` command. New SQLite schema for impression logging is the only new piece. Independent of all other phases.
-**Delivers:** Per-artist discovery stats page showing uniqueness score, top tags, tag co-occurrence, profile view count, and search impression count.
-**Addresses:** "Search appearance count" and "profile view count" table stakes from FEATURES.md artist tools section.
-**Avoids:** Pitfall 7 (MB rate limit pressure) — stats must derive from local SQLite only; zero new MB API calls on stats page render.
-**Research flag:** Standard patterns. Skip research-phase. SQLite schema migration and impression-logging hooks are well-understood.
+### Phase 1: Streaming Foundation — activeSource State + Settings Priority UI
 
-### Phase 3: AI Auto-News
-**Rationale:** Extends the existing AI pipeline with one new prompt template. New SQLite cache table in `taste_db.rs` is the only Rust change. Depends on Phase 2 being stable for artist data context.
-**Delivers:** 2-3 sentence AI-generated news blurb on artist pages, grounded in MusicBrainz release data, cached per-artist in taste.db, labeled as AI-generated.
-**Uses:** Existing llama.cpp sidecar, `ai/engine.ts`, `ai/prompts.ts` (extend), `ai/local-provider.ts`.
-**Avoids:** Pitfall 8 (AI hallucination) — prompt must include actual MB release data as context; free-form artist news generation is explicitly prohibited by research findings.
-**Research flag:** Standard patterns for the AI prompt extension. Skip research-phase. The hallucination guard is a prompt engineering constraint, not a research question.
+**Rationale:** The `activeSource` coordination state is the architectural prerequisite for every subsequent phase. PITFALLS.md is unambiguous: this cannot be retrofitted after multiple services are implemented. The Settings drag-to-reorder UI is built at the same time because it has no external dependencies — it is pure UI plus `taste.db` persistence and validates the `streamingPref.priorityOrder` array migration before any service depends on it.
 
-### Phase 4: Artist Static Site Generator
-**Rationale:** Independent of Phases 1-3 but simpler than Phases 5-6. Introduces minijinja (new Rust dependency) and a `write_text_to_path` Rust command. The Faircamp precedent confirms the pattern is viable; the architecture is well-defined.
-**Delivers:** "Generate my site" button on artist pages that produces a self-contained HTML/CSS folder (bio, discography, embedded players, buy links) for the artist to self-host anywhere.
-**Uses:** `minijinja ^2.0` (Rust), `tauri-plugin-dialog` (existing), `reqwest` (existing for MB data fetch), `write_text_to_path` (new Rust command).
-**Avoids:** Pitfall 9 (XSS in generated HTML) — minijinja auto-escapes by default; Wikipedia bio must be sanitized separately; test with artist name containing `<script>` before shipping.
-**Research flag:** Light research-phase recommended. The minijinja template design and HTML sanitization approach deserve a focused planning session before implementation begins. The output format (self-contained inline CSS vs. linked files, single-page vs. multi-page) needs a decision.
+**Delivers:**
+- `src/lib/streaming/state.svelte.ts` with `activeSource` typed state
+- `src/lib/streaming/service-priority.svelte.ts` with ordered array persistence to `taste.db`
+- Migration guard for existing `streamingPref.platform` (string) to `streamingPref.priorityOrder` (array)
+- Settings > Streaming: replace single dropdown with drag-to-reorder ordered list plus per-service enable/disable
+- `ServiceBadge.svelte` stub in player bar (renders "via {Service}", initially null)
 
-### Phase 5: Listening Rooms
-**Rationale:** Extends the established NIP-28 room infrastructure with kind:10311 events. Medium complexity — new Nostr event kind requires careful state machine design. Must be built after sustainability and stats phases to avoid scope creep. No dependency on AP.
-**Delivers:** Listening rooms where a host picks an embed (Bandcamp/Spotify/YouTube/SoundCloud) and guests see and load the same embed; room participant list; host-only track switching; cleanup on navigation away.
-**Uses:** NDK (existing), `rooms.svelte.ts` (extend), kind:10311 custom ephemeral event, `EmbedPlayer` component (existing, used as-is with reactive state binding).
-**Avoids:** Pitfall 4 (embed sync impossibility) — "sync" means track URL broadcast only, no position synchronization; Pitfall 5 (Nostr clock skew) — implement monotonic `seq` counter tag; verify subscription cleanup on navigation (memory leak risk).
-**Research flag:** Research-phase recommended. The kind:10311 event schema and state machine (host-only authority, seq counter, expiration handling, guest-join catch-up) need detailed design before any code is written. The interaction between `listeningRoomState` and the existing `EmbedPlayer` component is the key integration to specify.
+**Avoids:** Simultaneous audio (Pitfall 5), the un-retrofittable `activeSource` problem
 
-### Phase 6: ActivityPub Outbound (Static Export)
-**Rationale:** Most complex and most likely to require iteration. Placed last so no other phase depends on it. The static export pattern (generate files, user hosts them) avoids Pitfalls 1, 2, and 10. AP is intentionally scoped to export-only in v1.3; live inbox handling is v1.4+ territory.
-**Delivers:** AP settings page (configure handle, hosting URL), RSA keypair generation per actor (WebCrypto API), export of actor.json/outbox.json/webfinger.json to user-selected directory. Fediverse-compatible actor that can be followed once the user uploads the files.
-**Uses:** `axum ^0.8` + `tower ^0.5` (for future live-server evolution), `rsa ^0.9` + `sha2 ^0.10` (for keypair + future HTTP signatures), new `src/lib/activitypub/` module, taste.db `ap_settings` and `ap_outbox` tables.
-**Avoids:** Pitfall 1 (serving from desktop) — static export only; Pitfall 2 (+server.ts dead in built app) — AP export is a Tauri command, not a SvelteKit route; Pitfall 10 (AP private key in desktop) — for v1.3 static export, the key is used only to embed a public key in the actor JSON; actual outbound signing is not required until live push delivery is added.
-**Research flag:** Research-phase strongly recommended. AP JSON-LD format compatibility with Mastodon must be verified against the live spec before writing the generator. The content-type requirements (`application/activity+json` vs `application/jrd+json`), actor field completeness (inbox field must exist even for outbound-only), and WebFinger JSON structure all have Mastodon-specific nuances documented in PITFALLS.md that require a focused implementation design session.
+**Research flag:** Standard patterns. No additional research needed. All patterns exist in the codebase.
+
+---
+
+### Phase 2: SoundCloud First-Class
+
+**Rationale:** SoundCloud is the most complete integration in the codebase. oEmbed fetch already runs at page load. Widget API is already partially wired in `EmbedPlayer.svelte`. This phase has the lowest risk and delivers real playback quickly, validating the `StreamingPanel` component that all subsequent services will reuse.
+
+**Delivers:**
+- `StreamingPanel.svelte` initial version — SoundCloud path only
+- `resolver.ts` initial version — SoundCloud dispatch path
+- SoundCloud auto-load when it is the top-priority service (remove click gate for preferred service)
+- Source switcher UI placeholder for other services (extended in Phases 3-4)
+- `activeSource` set to `'soundcloud'` on play; local audio paused via coordination layer
+- SoundCloud Widget API play/pause/seek verified working
+- Player bar ServiceBadge shows "via SoundCloud"
+
+**Avoids:** SoundCloud postMessage conflict (Pitfall 8) by ensuring only one iframe is active at a time; ghost audio on navigation
+
+**Research flag:** Standard patterns. Widget API is well-documented. No additional research needed.
+
+---
+
+### Phase 3: Bandcamp Embed (conditional on Conflict 1 spike)
+
+**Rationale:** Bandcamp represents the core BlackTape audience — independent and underground artists. If the `url=` parameter resolves Conflict 1 in favor of FEATURES.md, this is high-value and low-complexity. If the spike shows the numeric ID requirement stands (ARCHITECTURE.md correct), this phase collapses to "Bandcamp stays external-link-only for v1.6" and Phase 5 adjusts accordingly.
+
+**Spike gate (30 minutes, must run before any Phase 3 code):**
+Test the `url=` parameter with a known Bandcamp URL in a local HTML file. If it renders and plays audio: proceed with Bandcamp embed. If it fails: skip embed implementation, update FEATURES.md, close out this phase as a no-op for Bandcamp.
+
+**If `url=` parameter works:**
+- Add `bandcampEmbedUrl(url: string): string` to `src/lib/embeds/bandcamp.ts`
+- Update `EmbedPlayer` to render iframe for Bandcamp instead of ExternalLink
+- Add Bandcamp to `resolver.ts` dispatch
+- Implement 5-second load timeout with "Visit on Bandcamp" fallback (Pitfall 7)
+- Match embed `bgcol`/`linkcol` to current theme CSS variables
+- Player bar ServiceBadge shows "via Bandcamp"
+
+**If `url=` parameter fails:**
+- Bandcamp remains external-link-only for v1.6
+- Update FEATURES.md, record decision in ARCHITECTURE.md and BUILD-LOG.md
+- Phase 5 album playback uses SoundCloud/YouTube/Spotify fallback chain only
+- Defer Bandcamp embed to v1.7
+
+**Avoids:** Pitfall 7 (Bandcamp unavailability fallback), Pitfall 5 (activeSource coordination for unmount-to-stop)
+
+**Research flag:** SPIKE REQUIRED FIRST. 30-minute implementation test before writing any production code. See Conflict 1 above for exact test procedure.
+
+---
+
+### Phase 4: YouTube Embed
+
+**Rationale:** YouTube has the most gotcha-dense integration (Error 153 production build risk) so it goes after the pattern is established with SoundCloud and Bandcamp. The core logic is simple — `youtubeEmbedUrl()` already exists — but the production build testing requirement makes this a careful phase that needs its own completion gate.
+
+**Delivers:**
+- YouTube added to `resolver.ts` dispatch
+- Video URLs (`/watch?v=`, `youtu.be/`) embedded in `StreamingPanel` via existing `youtubeEmbedUrl()`
+- Channel URLs (`/@handle`, `/c/`, `/user/`) render "Watch on YouTube" button via `tauri-plugin-shell` `open()`
+- Error 153 fallback: `onError` handler replaces player area with "Watch on YouTube" button
+- YouTube auto-load when it is the top-priority service
+- Mandatory production build smoke test before phase is marked complete
+
+**Avoids:** YouTube Error 153 shipping without fallback (Pitfall 2); never test YouTube embed only in `npm run tauri dev`
+
+**Research flag:** No additional research needed. The Error 153 fallback pattern is clear. The mandatory production build test is the risk gate.
+
+---
+
+### Phase 5: Release Page Album Playback
+
+**Rationale:** This feature depends on both the `StreamingPanel` foundation (Phases 1-2) and the Bandcamp spike result (Phase 3). The "Play Album" button on release pages resolves the best available embed for that specific release using `release.links` data. Phase 3's outcome determines whether Bandcamp appears in the fallback chain.
+
+**Delivers:**
+- Release page "Play Album" button (currently a stub with `handlePlayAlbum()` that does nothing — the stub comment states "requires local file matching" which is outdated; v1.6 uses streaming embeds)
+- Service resolution for the release: Bandcamp `url=` embed first (if Phase 3 succeeded), SoundCloud oEmbed second, Spotify artist embed third, YouTube fourth
+- "Play Album" button hidden entirely when `release.links` has no streaming URLs for any service
+- Bandcamp album-specific embed uses the release's Bandcamp URL from `release.links` (not the artist-level URL)
+
+**Avoids:** The outdated local file matching assumption in the existing stub
+
+**Research flag:** No additional research needed. Logic follows directly from existing `release.links` data structure.
+
+---
+
+### Phase 6: Spotify UX Guidance + P2 Polish
+
+**Rationale:** After core playback is working across SoundCloud, Bandcamp (or not), and YouTube, the Spotify experience and rough edges need a cleanup pass. Spotify embed already works today — this phase is about user-facing clarity and polishing interactions found to be rough during earlier phase testing.
+
+**Delivers:**
+- Inline guidance on artist pages when Spotify is the active service: "For full tracks, log in to Spotify in BlackTape"
+- YouTube "Watch on YouTube" CTA clarity when only a channel URL exists
+- Bandcamp dynamic theme parameters: read current CSS variables in JS, pass `bgcol`/`linkcol` to embed URL (if Phase 3 succeeded)
+- Source switcher completed for all available services across all phases
+- Full regression pass with all services active
+
+**Avoids:** UX pitfalls: no indication Spotify Premium is required (PITFALLS.md UX section), YouTube blank player with no explanation
+
+**Research flag:** No research needed. This is polish, UX copy, and CSS parameter adjustments.
+
+---
 
 ### Phase Ordering Rationale
 
-- **Risk escalation:** Phases 1-3 carry LOW risk (extend existing patterns with no new architecture). Phase 4 carries LOW-MEDIUM risk (new Rust dependency, new Tauri command, but well-understood pattern). Phase 5 carries MEDIUM risk (new Nostr event kind, relay-dependent behavior). Phase 6 carries MEDIUM-HIGH risk (AP spec compliance is the hardest testing target in the entire milestone).
-- **Independence preserves velocity:** Phases 1-4 are fully independent of each other and of Phases 5-6. If listening rooms (Phase 5) hits unexpected relay behavior complexity, the four preceding phases are already shipped.
-- **Dependency chain respected:** AI Auto-News (Phase 3) benefits from stats infrastructure (Phase 2) being stable. Listening rooms (Phase 5) depend on the existing NIP-28 rooms infrastructure, which is already working — no dependency on AP.
-- **AP is last:** ActivityPub is the most likely candidate to ship in v1.3 with reduced scope and iterate in v1.3.x. Placing it last means it cannot block anything else.
-- **Every phase adds E2E tests:** Per Pitfall 11 (pre-commit gate misses runtime failures), each phase completion requires at least 2-3 new `requiresApp: true` entries in the test manifest. This is a hard completion criterion for every phase.
+- `activeSource` state first because it is the only piece that cannot be added after the fact without touching every service implementation
+- SoundCloud second because it has the lowest risk and validates the `StreamingPanel` component that all services share
+- Bandcamp before YouTube because Bandcamp audience alignment is higher for BlackTape; the spike gates the phase so no wasted effort occurs if it fails
+- YouTube fourth because its Error 153 complexity is self-contained and handled cleanly as a standalone phase
+- Release page album playback fifth because it requires embed infrastructure from Phases 2-4 to be stable and depends on the Bandcamp spike outcome
+- Polish last with no dependencies
+
+---
 
 ### Research Flags
 
-Phases needing deeper research during planning:
-- **Phase 4 (Static Site Generator):** Template output format decision (inline CSS vs. linked files, single-page vs. multi-page), HTML sanitization approach for Wikipedia bio content, minijinja loader configuration for multi-file template sets.
-- **Phase 5 (Listening Rooms):** kind:10311 event schema finalization (seq counter, expiration, guest join-sync), state machine spec (host-authority rules, guest-challenge handling), interaction design for "host picks track from artist page" UX flow.
-- **Phase 6 (ActivityPub):** AP JSON-LD template validation against live Mastodon instance before building the generator; RSA keypair storage design (taste.db vs. OS keychain); outbox pagination strategy; WebFinger JSON-LD exact structure for `Content-Type: application/jrd+json`.
+**Needs implementation spike (not a full research-phase):**
+- Phase 3 (Bandcamp embed): 30-minute spike to resolve Conflict 1 before writing any production code. Spike result determines Phase 3 and Phase 5 scope.
 
-Phases with standard patterns (skip research-phase):
-- **Phase 1 (Sustainability):** All patterns established. `categorize.ts` already maps patronage/crowdfunding. NDK `fetchEvents` used throughout codebase. Static content screens are trivial.
-- **Phase 2 (Artist Stats):** Pure SQLite query work. Schema migration follows existing taste_db.rs patterns. No new external integrations.
-- **Phase 3 (AI Auto-News):** New prompt template extends established `prompts.ts` pattern. Cache table follows existing SQLite command patterns. Hallucination guard is a prompt constraint, not a research question.
+**Standard patterns — no research-phase needed:**
+- Phase 1 (Streaming foundation): Svelte 5 state patterns and `ai_settings` persistence are established in the existing codebase
+- Phase 2 (SoundCloud): Widget API is well-documented; oEmbed pattern already works in production
+- Phase 4 (YouTube): Pattern is clear; the production build smoke test is the risk gate, not missing knowledge
+- Phase 5 (Album playback): Logic follows directly from existing `release.links` data structure
+- Phase 6 (Polish): UX copy and CSS parameter adjustments — no unknowns
+
+---
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | Verified against Cargo.toml, package.json, and codebase. Zero new npm packages confirmed by direct inspection. Rust library versions verified against crates.io. axum/Tauri runtime compatibility confirmed via multiple community reports. |
-| Features | HIGH | Desktop constraint analysis verified (adapter-static, NAT/inbox impossibility). MB relationship type UUIDs verified against live MB docs. Embed iframe API limitations verified against platform docs (Bandcamp: no API; Spotify: Premium OAuth required; SoundCloud: async Widget API). |
-| Architecture | MEDIUM-HIGH | New component structure derived from existing codebase patterns — HIGH confidence on extensions of established patterns. MEDIUM confidence on AP JSON-LD Mastodon compatibility (no direct precedent for a desktop app generating AP export files; static site AP guides used as proxy). |
-| Pitfalls | HIGH | All critical pitfalls verified against official sources. Pitfall 2 (+server.ts dead) verified against Tauri official docs and community discussions. Pitfall 1 (AP serving) verified against ActivityPub W3C spec and Mastodon AP docs. Pitfall 4 (embed sync) verified against platform API docs. |
+| Stack | HIGH | All platform facts verified against official docs and live GitHub issues. Spotify policy changes confirmed via official Spotify developer blog and TechCrunch. Tauri WebView2 YouTube behavior confirmed via Tauri maintainer-closed issue #14422 (December 2025). Stronghold deprecation confirmed via Tauri maintainer comment. |
+| Features | HIGH | Table stakes and anti-features are well-defined. Spotify February 2026 policy is the highest-confidence finding in the entire research set (official blog + TechCrunch corroboration). The Bandcamp `url=` parameter (Conflict 1) is the single uncertain feature finding. |
+| Architecture | HIGH (with one exception) | Overall approach — lazy resolution, `activeSource` coordination, `ai_settings` storage — is well-grounded in the existing codebase. Exception: ARCHITECTURE.md's Bandcamp section directly contradicts FEATURES.md. All other architectural recommendations are consistent and well-sourced. |
+| Pitfalls | HIGH | Spotify SDK / Widevine failure is confirmed across three GitHub issues dating to 2018 with no resolution. YouTube Error 153 is confirmed by Tauri maintainer. All Spotify policy changes confirmed via official sources. SoundCloud postMessage conflict confirmed via SoundCloud's own GitHub issue tracker. |
 
-**Overall confidence:** HIGH
+**Overall confidence:** HIGH for all decisions this research enables, with one pending spike (Bandcamp `url=` parameter) that has no downstream blocking effect on Phases 1, 2, 4, or 6.
 
 ### Gaps to Address
 
-- **Live Mastodon AP compatibility:** The AP JSON-LD generator's output format needs to be validated against a live Mastodon instance before Phase 6 is considered complete. The research establishes the correct fields and Content-Types but does not provide a tested end-to-end result. Treat this as a mandatory integration test before Phase 6 ships.
-- **kind:10311 relay propagation latency:** The listening room architecture assumes relay latency of ~100-2000ms is acceptable for track-switch events. This needs empirical validation with Mercury's actual relay pool (`nos.lol`, `relay.damus.io`, `nostr.mom`, `relay.nostr.band`) during Phase 5 implementation. If latency is consistently above 3 seconds, the relay selection may need revisiting or the UX needs explicit latency framing.
-- **Backer credits Nostr event kind:** Research recommends kind:30000 with a `d` tag for an addressable backer list. This should be confirmed against the NIP-51 spec during Phase 1 implementation to ensure NDK `fetchEvents` interprets it correctly. A signed JSON file in the Mercury repo is the fallback if Nostr-based backer lists prove unreliable.
-- **minijinja multi-file template loading:** The Rust minijinja loader API for multi-file templates (index.html, releases.html, links.html) with partials needs to be prototyped before Phase 4 implementation begins. The architecture assumes it works as described; the implementation details should be confirmed early in Phase 4 planning.
+- **Bandcamp `url=` parameter (Conflict 1):** Spike in the first 30 minutes of Phase 3. The answer determines whether Bandcamp is a P1 v1.6 feature or deferred to v1.7. This does not block any other phase.
+
+- **YouTube Error 153 in production builds:** Confirmed to affect production builds in some environments. Mitigation (Error 153 fallback button) is documented and straightforward. The gap is that no production build has been tested yet with the current embed implementation. Phase 4 must include a mandatory production build smoke test as a blocking completion gate.
+
+- **SoundCloud Widget API binding after Svelte component remount:** The Widget API binds to a specific iframe element reference. Svelte's component lifecycle unmounts and remounts iframes on navigation. Verify during Phase 2 that the Widget API binding is correctly re-established after navigation — this has not been tested and could cause ghost audio (audio continuing from an unmounted component). Address in Phase 2 before declaring it complete.
+
+- **Spotify developer dashboard app registration:** If Spotify OAuth is added for any future feature, the redirect URI must be `http://127.0.0.1` (no port) registered in the Spotify dashboard. If the existing taste-import app registration uses `localhost`, it will need to be updated. Check the existing registration before writing any new OAuth code.
+
+---
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- Mastodon ActivityPub spec (docs.joinmastodon.org/spec/activitypub/) — Actor requirements, inbox field requirement, Content-Type requirements
-- Mastodon security docs (docs.joinmastodon.org/spec/security/) — HTTP signature requirements, RSA-SHA256, 12-hour date window
-- W3C ActivityPub Specification (w3.org/TR/activitypub/) — Actor, inbox, outbox requirements
-- NIP-53 spec (nips.nostr.com/53) — kind:30311 Live Activities, kind:10312 presence
-- NIP-51 spec (nips.nostr.com/51) — kind:30003 bookmark sets / addressable lists
-- NIP-38 spec (nips.nostr.com/38) — User status events for music listening
-- MusicBrainz Artist-URL relationships (musicbrainz.org/relationships/artist-url) — patronage UUID 6f77d54e, crowdfunding UUID 93883cf6
-- axum GitHub / crates.io — axum 0.8 current stable, Tokio-native confirmed
-- Spotify iFrame API (developer.spotify.com) — Programmatic embed control documentation
-- Faircamp static site generator (codeberg.org/simonrepp/faircamp) — Precedent for static musician sites from open data
-- Direct codebase inspection: `categorize.ts`, `sessions.svelte.ts`, `rooms.svelte.ts`, `Cargo.toml`, `package.json`, `artist/[slug]/+page.ts`
+- [Spotify developer blog — Update on developer access (Feb 2026)](https://developer.spotify.com/blog/2026-02-06-update-on-developer-access-and-platform-security) — 5-user cap, Premium requirement, organization-only extended access
+- [Spotify developer blog — Security requirements (Feb 2025)](https://developer.spotify.com/blog/2025-02-12-increasing-the-security-requirements-for-integrating-with-spotify) — localhost redirect URI rejection
+- [Spotify developer blog — OAuth Migration reminder (Oct 2025)](https://developer.spotify.com/blog/2025-10-14-reminder-oauth-migration-27-nov-2025) — November 2025 enforcement date
+- [Spotify docs — Redirect URIs](https://developer.spotify.com/documentation/web-api/concepts/redirect_uri) — 127.0.0.1 allowed, localhost blocked
+- [Spotify docs — Quota modes](https://developer.spotify.com/documentation/web-api/concepts/quota-modes) — 5-user dev limit, 250K MAU for extended access
+- [Spotify docs — Web Playback SDK](https://developer.spotify.com/documentation/web-playback-sdk) — Premium required, EME/Widevine dependency
+- [Spotify Web Playback SDK GitHub #41](https://github.com/spotify/web-playback-sdk/issues/41) — "Failed to initialize player" in Electron/WebView (2018 to present, unresolved)
+- [Spotify Web Playback SDK GitHub #7](https://github.com/spotify/web-playback-sdk/issues/7) — Electron/desktop Widevine CDM discussion
+- [Spotify Web Playback SDK GitHub #2](https://github.com/spotify/web-playback-sdk/issues/2) — requestMediaKeySystemAccess in cross-origin contexts
+- [Tauri GitHub #14422](https://github.com/tauri-apps/tauri/issues/14422) — YouTube IFrame Error 153 on Windows (tauri.localhost), closed December 2025
+- [FabianLars/tauri-plugin-oauth GitHub](https://github.com/FabianLars/tauri-plugin-oauth) — Plugin API, v2.0.0 for Tauri v2
+- [SoundCloud Widget API docs](https://developers.soundcloud.com/docs/api/html5-widget) — SC.Widget(), event binding, CDN URL
+- [Bandcamp help — Creating an embedded player](https://get.bandcamp.help/hc/en-us/articles/23020711574423) — Official embed format using numeric IDs
+- [TechCrunch — Spotify API changes Feb 2026](https://techcrunch.com/2026/02/06/spotify-changes-developer-mode-api-to-require-premium-accounts-limits-test-users/) — Confirms 5-user limit and Premium requirement
+- [Tauri community discussion #7846](https://github.com/orgs/tauri-apps/discussions/7846) — Stronghold deprecated, removed in Tauri v3
+- Direct codebase inspection — `src/lib/embeds/`, `src/lib/player/`, `src/lib/taste/import/spotify.ts`, `src-tauri/Cargo.toml`, `src-tauri/tauri.conf.json`, `src/lib/theme/preferences.svelte.ts`
 
 ### Secondary (MEDIUM confidence)
-- maho.dev ActivityPub static site guide (2024) — WebFinger structure, actor JSON-LD template, Content-Type requirement
-- Paul Kinlan — "Adding ActivityPub to your static site" — WebFinger dynamic parameter handling, inbox as hard blocker
-- ActivityPub on a mostly static website (elvery.net) — Practical static site AP limitations, inbox blocker confirmed
-- Tauri discussion #2942 — actix-web runtime conflict with Tauri Tokio; community-confirmed workaround
-- MoonGuard blog — actix-web in Tauri, axum as simpler alternative
+- [Bluesky social-app PR #6761](https://github.com/bluesky-social/social-app/pull/6761) — Evidence for Bandcamp `url=` parameter (Conflict 1 — needs spike to confirm)
+- [SoundCloud JavaScript GitHub #15](https://github.com/soundcloud/soundcloud-javascript/issues/15) — postMessage conflict with multiple iframes
+- [GitHub: spotifyr issue #224](https://github.com/charlie86/spotifyr/issues/224) — Community confirmation localhost fails, 127.0.0.1 works after November 2025
+- [Spotify extended access criteria update (Apr 2025)](https://developer.spotify.com/blog/2025-04-15-updating-the-criteria-for-web-api-extended-access) — 250K MAU + registered organization for extended access
 
-### Tertiary (LOW confidence, needs validation during implementation)
-- kind:10311 as Mercury's listening room event kind — Mercury-custom event kind not yet tested against relay pool; behavior is inferred from existing kind:20001/20002 patterns
-- AP static file export being followable from Mastodon without live inbox — Theoretical based on static site AP guides; requires live Mastodon end-to-end test to confirm
+### Tertiary (LOW confidence — validate in implementation)
+- SoundCloud Widget API re-binding behavior after Svelte component remount on navigation — not yet smoke-tested; validate in Phase 2
+- Bandcamp `url=` parameter working in practice — single PR source (Bluesky social-app); validate via 30-minute spike in Phase 3
 
 ---
-*Research completed: 2026-02-24*
-*Ready for roadmap: yes*
+
+*Research completed: 2026-02-26*
+*Ready for roadmap: YES (with Conflict 1 spike as Phase 3 gate)*
