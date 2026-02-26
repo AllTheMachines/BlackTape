@@ -1,6 +1,7 @@
 <script lang="ts">
 	import TagChip from './TagChip.svelte';
 	import type { ArtistResult } from '$lib/db/queries';
+	import { getWikiThumbnail } from '$lib/wiki-thumbnail';
 
 	let {
 		artist,
@@ -36,12 +37,30 @@
 			.join('')
 			.toUpperCase()
 	);
+
+	/** Wikipedia thumbnail — null until loaded, stays null if not found */
+	let thumbnailUrl = $state<string | null>(null);
+
+	$effect(() => {
+		// Only fetch for card (non-compact) mode — compact rows don't show the art square
+		if (!compact) {
+			getWikiThumbnail(artist.name).then(url => {
+				thumbnailUrl = url;
+			});
+		}
+	});
 </script>
 
 <a href="/artist/{artist.slug}" class="artist-card" class:compact aria-label={artist.name}>
 	{#if !compact}
-		<!-- Square art area — initials placeholder until cover art available -->
-		<div class="a-art" aria-hidden="true">{initials}</div>
+		<!-- Square art area — Wikipedia thumbnail if available, initials fallback -->
+		<div class="a-art" aria-hidden="true">
+			{#if thumbnailUrl}
+				<img src={thumbnailUrl} alt="" />
+			{:else}
+				{initials}
+			{/if}
+		</div>
 	{/if}
 
 	<div class="a-info">
@@ -162,6 +181,14 @@
 		color: var(--t-3);
 		font-weight: 700;
 		letter-spacing: 0.06em;
+		overflow: hidden;
+	}
+
+	.a-art img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
 	}
 
 	.a-info {
