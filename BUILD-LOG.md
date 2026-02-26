@@ -7955,3 +7955,6 @@ Fixed 8 of 11 Phase 28 bugs in commit `36bf980`. All 164 code tests passing.
 - **#23** — Scene local library: requires knowing available Tauri invoke commands for library queries; defer to Phase 29 where library integration is expanded
 
 **Next:** Phase 29 — Streaming API Integration (Spotify, YouTube, SoundCloud, Bandcamp)
+
+> **Commit 26d86f6** (2026-02-26 13:05) — wip: auto-save
+> Files changed: 2
