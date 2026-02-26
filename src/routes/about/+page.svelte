@@ -49,9 +49,16 @@
 		<a href="/backers" class="view-backers-link">View backers →</a>
 	</section>
 
+	<section class="about-section">
+		<h2>Feedback</h2>
+		<p>Found a bug? Have a suggestion? Send an email — all feedback is read and appreciated.</p>
+		<a href="mailto:feedback@blacktape.app?subject=BlackTape%20Feedback" class="feedback-link">feedback@blacktape.app</a>
+	</section>
+
 	<div class="about-ctas">
 		<a href="/" class="cta-primary">Start discovering &rarr;</a>
 		<a href="https://github.com/[your-repo]" target="_blank" rel="noopener" class="cta-secondary">GitHub</a>
+		<a href="mailto:feedback@blacktape.app?subject=BlackTape%20Feedback" class="cta-secondary">Send feedback</a>
 	</div>
 </div>
 
@@ -178,6 +185,17 @@
 
 	.view-backers-link:hover {
 		color: var(--t-2);
+		text-decoration: underline;
+	}
+
+	.feedback-link {
+		display: inline-block;
+		margin-top: 6px;
+		color: var(--acc);
+		font-size: 13px;
+		text-decoration: none;
+	}
+	.feedback-link:hover {
 		text-decoration: underline;
 	}
 </style>
