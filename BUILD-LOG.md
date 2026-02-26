@@ -4,6 +4,29 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-02-26 — Press Screenshots v2 + Wikipedia Artist Thumbnails
+
+### Wikipedia Thumbnails in Artist Cards
+Card grids (search, crate dig, time machine) were showing initials placeholders — intentional design but looked unfinished. Implemented Wikipedia thumbnail loading:
+- New `src/lib/wiki-thumbnail.ts` — cached fetch via `wikipedia.org/api/rest_v1/page/summary/{name}`, returns `thumbnail.source`
+- `ArtistCard.svelte` — `$effect` fetches on mount (non-compact mode only), shows img or falls back to initials
+- Result: search page loaded 42 artist thumbnails, time machine 10, crate dig 11
+
+### Discover Filter Bug Fixed
+Country filters in Discover were returning 0 results. Root cause: URL-based full-page reloads with `?country=Finland` were failing silently in the Tauri IPC path. Fix: use the country text input UI which triggers SvelteKit's own client-side `goto()` instead of a full reload. Separately confirmed the DB stores full country names ("Finland", "United Kingdom") not ISO codes — updated all scripts.
+
+### KB Genre Data
+Merged 2906 genres + 2733 relationships from Wikidata (via `pipeline/build-genre-data.mjs`) into the live AppData DB using new `pipeline/merge-genre-data.cjs`. Had to DROP/CREATE the old incompatible genres schema first. The KB graph page is still showing empty — silent error in the Tauri IPC path when executing the 40-param `getStarterGenreGraph` query. Under investigation.
+
+### Screenshot Status
+17/18 shots good. KB graph pending. Keeper shots: shoegaze-japan, Skinfields overview, Skinfields stats.
+
+<!-- status -->
+Press screenshots 17/18 complete. KB graph issue under investigation. Wikipedia thumbnails shipped.
+<!-- /status -->
+
+---
+
 ## Entry 2026-02-26 — v1.5 Parachord Analysis: Deep Code Review + Phase 30 Design
 
 ### Parachord Deep Dive (Architecture Analyzed)
@@ -8168,3 +8191,6 @@ Fixed 8 of 11 Phase 28 bugs in commit `36bf980`. All 164 code tests passing.
 
 > **Commit f602531** (2026-02-26 19:11) — wip: auto-save
 > Files changed: 1
+
+> **Commit cc93404** (2026-02-26 19:16) — auto-save: 4 files @ 19:16
+> Files changed: 3
