@@ -82,7 +82,7 @@ Full plan: `.planning/v1.5-PLAN.md`
 | 25. Queue System + Library | v1.4 | 4/4 | Complete | 2026-02-25 |
 | 26. Discover + Cross-Linking + Crate Fix | v1.4 | 4/4 | Complete | 2026-02-25 |
 | 27. Search + Knowledge Base | v1.4 | 5/5 | Complete | 2026-02-25 |
-| 28. UX Cleanup + Scope Reduction | 3/7 | In Progress|  | — |
+| 28. UX Cleanup + Scope Reduction | 6/7 | In Progress|  | — |
 | 29. Spotify Full Integration | v1.5 | 0/? | Planned | — |
 | 30. Spotify UI Polish + Service Preference | v1.5 | 0/? | Planned | — |
 | 31. Genre Map + Style Map + Time Machine | v1.5 | 0/? | Planned | — |
