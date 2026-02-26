@@ -270,7 +270,7 @@
 				<line x1="21" y1="21" x2="16.65" y2="16.65" />
 			</svg>
 		</div>
-		<h2>Natural-language exploration is available in the Mercury desktop app</h2>
+		<h2>Natural-language exploration is available in the BlackTape desktop app</h2>
 		<p>
 			Explore music with free-text queries powered by local AI. Type what you're
 			looking for and get curated recommendations.

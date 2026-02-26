@@ -120,7 +120,7 @@ export async function getTasteBridge(peerPubkey: string): Promise<void> {
 			return;
 		}
 
-		const prompt = `You are Mercury's taste analyst. Given two music listener profiles, explain their musical connection and suggest conversation starters.
+		const prompt = `You are BlackTape's taste analyst. Given two music listener profiles, explain their musical connection and suggest conversation starters.
 
 Your profile: ${ownProfile}
 Their profile: ${peerTasteProfile}

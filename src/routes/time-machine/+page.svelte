@@ -111,7 +111,7 @@
 </script>
 
 <svelte:head>
-	<title>Time Machine — Mercury</title>
+	<title>Time Machine — BlackTape</title>
 </svelte:head>
 
 <div class="time-machine">

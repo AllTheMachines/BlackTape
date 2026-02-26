@@ -226,7 +226,7 @@
 
 <footer class="site-footer">
 	<p class="affiliate-disclosure">
-		Some links on release pages are affiliate links. Mercury may earn a small commission if you make a purchase — at no extra cost to you. This helps fund open infrastructure.
+		Some links on release pages are affiliate links. BlackTape may earn a small commission if you make a purchase — at no extra cost to you. This helps fund open infrastructure.
 	</p>
 	<nav class="footer-nav">
 		<a href="/about" class="footer-link">About</a>

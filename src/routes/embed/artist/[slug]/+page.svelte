@@ -53,7 +53,7 @@
 				rel="noopener"
 				class="listen-link"
 			>
-				Listen on Mercury →
+				Listen on BlackTape →
 			</a>
 
 			{#if data.curators && data.curators.length > 0}
@@ -72,7 +72,7 @@
 		</div>
 
 		<span class="powered-by">
-			Powered by <a href={data.siteUrl} target="_blank" rel="noopener">Mercury</a>
+			Powered by <a href={data.siteUrl} target="_blank" rel="noopener">BlackTape</a>
 		</span>
 	{/if}
 </div>

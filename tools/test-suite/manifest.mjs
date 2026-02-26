@@ -1067,7 +1067,7 @@ export const PHASE_16 = [
     id: 'P16-04', phase: 16, area: 'Nostr',
     desc: '/backers route fetches Nostr kind:30000 backer credits',
     method: 'code',
-    fn: fileContains('src/routes/backers/+page.svelte', 'MERCURY_PUBKEY'),
+    fn: fileContains('src/routes/backers/+page.svelte', 'BLACKTAPE_PUBKEY'),
   },
 ];
 

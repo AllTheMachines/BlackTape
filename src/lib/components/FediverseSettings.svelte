@@ -85,7 +85,7 @@
 
 <div class="settings-section" data-testid="fediverse-settings">
 	<h2>Fediverse (ActivityPub)</h2>
-	<p class="section-desc">Export static files that make your Mercury curation followable from Mastodon and other Fediverse apps.</p>
+	<p class="section-desc">Export static files that make your BlackTape curation followable from Mastodon and other Fediverse apps.</p>
 
 	<!-- Identity form -->
 	<div class="ap-form">

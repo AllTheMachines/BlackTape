@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { PROJECT_NAME, MERCURY_PUBKEY } from '$lib/config';
+	import { PROJECT_NAME, BLACKTAPE_PUBKEY } from '$lib/config';
 
 	type FetchState = 'loading' | 'loaded' | 'empty' | 'error';
 
@@ -12,7 +12,7 @@
 		fetchState = 'loading';
 		backers = [];
 
-		if (!MERCURY_PUBKEY) {
+		if (!BLACKTAPE_PUBKEY) {
 			fetchState = 'empty';
 			return;
 		}
@@ -29,7 +29,7 @@
 
 			const events = await ndk.fetchEvents({
 				kinds: [30000],
-				authors: [MERCURY_PUBKEY],
+				authors: [BLACKTAPE_PUBKEY],
 				'#d': ['backers']
 			});
 
@@ -72,7 +72,7 @@
 	<div class="backers-header">
 		<a href="/about" class="back-link">← About</a>
 		<h1>Backers</h1>
-		<p class="backers-subtitle">People who keep Mercury alive.</p>
+		<p class="backers-subtitle">People who keep BlackTape alive.</p>
 	</div>
 
 	{#if fetchState === 'loading'}
@@ -88,7 +88,7 @@
 		</ul>
 	{:else if fetchState === 'empty'}
 		<p class="backers-empty">
-			{MERCURY_PUBKEY ? 'No backers listed yet.' : 'Backer credits coming soon.'}
+			{BLACKTAPE_PUBKEY ? 'No backers listed yet.' : 'Backer credits coming soon.'}
 		</p>
 	{:else if fetchState === 'error'}
 		<div class="backers-error">
@@ -100,7 +100,7 @@
 	{/if}
 
 	<div class="backers-cta">
-		<a href="/about#support" class="backers-cta-link">Want to be listed? Support Mercury →</a>
+		<a href="/about#support" class="backers-cta-link">Want to be listed? Support BlackTape →</a>
 	</div>
 </div>
 

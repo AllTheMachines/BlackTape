@@ -18,14 +18,14 @@
 	<p class="icon">&#9776;</p>
 	<div class="message">
 		<p class="title">Collection</p>
-		<p class="body">This collection requires the Mercury desktop app.</p>
+		<p class="body">This collection requires the BlackTape desktop app.</p>
 		<a
 			href="/"
 			target="_blank"
 			rel="noopener"
 			class="cta"
 		>
-			Get Mercury →
+			Get BlackTape →
 		</a>
 	</div>
 </div>
