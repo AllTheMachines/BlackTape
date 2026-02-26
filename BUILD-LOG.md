@@ -8475,3 +8475,9 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit 72decde** (2026-02-26 21:38) — wip: auto-save
 > Files changed: 1
+
+> **Commit 0536ba5** (2026-02-26 21:46) — auto-save: 2 files @ 21:46
+> Files changed: 1
+
+> **Commit a9b22a9** (2026-02-26 21:49) — docs: start milestone v1.6 The Playback Milestone
+> Files changed: 3
