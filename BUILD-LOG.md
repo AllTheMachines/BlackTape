@@ -8418,3 +8418,6 @@ Fixed 8 of 11 Phase 28 bugs in commit `36bf980`. All 164 code tests passing.
 
 > **Commit 1bf5952** (2026-02-26 21:09) — docs(28-03): complete plan summary — scene library signal + dead link filter
 > Files changed: 4
+
+> **Commit e006e57** (2026-02-26 21:10) — docs(28-06): complete search type selector + discovery sidebar plan
+> Files changed: 3

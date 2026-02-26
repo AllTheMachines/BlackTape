@@ -168,6 +168,9 @@ Progress: [█████░░░░░] Phase 28 in progress (6/7 plans done)
 - [Phase 28-06]: SearchType alias covers 4 modes; type= URL param parsed alongside legacy mode= for backward compat
 - [Phase 28-06]: Song mode returns empty artist results — local library tracks section surfaces the matches
 - [Phase 28-06]: Discovery sidebar: DISCOVERY_MODES shared constant, activeDiscoveryMode derived, compact icon switcher when on discovery route
+- [Phase 28-05]: provider-card pattern: card grid replaces flat button lists for multi-option selectors with inline status — buttons cannot contain buttons
+- [Phase 28-05]: Mastodon first in share-row — decentralized platforms get priority per project values
+- [Phase 28-05]: twitterShareUrl and bskyShareUrl use $page.url.href for shareable canonical URLs
 
 ### Pending Todos
 None
@@ -178,6 +181,6 @@ None
 ## Session Continuity
 
 Last session: 2026-02-26
-Stopped at: Completed Phase 28 Plan 03 — Bug #23 (library artists in scene detection) + Bug #27 (dead link filter)
+Stopped at: Completed Phase 28 Plan 05 — Polish #29 (AI provider card grid) + Polish #32 (Twitter/Bluesky share buttons)
 Resume file: None
-Next: Continue Phase 28 — execute plans 05-07.
+Next: Continue Phase 28 — execute plan 07 (test manifest).
