@@ -1,231 +1,259 @@
 # Stack Research
 
-**Domain:** v1.3 The Open Network — ActivityPub outbound, Nostr listening rooms, artist tools, sustainability
-**Researched:** 2026-02-24
-**Confidence:** HIGH (Nostr/NDK, MusicBrainz, ActivityPub endpoints), MEDIUM (ActivityPub RSA signing), HIGH (artist static site generator approach)
+**Domain:** v1.6 The Playback Milestone — multi-source streaming integration into existing Tauri 2.0 desktop app
+**Researched:** 2026-02-26
+**Confidence:** HIGH (Tauri platform facts, Spotify security changes), MEDIUM (SDK integration specifics in Tauri context), LOW (Spotify Web Playback SDK origin requirements for tauri.localhost — unconfirmed in official docs)
 
 ---
 
 ## Context: What Already Exists (Do Not Re-Add)
 
-This is a subsequent-milestone document. The following are already installed, integrated, and working. Do not re-research, re-add, or duplicate these.
+This is a subsequent-milestone document. Everything below is already installed and working.
 
 | Already Present | Version | Notes |
 |-----------------|---------|-------|
-| `@nostr-dev-kit/ndk` | ^3.0.0 | NDK — NIP-17 DMs, NIP-28 rooms, ephemeral sessions fully implemented |
-| `@nostr-dev-kit/ndk-svelte` | ^2.4.48 | Svelte 5 Nostr reactive stores |
-| `nostr-tools` | ^2.23.1 | Low-level Nostr utility functions |
-| `feed` | ^5.2.0 | RSS/Atom generation — used for RSS feeds on artist/scene/collection pages |
-| `@tauri-apps/api` | ^2.10.1 | Tauri IPC, file system access |
-| `@tauri-apps/plugin-sql` | ^2.3.2 | SQLite via Tauri |
-| `reqwest` (Rust) | ^0.12 | HTTP client — already used in AI model download |
-| `rusqlite` (Rust) | ^0.31 bundled | Direct SQLite access in Rust |
-| `serde` + `serde_json` (Rust) | ^1 | JSON serialization |
-| `base64` (Rust) | ^0.22 | Base64 encoding — needed for AP HTTP signatures too |
-| `tauri-plugin-shell` | ^2.3.5 | Shell commands from Tauri |
-| `tauri-plugin-dialog` | ^2.6.0 | File picker dialogs |
-| MusicBrainz support link categorization | — | `categorize.ts` already maps `'patronage'` and `'crowdfunding'` MB relationship types to `'support'` category. Artist page already renders the 'support' link group. |
-| Ephemeral Nostr sessions (kind:20001/20002) | — | `sessions.svelte.ts` — listening party sessions with host/guest, public/private, 1hr TTL |
+| `tauri-plugin-oauth` (Rust) | `"2"` in Cargo.toml | **Already installed.** Spawns localhost server for OAuth callbacks. |
+| `@fabianlars/tauri-plugin-oauth` (npm) | `^2.0.0` | **Already installed.** TypeScript bindings for the Rust plugin. |
+| `rsa` (Rust) | `0.9` | Already installed for AP HTTP signatures. RSA keypair generation available. |
+| `reqwest` (Rust) | `^0.12` | HTTP client. Already used for AI model downloads + AP delivery. |
+| `serde` + `serde_json` (Rust) | `^1` | JSON serialization. Already used throughout. |
+| `@tauri-apps/api` | `^2.10.1` | Tauri IPC. Already in use. |
+| `@tauri-apps/plugin-sql` | `^2.3.2` | SQLite. Already used for taste.db and mercury.db. |
+| `src/lib/embeds/spotify.ts` | — | Already converts Spotify URLs to embed iframe URLs. |
+| `src/lib/embeds/youtube.ts` | — | Already converts YouTube URLs to nocookie embed URLs. |
+| `src/lib/embeds/soundcloud.ts` | — | Already constructs SoundCloud oEmbed URLs. |
+| `src/lib/embeds/bandcamp.ts` | — | Already handles Bandcamp URL detection. |
+| `src/lib/player/` | — | Complete player module: `playback.svelte.ts`, `queue.svelte.ts`, `state.svelte.ts`, `audio.svelte.ts`. |
 
 ---
 
-## Feature 1: ActivityPub Outbound
+## Critical Platform Facts (Read Before Any Integration Work)
 
-**Goal:** Artist pages, scenes, and collections become AP actors that Fediverse users can follow. Outbound-only — Mercury posts announcements (new artist discovery, scene events) to followers on other AP servers. No inbox processing.
+### Windows Uses `http://tauri.localhost` — This Matters Enormously
 
-### What ActivityPub Outbound Actually Requires
+On Windows, Tauri 2.0 serves the app's WebView2 content at `http://tauri.localhost`. This is a real HTTP origin (not a custom protocol). This has two major consequences:
 
-ActivityPub for outbound-only (read: Mercury publishes, Fediverse reads) requires:
+1. **YouTube IFrame API: Works on Windows, fails on macOS/Linux.** YouTube IFrame Error 153 (the "no valid HTTP Referer" failure) only affects macOS/Linux where Tauri uses `tauri://localhost`. On Windows, `http://tauri.localhost` satisfies YouTube's origin validation. Since BlackTape is Windows-only (NSIS installer, no other targets), YouTube IFrame is not blocked by the Tauri protocol — this is a non-issue for this project. Source: [Tauri GitHub issue #14422](https://github.com/tauri-apps/tauri/issues/14422), confirmed closed December 2025.
 
-1. **WebFinger endpoint** — `/.well-known/webfinger?resource=acct:artist@mercury.domain` → JSON discovery doc
-2. **Actor JSON-LD document** — stable URL per actor, served with `Content-Type: application/activity+json`
-3. **Outbox endpoint** — ordered collection of `Create` activities (announcements)
-4. **Inbox field in actor doc** — must exist in actor JSON even if not implemented; Mastodon rejects inbox-less actors (legacy requirement per Mastodon spec)
-5. **HTTP Signatures on outbound POSTs** — when Mercury sends activities to follower inboxes, each HTTP POST must be signed with the actor's RSA private key (cavage-12 draft: Date + Digest + Signature headers)
-6. **RSA-2048 keypair per actor** — private key stored locally, public key published in actor doc
+2. **Spotify Web Playback SDK origin:** Whether Spotify accepts `http://tauri.localhost` as an allowed origin in the developer dashboard is not confirmed in official docs. This must be validated during implementation. If Spotify rejects it, the embed iframe approach (already working via `spotifyEmbedUrl()`) is the fallback. Do not block the phase on this — test it in the first implementation spike.
 
-### Architecture Decision: No AP Library
+3. **CSP is already null** in `tauri.conf.json`. No CSP changes are needed for loading third-party scripts.
 
-**Do not add an ActivityPub framework library** (e.g., `activitypub-express`, `@activity-pub/activitypub`). Mercury is outbound-only — no inbox processing, no federation relay, no delivery queue. The AP spec at this scope is 4 JSON templates + RSA signing. A full framework adds 50+ dependencies for 10% of the use cases. Hand-craft the JSON.
+### Spotify OAuth Security Changes (November 2025 — Enforced Now)
 
-### What Needs Adding: Rust HTTP Server for AP Serving
+As of November 27, 2025, Spotify enforces stricter redirect URI rules. This affects all new and migrated apps:
 
-ActivityPub endpoints need to be reachable by Mastodon/Pleroma/Misskey servers on the public internet. Mercury is a desktop app — this requires an embedded HTTP server in the Tauri Rust process, publicly reachable (via user-configured port forwarding or tunnel).
+- `http://localhost` — **BLOCKED.** Localhost hostname aliases are no longer accepted.
+- `http://127.0.0.1:PORT` — **ALLOWED.** Loopback IP literals are explicitly exempt from the HTTPS requirement.
+- `https://` redirect URIs — Allowed (but no server to redirect to in a desktop app).
+- Custom URI schemes (e.g., `myapp://callback`) — **Status unclear.** Not explicitly documented as allowed or blocked for new apps; community reports are mixed.
 
-**Option A (recommended): axum** — lightweight, Tokio-native (same runtime as Tauri), no runtime conflict.
-
-**Why not actix-web:** actix-web uses its own runtime and requires spawning on a `std::thread` to avoid conflict with Tauri's Tokio runtime. This adds complexity. axum runs directly on `tauri::async_runtime::spawn` without thread gymnastics.
-
-| Library | Version | Purpose | Why |
-|---------|---------|---------|-----|
-| `axum` (Rust) | ^0.8 | Embedded HTTP server for AP endpoints | Tokio-native, no runtime conflict with Tauri, minimal boilerplate for JSON routes |
-| `tower` (Rust) | ^0.5 | Middleware layer for axum | Required by axum for CORS and request handling |
-
-**RSA signing for outbound HTTP:** Node.js `crypto` module (Web Crypto API in the SvelteKit frontend) can generate RSA-OAEP-2048 keypairs and sign. In the Rust side, `rsa` crate handles signing for outbound delivery. Check which layer does delivery.
-
-| Library | Version | Purpose | Why |
-|---------|---------|---------|-----|
-| `rsa` (Rust) | ^0.9 | RSA-SHA256 signing for AP HTTP signatures | Pure Rust, no OpenSSL dependency, handles PKCS#1 signing required by Mastodon |
-| `sha2` (Rust) | ^0.10 | SHA-256 for Digest header generation | Already likely in tree via tauri deps; needed for AP body digest |
-
-**Key generation:** Use Web Crypto API (`window.crypto.subtle.generateKey`) in TypeScript to generate the keypair in the frontend, store private key in taste.db via Tauri SQL. Public key extracted as PEM and embedded in actor JSON. This avoids adding a key-gen Rust command.
-
-### AP Endpoint Structure (No New JS Libraries)
-
-The actor JSON, WebFinger response, and outbox are plain TypeScript objects serialized to JSON. SvelteKit's `+server.ts` files handle these routes when the embedded axum server proxies or when the SvelteKit app is the AP server. Given Mercury is desktop-only (static build), the axum Rust server serves AP endpoints directly — SvelteKit doesn't serve these, axum does.
-
-**Endpoint routes in axum:**
-- `GET /.well-known/webfinger` — WebFinger discovery
-- `GET /ap/artist/:mbid` — Actor document
-- `GET /ap/artist/:mbid/outbox` — OrderedCollection of Create activities
-- `POST /ap/artist/:mbid/inbox` — Accept 200 OK, discard body (satisfy Mastodon requirement)
-- `GET /ap/scene/:id` — Scene actor
-- `GET /ap/collection/:id` — Collection actor
+**Implication:** `tauri-plugin-oauth` spawns a temporary localhost server for OAuth. The redirect URI must be registered as `http://127.0.0.1:<PORT>` (not `http://localhost:<PORT>`) in the Spotify developer dashboard. The plugin supports dynamic port assignment, but the registered URI must use the exact IP literal. Source: [Spotify redirect URI docs](https://developer.spotify.com/documentation/web-api/concepts/redirect_uri), [community confirmation](https://github.com/charlie86/spotifyr/issues/224).
 
 ---
 
-## Feature 2: Listening Rooms (Synchronized Embed Playback)
+## New Stack Additions for v1.6
 
-**Goal:** Host controls which embedded player (Bandcamp/Spotify/YouTube/SoundCloud) is playing and at what position. Guests sync to host. Coordination via Nostr.
+### 1. Spotify Web Playback SDK
 
-### What's Already There
+**Verdict: Load via CDN script tag. No npm package for the SDK itself.**
 
-`sessions.svelte.ts` already implements ephemeral Nostr sessions (kind:20001/20002) for listening parties with host/guest, public/private, session metadata (artistName, releaseName, artistMbid). The existing sessions are text-only — they announce what's being listened to but don't coordinate playback state.
+Spotify does not publish the Web Playback SDK to npm. It is loaded as a CDN script injected into the page:
 
-### What Needs Adding: Playback Sync Events
+```
+https://sdk.scdn.co/spotify-player.js
+```
 
-NIP-53 (kind:30311 Live Activities) is the closest Nostr standard. However, kind:30311 is designed for audio stream URLs, not embed URL + timestamp sync. For Mercury's use case (iframe embed control, not a real stream), extend the existing ephemeral session protocol.
+The SDK calls `window.onSpotifyWebPlaybackSDKReady()` when loaded. Initialize inside that callback.
 
-**No new Nostr library needed.** NDK ^3.0.0 supports subscribing to any event kind. The sync protocol is a Mercury-specific ephemeral event (kind:20003, within ephemeral range 20000-29999) that carries playback state.
+| Addition | Version | Purpose | Why |
+|----------|---------|---------|-----|
+| `@types/spotify-web-playback-sdk` (npm, dev) | `^0.1.19` | TypeScript types for the SDK global | SDK is not on npm but types are; needed for `window.Spotify.Player` type safety |
 
-**Mercury playback sync event (kind:20003):**
-```json
-{
-  "kind": 20003,
-  "tags": [
-    ["e", "<sessionId>"],
-    ["t", "mercury"],
-    ["t", "playback-sync"],
-    ["expiration", "<unix+3600>"]
-  ],
-  "content": "{\"embedUrl\": \"https://bandcamp.com/...\", \"platform\": \"bandcamp\", \"position\": 42.5, \"playing\": true, \"sequence\": 17}"
+**Initialization pattern for Svelte 5:**
+
+```typescript
+// In a Svelte component's $effect or onMount
+function loadSpotifySDK(accessToken: string) {
+  window.onSpotifyWebPlaybackSDKReady = () => {
+    const player = new window.Spotify.Player({
+      name: 'BlackTape',
+      getOAuthToken: (cb) => { cb(accessToken); },
+      volume: 0.5
+    });
+    player.addListener('ready', ({ device_id }) => { /* store device_id */ });
+    player.addListener('player_state_changed', (state) => { /* update UI */ });
+    player.connect();
+  };
+  const script = document.createElement('script');
+  script.src = 'https://sdk.scdn.co/spotify-player.js';
+  document.body.appendChild(script);
 }
 ```
 
-Host publishes kind:20003 events when playback state changes (play/pause, seek, track change). Guests subscribe and apply state. `sequence` field prevents out-of-order application.
+**Requirement:** Spotify Premium account required. The SDK emits `account_error` for non-premium users. Plan for a graceful degradation: if account error fires, fall back to the existing Spotify embed iframe (spotifyEmbedUrl()) which works for non-premium browsing.
 
-**No new npm packages needed.** The existing `player/` module (`playback.svelte.ts`, `audio.svelte.ts`, `state.svelte.ts`) already manages embed state. Listening room sync wires kind:20003 events into the existing player state.
-
-**NIP-53 reference:** NIP-53 defines kind:1311 for live chat messages. Mercury can use kind:1311 alongside kind:20003 for room chat, replacing or complementing the current kind:20001 text messages. This is optional — kind:20001 already works.
+**Unknown: origin whitelisting.** Whether `http://tauri.localhost` must be added to the Spotify app's allowed origins list in the developer dashboard is not confirmed in official docs. Validate in implementation spike. If blocked, the embed iframe is the fallback path.
 
 ---
 
-## Feature 3: Artist Tools
+### 2. Spotify PKCE OAuth — Using Already-Installed tauri-plugin-oauth
 
-### 3a. Discovery Stats Dashboard
+**Both Rust and npm packages are already in the project.** No new installs needed for the OAuth flow mechanism.
 
-**Goal:** Show an artist their Mercury stats — how many searches led to their page, which tags drove traffic, which scenes they appear in.
+The PKCE flow using `tauri-plugin-oauth`:
 
-**What's already there:** The local SQLite `taste.db` records user history. The main `mercury.db` holds the artist index. No cross-user aggregation exists (offline-first, no server).
+1. App generates PKCE `code_verifier` and `code_challenge` in TypeScript (using Web Crypto API — no library needed).
+2. `tauri-plugin-oauth` starts a temporary server via `start()` → returns a random port.
+3. Open the Spotify authorization URL in the system browser using `tauri-plugin-shell`'s `open()`.
+   - Auth URL: `https://accounts.spotify.com/authorize?response_type=code&client_id=<ID>&redirect_uri=http%3A%2F%2F127.0.0.1%3A<PORT>&code_challenge_method=S256&code_challenge=<CHALLENGE>&scope=streaming%20user-read-email%20user-read-private`
+4. Spotify redirects to `http://127.0.0.1:<PORT>/?code=<CODE>`. The plugin catches this.
+5. App exchanges code for tokens via `reqwest` (Rust) or `fetch` (TypeScript).
+6. Store tokens (see Token Storage below).
 
-**Architecture:** Stats are local only — Mercury cannot aggregate cross-user data (no server, no telemetry). The dashboard shows the *local user's* interaction with an artist: how many times they searched for them, played them, added to collections, shared. This is honest and privacy-preserving.
+**Redirect URI registration rule (enforced since Nov 2025):** Register `http://127.0.0.1` without port in the Spotify dashboard. Spotify allows dynamic port appending for loopback addresses — you register `http://127.0.0.1` and can pass any port at runtime. Source: [Spotify redirect URI docs](https://developer.spotify.com/documentation/web-api/concepts/redirect_uri).
 
-**No new libraries needed.** SQLite queries via `tauri-plugin-sql` already available. Stats are a new set of SQL queries against existing tables. Display in Svelte components with existing D3 (already installed for style map and taste fingerprint).
+**Bundled client_id:** Since BlackTape ships a client_id in the binary, the PKCE flow (no client_secret required) is the correct approach. PKCE was designed for public clients that cannot safely store a secret. The client_id being visible is acceptable — PKCE ensures the token exchange is secure even without a secret.
 
-### 3b. AI Auto-News
-
-**Goal:** AI-generated "what's new" content for artists — release announcements, scene activity summaries.
-
-**What's already there:** `ai/engine.ts` + `ai/prompts.ts` provide the local AI pipeline (llama.cpp sidecar, Qwen2.5 3B). `ai/local-provider.ts` and `ai/remote-provider.ts` handle model routing. Prompt templates in `prompts.ts` cover artist summaries, genre descriptions, scene descriptions.
-
-**What needs adding:** A new prompt template in `prompts.ts` for news-style summaries, plus a trigger mechanism (scheduled or on-visit). The existing AI pipeline handles execution.
-
-**No new libraries needed.** Add a prompt to `prompts.ts`, a schedule trigger (use `setInterval` or store a `lastGenerated` timestamp in taste.db), and a news display component.
-
-**Data sources for news content:** MusicBrainz live API (already used — artist releases endpoint), scene Nostr events (already fetched via NDK). AI summarizes what it finds.
-
-### 3c. Self-Hosted Static Site Generator
-
-**Goal:** Artist clicks "Generate my site" — Mercury produces a folder of static HTML/CSS/JS that the artist can self-host anywhere. No claiming, no Mercury account. Pure export.
-
-**Architecture:** Generate a minimal SvelteKit-style static site using a Tauri Rust command that writes files to disk. The generated site is a standalone HTML/CSS package, not dependent on Mercury infrastructure.
-
-**Approach:** Rust command (`#[tauri::command]`) that:
-1. Fetches artist data (name, tags, biography, cover art URL, platform links, releases) from existing APIs
-2. Renders HTML using a template string (no separate template engine needed — Rust's `format!` macro for small templates, or `minijinja` for complex ones)
-3. Writes output to a user-selected directory (via `tauri-plugin-dialog` file picker — already installed)
-
-| Library | Version | Purpose | Why |
-|---------|---------|---------|-----|
-| `minijinja` (Rust) | ^2.0 | Jinja2-compatible template engine for Rust | Lightweight (no dependencies), familiar syntax, handles the HTML generation complexity that `format!` can't cleanly handle for multi-page sites |
-
-**Alternative considered:** Generate the site entirely in TypeScript using SvelteKit's prerender capability. Rejected — the Tauri app is already built as a static SPA; adding a secondary "build a different SvelteKit app" pipeline inside the running app is complex. A Rust template engine writing files directly is simpler and keeps the generated output predictable.
-
-**What NOT to add:** Do not add `@sveltejs/kit` as a runtime dependency for site generation. The app is already a SvelteKit app — this would be circular. The generated artist sites are simple enough (biography, discography, embed links) to not need a full framework.
+**Scope needed for Web Playback SDK:** `streaming user-read-email user-read-private`. The `streaming` scope is mandatory for SDK playback. Source: [Spotify Web Playback SDK docs](https://developer.spotify.com/documentation/web-playback-sdk).
 
 ---
 
-## Feature 4: Sustainability
+### 3. YouTube IFrame Player API
 
-### 4a. Artist Support Links (MusicBrainz)
+**Verdict: Load via CDN. No npm package. Works on Windows without modifications.**
 
-**Status: Already implemented.** This needs verification, not new stack.
+The YouTube IFrame Player API loads from:
+```
+https://www.youtube.com/iframe_api
+```
 
-The existing stack already handles this:
-- `categorize.ts` maps MusicBrainz relationship types `'patronage'` and `'crowdfunding'` to the `'support'` link category (confirmed: lines 41-42)
-- `types.ts` defines `'support'` as a `LinkCategory` and includes it in `LINK_CATEGORY_ORDER`
-- `artist/[slug]/+page.svelte` renders all categories including 'support' in the links section
-- The artist links API (`/api/artist/[mbid]/links`) fetches URL relationships including patronage/crowdfunding from MusicBrainz `?inc=url-rels`
+This is the standard YouTube-provided script (free, no API key for basic embedding). The `youtube-nocookie.com` embed domain (already used in `youtube.ts`) is preferable for privacy.
 
-MusicBrainz has two relevant relationship types (confirmed via official docs):
-- `'patronage'` (UUID: 6f77d54e-1d81-4e1a-9ea5-37947577151b) — Patreon, Ko-fi, PayPal.me, Flattr
-- `'crowdfunding'` (UUID: 93883cf6-e818-4938-990e-75863f8db2d3) — Kickstarter, Indiegogo
+**On Windows Tauri: works without any workaround.** The `http://tauri.localhost` origin is HTTP-compatible and satisfies YouTube's origin check. The Error 153 issue is macOS/Linux-only. No changes needed. Source: [Tauri issue #14422](https://github.com/tauri-apps/tauri/issues/14422).
 
-**Action needed:** Visual differentiation — support links should render differently (highlight, icon) vs. info links. No new library — CSS + existing link rendering.
+**No new npm packages needed.** The existing `youtubeEmbedUrl()` function already produces valid embed URLs. The IFrame Player API is only needed if programmatic control (play/pause/seek) is required. For basic embedding, iframes alone are sufficient.
 
-### 4b. Mercury Project Funding Links
+| If programmatic YouTube control needed | Addition | Why |
+|----------------------------------------|----------|-----|
+| IFrame Player API (CDN only) | `https://www.youtube.com/iframe_api` | Load via script injection, same pattern as Spotify SDK |
 
-**Goal:** A screen in Mercury showing how to support the project (GitHub Sponsors, Open Collective, etc.).
+**Fallback strategy for channel pages (not embeddable):** Already implemented — `isYoutubeChannel()` in `youtube.ts` detects channels. For those, open in browser via `tauri-plugin-shell` `open()`. The shell plugin is already installed.
 
-**No new libraries needed.** Static screen in Svelte with hardcoded links. Use `FUNDING.yml` in the repo (GitHub convention) for discoverability. Display in an "About / Support" panel.
+---
 
-### 4c. Backer Credits Screen
+### 4. SoundCloud Widget API
 
-**Goal:** Display names/handles of Mercury backers/supporters.
+**Verdict: CDN-only. No npm package exists from SoundCloud.**
 
-**Approach:** Publish a Nostr list event from the Mercury project account. Clients read and display. NIP-51 kind:30003 (bookmark sets / custom lists) or a custom kind works. NDK already available to fetch and display.
+SoundCloud Widget API script:
+```
+https://w.soundcloud.com/player/api.js
+```
 
-**No new libraries needed.** NDK `ndk.fetchEvents()` already used throughout the codebase. A backer list is a `#t: ['mercury', 'backers']` tagged replaceable event. Display in the About screen.
+This is the official SoundCloud-provided script. It is not published to npm. Load via dynamic script injection (same pattern as Spotify SDK).
+
+**Key methods after loading:**
+
+```typescript
+// After script loads, get widget reference from an iframe
+const widget = SC.Widget(iframeElement);
+widget.play();
+widget.pause();
+widget.getDuration((duration) => { /* ... */ });
+widget.getCurrentSound((sound) => { /* title, id, ... */ });
+widget.bind(SC.Widget.Events.PLAY, () => { /* ... */ });
+```
+
+**Integration approach for Svelte 5:** The existing `soundcloud.ts` already constructs oEmbed API URLs. The embed iframe comes from the oEmbed response HTML. To add Widget API control, inject the CDN script after the iframe is rendered, then wrap it with `SC.Widget(iframe)`.
+
+**No new npm packages needed.** The CDN script provides the `SC` global.
+
+---
+
+### 5. Bandcamp Embed Player
+
+**Verdict: Pure iframe. No JavaScript API. No npm package. No restrictions detected.**
+
+Bandcamp embedding uses a direct iframe URL format:
+```
+https://bandcamp.com/EmbeddedPlayer/album=<ID>/size=large/bgcol=000000/linkcol=ffffff/tracklist=true/transparent=true/
+```
+
+Or for tracks:
+```
+https://bandcamp.com/EmbeddedPlayer/track=<ID>/size=large/transparent=true/
+```
+
+Bandcamp does not provide a programmatic JavaScript API for their embed player. The iframe is the complete integration surface. There is no `play()`, `pause()`, or `seek()` control available from outside the iframe — Bandcamp does not expose postMessage events.
+
+**Implication for service resolution:** Bandcamp can be detected and embedded, but cannot be programmatically controlled. The "service badge" can show "Playing from Bandcamp" but synchronized playback (e.g., listening rooms) cannot control Bandcamp timing. This is an acceptable limitation given Bandcamp's indie-first audience alignment.
+
+**No new packages needed.** Extend existing `bandcamp.ts` to produce `bandcamp.com/EmbeddedPlayer/` URLs from detected Bandcamp release or track URLs.
+
+---
+
+### 6. Token Storage for OAuth Credentials
+
+**Recommendation: tauri-plugin-store for now, with a plan to migrate to keyring.**
+
+The options:
+
+| Option | Security | Complexity | Platform Support | Status |
+|--------|----------|------------|-----------------|--------|
+| `tauri-plugin-store` (already known) | None — plaintext JSON in AppData | Zero | All | Stable |
+| `tauri-plugin-stronghold` | Encrypted vault | High — requires password setup UI | All except Android | **Deprecated; removed in Tauri v3** |
+| `tauri-plugin-keyring` | OS credential manager | Medium — community plugin | Windows (Credential Manager), macOS (Keychain), Linux (keyring) | Community; not official |
+
+**Decision: Use `tauri-plugin-store` for v1.6, store tokens with a session-scoped lifetime.**
+
+Rationale:
+
+1. Stronghold is deprecated and will be removed in Tauri v3. Do not add a dependency on a dead plugin.
+2. `tauri-plugin-keyring` is a community plugin with uncertain Windows reliability (developer notes say "something's sus on Windows").
+3. The Spotify access token expires in 1 hour. The refresh token is the sensitive long-lived credential. Storing in `tauri-plugin-store` (plaintext AppData file) is the same security posture as every major desktop music app (Spotify desktop app, etc.) — acceptable for a music discovery tool.
+4. `tauri-plugin-store` is already understood and can be added cleanly.
+
+**Future migration path:** If security requirements increase, swap storage backend to `tauri-plugin-keyring` without changing the OAuth flow logic. The interface is the same — read/write a key.
+
+| Addition | Version | Purpose | Why |
+|----------|---------|---------|-----|
+| `@tauri-apps/plugin-store` (npm) | `^2.x` | Persistent key-value store for OAuth tokens + service preferences | Already in ecosystem; simple; known to work; stronghold deprecated |
+| `tauri-plugin-store` (Rust) | `"2"` | Rust-side companion to the npm plugin | Needed to enable store from Tauri backend if needed |
 
 ---
 
 ## New Stack Additions Summary
 
-| Library | Layer | Version | Why | Install |
-|---------|-------|---------|-----|---------|
-| `axum` (Rust) | AP HTTP server | ^0.8 | Tokio-native embedded HTTP, no runtime conflict with Tauri | `Cargo.toml` |
-| `tower` (Rust) | axum middleware | ^0.5 | Required by axum; CORS, routing layers | `Cargo.toml` |
-| `rsa` (Rust) | AP HTTP signatures | ^0.9 | RSA-SHA256 signing for AP outbound delivery (cavage-12) | `Cargo.toml` |
-| `sha2` (Rust) | AP body digest | ^0.10 | SHA-256 Digest header for AP HTTP signatures | `Cargo.toml` |
-| `minijinja` (Rust) | Artist site generator | ^2.0 | HTML template rendering for static site export | `Cargo.toml` |
+| Addition | Layer | Install | Already Present? |
+|----------|-------|---------|-----------------|
+| `@types/spotify-web-playback-sdk` | npm (devDep) | `npm install -D @types/spotify-web-playback-sdk` | No |
+| `@tauri-apps/plugin-store` | npm | `npm install @tauri-apps/plugin-store` | No |
+| `tauri-plugin-store` | Rust (Cargo.toml) | `tauri-plugin-store = "2"` | No |
+| Spotify Web Playback SDK | CDN (runtime load) | `https://sdk.scdn.co/spotify-player.js` | No |
+| YouTube IFrame API | CDN (optional) | `https://www.youtube.com/iframe_api` | No |
+| SoundCloud Widget API | CDN (runtime load) | `https://w.soundcloud.com/player/api.js` | No |
+| `tauri-plugin-oauth` (Rust) | Rust | Already in Cargo.toml | **Yes** |
+| `@fabianlars/tauri-plugin-oauth` | npm | Already in package.json | **Yes** |
 
-**Zero new npm packages needed for any v1.3 feature.** All TypeScript/Svelte functionality uses existing NDK, feed, SvelteKit, and D3 capabilities.
+**Net new npm production dependencies: 1** (`@tauri-apps/plugin-store`)
+**Net new npm dev dependencies: 1** (`@types/spotify-web-playback-sdk`)
+**Net new Rust dependencies: 1** (`tauri-plugin-store`)
+**CDN scripts loaded at runtime: 3** (Spotify SDK, SoundCloud Widget API, YouTube IFrame API if programmatic control added)
 
 ---
 
 ## Installation
 
 ```bash
-# All new dependencies are Rust-side. Add to src-tauri/Cargo.toml:
+# npm additions
+npm install @tauri-apps/plugin-store
+npm install -D @types/spotify-web-playback-sdk
 
-# [dependencies] additions:
-# axum = { version = "0.8", features = ["json", "tokio"] }
-# tower = { version = "0.5", features = ["util"] }
-# rsa = { version = "0.9", features = ["sha2"] }
-# sha2 = "0.10"
-# minijinja = { version = "2", features = ["loader"] }
+# Cargo.toml addition (src-tauri/Cargo.toml [dependencies] section)
+# tauri-plugin-store = "2"
 
-# No npm installs needed.
+# No other packages needed. CDN scripts are loaded dynamically at runtime.
 ```
 
 ---
@@ -234,17 +262,13 @@ MusicBrainz has two relevant relationship types (confirmed via official docs):
 
 | Recommended | Alternative | Why Not |
 |-------------|-------------|---------|
-| `axum` (AP server) | `actix-web` | actix-web requires separate `std::thread` to avoid Tauri runtime conflict; axum is Tokio-native |
-| `axum` (AP server) | `warp` | warp is unmaintained (last release 2022); axum is the successor |
-| `axum` (AP server) | `tauri-plugin-localhost` | Plugin exposes the *app's SPA assets* on localhost, not suitable for serving custom AP JSON endpoints |
-| No AP library | `activitypub-express` | Mercury is outbound-only; full AP framework adds 50+ deps for inbox/federation features we don't use |
-| No AP library | `@misskey-dev/summaly` | Social graph tool, not relevant here |
-| `minijinja` | `tera` | tera is a good alternative; minijinja is lighter and uses familiar Jinja2 syntax |
-| `minijinja` | `handlebars` | handlebars (Rust) is heavier; minijinja more idiomatic for this use |
-| `minijinja` | TypeScript template literals | For a multi-page site with partials and conditionals, string concatenation in TS becomes unmaintainable; the Rust command is simpler |
-| Web Crypto API (key gen) | `openssl` (Rust) | openssl requires system OpenSSL; `rsa` crate is pure Rust, no system dep |
-| NIP-51 kind:30003 (backers) | Custom kind | Using standard NIP-51 list kinds means any Nostr client can read the backer list |
-| kind:20003 (playback sync) | NIP-53 kind:30311 | NIP-53 is designed for real audio stream URLs; Mercury syncs embed iframes + timestamps, which NIP-53 doesn't model well |
+| CDN script load (Spotify SDK) | npm wrapper like `use-spotify-web-playback-sdk` | React-specific wrappers; Svelte 5 doesn't benefit. The SDK itself is not on npm — all wrappers ultimately load the CDN script. |
+| `tauri-plugin-store` (token storage) | `tauri-plugin-stronghold` | **Deprecated; removed in Tauri v3.** Do not add a dependency on a dead plugin. |
+| `tauri-plugin-store` (token storage) | `tauri-plugin-keyring` | Community plugin; Windows reliability uncertain; adds dependency on unvetted crate for v1.6 scope. |
+| Existing `tauri-plugin-oauth` (already installed) | Custom deep-link handler | `tauri-plugin-oauth` is already in the project. Custom schemes for OAuth redirects have unclear status with Spotify's new 2025 rules. |
+| `http://127.0.0.1:<PORT>` redirect URI | `http://localhost:<PORT>` | `localhost` as hostname is explicitly blocked by Spotify since November 2025. Only IPv4/IPv6 loopback literals work. |
+| Pure iframe embed (Bandcamp) | JavaScript API control | Bandcamp provides no external JS API for their embed player. Iframe is the only integration surface. |
+| `youtube-nocookie.com` (already used) | `youtube.com` | Privacy-friendly; already implemented in `youtube.ts`. No reason to change. |
 
 ---
 
@@ -252,47 +276,56 @@ MusicBrainz has two relevant relationship types (confirmed via official docs):
 
 | Avoid | Why | Use Instead |
 |-------|-----|-------------|
-| ActivityPub JS framework (`activitypub-express`, etc.) | Mercury is outbound-only — full AP frameworks solve inbox/delivery/federation complexity Mercury doesn't need | Hand-craft 4 JSON templates |
-| `warp` (Rust HTTP) | Unmaintained since 2022 | `axum` |
-| `actix-web` | Runtime conflict with Tauri's Tokio | `axum` |
-| `openssl` (Rust) | System dependency, compile complexity | `rsa` crate (pure Rust) |
-| New Nostr library | NDK ^3.0.0 already installed and used | Extend existing NDK usage |
-| `vitest` or test framework additions | v1.2 explicitly deferred this; no new features need component tests | Existing Playwright CDP suite |
-| Second SvelteKit build pipeline for artist sites | Circular: the app IS a SvelteKit app; a nested build is complex | `minijinja` Rust templates |
+| `tauri-plugin-stronghold` | Deprecated; will be removed in Tauri v3. Adding it now creates a forced migration later. | `tauri-plugin-store` |
+| `tauri-plugin-localhost` | Serves the app's SPA assets on localhost — not what we need. Adding it complicates Tauri IPC. Only relevant for macOS/Linux YouTube fix; this is Windows-only. | Not needed |
+| React Spotify wrappers (`react-spotify-web-playback`, etc.) | React-specific; incompatible with Svelte | Load SDK directly via CDN script injection |
+| `spotify-web-sdk` (npm) | This is a Spotify Web API wrapper, not the Web Playback SDK. Different product. | `@spotify/web-api-ts-sdk` if Web API needed in future |
+| SoundCloud oEmbed in the frontend | `soundcloud.ts` already constructs oEmbed URLs; oEmbed fetches must be server-side (CORS restriction). The existing server-side load function handles this. | Existing `soundcloudOembedUrl()` pattern |
 
 ---
 
-## Stack Patterns by Feature
+## Stack Patterns by Integration
 
-**ActivityPub actor (per artist/scene/collection):**
-- axum route handles `GET /ap/:type/:id` → returns JSON-LD with `Content-Type: application/activity+json`
-- Actor includes `publicKey` (RSA-2048 public key PEM) generated once per actor, stored in taste.db
-- WebFinger at `/.well-known/webfinger` maps `acct:artist-mbid@mercury.local` → actor URL
-- Outbox is an `OrderedCollection` of `Create` + `Note` activities (recent Mercury events for this actor)
-- Inbox exists as a route but returns 200 and discards body (Mastodon compatibility requirement)
+**Spotify Web Playback SDK initialization (Svelte 5 component):**
+- Load script on component mount via `$effect` or `onMount`
+- Register `window.onSpotifyWebPlaybackSDKReady` before appending script
+- Access token comes from tauri-plugin-store (refreshed before expiry)
+- Device ID from `ready` event → store in player state for Spotify Web API playback control
+- On `account_error` event → fall back to Spotify embed iframe
 
-**Outbound AP delivery:**
-- When a follower follows an actor (their server sends a Follow to Mercury's inbox), Mercury's axum handler accepts it and stores the follower's inbox URL in taste.db
-- When Mercury wants to announce (new discovery, scene update), Rust code POSTs a `Create` activity to each follower's inbox URL via `reqwest` (already in Cargo.toml)
-- Each POST signed with actor's private RSA key: `Date`, `Digest`, `Signature` headers (cavage-12 draft)
+**Spotify PKCE OAuth flow:**
+- Generate `code_verifier` (43-128 char random string) + `code_challenge` (SHA-256 of verifier, base64url-encoded) in TypeScript using `crypto.subtle`
+- `start()` from `@fabianlars/tauri-plugin-oauth` → get dynamic port
+- Build auth URL with `redirect_uri=http%3A%2F%2F127.0.0.1%3A<PORT>`
+- Open URL with `open()` from `@tauri-apps/plugin-shell`
+- `onUrl()` callback catches the redirect, extract `code` from URL query params
+- Exchange code + verifier for tokens via `fetch` to Spotify token endpoint
+- Store `access_token` + `refresh_token` + `expires_at` in plugin-store
 
-**Playback sync (listening rooms):**
-- Host: on play/pause/seek/track-change → publish kind:20003 ephemeral Nostr event via NDK
-- Guest: subscribe to kind:20003 events tagged with session ID → apply playback state to local player
-- Both sides already have `ndkState.ndk` initialized → zero new Nostr setup
-- Sequence number in event content prevents out-of-order state application
+**SoundCloud Widget API (Svelte 5 component):**
+- Render iframe with src from existing oEmbed HTML response
+- Inject `https://w.soundcloud.com/player/api.js` via script tag
+- On script load: `const widget = SC.Widget(iframeRef)`
+- Bind events: `widget.bind(SC.Widget.Events.PLAY, handler)`
+- Expose `play()`, `pause()` through the player state module
 
-**Artist static site generator:**
-- User clicks "Generate site" on artist page → `invoke('generate_artist_site', { mbid, outputDir })`
-- Rust fetches artist data from existing APIs (reqwest + MusicBrainz)
-- minijinja renders HTML templates (index.html, releases.html, links.html)
-- Writes to user-selected directory (tauri-plugin-dialog picker already installed)
-- Output: self-contained `/artist-name/` folder with inline CSS, no JS dependencies, no Mercury dependency
+**YouTube IFrame (Windows, already works):**
+- Existing `youtubeEmbedUrl()` produces `youtube-nocookie.com/embed/<id>` URLs
+- Drop into `<iframe>` — works without modification on Windows
+- For programmatic control (optional): inject `iframe_api` script, use `YT.Player` constructor
+- For channel URLs: `isYoutubeChannel()` → `open()` in system browser
 
-**Backer credits:**
-- Mercury project Nostr account publishes a kind:30003 list event tagged `['t', 'mercury-backers']`
-- App fetches on About screen load: `ndk.fetchEvents({ kinds: [30003], '#t': ['mercury-backers'] })`
-- Display npub handles and optional display names from the list's `p` tags
+**Bandcamp (iframe only):**
+- Extend `bandcamp.ts` to extract album/track IDs from Bandcamp URLs
+- Produce `https://bandcamp.com/EmbeddedPlayer/album=<ID>/...` URLs
+- Render as iframe — no JS integration possible
+- Playback state cannot be tracked (no postMessage API)
+
+**Service resolution per-artist:**
+- Existing `categorize.ts` already groups links by platform (streaming, social, etc.)
+- Service resolution reads available platform links for each artist
+- Priority order stored in plugin-store as a JSON array: `["spotify", "youtube", "soundcloud", "bandcamp"]`
+- Drag-to-reorder in Settings → write updated order to store
 
 ---
 
@@ -300,40 +333,43 @@ MusicBrainz has two relevant relationship types (confirmed via official docs):
 
 | Package | Compatible With | Notes |
 |---------|-----------------|-------|
-| `axum@0.8` | `tokio` embedded in Tauri 2.0 | axum 0.8 requires tokio 1.x — Tauri 2.0 uses tokio 1.x internally |
-| `rsa@0.9` | `sha2@0.10` | rsa 0.9 uses `sha2` as a feature gate — versions must align |
-| `minijinja@2` | Rust edition 2021 | Already the project's edition |
-| NDK `@nostr-dev-kit/ndk@3.0.0` | kind:20003 ephemeral | NDK supports any kind number; ephemeral 20000-29999 are relayed but not stored per NIP-01 |
-| `reqwest@0.12` (existing) | AP outbound delivery | Already installed; used for AI model downloads; reuse for AP POST delivery |
-| `base64@0.22` (existing) | AP HTTP signature encoding | Already in Cargo.toml; needed for AP signature Base64 encoding |
+| `@types/spotify-web-playback-sdk@0.1.19` | TypeScript 5.x | Last updated Nov 2023; types are stable; SDK API has not changed significantly |
+| `@tauri-apps/plugin-store@2.x` | Tauri 2.0, `@tauri-apps/api@^2.10.1` | Tauri official plugin; version-locked to Tauri 2.x |
+| `tauri-plugin-store@2` (Rust) | Tauri 2.0 | Matches npm companion version |
+| `@fabianlars/tauri-plugin-oauth@2.0.0` (already installed) | Tauri 2.0 | Already verified working in project |
+| Spotify Web Playback SDK (CDN) | WebView2 (Chromium-based) | WebView2 supports EME (required for DRM audio); confirmed working in Chromium-based environments |
+| SoundCloud Widget API (CDN) | Any modern WebView | No special requirements |
+| YouTube IFrame API (CDN) | `http://tauri.localhost` on Windows | Works on Windows; Error 153 only affects macOS/Linux (not applicable here) |
 
 ---
 
-## Critical Finding: Zero New npm Dependencies
+## Open Questions (Validate in Implementation Spike)
 
-The most important finding for v1.3 planning: **every TypeScript/Svelte capability needed already exists in the installed npm dependency tree.** NDK handles Nostr playback sync events. The `feed` package handles outbox generation if needed. D3 handles stats charts. The existing player module manages embed state.
+1. **Spotify Web Playback SDK and `http://tauri.localhost` origin:** Does Spotify require this origin to be registered in the developer dashboard? Test by initializing the SDK — if it fails with an `initialization_error`, add the origin to the app's allowed domains in the Spotify developer dashboard. The origin to register would be `http://tauri.localhost`.
 
-All new stack additions are Rust-side (axum, rsa, sha2, minijinja) for the ActivityPub HTTP server and the site generator command. The JavaScript/TypeScript layer extends, not expands.
+2. **Spotify developer dashboard app status:** BlackTape ships with a bundled `client_id`. The app will need Spotify's "extended quota mode" approval if it grows beyond 25 active users in development mode. The April 2025 changes made extended access harder to get — verify that the use case (discovery tool embedding the official SDK) qualifies. Source: [Spotify extended access update](https://developer.spotify.com/blog/2025-04-15-updating-the-criteria-for-web-api-extended-access).
 
-The artist support links (Patreon/Ko-fi via MusicBrainz) are the most surprising finding: **this feature is already implemented end-to-end**. MusicBrainz 'patronage' and 'crowdfunding' relationship types are already mapped to the 'support' category, and the artist page already renders all link categories including 'support'. The v1.3 task for sustainability links is visual polish, not new stack.
+3. **Spotify token refresh timing:** Access tokens expire in 1 hour. Implement proactive refresh (check `expires_at` before SDK `getOAuthToken` callback fires). The SDK's `getOAuthToken` callback is called each time the SDK needs a fresh token — implement the refresh there.
 
 ---
 
 ## Sources
 
-- [Mastodon ActivityPub spec](https://docs.joinmastodon.org/spec/activitypub/) — Inbox required in actor doc even for outbound-only; Content-Type requirements. HIGH confidence.
-- [Mastodon blog: How to implement a basic ActivityPub server](https://blog.joinmastodon.org/2018/06/how-to-implement-a-basic-activitypub-server/) — Inbox field requirement confirmed; RSA-2048 keypair; HTTP signature headers (Date, Digest, Signature, cavage-12). HIGH confidence.
-- [maho.dev ActivityPub static site guide (2024)](https://maho.dev/2024/02/a-guide-to-implementing-activitypub-in-a-static-site-or-any-website-part-3/) — WebFinger structure; actor JSON-LD template; Content-Type: application/activity+json requirement. MEDIUM confidence (single source, well-documented).
-- [NIP-53 spec (nips.nostr.com)](https://nips.nostr.com/53) — kind:30311, kind:1311 live chat, streaming tag structure. HIGH confidence (official spec).
-- [NIP-51 spec (nips.nostr.com)](https://nips.nostr.com/51) — kind:30003 bookmark sets; kind:10003 bookmarks. HIGH confidence (official spec).
-- [MusicBrainz Artist-URL relationships](https://musicbrainz.org/relationships/artist-url) — 'patronage' (UUID: 6f77d54e) and 'crowdfunding' (UUID: 93883cf6) relationship types confirmed. HIGH confidence (official MB docs).
-- [axum GitHub / crates.io](https://github.com/tokio-rs/axum) — axum 0.8 is current stable; Tokio-native. HIGH confidence.
-- [Tauri discussion: Running actix-web from Tauri](https://github.com/tauri-apps/tauri/discussions/2942) — actix-web runtime conflict with Tauri; separate std::thread workaround. MEDIUM confidence (community discussion, multiple confirmations).
-- [MoonGuard blog: Setting up Actix Web in a Tauri App](https://blog.moonguard.dev/setting-up-actix-in-tauri) — Confirms runtime conflict pattern; axum is simpler alternative. MEDIUM confidence.
-- [actix-webfinger crate](https://docs.rs/actix-webfinger/0.4.1/actix_webfinger/) — Exists but not needed; WebFinger is simple enough to hand-craft in axum. LOW confidence (not used).
-- Existing codebase inspection — `categorize.ts`, `types.ts`, `+page.svelte` artist page, `sessions.svelte.ts`, `Cargo.toml`, `package.json`. HIGH confidence (direct code read).
+- [Spotify Web Playback SDK docs](https://developer.spotify.com/documentation/web-playback-sdk) — Script URL, initialization pattern, Premium requirement. MEDIUM confidence (docs current but Tauri-specific behavior unconfirmed).
+- [Spotify getting started tutorial](https://developer.spotify.com/documentation/web-playback-sdk/tutorials/getting-started) — `https://sdk.scdn.co/spotify-player.js` script URL, initialization callback pattern. HIGH confidence.
+- [Spotify redirect URI docs](https://developer.spotify.com/documentation/web-api/concepts/redirect_uri) — Loopback IP (`127.0.0.1`) allowed; `localhost` hostname blocked. HIGH confidence (official docs).
+- [Spotify security requirements blog (Feb 2025)](https://developer.spotify.com/blog/2025-02-12-increasing-the-security-requirements-for-integrating-with-spotify) — Timeline of changes; loopback exemption for desktop apps. HIGH confidence (official Spotify announcement).
+- [Spotify extended access update (Apr 2025)](https://developer.spotify.com/blog/2025-04-15-updating-the-criteria-for-web-api-extended-access) — Extended quota mode tightened; Web Playback SDK not directly affected. HIGH confidence.
+- [GitHub: spotifyr issue #224 — localhost blocked](https://github.com/charlie86/spotifyr/issues/224) — Community confirmation that `localhost` fails, `127.0.0.1` works after April 2025. MEDIUM confidence (community, single issue).
+- [Tauri GitHub issue #14422 — YouTube IFrame Error 153](https://github.com/tauri-apps/tauri/issues/14422) — Windows uses `http://tauri.localhost` (HTTP origin); Error 153 only affects macOS/Linux. HIGH confidence (Tauri team confirmed, closed December 2025).
+- [FabianLars/tauri-plugin-oauth GitHub](https://github.com/FabianLars/tauri-plugin-oauth) — Plugin API (`start()`, `onUrl()`, `cancel()`); v2.0.0 for Tauri v2; npm package `@fabianlars/tauri-plugin-oauth`. HIGH confidence (official repo).
+- [Tauri community discussion #7846 — secure storage](https://github.com/orgs/tauri-apps/discussions/7846) — Stronghold deprecated, to be removed in Tauri v3; keyring plugin recommended as alternative. HIGH confidence (Tauri maintainer stated deprecation).
+- [SoundCloud Widget API docs](https://developers.soundcloud.com/docs/api/html5-widget) — CDN URL `https://w.soundcloud.com/player/api.js`; no npm package; key methods. HIGH confidence (official SoundCloud docs).
+- [Bandcamp EmbeddedPlayer URL format](https://get.bandcamp.help/hc/en-us/articles/23020711574423-How-do-I-create-a-Bandcamp-embedded-player) — iframe URL structure; no external JS API available. HIGH confidence (official Bandcamp help).
+- [Tauri plugin stronghold docs](https://v2.tauri.app/plugin/stronghold/) — Still documented for v2 but deprecated in v3 per maintainer comment. MEDIUM confidence (docs exist but deprecation from discussion).
+- Existing codebase inspection — `Cargo.toml`, `package.json`, `tauri.conf.json`, `src/lib/embeds/`, `src/lib/player/`. HIGH confidence (direct code read).
 
 ---
 
-*Stack research for: Mercury v1.3 — The Open Network (ActivityPub outbound, synchronized listening rooms, artist tools, sustainability)*
-*Researched: 2026-02-24*
+*Stack research for: BlackTape (Mercury) v1.6 — The Playback Milestone (Spotify, YouTube, SoundCloud, Bandcamp streaming integration)*
+*Researched: 2026-02-26*

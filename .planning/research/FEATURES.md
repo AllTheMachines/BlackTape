@@ -1,257 +1,470 @@
 # Feature Research
 
-**Domain:** Mercury v1.3 — ActivityPub federation, listening rooms, artist tools, sustainability
-**Researched:** 2026-02-24
-**Confidence:** MEDIUM-HIGH (ActivityPub static-site constraints HIGH, listening room sync MEDIUM, artist tools HIGH, sustainability HIGH)
+**Domain:** BlackTape v1.6 — Multi-source streaming playback integration (Spotify, YouTube, SoundCloud, Bandcamp)
+**Researched:** 2026-02-26
+**Confidence:** HIGH for embed/iframe features, MEDIUM-HIGH for Spotify OAuth flow, HIGH for Spotify policy constraints
 
 ---
 
 ## Context
 
-This is a subsequent-milestone research file. Mercury already has: full music search (2.8M artists), artist profiles with embedded players (Bandcamp, Spotify, SoundCloud, YouTube), scenes, Nostr DMs + scene rooms (NIP-17, NIP-28), collections, taste profile, AI recommendations, RSS feeds, buy links from MusicBrainz.
+This is a subsequent-milestone research file. BlackTape already has: full music search (2.8M artists),
+artist profiles with click-to-load embed players (Bandcamp/Spotify/SoundCloud/YouTube iframes), queue
+management (TrackRow on all surfaces), Settings page with a streaming preference UI stub (single dropdown),
+and link categorization that extracts platform URLs from MusicBrainz artist data.
 
-The app is **Tauri desktop only** — no server, no hosting cost, no web backend. This is the central constraint shaping every feature below.
+The app is **Tauri 2.0 desktop only — Windows uses WebView2 (Chromium-based)**. $0 infrastructure.
+No server. All data stays local.
 
-Four feature areas in scope:
-1. ActivityPub outbound (artist/scene/collection pages become Fediverse actors)
-2. Listening rooms (synchronized embed playback, Nostr-coordinated)
-3. Artist tools (stats dashboard, AI auto-news, static site generator)
-4. Sustainability (artist support links from MusicBrainz; Mercury funding links; backer credits)
+The milestone goal: wire up true streaming integration so clicking Play on an artist actually plays music,
+with service priority set once and applied automatically.
+
+### Critical Constraint Discovered During Research
+
+**Spotify's February 2026 policy change is a project-level blocker.**
+
+As of February 11, 2026 (effective March 9, 2026 for existing apps):
+- Development Mode Client IDs are limited to **5 authorized users total**
+- Premium subscription required for all developers
+- Spotify only accepts applications from **legally registered organizations** (not individuals)
+- Web Playback SDK requires Widevine DRM + Premium account — this has additional WebView2 compatibility questions
+
+A bundled Client ID distributed with an open source desktop app would expose those 5 user slots to
+the entire userbase, effectively bricking the integration for all but 5 users. This is not a solvable
+problem within Spotify's current policy framework without extended API access (requires 250K MAU +
+registered organization).
+
+**Consequence: Spotify playback integration must scope to the iframe embed only (no Web Playback SDK),
+and the "guided onboarding" for v1.6 is not Spotify Premium playback — it is Spotify embed play (which
+works logged-in for full tracks, shows 30s previews when logged out). Users experience Spotify through
+the existing embed iframe, which already works today.**
 
 ---
 
 ## Feature Landscape
 
-### Area 1: ActivityPub Outbound
+### Area 1: Spotify Integration
 
-#### What Users Expect (Table Stakes for "AP outbound")
-
-| Feature | Why Expected | Complexity | Notes |
-|---------|--------------|------------|-------|
-| Fediverse-followable artist actors | If you say "artist pages are AP actors," users expect to paste a handle into Mastodon and follow it | HIGH | Requires: static JSON-LD actor file, WebFinger endpoint (dynamic, NOT static-compatible), inbox for follow/unfollow. The inbox is the wall — you cannot do true AP actors without a server. Mercury has no server. |
-| Follow notifications (someone followed this artist) | Users expect Mastodon behavior: follow → receive posts in timeline | HIGH | Requires persistent follower list + signed HTTP delivery to follower inboxes. Not feasible without server. |
-| Posts/updates appear in followers' timelines | Core fediverse value: activity streams flow to subscribers | HIGH | Requires inbox delivery + follower DB + HTTP signing. Not feasible without server. |
-
-#### What Mercury Can Actually Deliver (Realistic Table Stakes)
+#### What Users Expect (Table Stakes)
 
 | Feature | Why Expected | Complexity | Notes |
 |---------|--------------|------------|-------|
-| AP-compatible JSON-LD export per artist/scene/collection | Generates a standards-compliant actor document and outbox feed that servers can pull | MEDIUM | Static JSON files — actor.json, outbox.json. Mercury generates these on demand. Fully static, no server needed. Works like an RSS feed that AP servers can poll. |
-| Share-to-Fediverse links | Clicking "share" opens Mastodon/Fediverse share intent with artist name + Mercury link | LOW | URL scheme: `https://mastodon.social/share?text=...`. Already a known pattern (Share on Mastodon button). No AP protocol needed. |
-| WebFinger-compatible discovery endpoint | Allows AP servers to discover actors by handle (`@artist@mercury.app`) | HIGH | WebFinger REQUIRES dynamic query-parameter handling (`?resource=acct:...`). Cannot be a static file. Needs a server or serverless function. **This is the hard blocker for true AP actors.** |
+| Spotify content loads and plays | If Spotify links exist for an artist, clicking Play should play | MEDIUM | Already works via iframe embed today — click-to-load trigger reveals the embed |
+| Full track play for Premium users | Spotify Premium users expect full tracks, not 30s previews | LOW (for iframe) / BLOCKED (for SDK) | Iframe embed: if user is logged into Spotify in WebView2, full tracks play automatically. No extra auth needed. |
+| 30s preview for free/logged-out users | Non-Premium users get a taste, not nothing | LOW | Iframe embed delivers this by default — no code needed |
+| "Sign in to Spotify" prompt is visible | When a preview is playing, users expect to see how to get more | LOW | Spotify iframe handles this natively inside the iframe — no custom UI needed |
+| No developer portal steps | Users expect to click a button, not configure an app | N/A | This is a key Spotify iframe advantage: zero setup for users |
 
-#### Differentiators (Beyond Baseline)
+#### What BlackTape Can Realistically Deliver
 
 | Feature | Value Proposition | Complexity | Notes |
 |---------|-------------------|------------|-------|
-| "Export as ActivityPub object" button | Artists can copy their JSON-LD actor and import into any AP-capable server | LOW | Generate JSON file client-side, trigger download. No server needed. Useful for technically savvy artists/admins. |
-| Embed AP actor metadata in RSS feeds | Existing RSS feeds include AP-compatible `<link rel="alternate" type="application/activity+json">` headers | LOW | Tiny addition to existing RSS generation. Lets AP crawlers discover the JSON-LD export via existing feeds. |
-| Scene/collection as AP Group actor type | Group actors are a recognized AP extension (used by Mastodon groups, Lemmy communities) | MEDIUM | JSON-LD schema extension, standard in AP ecosystem. Good fit for scenes ("Follow this scene on Mastodon"). |
+| Click-to-load Spotify embed (existing) | Already built — triggers iframe load on first click | DONE | `revealEmbed()` pattern already in EmbedPlayer.svelte |
+| Auto-load Spotify embed when it is preferred service | Skip the click-to-load when Spotify is the priority service | LOW | Remove click gate for the preferred platform only |
+| Service priority badge on Spotify embed | Small "Spotify" label above or below the embed | LOW | Visual anchor confirming which service is playing |
+| Spotify iframe play tracking (70% rule) | Record that user listened to Spotify content, same as SoundCloud | MEDIUM | Spotify iframe does not expose progress events like SoundCloud Widget API does — LOW confidence this is achievable; SoundCloud is the only one with an accessible event API |
 
-#### Anti-Features (ActivityPub)
+#### Anti-Features (Spotify)
 
 | Feature | Why Requested | Why Problematic | Alternative |
 |---------|---------------|-----------------|-------------|
-| Full bidirectional AP federation | "Full Mastodon support" | Requires a server with inbox, follower DB, HTTP signing, delivery queue. Contradicts Mercury's $0 infrastructure constraint. A Tauri desktop app cannot serve inboxes. | Generate static AP JSON-LD exports + share-to-Fediverse links. Document that Mercury generates AP data; hosting it is a layer above Mercury. |
-| AP server bundled in Tauri sidecar | "Just run a mini AP server locally" | A Fediverse actor must be reachable at a stable domain at all times. A desktop app that's turned off is unreachable. Followers would never receive updates. | Not feasible. The always-on requirement is architectural, not a technical limitation to solve. |
-| Per-user AP handles (@steve@mercury.app) | "Every user gets a Fediverse identity" | Requires a shared server with a stable domain for WebFinger. Mercury is desktop-only; no shared server exists. | Pseudonymous Nostr identity (already built). AP identity requires centralized infrastructure. |
+| Spotify Web Playback SDK integration | Full in-app Premium streaming with programmatic control | Requires Widevine DRM. In WebView2 on Windows, Widevine is available but requires the user to have Edge's Widevine CDM — not guaranteed. More critically: bundled Client ID hits 5-user cap immediately. Extended access requires 250K MAU + legal organization. | Spotify iframe embed already delivers full Premium playback for logged-in users without any SDK or developer dashboard work. |
+| Guided Spotify PKCE OAuth for playback | "Connect Spotify" step-by-step onboarding for Web Playback SDK | BLOCKED: the 5-user Development Mode cap makes this unusable in a distributed app. Each PKCE authorization counts toward the cap. | Defer until Spotify extended API access can be applied for (requires organization status + user scale). The existing import OAuth (for taste import) already exists but uses a user-supplied Client ID to avoid the cap. |
+| Bundled Client ID for PKCE | Ship a Client ID in the app binary so users don't configure anything | Violates Spotify ToS — sharing Client IDs is explicitly prohibited. Also: 5-user cap applies per Client ID. | User-supplied Client ID (as in existing import flow) or skip Web Playback SDK entirely. |
+| Spotify search by artist name | Look up what tracks Spotify has for an artist | Requires Web API with extended access. Search endpoints are restricted in Development Mode. | Use MusicBrainz-sourced Spotify URLs (already extracted from MB relationship data). |
 
 ---
 
-### Area 2: Listening Rooms
+### Area 2: YouTube Integration
 
-#### Table Stakes (Users Expect These in a Listening Room)
+#### Table Stakes (Users Expect These)
 
 | Feature | Why Expected | Complexity | Notes |
 |---------|--------------|------------|-------|
-| Host controls (play, pause, seek) | If someone is "hosting," guests expect the host's controls to drive what they hear | MEDIUM | Host emits playback commands via Nostr. Guests receive and apply to their local embed. |
-| Guest sync to host position | If you join mid-track, you expect to jump to where the host is | MEDIUM | Host broadcasts current timestamp periodically. Guest computes offset on join. |
-| Room participant list | Who else is in this room right now | LOW | NIP-38 user status events or NIP-53 presence (kind:10312). Already using NDK. |
-| Track/embed identity broadcast | Guests need to know what embed to load (Bandcamp URL, Spotify URI, etc.) | LOW | Host broadcasts embed URL + platform type. Guests load the matching embed. |
-| Join link / room share | Rooms are useless if you can't invite anyone | LOW | Nostr event ID or NIP-28 channel ID is the shareable identifier. QR code or copy-link button. |
+| YouTube content plays in-app | If an artist has a YouTube channel or videos, they expect playback | MEDIUM | YouTube IFrame API — already partially built (click-to-load iframe in EmbedPlayer.svelte) |
+| Fallback to open-in-browser | If the iframe fails, open YouTube in browser | LOW | `isYoutubeChannel()` already in youtube.ts — channel URLs open externally |
+| 16:9 aspect ratio preserved | Video content needs correct proportions | DONE | `.video-wrap` with 56.25% padding-bottom already in EmbedPlayer.svelte |
+| No autoplay on page load | Auto-playing video is aggressive | DONE | Click-to-load trigger prevents autoplay |
 
-#### Differentiators (Listening Room)
+#### Differentiators (YouTube)
 
 | Feature | Value Proposition | Complexity | Notes |
 |---------|-------------------|------------|-------|
-| Queue management (host can queue tracks) | Social listening gets boring without a playlist-like flow | MEDIUM | Host maintains a local queue, broadcasts next-track events. Guests see upcoming tracks. |
-| Text chat alongside listening | Real social glue — "what is this bassline??" | LOW | NIP-28 already built for scene rooms. Same channel type can serve listening room chat. |
-| Reaction events (emoji pulses) | Lightweight emotional presence without vanity metrics | LOW | Ephemeral Nostr events (kind:1 or ephemeral NIP-16). Don't persist. |
-| Guest can suggest next track | Collaborative listening — anyone can nominate | MEDIUM | Guest publishes suggestion event to room channel. Host accepts/rejects. |
-| NIP-53 Live Activity tag | Discoverable listening room in Nostr event explorers | LOW | Add kind:30311 wrapper around room session. Already in NIP-53 spec. |
+| Track-level resolution: music video lookup | For a given track title + artist name, find the matching YouTube video | HIGH | Requires YouTube Data API v3 with quota. Free tier: 10,000 units/day. Each search costs 100 units. This is 100 searches/day per app — inadequate for large usage. Alternatively, use MusicBrainz-sourced YouTube URLs (already extracted). |
+| Auto-load YouTube when preferred service | Skip click gate if YouTube is priority service | LOW | Same pattern as Spotify auto-load |
+| Audio-only mode for YouTube | Skip video rendering, play audio only | LOW | `?vq=tiny` parameter reduces video quality; audio-only is not officially supported by YouTube iframe |
+| YouTube channel browse on artist page | Show artist's full YouTube channel content | MEDIUM | Embed the channel page as an iframe (`youtube.com/c/artistname`) — already handled by `isYoutubeChannel()` fallback |
 
-#### Anti-Features (Listening Room)
+#### Anti-Features (YouTube)
 
 | Feature | Why Requested | Why Problematic | Alternative |
 |---------|---------------|-----------------|-------------|
-| True audio sync (same audio samples at same moment) | "We want to hear it together" | Embed iframes don't expose audio clocks. Bandcamp, Spotify, YouTube iframes have no shared time reference API. Perfect sample-level sync is impossible with 3rd-party embeds. | Sync to timestamp (seconds), not audio samples. 1-3 second drift is acceptable social listening. State this clearly in UX. |
-| Mercury-hosted audio relay | "Stream the audio through Mercury so everyone hears the same source" | Mercury's core rule: no audio hosting, ever. Running an audio relay contradicts the fundamental architecture and MusicBrainz ToS obligations. | Coordinate playback of existing embeds. The audio always comes from the artist's platform. |
-| Listening rooms as Nostr NIP-01 events only | Simple approach: just share a Nostr note with the embed URL | Users can't sync playback position from a static note. The "room" experience requires real-time events. | Use NIP-28 channel (already built) + ephemeral playback events for real-time coordination. |
-| Server-based room persistence | "Keep the room alive when the host leaves" | No server, $0 infrastructure constraint. | Rooms are ephemeral by design — when the host disconnects, the room ends. This is a feature, not a bug (mirrors real listening sessions). |
+| YouTube Data API for artist search/resolution | Automatically find YouTube content for every artist | API quota makes this unscalable at app level (100 searches/day free). YouTube API key bundled in app binary is a security issue. | Use MusicBrainz-sourced YouTube URLs only. Resolution is "does MusicBrainz have a YouTube link for this artist?" — not a lookup. |
+| Download or extract YouTube audio | Users want local files | Violates YouTube ToS. DMCA exposure. | Never. Link out. |
+| YouTube Music integration | Separate from YouTube — has its own player and API | YouTube Music does not have a public embeddable player or open API. Separate product, different URL scheme. | Treat music.youtube.com URLs as external links only (already handled in `labelFromUrl` as "YouTube Music"). |
 
 ---
 
-### Area 3: Artist Tools
+### Area 3: SoundCloud Integration
 
-#### Table Stakes (Artists Expect These from "Discovery Stats")
+#### Table Stakes (Users Expect These)
 
 | Feature | Why Expected | Complexity | Notes |
 |---------|--------------|------------|-------|
-| Search appearance count | "How many times has someone searched and landed on my artist profile?" | MEDIUM | Requires Mercury to track per-artist search impression counts locally (SQLite). Privacy-preserving: never leaves the user's machine. Aggregate only, no individual identities. |
-| Profile view count (local) | How often has this artist page been viewed in Mercury | LOW | Simple local increment in SQLite. Same privacy model — local only. |
-| Tag rank ("your top tags") | Which tags is this artist most associated with in the Mercury index | LOW | Already computable from existing tag data. Display artist's top 10 tags by weight. |
-| Discovery path ("how are people finding this artist") | Which tags, which searches are surfacing this artist | MEDIUM | Requires event logging in SQLite. Store: search query → artist MBID impressions. |
-| Export stats as CSV | Artist wants to take the data somewhere | LOW | Generate CSV from SQLite data, trigger file download via Tauri dialog. |
+| SoundCloud content plays in-app | If an artist has SoundCloud, clicking their embed should play | MEDIUM | SoundCloud oEmbed already implemented — fetched server-side in artist page load function |
+| Artist profile page (not just individual tracks) | SoundCloud artist pages show all their tracks | DONE | `isSoundcloudArtist()` + oEmbed fetching already exists |
+| Progress/listen tracking works | 70% completion triggers listening history entry | DONE | SoundCloud Widget API hook already wired in EmbedPlayer.svelte |
 
-#### Differentiators (Artist Tools)
+#### Differentiators (SoundCloud)
 
 | Feature | Value Proposition | Complexity | Notes |
 |---------|-------------------|------------|-------|
-| AI auto-news generation | Generate a short "what's happening with this artist" blurb from recent MusicBrainz release data + tags | MEDIUM | Uses existing llama.cpp sidecar (Qwen2.5 3B). Input: artist name, recent releases, top tags. Output: 2-3 sentence news item. Already have the AI infrastructure. |
-| "You appeared in X scene" notification | Artist page discovers it's been added to scenes by curators — shows this in artist tools view | LOW | Already have scene membership data. Cross-reference artist MBID against scene memberships. |
-| Tag trend graph (30-day sparkline) | Is this artist's niche tag getting more or fewer co-occurrences with other tags | HIGH | Requires historical tag co-occurrence data — not currently stored. Would need schema addition. Consider deferring. |
-| Static site generator for artists | Generate a self-hostable HTML site from artist's Mercury data: releases, tags, player embeds, buy links | HIGH | Node.js script (or Tauri command) that takes artist MBID, fetches MusicBrainz data, generates static HTML. Similar to Faircamp but for Mercury data. No audio hosting — embeds only. |
+| Track-level SoundCloud embed | Embed a specific track, not just the artist page | MEDIUM | oEmbed with a track URL (not artist page URL). Needs track URL from MusicBrainz (MB relationship type: "streaming"). |
+| SoundCloud auto-load for preferred service | Remove click-to-load gate when SoundCloud is priority | LOW | Same pattern as other services |
+| SoundCloud Widget API play/pause control | Programmatic control for queue integration | MEDIUM | SC.Widget() API supports `play()`, `pause()`, `seekTo()`. Already loading Widget API in EmbedPlayer. Integration is feasible. |
 
-#### Artist Tools — Static Site Generator Detail
+#### SoundCloud Relevance to BlackTape's Values
 
-This is the most complex sub-feature. What a static site generator for artists should produce:
+SoundCloud is particularly important for BlackTape's indie/underground focus: it hosts vast amounts of
+independent music that has no Bandcamp or Spotify presence. Artists on labels like Vakant, Ocha Records,
+or experimental/ambient scenes frequently have SoundCloud as their primary or only streaming presence.
+The oEmbed integration already works — this area is about making it first-class.
 
-| Output | Source | Notes |
-|--------|--------|-------|
-| Artist bio page | MusicBrainz artist data + AI-generated summary | Static HTML, no DB |
-| Release discography | MusicBrainz releases API | Rendered at generation time |
-| Embedded players | Bandcamp/Spotify/SoundCloud/YouTube URLs from MB relationships | iframes in static HTML |
-| Buy links | MB purchase URLs | Already parsed in Mercury |
-| Tag cloud | Mercury tag data for artist | Snapshot at generation time |
-| RSS feed | Artist releases feed | Static XML, same as Mercury's existing RSS |
-
-Faircamp (precedent) generates fully static, database-free, maintenance-free musician sites from local audio files. Mercury's generator would do the same but from MusicBrainz data + embed URLs (no audio files needed). This is a strong differentiator — no other tool generates a Bandcamp-alternative static site purely from open data.
-
-#### Anti-Features (Artist Tools)
+#### Anti-Features (SoundCloud)
 
 | Feature | Why Requested | Why Problematic | Alternative |
 |---------|---------------|-----------------|-------------|
-| Artist claiming / verification | "Artists should be able to log in and see their own stats" | Mercury has no accounts, no server, no auth system. Artist claiming requires identity verification which requires infrastructure. | Stats are visible to any Mercury user viewing that artist page. No special artist account needed — this is the point. |
-| Real-time streaming analytics | "How many people are listening right now" | Mercury has no telemetry, no network calls home, no server. Real-time requires a server. Privacy-first means no tracking. | Local impression counts only. Aggregate, private, device-local. |
-| Cross-platform stats aggregation (Spotify + Bandcamp + Mercury) | "One dashboard for all my stats" | Requires OAuth tokens for each platform, ongoing API calls, server-side aggregation. Chartmetric already does this commercially. | Mercury shows Mercury-specific discovery stats only. Clear scope: "your visibility in Mercury, not across the internet." |
-| Artist profile editing via Mercury | "Let me update my bio in Mercury" | Mercury is a read view on MusicBrainz data. Writing back to MusicBrainz requires OAuth + MB account. Mercury is not an editor. | Link to MusicBrainz edit page for the artist. "Edit this on MusicBrainz" → external link. |
+| SoundCloud API key for search | Find SoundCloud content for artists without MB links | SoundCloud public API has been effectively closed to new registrations since 2021. Getting an API key is no longer reliably possible. | Use MusicBrainz-sourced SoundCloud URLs only. |
+| SoundCloud Go+ integration | Play tracks behind SoundCloud's paywall | No public API or embed support for subscriber-only content. | Not feasible. Subscriber content stays gated. |
 
 ---
 
-### Area 4: Sustainability
+### Area 4: Bandcamp Integration
 
-#### Table Stakes (Users Expect These from "Support Artist" Features)
+#### Table Stakes (Users Expect These)
 
 | Feature | Why Expected | Complexity | Notes |
 |---------|--------------|------------|-------|
-| Support links on artist profile (Patreon/Ko-fi/tip) | Any music discovery tool worth using should make it easy to support artists | LOW | MusicBrainz has a "patronage" relationship type (UUID: 6f77d54e-1d81-4e1a-9ea5-37947577151b) for Patreon, Ko-fi, PayPal.me, etc. Already fetching MB relationship URLs for buy links — same code path. |
-| Crowdfunding links (Kickstarter/Indiegogo) | Project-based funding campaigns | LOW | MusicBrainz has a "crowdfunding" relationship type. Same fetch path as patronage. |
-| "Support Mercury" link in app | Users who love the tool want to know how to give back | LOW | Static link to Ko-fi/Patreon/GitHub Sponsors for the Mercury project. Footer or About screen. |
-| Backer credits screen | Recognize people who support Mercury financially | LOW | Static JSON/MD file listing backers. Rendered in About screen. No server needed — update the file when new backers arrive. |
+| Bandcamp content plays in-app | BlackTape's primary value alignment is with independent music | MEDIUM | **Major finding:** Bandcamp now supports a `url=` parameter in EmbeddedPlayer, removing the need for album/track IDs. Format: `https://bandcamp.com/EmbeddedPlayer/url=https%3A%2F%2Fartist.bandcamp.com%2Falbum%2Falbum-name/size=large/bgcol=1d1d1d/linkcol=ffffff/minimal=true/transparent=true/` |
+| Album tracklist playable in order | A Bandcamp album embed should play all tracks | LOW | The `url=` parameter with an album URL plays the entire album with tracklist |
+| Individual track embed | Embed a specific track | LOW | Same `url=` parameter with a track URL |
+| No API key required | Artists don't expect their fans to configure Bandcamp credentials | DONE | Bandcamp embedding is public — no auth, no API key needed |
 
-#### Differentiators (Sustainability)
+#### What Changed: The `url=` Parameter
+
+Previously, Bandcamp embeds required an album ID and track ID that are not present in MusicBrainz URLs.
+This meant Bandcamp was "external link only" in the existing codebase (see `bandcamp.ts`).
+
+Bandcamp added a new `url=` parameter to the EmbeddedPlayer that accepts a URL-encoded Bandcamp URL
+directly. This means any `artist.bandcamp.com/album/album-name` URL from MusicBrainz can be embedded
+without scraping or API calls.
+
+**This unblocks Bandcamp embed support for v1.6.**
+
+Format:
+```
+https://bandcamp.com/EmbeddedPlayer/url={ENCODED_URL}/size=large/bgcol=1d1d1d/linkcol=ffffff/minimal=true/transparent=true/
+```
+
+Parameters:
+- `size`: `small`, `medium`, `large`
+- `bgcol`: hex without # (use dark backgrounds — 1d1d1d matches app theme)
+- `linkcol`: hex without # (amber accent — d4a017 or similar)
+- `minimal`: `true` removes artwork, `false` shows artwork
+- `transparent`: `true` for transparent background
+
+#### Differentiators (Bandcamp)
 
 | Feature | Value Proposition | Complexity | Notes |
 |---------|-------------------|------------|-------|
-| "Support this artist" CTA prominence | Don't bury support links — make them visually prominent next to play/buy links | LOW | UI treatment, not engineering. Patronage links at same visual level as "buy on Bandcamp." |
-| Multiple support options in one row | Show Patreon + Ko-fi + OpenCollective if all exist for artist | LOW | Already fetching all URLs of each relationship type. Group by type, display all. |
-| Mercury backer credits tiers | Distinguish "bought a coffee" from "monthly supporter" | MEDIUM | Requires manual tier tracking in the static backers file. Not automated. Keep it simple at launch. |
-| OpenCollective link for Mercury itself | For teams/organizations wanting to support Mercury as an institution | LOW | OpenCollective is specifically for open source collectives. Add alongside Ko-fi/Patreon/GitHub Sponsors. |
+| Bandcamp-first embed for indie artists | Prioritize Bandcamp when available — aligns with project values | DONE | PLATFORM_PRIORITY already puts Bandcamp first |
+| Album-level embed on release pages | Release page "Play Album" wires up a Bandcamp embed for that release | MEDIUM | Requires release page to use release URL (from MusicBrainz purchase links) to construct embed |
+| Free/name-your-price detection | Bandcamp tracks marked free in MusicBrainz can be labeled accordingly | LOW | MB `download for free` relationship type already categorized as `streaming` in categorize.ts |
+| Dark theme alignment | Bandcamp embed bg color matches BlackTape dark theme | LOW | Pass `bgcol=1d1d1d` (matches --bg-1) and `linkcol` matching amber accent |
 
-#### Anti-Features (Sustainability)
+#### Bandcamp Relevance to BlackTape's Values
+
+Bandcamp is the canonical platform for independent music. Steve's label background (Vakant, Kwik Snax)
+means the artists most likely to be featured in BlackTape's discovery flows release on Bandcamp. This
+is where the "uniqueness is rewarded" philosophy intersects most directly with actual playback:
+underground artists have Bandcamp pages, not Spotify profiles.
+
+#### Anti-Features (Bandcamp)
 
 | Feature | Why Requested | Why Problematic | Alternative |
 |---------|---------------|-----------------|-------------|
-| Affiliate commissions on support links | "Mercury could take a small cut of Patreon referrals" | Contradicts the "pure public good" principle. Monetizing artist support flows creates a conflict of interest. Mercury should never profit from directing traffic to artists. | Mercury takes nothing. Support links are untracked direct links. |
-| Backer-only features / premium tier | "Give backers early access" | "Everyone gets the same thing" is a core Mercury value. Paid advantages are explicitly out of scope in PROJECT.md. | Backers get their name in the credits. That's the thank-you. No feature gates. |
-| In-app payment / tip jar | "Support artists directly through Mercury" | Would require payment processor integration, financial compliance, payout infrastructure. Violates $0 infrastructure constraint. | Link out to where artists already accept support (Patreon, Ko-fi, Bandcamp). Mercury is the pointer, not the payment layer. |
-| Auto-generated support link discovery (scraping) | "Find support links even if they're not in MusicBrainz" | Web scraping artist websites for Patreon links is unreliable, legally grey, and computationally expensive. | Use MusicBrainz relationship data only. If an artist's Patreon isn't in MusicBrainz, the right fix is for someone to add it to MusicBrainz. Contribute to the commons. |
+| Bandcamp API integration | Search Bandcamp for artist content | Bandcamp's public API has been extremely limited since Songtradr acquisition concerns. No reliable public search API. | Use MusicBrainz-sourced Bandcamp URLs only. |
+| "Buy on Bandcamp" direct in-app purchase | Users want to buy without leaving the app | Bandcamp's checkout requires their website — no in-app purchase API exists. | "Buy on Bandcamp" external link (already in BuyOnBar.svelte). |
+| Bandcamp scraping for track IDs (old approach) | Get album/track IDs not in MusicBrainz | Brittle, against ToS, breaks on Bandcamp HTML changes. | `url=` parameter approach eliminates the need for IDs entirely. |
+
+---
+
+### Area 5: Service Resolution
+
+This is the connective tissue — how the app determines which services have content for a given artist
+and which to use first.
+
+#### How Service Resolution Works in BlackTape
+
+**Current state:** MusicBrainz artist data includes relationship URLs. The `categorize.ts` `detectPlatform()`
+function already extracts Spotify, YouTube, SoundCloud, and Bandcamp URLs from these relationships.
+The `PlatformLinks` type (`{ bandcamp: string[], spotify: string[], soundcloud: string[], youtube: string[] }`)
+is already populated per artist.
+
+**Resolution strategy:** The system already knows which services have content — it's in `PlatformLinks`.
+There is no need for secondary lookups, artist name searches, or ISRC matching. Resolution = "does the
+MusicBrainz record for this artist contain a URL for this platform?"
+
+**When MusicBrainz has no link:** The platform shows as unavailable. Users can always open the platform
+in their browser to search manually. There is no fallback search against Spotify/YouTube/SoundCloud APIs
+(this would require API keys and quotas).
+
+#### Table Stakes (Service Resolution)
+
+| Feature | Why Expected | Complexity | Notes |
+|---------|--------------|------------|-------|
+| Available services are clearly shown | Users want to know what's playable before clicking | LOW | Show platform badges/buttons only for platforms that have URLs in PlatformLinks |
+| Priority order is respected | User set a preference — it should be honored | LOW | PLATFORM_PRIORITY already exists; `streamingPref.platform` already reorders it |
+| Unavailable services are not shown | Don't show a YouTube button if there's no YouTube link | DONE | EmbedPlayer already filters by `urls.length > 0` |
+| First available service loads automatically (or with one click) | Users expect a single Play action, not choosing a platform | MEDIUM | Auto-select first available service from ordered priority list |
+
+#### Differentiators (Service Resolution)
+
+| Feature | Value Proposition | Complexity | Notes |
+|---------|-------------------|------------|-------|
+| Source switcher buttons on artist page | After initial play, user can switch to a different available service | LOW | Small button group: "Playing: Bandcamp — Also on: [SC] [YT]" |
+| Drag-to-reorder priority in Settings | Intuitive priority management, borrowed from Parachord | MEDIUM | Replaces the existing platform dropdown. Svelte 5 drag API or a simple up/down button approach. |
+| "Available on N services" count on artist card | Discover cards show service availability at a glance | LOW | Count non-empty platform arrays in PlatformLinks |
+
+#### Anti-Features (Service Resolution)
+
+| Feature | Why Requested | Why Problematic | Alternative |
+|---------|---------------|-----------------|-------------|
+| Cross-platform artist search to find content | "If MusicBrainz has no Spotify link, search Spotify for the artist name" | Requires API keys. Name search is unreliable (common artist names, wrong region results). Creates false matches. | Only use MusicBrainz-sourced URLs. If a link is missing, the right fix is adding it to MusicBrainz. |
+| ISRC-based track matching | Match tracks across services via ISRC codes | ISRC lookup APIs require service-specific auth. ISRC data in MusicBrainz is incomplete. High complexity for marginal gain. | Use release-level URLs from MusicBrainz, which are already per-platform. |
+| Real-time availability checking | Ping each service to verify a URL still resolves | Network overhead on every artist page load. Unreliable for privacy (leaks browsing to service CDNs). | Accept that some links may be stale. Dead domain filtering (already built for artist links) handles the worst cases. |
+
+---
+
+### Area 6: Service Priority UI (Settings)
+
+#### Current State
+
+The Settings page has a `<select>` dropdown for "Preferred Platform" with 4 options (Bandcamp, Spotify,
+SoundCloud, YouTube, or No preference). This works but does not allow specifying a full ordered priority
+list — only "what to show first."
+
+#### What v1.6 Needs
+
+| Feature | Why Expected | Complexity | Notes |
+|---------|--------------|------------|-------|
+| Full ordered list (not just "first") | Users want to say "Bandcamp first, SoundCloud second, YouTube third, skip Spotify" | MEDIUM | Replaces dropdown with ordered list |
+| Drag-to-reorder | Intuitive for a priority list | MEDIUM | Svelte 5 drag events or simple up/down arrows (up/down arrows are more accessible and simpler to implement reliably) |
+| "Enable/disable" per service | Turn off services you don't use | LOW | Checkbox or toggle per service in the ordered list |
+| Priority persists across sessions | Set once, always applied | DONE | `saveStreamingPreference()` pattern exists, needs extending to array instead of single string |
+
+#### Anti-Features (Settings)
+
+| Feature | Why Requested | Why Problematic | Alternative |
+|---------|---------------|-----------------|-------------|
+| Per-artist service override | "I always want Bandcamp for Burial but Spotify for Daft Punk" | High complexity, poor UX (requires per-artist config memory). Edge case. | Global priority is sufficient. Source switcher on artist page handles one-off needs. |
+| Service connection status in Settings | "Show me if I'm connected to Spotify" | Spotify iframe does not surface login state to parent page. No way to detect if user is logged in to Spotify in WebView2 without the SDK. | Source switcher and embed show Spotify's own login prompt when needed. |
+
+---
+
+### Area 7: Player Bar Service Badge
+
+#### What Users Expect
+
+| Feature | Why Expected | Complexity | Notes |
+|---------|--------------|------------|-------|
+| Visual indicator of active service | "Am I listening to the Spotify embed or Bandcamp?" | LOW | Small badge/chip on player bar, e.g. "via Bandcamp" |
+| Service name or icon | Platform is identified at a glance | LOW | Text label is more accessible than icon-only (icon requires tooltip) |
+| Badge updates when source switches | Switching service should update the badge | LOW | Reactive derived from playerState |
+
+#### Design Note
+
+The Player.svelte currently shows track info (title, artist, album) in the left section of the player bar.
+The service badge fits naturally in that section, below the track metadata, in a muted style so it does not
+compete with the track title.
+
+Format: `via Bandcamp` or `via SoundCloud` — not an icon, a text label. Consistent with the project's
+typographic aesthetic.
+
+#### Anti-Features (Player Bar)
+
+| Feature | Why Requested | Why Problematic | Alternative |
+|---------|---------------|-----------------|-------------|
+| Service logo/icon in player bar | Brand recognition | Requires trademark permission for Spotify/Bandcamp/YouTube/SoundCloud logos. Text label avoids trademark issues. | "via {ServiceName}" text label |
+| Platform-specific color theming when playing | Green player bar for Spotify, orange for SoundCloud | Distracting. Conflicts with BlackTape's OKLCH taste theming. | Neutral badge, consistent with existing player bar aesthetic |
+
+---
+
+### Area 8: Album Playback from Release Pages
+
+#### Current State
+
+The release page has `handlePlayAlbum()` and `handleQueueAlbum()` stub functions that do nothing.
+The comment explains: "Stub: Play Album requires matching MusicBrainz release tracks to local library files."
+
+**That reasoning is outdated for v1.6.** The v1.6 approach does not require local file matching.
+Album playback from release pages uses streaming embeds, not local files.
+
+#### What "Play Album" Actually Means in v1.6
+
+There are two distinct interpretations:
+
+**Interpretation A: Embed the album's Bandcamp/SoundCloud player on the release page**
+The release page has a `links` array (`ReleaseGroup.links: ReleaseLink[]`). These include Bandcamp and
+SoundCloud URLs for the specific release. Using the `url=` Bandcamp EmbeddedPlayer approach, the release
+page can render a Bandcamp embed for that album directly. This plays the full album in track order.
+
+This is the simplest implementation and aligns with BlackTape's embed-first approach. The "Play Album"
+button reveals the Bandcamp embed (or preferred service embed) for this release.
+
+**Interpretation B: Populate the queue with individual tracks from the tracklist, then resolve each via Spotify/YouTube**
+The release page already shows the tracklist from MusicBrainz. Populating the queue with these tracks
+requires resolving each track title to a streamable URL on the preferred service. This requires:
+- For Spotify: Web API search (Development Mode limited)
+- For YouTube: YouTube Data API search (quota limited)
+- For SoundCloud: no API for track search
+- For Bandcamp: the album embed already handles this
+
+**Recommendation: Interpretation A for v1.6.** Embed the album player (Bandcamp `url=` embed, SoundCloud
+oEmbed, or Spotify album embed) on the release page. The "Play Album" button reveals that embed.
+Queue population (Interpretation B) is a v1.7+ feature requiring service API integration.
+
+#### Table Stakes (Album Playback)
+
+| Feature | Why Expected | Complexity | Notes |
+|---------|--------------|------------|-------|
+| Release page shows a play button | Users see tracklist and expect to play the album | LOW | Button already rendered, stub already present |
+| "Play Album" reveals the best available embed | Bandcamp first if available, then fallback chain | MEDIUM | Determine which services have a URL for this release from `release.links`, apply priority |
+| Track count and total duration visible | Users want to know what they're committing to | DONE | Already shown from MusicBrainz tracklist data |
+
+#### Differentiators (Album Playback)
+
+| Feature | Value Proposition | Complexity | Notes |
+|---------|-------------------|------------|-------|
+| Bandcamp "Play Album" with dark theme embed | The album embed on the release page uses matching bgcol/linkcol | LOW | CSS vars mapped to Bandcamp embed parameters |
+| "Open on Bandcamp" button alongside embed | Some users prefer the full Bandcamp experience | DONE | Already in BuyOnBar.svelte |
+| Queue All Tracks (v1.7 candidate) | Populate the internal queue with all tracks for gapless cross-service playback | HIGH | Requires track-to-service resolution. Defer. |
 
 ---
 
 ## Feature Dependencies
 
 ```
-ActivityPub Outbound
-    └──requires──> MusicBrainz artist data (already fetched live)
-    └──requires──> Existing RSS feed infrastructure (reuse patterns)
-    └──enables──> Share-to-Fediverse (low-hanging fruit, do first)
-    └──blocks on──> WebFinger (needs server — cannot do true AP actors without infrastructure)
+Service Priority UI (Settings)
+    └──persists to──> streamingPref (already exists, needs to become an ordered array)
+    └──drives──> EmbedPlayer platform ordering (already reads streamingPref)
+    └──drives──> Source switcher on artist page
 
-Listening Rooms
-    └──requires──> NIP-28 scene rooms (already built — reuse channel infrastructure)
-    └──requires──> NDK (Nostr Dev Kit — already integrated)
-    └──requires──> Embedded players in artist profiles (already built)
-    └──enhances──> Scene rooms (listening rooms are a type of scene activity)
+Bandcamp Embed [UNLOCKED by url= parameter]
+    └──requires──> Bandcamp URL from PlatformLinks.bandcamp (already extracted from MusicBrainz)
+    └──enables──> Album playback on release pages (use release.links Bandcamp URL)
+    └──requires updating──> bandcamp.ts (currently "external link only" — add embed URL generator)
+    └──requires updating──> EmbedPlayer.svelte (replace ExternalLink with embed iframe for Bandcamp)
 
-Artist Tools — Stats Dashboard
-    └──requires──> SQLite schema addition (impression logging tables)
-    └──requires──> Search/browse event hooks (log impressions on every search result)
-    └──enhances──> Artist profile pages (stats display alongside profile data)
+Album Playback on Release Pages
+    └──requires──> Bandcamp embed support (Interpretation A)
+    └──requires──> Release page has streaming links (already in release.links)
+    └──blocked on local file matching──> NO (this assumption was wrong — embed approach works directly)
 
-Artist Tools — AI Auto-News
-    └──requires──> llama.cpp sidecar (already built, Qwen2.5 3B)
-    └──requires──> MusicBrainz releases data (already fetched live)
-    └──enhances──> Artist profile pages (news blurb displayed there)
+Service Badge on Player Bar
+    └──requires──> playerState to know which service provided the current track
+    └──requires──> Queue.svelte / queue.svelte to tag each track with its source service
+    └──derives from──> which embed was loaded when user played
 
-Artist Tools — Static Site Generator
-    └──requires──> MusicBrainz API integration (already built)
-    └──requires──> Buy link + embed URL parsing (already built)
-    └──independent──> (can be a standalone Node.js script or Tauri command)
+Source Switcher on Artist Page
+    └──requires──> PlatformLinks for artist (already fetched)
+    └──requires──> Knowing which embed is currently active (new state)
+    └──enhances──> EmbedPlayer (swap active platform)
 
-Sustainability — Artist Support Links
-    └──requires──> MusicBrainz relationship URL fetching (already built for buy links)
-    └──enhances──> Artist profile pages (support links section)
+SoundCloud Widget API controls
+    └──already built in──> EmbedPlayer.svelte (hookSoundCloudWidget)
+    └──extends to──> programmatic play/pause via SC.Widget()
 
-Sustainability — Mercury Funding Links
-    └──independent──> (static content in About screen)
-
-Sustainability — Backer Credits
-    └──independent──> (static JSON file rendered in About screen)
+Spotify iframe embed (already works)
+    └──enhancement needed──> auto-load when priority (remove click gate for preferred service)
+    └──blocked──> Web Playback SDK (Spotify policy, Widevine, 5-user cap)
 ```
 
 ### Dependency Notes
 
-- **Support links reuse buy-link code.** MusicBrainz relationship fetching already handles buy/purchase links. Patronage/crowdfunding links use the same `type` field filter — trivial to extend.
-- **Listening rooms reuse NIP-28.** Scene rooms are already built on NIP-28. Listening rooms are NIP-28 channels with a specific convention for playback-control event types. The infrastructure is there.
-- **AI auto-news reuses the sidecar.** The llama.cpp sidecar is already running for recommendations. Auto-news is a new prompt template, not new infrastructure.
-- **ActivityPub is blocked on the inbox problem.** True AP actors require a server. Mercury must scope this to static JSON-LD export + share links only — not full federation. This is the single most important constraint to set clearly before building.
-- **Stats dashboard requires new SQLite tables.** This is the only Area 3 feature that requires a schema migration. Plan it carefully to avoid breaking existing data.
+- **Bandcamp embed unblocked.** The `url=` parameter discovery changes the scope significantly. `bandcamp.ts`
+  needs a `bandcampEmbedUrl(url: string): string` function, and EmbedPlayer.svelte needs to render an iframe
+  for Bandcamp instead of ExternalLink. This is a LOW-MEDIUM complexity change, not a HIGH one.
+
+- **Spotify scope is narrower than planned.** The February 2026 policy changes mean the "guided onboarding"
+  for Spotify in v1.6 is not PKCE OAuth for the Web Playback SDK — it is UX clarity around what the Spotify
+  iframe provides (full tracks if logged in, 30s if not). The connect flow is: "Log in to Spotify in the
+  app, then click Play — you'll get full tracks."
+
+- **Service priority state needs upgrade.** The existing `streamingPref.platform` is a single string.
+  v1.6 needs it to be an ordered array with per-service enable/disable. This is a schema migration in
+  localStorage preferences — careful not to break existing saved preferences.
+
+- **Player bar service badge requires new state.** The player queue currently stores `PlayerTrack` objects
+  with title/artist/album/url/duration. A `source?: PlatformType` field needs to be added so the player
+  bar knows which service provided the track.
+
+- **Release page album playback depends on release having streaming links.** Some releases in MusicBrainz
+  have no streaming links at all (particularly older releases). The "Play Album" button should be hidden
+  when no streaming links exist for the release.
 
 ---
 
-## MVP Definition for v1.3
+## MVP Definition for v1.6
 
-### Launch With (v1.3 Core)
+### Launch With (v1.6 Core — "The Playback Milestone")
 
-Minimum viable v1.3 — what's needed to call the milestone "The Open Network" and mean it.
+Minimum viable v1.6: clicking Play on an artist actually plays something.
 
-- [ ] **Artist support links** — Patronage + crowdfunding URLs from MusicBrainz displayed on artist profiles. Trivially low complexity, high user value. Do this first.
-- [ ] **Share-to-Fediverse links** — "Share on Mastodon" button on artist/scene pages. Zero AP protocol work. Pure UX. Do this alongside support links.
-- [ ] **Mercury funding links** — Ko-fi/Patreon/GitHub Sponsors links in About screen. Static content, one afternoon.
-- [ ] **Backer credits screen** — Static JSON → rendered credits in About. One afternoon.
-- [ ] **Listening room host controls + guest sync** — NIP-28 channel + playback events. Host broadcasts play/pause/seek, guests sync. Core room experience.
-- [ ] **Listening room participant list** — NIP-53 presence or NIP-38 status. Know who's in the room.
-- [ ] **Artist stats: search impressions + profile views** — SQLite impression logging. Local only. Schema migration required.
-- [ ] **ActivityPub JSON-LD export** — Static actor.json and outbox.json generated on demand, downloadable. Not true AP federation, but AP-compatible data.
-- [ ] **AI auto-news for artist profiles** — Prompt existing sidecar with artist name + recent releases + tags. 2-3 sentence news blurb on artist page.
+- [ ] **Bandcamp embed support** — Add `bandcampEmbedUrl()` using `url=` parameter. Update EmbedPlayer to
+  render Bandcamp iframe. This is the highest-value single change: enables Bandcamp playback for indie/underground
+  artists who are the core BlackTape audience.
 
-### Add After Validation (v1.3.x)
+- [ ] **Auto-load preferred service** — When priority service has content, load its embed without requiring
+  a click. Remove click gate for the preferred platform only. Other platforms remain click-to-load.
 
-Features to add once core is stable.
+- [ ] **Drag-to-reorder service priority** — Replace the single dropdown in Settings > Streaming with an
+  ordered list. Save as array to localStorage. Persist across sessions.
 
-- [ ] **Listening room queue management** — Host queues tracks, guests see upcoming. Depends on rooms being stable.
-- [ ] **Listening room chat** — NIP-28 channel messages alongside playback. May already work if using existing scene room UI.
-- [ ] **Artist tools static site generator** — Node.js script or Tauri command. High value, higher complexity. Validate demand first.
-- [ ] **Listening room reactions** — Ephemeral emoji events. Nice-to-have social glue.
+- [ ] **Source switcher on artist page** — After loading one embed, show small buttons for other available
+  services: "Also on: [SC] [YT]". Clicking switches the active embed.
 
-### Future Consideration (v1.4+)
+- [ ] **Player bar service badge** — "via Bandcamp" / "via Spotify" text label in the track-info section
+  of the player bar. Derived from which embed was loaded when the track started.
 
-Features to defer until product-market fit with v1.3 is established.
+- [ ] **Album playback from release pages** — "Play Album" button reveals the best available streaming embed
+  for that release (Bandcamp first via `url=` parameter, SoundCloud oEmbed second, Spotify embed third).
+  Hide button when no streaming links exist for the release.
 
-- [ ] **AP WebFinger + true actor federation** — Requires infrastructure decision (hosted server, or Mercury hosting partner). Not feasible under $0 constraint without rethinking the architecture.
-- [ ] **Tag trend sparklines in artist tools** — Requires historical tag co-occurrence tracking (new schema, significant data work).
-- [ ] **NIP-53 Live Activity wrapper for listening rooms** — Makes rooms discoverable in Nostr event explorers. Nice but not critical at launch.
+- [ ] **SoundCloud upgrade** — Ensure SoundCloud plays reliably as first-class service (it already has the
+  most complete integration). Test Widget API play/pause control works for queue integration.
+
+### Add After Validation (v1.6.x)
+
+- [ ] **Spotify UX guidance** — Inline tooltip or callout on artist pages: "For full tracks, log in to Spotify
+  in BlackTape." Triggered when Spotify is the active service and the user is likely seeing 30s previews.
+
+- [ ] **YouTube auto-open fallback** — When YouTube is the preferred service but the artist only has a channel
+  URL (not a video URL), add a clear "Watch on YouTube" CTA instead of an empty state.
+
+- [ ] **Bandcamp dark theme parameters** — Fine-tune `bgcol` and `linkcol` to match current theme tokens
+  dynamically (uses CSS vars — need to read them in JS to pass to the embed URL).
+
+### Future Consideration (v1.7+)
+
+- [ ] **Queue-level track resolution** — Populate the queue with individual tracks from a release tracklist,
+  resolved to YouTube/Spotify URLs via their respective APIs. High complexity, requires API quotas.
+
+- [ ] **Spotify extended access** — If BlackTape reaches organization status + 250K MAU, apply for Spotify
+  extended API access and then add the Web Playback SDK with true PKCE OAuth onboarding.
+
+- [ ] **SoundCloud track-level embed** — Embed specific tracks (not just artist pages) when MusicBrainz has
+  individual track SoundCloud URLs.
 
 ---
 
@@ -259,58 +472,66 @@ Features to defer until product-market fit with v1.3 is established.
 
 | Feature | User Value | Implementation Cost | Priority |
 |---------|------------|---------------------|----------|
-| Artist support links (patronage/crowdfunding URLs) | HIGH | LOW (reuses existing MB URL parsing) | P1 |
-| Share-to-Fediverse links | HIGH | LOW (URL scheme button) | P1 |
-| Mercury funding links (Ko-fi/Patreon/GitHub Sponsors) | MEDIUM | LOW (static content) | P1 |
-| Backer credits screen | MEDIUM | LOW (static JSON) | P1 |
-| Listening room host controls + guest sync | HIGH | MEDIUM (Nostr events + embed API) | P1 |
-| Artist stats: impressions + profile views | MEDIUM | MEDIUM (SQLite schema migration + event hooks) | P1 |
-| ActivityPub JSON-LD export (static) | MEDIUM | MEDIUM (JSON-LD schema work) | P2 |
-| AI auto-news on artist profiles | HIGH | LOW (reuses sidecar, new prompt only) | P1 |
-| Listening room participant list | MEDIUM | LOW (NIP-38 or NIP-53) | P2 |
-| Listening room chat integration | MEDIUM | LOW (NIP-28 already built) | P2 |
-| Artist static site generator | HIGH (for artists) | HIGH (new Node.js pipeline) | P2 |
-| Listening room queue | MEDIUM | MEDIUM | P3 |
-| Listening room reactions | LOW | LOW | P3 |
-| Tag trend sparklines | MEDIUM | HIGH (schema + data work) | P3 |
-| AP WebFinger + true federation | HIGH (aspirational) | VERY HIGH (requires server infrastructure) | Defer |
+| Bandcamp embed (url= parameter) | HIGH (core audience) | LOW (new function + EmbedPlayer update) | P1 |
+| Auto-load preferred service | HIGH | LOW | P1 |
+| Drag-to-reorder priority in Settings | HIGH | MEDIUM | P1 |
+| Album playback on release pages | HIGH | MEDIUM (depends on Bandcamp embed) | P1 |
+| Source switcher on artist page | MEDIUM | LOW | P1 |
+| Player bar service badge | MEDIUM | LOW | P1 |
+| SoundCloud first-class QA | MEDIUM | LOW (already mostly built) | P1 |
+| Spotify UX guidance ("log in for full tracks") | MEDIUM | LOW | P2 |
+| YouTube open-in-browser clarity | LOW | LOW | P2 |
+| Bandcamp dynamic dark theme embed params | LOW | LOW | P2 |
+| Spotify Web Playback SDK | HIGH (if feasible) | HIGH + BLOCKED | Deferred (policy blocker) |
+| Cross-service track resolution (queue) | HIGH | VERY HIGH | Deferred (v1.7) |
 
 **Priority key:**
-- P1: Ship in v1.3 core milestone
-- P2: Ship in v1.3 if P1 is stable; otherwise v1.3.x
+- P1: Ship in v1.6 core milestone
+- P2: Ship in v1.6 if P1 is stable; otherwise v1.6.x patch
 - P3: Nice to have, future milestone
-- Defer: Architectural prerequisite not met; requires infrastructure decision
+- Deferred: Architectural or policy blocker, not feasible in v1.6
 
 ---
 
-## Desktop-App Constraint Summary
+## Competitor Feature Analysis
 
-Mercury is **Tauri desktop only**. This has specific implications per feature area:
+| Feature | Parachord | BlackTape v1.5 | BlackTape v1.6 Target |
+|---------|-----------|----------------|----------------------|
+| Service priority ordering | Drag-to-reorder resolver order | Single-service dropdown | Drag-to-reorder ordered array |
+| Service resolution method | Plugin resolver chain, tries each until match | MusicBrainz URLs only | MusicBrainz URLs only (same) |
+| Source indicator | Small resolver badge on track | None | "via {Service}" in player bar |
+| Auth flow | Per-service OAuth (complex, multi-step) | No auth for playback | No auth for Spotify embed (login is in-app Spotify session) |
+| Album playback | Full album queue via resolver | Stubs only | Embed the album's streaming player |
+| Spotify | Full Web Playback SDK | Embed iframe only | Embed iframe only (policy-constrained) |
+| SoundCloud | Resolver plugin | oEmbed + Widget API hooks | Same + first-class priority |
+| Bandcamp | No (complex embed — needed album IDs) | External link only | Full embed via url= parameter |
+| YouTube | Channel resolver | Click-to-load iframe | Same + auto-load when preferred |
 
-| Feature Area | Desktop Constraint | Impact |
-|---|---|---|
-| ActivityPub outbound | Cannot serve HTTP (no always-on server). Cannot do WebFinger. | Scope to static JSON-LD export + share links only. No true AP actors. |
-| Listening rooms | Cannot run a relay. Must piggyback on public Nostr relays (already doing this). | Rooms are relay-dependent — same as existing Nostr features. Acceptable. |
-| Artist stats | No telemetry leaving the machine. Stats are local-only. | Good for privacy. Clear user expectation: "your Mercury, not global Mercury." |
-| AI auto-news | llama.cpp sidecar already runs locally. | Zero new infrastructure. Reuse existing AI pipeline. |
-| Static site generator | Can generate files locally, output via Tauri `save_dialog`. | Node.js script or Tauri command. Output is a folder of HTML/CSS. User deploys it. |
-| Sustainability links | Static content, no server needed. | Zero constraint. Simplest area of all. |
+**BlackTape's advantage over Parachord in this domain:**
+- Discovery-first architecture means service resolution is secondary, not primary
+- No OAuth friction for users (no app registration, no redirect URI confusion)
+- Bandcamp embed now achievable without ID extraction (url= parameter)
+- Values alignment: Bandcamp first is not just UX preference, it's a philosophical statement
 
 ---
 
 ## Sources
 
-- [W3C ActivityPub Specification](https://www.w3.org/TR/activitypub/) — Actor, inbox, outbox requirements. Confidence: HIGH.
-- [Paul Kinlan — Adding ActivityPub to a static site](https://paul.kinlan.me/adding-activity-pub-to-your-static-site/) — Confirms WebFinger cannot be fully static; requires serverless function for dynamic parameter handling. Confidence: HIGH.
-- [ActivityPub on a mostly static website (elvery.net)](https://elvery.net/drzax/activitypub-on-a-mostly-static-website/) — Practical account of static site AP limitations. Confirms inbox is the hard blocker. Confidence: HIGH.
-- [Manyfold ActivityPub architecture](https://manyfold.app/technology/activitypub.html) — Non-social app extending AP. Dual-posting strategy (native + Notes for Mastodon compat). Confidence: HIGH.
-- [NIP-53 — Live Activities](https://github.com/nostr-protocol/nips/blob/master/53.md) — kind:30311 live streaming event, kind:10312 room presence. Confirmed for listening room architecture. Confidence: HIGH.
-- [NIP-38 — User Statuses](https://github.com/nostr-protocol/nips/blob/master/38.md) — Music listening status events. Confidence: HIGH.
-- [MusicBrainz Artist-URL relationship types](https://musicbrainz.org/relationships/artist-url) — Patronage (UUID: 6f77d54e-1d81-4e1a-9ea5-37947577151b) and crowdfunding relationship types confirmed. Confidence: HIGH.
-- [Faircamp static site generator](https://codeberg.org/simonrepp/faircamp) — Precedent for static musician sites from audio files. Mercury's generator would do same from open data + embed URLs. Confidence: HIGH.
-- [Spotify iFrame API](https://developer.spotify.com/documentation/embeds/tutorials/using-the-iframe-api) — Programmatic embed control available. Confidence: HIGH.
-- Training data: Nostr NDK, NIP-17 (encrypted DMs), NIP-28 (scene rooms). Already integrated in Mercury v1.0. Confidence: HIGH (existing code, not training-data assumption).
+- [Spotify Developer Policy — February 2026 Update](https://developer.spotify.com/blog/2026-02-06-update-on-developer-access-and-platform-security) — 5-user Development Mode cap, Premium requirement, organization-only applications. Confidence: HIGH.
+- [TechCrunch — Spotify API Changes February 2026](https://techcrunch.com/2026/02/06/spotify-changes-developer-mode-api-to-require-premium-accounts-limits-test-users/) — Confirms 5-user limit and Premium requirement. Confidence: HIGH.
+- [Spotify Web Playback SDK — Getting Started](https://developer.spotify.com/documentation/web-playback-sdk/tutorials/getting-started) — Requires Spotify Premium account. Requires `encrypted-media` allow attribute. Confidence: HIGH.
+- [Spotify Embed Documentation](https://developer.spotify.com/documentation/embeds) — iframe embed, no auth required for rendering; full tracks for Premium users logged in; 30s previews for free/logged-out users. Confidence: HIGH.
+- [Spotify Community — 30s Preview Behavior](https://community.spotify.com/t5/Spotify-for-Developers/30-second-preview-showing-when-try-to-embed-playlist/td-p/5655204) — Confirmed: embed plays full tracks when user is logged in with Premium in the same browser. Confidence: HIGH.
+- [Spotify Web Playback SDK + Electron Issue #7](https://github.com/spotify/web-playback-sdk/issues/7) — SDK requires Widevine CDM. Electron (and by extension Tauri/WebView2) requires specific setup. Confidence: MEDIUM.
+- [Bandcamp — EmbeddedPlayer url= parameter](https://github.com/bluesky-social/social-app/pull/6761) — Confirmed Bandcamp added `url=` parameter to EmbeddedPlayer, enabling embeds from URL-encoded Bandcamp page URLs without needing album/track IDs. Confidence: HIGH.
+- [Bandcamp Help — Creating Embedded Players](https://get.bandcamp.help/hc/en-us/articles/23020711574423) — Official documentation for embed parameters (size, bgcol, linkcol, minimal, transparent). Confidence: HIGH.
+- [SoundCloud Widget API](https://developers.soundcloud.com/docs/api/html5-widget) — SC.Widget() provides play, pause, seekTo, getPosition, and event binding. Confidence: HIGH.
+- [SoundCloud oEmbed API](https://developers.soundcloud.com/docs/oembed) — oEmbed endpoint returns embed HTML for artist pages and tracks. Confidence: HIGH.
+- [YouTube IFrame Player API](https://developers.google.com/youtube/iframe_api_reference) — No auth required for embeds. Programmatic control via IFrame API JS. Confidence: HIGH.
+- [Spotify Redirect URI Policy — localhost deprecated](https://developer.spotify.com/blog/2025-02-12-increasing-the-security-requirements-for-integrating-with-spotify) — As of November 2025, `localhost` aliases removed. Loopback `127.0.0.1` still works. Confidence: HIGH.
+- [Spotify Extended Access Criteria Update](https://developer.spotify.com/blog/2025-04-15-updating-the-criteria-for-web-api-extended-access) — 250K MAU + registered organization required for extended access as of May 2025. Confidence: HIGH.
+- Existing codebase analysis: `src/lib/embeds/`, `src/lib/components/EmbedPlayer.svelte`, `src/routes/settings/+page.svelte`, `src/lib/theme/preferences.svelte`. Confidence: HIGH (direct code inspection).
 
 ---
-*Feature research for: Mercury v1.3 — The Open Network*
-*Researched: 2026-02-24*
+*Feature research for: BlackTape v1.6 — Multi-source streaming playback*
+*Researched: 2026-02-26*
