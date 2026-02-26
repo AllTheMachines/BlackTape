@@ -72,6 +72,9 @@ export const load: PageLoad = async ({ params, fetch }) => {
 			const seen = new Set<string>();
 
 			if (mbData.relations) {
+				// #26 fix: track URLs that came from 'official homepage' MB type so we can sort them first
+				const officialHomepageUrls = new Set<string>();
+
 				for (const rel of mbData.relations) {
 					if (rel['target-type'] === 'url' && rel.url?.resource) {
 						const url = rel.url.resource;
@@ -95,8 +98,23 @@ export const load: PageLoad = async ({ params, fetch }) => {
 						const category = rel.type ? categorizeByRelationType(rel.type) : 'other';
 						const platform = detectPlatform(url);
 						const finalCategory = platform ? 'streaming' : category;
+
+						// Track official homepage URLs for post-loop sort
+						if (rel.type === 'official homepage' && finalCategory === 'official') {
+							officialHomepageUrls.add(url);
+						}
+
 						categorizedLinks[finalCategory].push({ url, label: labelFromUrl(url) });
 					}
+				}
+
+				// Sort official links: 'official homepage' type URLs appear first
+				if (categorizedLinks.official.length > 1) {
+					categorizedLinks.official.sort((a, b) => {
+						const aFirst = officialHomepageUrls.has(a.url) ? -1 : 0;
+						const bFirst = officialHomepageUrls.has(b.url) ? -1 : 0;
+						return aFirst - bFirst;
+					});
 				}
 			}
 		}
