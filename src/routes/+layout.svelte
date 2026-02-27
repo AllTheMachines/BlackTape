@@ -77,6 +77,14 @@
 			// Load service order — updates streamingState.serviceOrder for Settings UI
 			const serviceOrder = await loadServiceOrder();
 			streamingState.serviceOrder = serviceOrder;
+
+			// Load Spotify connection state — hydrates spotifyState from ai_settings
+			const { loadSpotifyState } = await import('$lib/spotify/auth');
+			const { setSpotifyConnected } = await import('$lib/spotify/state.svelte');
+			const storedSpotify = await loadSpotifyState();
+			if (storedSpotify) {
+				setSpotifyConnected(storedSpotify);
+			}
 		}
 	});
 
