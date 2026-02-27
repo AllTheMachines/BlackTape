@@ -433,6 +433,13 @@
 			{/if}
 		</div>
 
+		<div class="artist-claim-row">
+			<a
+				href="/claim?artist={encodeURIComponent(data.artist.name)}&from={data.artist.slug}"
+				class="artist-claim-link"
+			>Are you {data.artist.name}? Claim this page</a>
+		</div>
+
 		{#if headerMeta()}
 			<p class="artist-meta">{headerMeta()}</p>
 		{/if}
@@ -842,6 +849,22 @@
 		color: var(--t-3);
 		margin: 0;
 		margin-top: 5px;
+	}
+
+	.artist-claim-row {
+		margin-top: 2px;
+		margin-bottom: 4px;
+	}
+
+	.artist-claim-link {
+		font-size: 0.75rem;
+		color: var(--t-3);
+		text-decoration: none;
+	}
+
+	.artist-claim-link:hover {
+		color: var(--acc);
+		text-decoration: underline;
 	}
 
 	/* ─── Source switcher (replaces static streaming badges) ── */
