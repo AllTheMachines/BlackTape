@@ -4,6 +4,27 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-02-27 — UI Polish: Everything Square
+
+Steve doesn't like round buttons. So everything is now square.
+
+**The sweep:**
+
+- `--r: 0px` in theme.css (the global radius token — was 2px)
+- `--card-radius: 0px` and `--input-radius: 0px` — CSS variables that were at 6px
+- Scrollbar thumb: 0
+- All `999px` / `9999px` pill buttons across ExternalLink, SceneCard, TasteEditor, Explore, Scenes, New Rising, and more
+- Every hardcoded `2px / 3px / 4px / 6px / 8px / 11px / 12px` on cards, dialogs, chat bubbles, tooltips, settings panels, graph nodes, progress bars — all zeroed
+- **56 files changed**, 1199 insertions/1190 deletions (all cosmetic)
+- Avatar circles (`50%`) intentionally preserved — round avatars are fine
+- Embed routes (`/embed/*`) untouched — external iframe context
+
+Also: Style Map nodes changed from SVG circles to auto-width rectangles. The node width is estimated from label length (`6.5px/char + 20px padding`), height fixed at 22px. Label always visible (no more hover-to-see). Collision force updated to push rectangles apart.
+
+**Tests:** 193 passing, 0 failing. Nothing broke.
+
+---
+
 ## Entry 2026-02-27 — Phase 33-02: Artist Claim Form + Artist Page Claim Link
 
 Two tasks, two commits. Artists can now discover they can claim their page directly from the page itself.
@@ -9137,3 +9158,9 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit 24d3329** (2026-02-27 12:46) — auto-save: 2 files @ 12:46
 > Files changed: 2
+
+> **Commit 8eec898** (2026-02-27 12:46) — wip: auto-save
+> Files changed: 1
+
+> **Commit 5fc5615** (2026-02-27 12:50) — style: zero all border-radius across the codebase
+> Files changed: 56
