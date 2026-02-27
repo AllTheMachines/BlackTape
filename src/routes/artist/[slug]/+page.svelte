@@ -329,6 +329,20 @@
 			<p class="artist-meta">{headerMeta()}</p>
 		{/if}
 
+		{#if data.links.bandcamp.length > 0 || data.links.spotify.length > 0 || data.links.soundcloud.length > 0 || data.links.youtube.length > 0}
+			{@const streamingBadges = [
+				{ key: 'bandcamp', label: 'Bandcamp', has: data.links.bandcamp.length > 0 },
+				{ key: 'spotify', label: 'Spotify', has: data.links.spotify.length > 0 },
+				{ key: 'soundcloud', label: 'SoundCloud', has: data.links.soundcloud.length > 0 },
+				{ key: 'youtube', label: 'YouTube', has: data.links.youtube.length > 0 }
+			].filter(b => b.has)}
+			<div class="streaming-badges">
+				{#each streamingBadges as badge (badge.key)}
+					<span class="streaming-badge">{badge.label}</span>
+				{/each}
+			</div>
+		{/if}
+
 		{#if tags.length > 0}
 			<div class="tags">
 				{#each tags as tag}
@@ -709,6 +723,29 @@
 		color: var(--t-3);
 		margin: 0;
 		margin-top: 5px;
+	}
+
+	/* ─── Streaming availability badges ─────────────────────── */
+	.streaming-badges {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px;
+		margin-top: 6px;
+		margin-bottom: 2px;
+	}
+
+	.streaming-badge {
+		display: inline-block;
+		padding: 2px 8px;
+		font-size: 10px;
+		font-weight: 500;
+		letter-spacing: 0.03em;
+		color: var(--t-2);
+		background: var(--bg-3);
+		border: 1px solid var(--b-1);
+		border-radius: 10px;
+		cursor: default;
+		user-select: none;
 	}
 
 	.tags {
