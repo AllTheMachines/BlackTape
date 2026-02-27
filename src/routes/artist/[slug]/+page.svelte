@@ -1353,7 +1353,7 @@
 		color: var(--t-3);
 		text-decoration: none;
 		border: 1px solid var(--b-1);
-		border-radius: 999px;
+		border-radius: 0;
 		padding: 1px 8px;
 		font-size: 0.78rem;
 		transition: color 0.15s, border-color 0.15s;
@@ -1584,7 +1584,7 @@
 		background: #1DB954;
 		color: #000;
 		border: none;
-		border-radius: var(--r, 6px);
+		border-radius: 0;
 		padding: 0.5rem 1rem;
 		font-weight: 600;
 		cursor: pointer;

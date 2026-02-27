@@ -373,7 +373,7 @@
 	.iframe-wrap {
 		width: 100%;
 		border: 1px solid var(--border-subtle);
-		border-radius: var(--card-radius);
+		border-radius: 0;
 		overflow: hidden;
 	}
 
@@ -413,7 +413,7 @@
 		padding: var(--space-md) var(--space-lg);
 		background: var(--bg-elevated);
 		border: 1px solid var(--border-default);
-		border-radius: var(--card-radius);
+		border-radius: 0;
 		color: var(--text-primary);
 		font-size: 0.95rem;
 		cursor: pointer;

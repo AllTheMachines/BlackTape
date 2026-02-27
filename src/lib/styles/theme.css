@@ -38,7 +38,7 @@
 	--player: 66px;
 
 	/* Square radius */
-	--r: 2px;
+	--r: 0px;
 
 	font-family: 'Inter', system-ui, -apple-system, sans-serif;
 	font-size: 13px;
