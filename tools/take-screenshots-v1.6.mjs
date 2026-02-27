@@ -112,55 +112,73 @@ async function tryClick(page, selector, timeoutMs = 3000) {
 async function waitForCardImages(page, timeoutMs = 15000, minImages = 4) {
   const start = Date.now();
   while (Date.now() - start < timeoutMs) {
-    const count = await page.evaluate(() => {
+    try {
+      const count = await page.evaluate(() => {
+        let loaded = 0;
+        for (const img of document.querySelectorAll('.a-art img[src]')) {
+          if (img.complete && img.naturalHeight > 0) loaded++;
+        }
+        return loaded;
+      });
+      if (count >= minImages) {
+        console.log(`  ↳ ${count} card image(s) loaded`);
+        return count;
+      }
+    } catch {
+      // Context may be mid-navigation — wait and retry
+    }
+    await page.waitForTimeout(600);
+  }
+  try {
+    const final = await page.evaluate(() => {
       let loaded = 0;
       for (const img of document.querySelectorAll('.a-art img[src]')) {
         if (img.complete && img.naturalHeight > 0) loaded++;
       }
       return loaded;
     });
-    if (count >= minImages) {
-      console.log(`  ↳ ${count} card image(s) loaded`);
-      return count;
-    }
-    await page.waitForTimeout(600);
+    console.log(`  ↳ ${final} card image(s) loaded (timeout)`);
+    return final;
+  } catch {
+    console.log(`  ↳ 0 card image(s) loaded (context unavailable)`);
+    return 0;
   }
-  const final = await page.evaluate(() => {
-    let loaded = 0;
-    for (const img of document.querySelectorAll('.a-art img[src]')) {
-      if (img.complete && img.naturalHeight > 0) loaded++;
-    }
-    return loaded;
-  });
-  console.log(`  ↳ ${final} card image(s) loaded (timeout)`);
-  return final;
 }
 
 async function waitForDiscographyCovers(page, timeoutMs = 18000, minCovers = 4) {
   const start = Date.now();
   while (Date.now() - start < timeoutMs) {
-    const count = await page.evaluate(() => {
+    try {
+      const count = await page.evaluate(() => {
+        let loaded = 0;
+        for (const img of document.querySelectorAll('.cover-art img[src]')) {
+          if (img.complete && img.naturalHeight > 0) loaded++;
+        }
+        return loaded;
+      });
+      if (count >= minCovers) {
+        console.log(`  ↳ ${count} cover(s) loaded`);
+        return count;
+      }
+    } catch {
+      // Context may be mid-navigation — wait and retry
+    }
+    await page.waitForTimeout(800);
+  }
+  try {
+    const final = await page.evaluate(() => {
       let loaded = 0;
       for (const img of document.querySelectorAll('.cover-art img[src]')) {
         if (img.complete && img.naturalHeight > 0) loaded++;
       }
       return loaded;
     });
-    if (count >= minCovers) {
-      console.log(`  ↳ ${count} cover(s) loaded`);
-      return count;
-    }
-    await page.waitForTimeout(800);
+    console.log(`  ↳ ${final} cover(s) loaded (timeout)`);
+    return final;
+  } catch {
+    console.log(`  ↳ 0 cover(s) loaded (context unavailable)`);
+    return 0;
   }
-  const final = await page.evaluate(() => {
-    let loaded = 0;
-    for (const img of document.querySelectorAll('.cover-art img[src]')) {
-      if (img.complete && img.naturalHeight > 0) loaded++;
-    }
-    return loaded;
-  });
-  console.log(`  ↳ ${final} cover(s) loaded (timeout)`);
-  return final;
 }
 
 async function navigateToArtist(page, artistName) {
@@ -203,7 +221,7 @@ async function checkArtistPage(page, screenName) {
   const info = await page.evaluate(() => {
     const h1 = document.querySelector('h1');
     const badge = document.querySelector('.uniqueness-badge, [class*="badge"][class*="unique"], [class*="badge"][class*="niche"], [class*="badge"][class*="eclectic"]');
-    const tabs = document.querySelector('[data-testid="tab-bar"], .tab-bar');
+    const tabs = document.querySelector('[data-testid="artist-tabs"], .artist-tab-bar');
     const covers = { loaded: 0, total: 0 };
     for (const img of document.querySelectorAll('.cover-art img')) {
       covers.total++;
@@ -472,11 +490,11 @@ async function run() {
     if (!rHref) { console.log(`  ✗ No release links for ${artist}`); continue; }
     await goto(page, rHref, 5000);
     const hasPlayBtn = await page.evaluate(() =>
-      !!document.querySelector('[data-testid="play-album-btn"], .play-album-btn')
+      !!document.querySelector('[data-testid="play-album-btn"], .btn-play-album')
     );
-    if (!hasPlayBtn) bug('release-page', `Play Album button not found for ${artist}`);
+    // Play Album only shows when release has a Bandcamp streaming embed — not a bug if absent
     const trackCount = await page.evaluate(() =>
-      document.querySelectorAll('.track-row, [data-testid="track-row"]').length
+      document.querySelectorAll('.track, [data-testid="track-row"]').length
     );
     if (trackCount === 0) bug('release-page', 'No track rows on release page');
     console.log(`  ↳ ${artist} release: playBtn=${hasPlayBtn}, tracks=${trackCount}`);

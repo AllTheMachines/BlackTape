@@ -4,11 +4,31 @@ A documentary record of building this project from idea to reality.
 
 ---
 
-<!-- status -->
-Screenshot QA session in progress. Root cause of CDP launch found: binary needs Vite dev server on 5173. Script being rewritten to use Tauri binary + CDP (v3 pattern). Resuming after context reset.
-<!-- /status -->
-
 ---
+
+## Entry 2026-02-27 — Screenshot QA Pass (v1.6) — All 21 Screens
+
+Full screenshot + QA pass of the v1.6 app. All 21 screens captured at 1200×800 into `static/screenshots/`. Root cause of previous failures: the Tauri debug binary requires the Vite dev server running on port 5173 — without it, the WebView loads `chrome-error://chromewebdata/`. Script was rewritten to use the Tauri binary + CDP approach (same as `take-press-screenshots-v3.mjs`), navigating via `window.location.href` instead of `page.goto()`.
+
+**Script fix discovered:** KB route was `/kb/shoegaze` (404) — actual route is `/kb/genre/shoegaze`. The `genre/` segment is required. Fixed in the script.
+
+**QA findings — 11 flags raised, all investigated:**
+
+| Screen | Flag | Verdict |
+|--------|------|---------|
+| search-jazz, search-psychedelic-rock, discover-noise-rock-japan | Artist name overflow (Art Blakey & The Jazz Messengers, King Gizzard, Acid Mothers Temple) | CSS ellipsis working — `scrollWidth > clientWidth` is expected, names visually truncated ✓ |
+| search-autocomplete | No dropdown visible after typing "post-" | Autocomplete is artist-name-only from DB; "post-" (with hyphen) matches no artist names. Working correctly ✓ |
+| artist-slowdive/cure/nick-cave | Tab bar not found | Wrong QA selector — actual is `[data-testid="artist-tabs"]` / `.artist-tab-bar`. Fixed in script ✓ |
+| artist-overview (Burial) | No tags found | Tags live in the artist header, not tab content — correct. Burial in DB is a German band (different from UK electronic artist — data quality) |
+| release-page | No Play Album button | Play Album requires `streamingLinks.bandcamp` (streaming embed URL). The Slowdive release has Bandcamp as a BUY ON link only. By design ✓ |
+| release-page | No track rows | QA selector was `.track-row` — actual class is `.track`. Fixed in script ✓ |
+| style-map-overview | No zoom controls | Real feature gap — Style Map has no zoom UI (just d3-force pan). Noted for future. |
+
+**App looks solid.** Artist pages, discography grids, release pages, discover, time machine, KB scene pages, queue panel — all working with real data. The queue panel screenshot even captured a live playback state (Futurism by Acemo playing).
+
+**Next on QA backlog:**
+- Style Map zoom controls (missing feature)
+- Search autocomplete should probably also match tags (not just artist names) — type "post-punk" and see suggestions
 
 ## Entry 2026-02-27 — Animated Cassette Wheels in Player Bar
 
@@ -9410,3 +9430,6 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit 77638ef** (2026-02-27 16:21) — wip: auto-save
 > Files changed: 1
+
+> **Commit 6ca2395** (2026-02-27 16:46) — auto-save: 3 files @ 16:46
+> Files changed: 2
