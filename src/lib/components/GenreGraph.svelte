@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
+	import { startProgress, completeProgress } from '$lib/nav-progress.svelte';
+	import { isTauri } from '$lib/platform';
 	import {
 		forceSimulation,
 		forceLink,
@@ -77,7 +79,7 @@
 		};
 	}
 
-	function runSimulation() {
+	async function runSimulation() {
 		if (!nodes || nodes.length === 0) return;
 
 		const simNodes: SimNode[] = nodes.map((n) => ({
@@ -108,7 +110,20 @@
 				forceCollide().radius((d: any) => labelWidth(d.name) / 2 + 6)
 			);
 
-		simulation.tick(300);
+		// Chunked async ticking — keeps UI thread free between chunks
+		const CHUNK = 30;
+		const TOTAL = 300;
+		let done = 0;
+		await new Promise<void>(resolve => {
+			function step() {
+				simulation.tick(Math.min(CHUNK, TOTAL - done));
+				done += CHUNK;
+				if (done < TOTAL) requestAnimationFrame(step);
+				else resolve();
+			}
+			requestAnimationFrame(step);
+		});
+
 		const settled = simulation.nodes() as LayoutNode[];
 		simulation.stop();
 
@@ -132,10 +147,12 @@
 		layoutNodes = settled;
 	}
 
-	onMount(() => {
+	onMount(async () => {
 		width = container.clientWidth || 800;
 		height = Math.max(500, window.innerHeight - 200);
-		runSimulation();
+		if (isTauri()) startProgress();
+		await runSimulation();
+		if (isTauri()) completeProgress();
 	});
 
 	$effect(() => {

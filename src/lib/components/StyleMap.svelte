@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
+	import { startProgress, completeProgress } from '$lib/nav-progress.svelte';
+	import { isTauri } from '$lib/platform';
 	import {
 		forceSimulation,
 		forceLink,
@@ -46,13 +48,19 @@
 		return Math.max(40, tag.length * CHAR_WIDTH + PAD_X * 2);
 	}
 
-	onMount(() => {
-		// Respond to container size
+	onMount(async () => {
 		width = container.clientWidth || 800;
 		height = Math.max(500, window.innerHeight - 200);
+		if (isTauri()) startProgress();
+		await runSimulation();
+		if (isTauri()) completeProgress();
+	});
 
-		const simNodes: SimNode[] = rawNodes.map(n => ({ id: n.tag, artistCount: n.artist_count }));
+	async function runSimulation() {
+		if (rawNodes.length === 0) return;
+
 		const maxShared = Math.max(...rawEdges.map(e => e.shared_artists), 1);
+		const simNodes: SimNode[] = rawNodes.map(n => ({ id: n.tag, artistCount: n.artist_count }));
 		const simLinks = rawEdges.map(e => ({
 			source: e.tag_a,
 			target: e.tag_b,
@@ -67,12 +75,23 @@
 			.force('center', forceCenter(width / 2, height / 2))
 			.force('collide', forceCollide().radius((d: any) => labelWidth(d.id) / 2 + 6));
 
-		// Run to static completion — no continuous rerenders
-		simulation.tick(500);
+		// Chunked async ticking — keeps UI thread free between chunks
+		const CHUNK = 30;
+		const TOTAL = 300;
+		let done = 0;
+		await new Promise<void>(resolve => {
+			function step() {
+				simulation.tick(Math.min(CHUNK, TOTAL - done));
+				done += CHUNK;
+				if (done < TOTAL) requestAnimationFrame(step);
+				else resolve();
+			}
+			requestAnimationFrame(step);
+		});
+
 		const settled = simulation.nodes() as LayoutNode[];
 		simulation.stop();
 
-		// Compute edge positions from settled node positions
 		const nodeMap = new Map(settled.map(n => [n.id, n]));
 		layoutEdges = rawEdges
 			.map(e => {
@@ -90,9 +109,8 @@
 			.filter(Boolean) as typeof layoutEdges;
 
 		layoutNodes = settled;
-
 		if (initialTag) hoveredTag = initialTag;
-	});
+	}
 
 	function handleNodeClick(tag: string) {
 		goto(`/discover?tags=${encodeURIComponent(tag)}`);
