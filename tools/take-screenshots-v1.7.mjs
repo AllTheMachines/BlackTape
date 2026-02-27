@@ -95,8 +95,11 @@ function pollCdp(timeoutMs = 40000) {
 
 async function goto(page, route, waitMs = 4000) {
   console.log(`  → ${route}`);
-  await page.evaluate(r => { window.location.href = r; }, route);
-  await page.waitForLoadState('domcontentloaded').catch(() => {});
+  // Use evaluate to trigger navigation — fire-and-forget (context is destroyed on nav)
+  await page.evaluate(r => { window.location.href = r; }, route).catch(() => {});
+  // waitForLoadState with an explicit timeout so it never hangs forever
+  await page.waitForLoadState('domcontentloaded', { timeout: 8000 }).catch(() => {});
+  // Pure Node sleep — doesn't require page to be alive
   await sleep(waitMs);
 }
 
