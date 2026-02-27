@@ -4,6 +4,12 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+<!-- status -->
+Screenshot QA session in progress. Root cause of CDP launch found: binary needs Vite dev server on 5173. Script being rewritten to use Tauri binary + CDP (v3 pattern). Resuming after context reset.
+<!-- /status -->
+
+---
+
 ## Entry 2026-02-27 — Animated Cassette Wheels in Player Bar
 
 Very on-brand for BlackTape: two spinning cassette reels now live in the player bar, left of the track title. They sit static when paused, and spin (one clockwise, one counterclockwise — mimicking real tape direction) when playing.
@@ -9395,3 +9401,6 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit e005e7b** (2026-02-27 15:46) — auto-save: 4 files @ 15:46
 > Files changed: 22
+
+> **Commit 6a96781** (2026-02-27 16:16) — auto-save: 24 files @ 16:16
+> Files changed: 23
