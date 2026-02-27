@@ -7,6 +7,7 @@
 	import { isTauri } from '$lib/platform';
 	import Player from '$lib/components/Player.svelte';
 	import { playerState } from '$lib/player/state.svelte';
+	import { streamingState } from '$lib/player/streaming.svelte';
 	import { aiState, loadAiSettings, initializeAi } from '$lib/ai/state.svelte';
 	import { loadTasteProfile, tasteProfile } from '$lib/taste/profile.svelte';
 	import { loadPlaybackSettings } from '$lib/player/playback.svelte';
@@ -17,7 +18,7 @@
 	import RightSidebar from '$lib/components/RightSidebar.svelte';
 	import ControlBar from '$lib/components/ControlBar.svelte';
 	import { initTheme, updateThemeFromTaste, themeState } from '$lib/theme/engine.svelte';
-	import { loadThemePreferences, loadLayoutPreference, saveLayoutPreference, loadStreamingPreference, loadUserTemplates } from '$lib/theme/preferences.svelte';
+	import { loadThemePreferences, loadLayoutPreference, saveLayoutPreference, loadStreamingPreference, loadUserTemplates, loadServiceOrder } from '$lib/theme/preferences.svelte';
 	import type { LayoutTemplate } from '$lib/theme/templates';
 	import { DEFAULT_TEMPLATE, LAYOUT_TEMPLATES, TEMPLATE_LIST, expandUserTemplate } from '$lib/theme/templates';
 	import { layoutState } from '$lib/theme/layout-state.svelte';
@@ -73,6 +74,9 @@
 
 			// Load streaming preference — updates reactive streamingPref state
 			await loadStreamingPreference();
+			// Load service order — updates streamingState.serviceOrder for Settings UI
+			const serviceOrder = await loadServiceOrder();
+			streamingState.serviceOrder = serviceOrder;
 		}
 	});
 
