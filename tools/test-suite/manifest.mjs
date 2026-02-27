@@ -528,8 +528,8 @@ export const PHASE_10 = [
   {
     id: 'P10-05', phase: 10, area: 'Scenes',
     desc: 'Scenes nav link in layout',
-    method: 'code',
-    fn: fileContains('src/routes/+layout.svelte', '/scenes'),
+    method: 'skip',
+    reason: 'Superseded by P31-03 — Scenes nav removed in Phase 31 (community UI hidden for v1)',
   },
   {
     id: 'P10-06', phase: 10, area: 'Scenes',
@@ -571,8 +571,8 @@ export const PHASE_11 = [
   {
     id: 'P11-05', phase: 11, area: 'Chat',
     desc: 'Chat nav button in layout',
-    method: 'code',
-    fn: fileContains('src/routes/+layout.svelte', 'Chat'),
+    method: 'skip',
+    reason: 'Superseded by P31-04 — Chat nav removed in Phase 31 (community UI hidden for v1)',
   },
   {
     id: 'P11-06', phase: 11, area: 'Chat',
@@ -2755,6 +2755,85 @@ export const PHASE_28 = [
 ];
 
 // ---------------------------------------------------------------------------
+// PHASE 31 — v1 Prep (Community feature UI removal)
+// ---------------------------------------------------------------------------
+
+export const PHASE_31 = [
+  {
+    id: 'P31-01', phase: 31, area: 'Nav',
+    desc: 'layout.svelte does NOT import initNostr',
+    method: 'code',
+    fn: () => !fileContains('src/routes/+layout.svelte', 'initNostr')(),
+  },
+  {
+    id: 'P31-02', phase: 31, area: 'Nav',
+    desc: 'layout.svelte does NOT import ChatOverlay',
+    method: 'code',
+    fn: () => !fileContains('src/routes/+layout.svelte', 'ChatOverlay')(),
+  },
+  {
+    id: 'P31-03', phase: 31, area: 'Nav',
+    desc: 'layout.svelte does NOT contain Scenes nav link',
+    method: 'code',
+    fn: () => !fileContains('src/routes/+layout.svelte', 'href="/scenes"')(),
+  },
+  {
+    id: 'P31-04', phase: 31, area: 'Nav',
+    desc: 'layout.svelte does NOT contain nav-chat-btn (chat button removed)',
+    method: 'code',
+    fn: () => !fileContains('src/routes/+layout.svelte', 'nav-chat-btn')(),
+  },
+  {
+    id: 'P31-05', phase: 31, area: 'Nav',
+    desc: 'layout.svelte does NOT render <ChatOverlay />',
+    method: 'code',
+    fn: () => !fileContains('src/routes/+layout.svelte', '<ChatOverlay')(),
+  },
+  {
+    id: 'P31-06', phase: 31, area: 'Artist Page',
+    desc: 'artist page does NOT contain openRoomsForArtist function',
+    method: 'code',
+    fn: () => !fileContains('src/routes/artist/[slug]/+page.svelte', 'openRoomsForArtist')(),
+  },
+  {
+    id: 'P31-07', phase: 31, area: 'Artist Page',
+    desc: 'artist page does NOT contain explore-scene-panel',
+    method: 'code',
+    fn: () => !fileContains('src/routes/artist/[slug]/+page.svelte', 'explore-scene-panel')(),
+  },
+  {
+    id: 'P31-08', phase: 31, area: 'Artist Page',
+    desc: 'artist page does NOT contain scene-rooms-hint',
+    method: 'code',
+    fn: () => !fileContains('src/routes/artist/[slug]/+page.svelte', 'scene-rooms-hint')(),
+  },
+  {
+    id: 'P31-09', phase: 31, area: 'Settings',
+    desc: 'settings page does NOT import FediverseSettings',
+    method: 'code',
+    fn: () => !fileContains('src/routes/settings/+page.svelte', 'FediverseSettings')(),
+  },
+  {
+    id: 'P31-10', phase: 31, area: 'Settings',
+    desc: 'settings page Spotify text uses 127.0.0.1 (not localhost)',
+    method: 'code',
+    fn: () => fileContains('src/routes/settings/+page.svelte', 'http://127.0.0.1')(),
+  },
+  {
+    id: 'P31-11', phase: 31, area: 'Settings',
+    desc: 'settings page does NOT contain old "http://localhost" in Spotify instructions',
+    method: 'code',
+    fn: () => !fileContains('src/routes/settings/+page.svelte', '>http://localhost<')(),
+  },
+  {
+    id: 'P31-12', phase: 31, area: 'Crate',
+    desc: 'crate page does NOT contain "Open scene room" button',
+    method: 'code',
+    fn: () => !fileContains('src/routes/crate/+page.svelte', 'Open scene room')(),
+  },
+];
+
+// ---------------------------------------------------------------------------
 // Build check — always runs last
 // ---------------------------------------------------------------------------
 
@@ -2798,5 +2877,6 @@ export const ALL_TESTS = [
   ...PHASE_26,
   ...PHASE_27,
   ...PHASE_28,
+  ...PHASE_31,
   ...BUILD,
 ];

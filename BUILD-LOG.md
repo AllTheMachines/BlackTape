@@ -4,6 +4,22 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-02-27 — Phase 31-01: v1 Prep (Community UI Removal)
+
+Pure subtraction. Scenes, Rooms, Chat, and Fediverse are gone from all navigation surfaces. The code lives on — `$lib/comms/` is untouched — but nothing calls it and nothing renders it. v1 ships clean.
+
+**What was removed from layout.svelte:** `initNostr`, `subscribeToIncomingDMs`, `ChatOverlay` imports. Nostr init from `onMount`. Scenes nav link (both Tauri + web navs). Chat button (both navs). `<ChatOverlay />` render. Dead CSS (`.nav-chat-btn`, `.nav-badge`).
+
+**What was removed from artist page:** `openRoomsForArtist()` function. "Explore {tag} scene →" link panel. "Scene rooms for {tag}" button section. Dead CSS.
+
+**What was removed from settings page:** `FediverseSettings` import + render. Also fixed a long-standing bug: the Spotify setup instructions said `http://localhost` for the redirect URI — changed to `http://127.0.0.1` (matches actual OAuth config).
+
+**What was removed from crate page:** `openChat/chatState` import. "Open scene room →" button.
+
+Test manifest: 12 new P31 assertions (all passing). Marked P10-05 (Scenes nav) and P11-05 (Chat nav) as skipped — superseded. Full suite: 193 passing, 0 failing.
+
+---
+
 ## Entry 2026-02-27 — Phase 30-03: Play on Spotify Button (Artist Page)
 
 One task, one commit, zero deviations. The artist page now has a Spotify play button that triggers top-track playback in the user's running Spotify Desktop app.
@@ -8910,4 +8926,7 @@ This completes v1.0 — The Playback Milestone. All phases done.
 > Files changed: 2
 
 > **Commit 2d632a7** (2026-02-27 09:58) — wip: auto-save
+> Files changed: 1
+
+> **Commit d2918ef** (2026-02-27 10:00) — wip: auto-save
 > Files changed: 1

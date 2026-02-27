@@ -2,7 +2,6 @@
 	import AiSettings from '$lib/components/AiSettings.svelte';
 	import TasteEditor from '$lib/components/TasteEditor.svelte';
 	import ListeningHistory from '$lib/components/ListeningHistory.svelte';
-	import FediverseSettings from '$lib/components/FediverseSettings.svelte';
 	import SpotifySettings from '$lib/components/SpotifySettings.svelte';
 	import { aiState } from '$lib/ai/state.svelte';
 	import { isTauri } from '$lib/platform';
@@ -506,7 +505,7 @@
 				<div class="import-card-header">
 					<span class="import-platform">Spotify</span>
 				</div>
-				<p class="import-card-desc">Requires a Spotify Client ID from <a href="https://developer.spotify.com" target="_blank" rel="noopener noreferrer">developer.spotify.com</a>. You must add <code>http://localhost</code> as a redirect URI in your app settings.</p>
+				<p class="import-card-desc">Requires a Spotify Client ID from <a href="https://developer.spotify.com" target="_blank" rel="noopener noreferrer">developer.spotify.com</a>. You must add <code>http://127.0.0.1</code> as a redirect URI in your app settings.</p>
 				<div class="import-card-fields">
 					<input
 						type="text"
@@ -647,8 +646,6 @@
 			<ListeningHistory />
 		</div>
 
-		<div class="section-separator"></div>
-		<FediverseSettings />
 	</div>
 {/if}
 
