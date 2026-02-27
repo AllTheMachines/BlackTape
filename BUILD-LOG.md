@@ -9212,3 +9212,6 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit 7e4d386** (2026-02-27 13:25) — style: time machine rectangles, back button bigger, player buttons brighter
 > Files changed: 3
+
+> **Commit 8dfbbbe** (2026-02-27 13:25) — wip: auto-save
+> Files changed: 2
