@@ -3,6 +3,7 @@
 	import TasteEditor from '$lib/components/TasteEditor.svelte';
 	import ListeningHistory from '$lib/components/ListeningHistory.svelte';
 	import FediverseSettings from '$lib/components/FediverseSettings.svelte';
+	import SpotifySettings from '$lib/components/SpotifySettings.svelte';
 	import { aiState } from '$lib/ai/state.svelte';
 	import { isTauri } from '$lib/platform';
 	import { onMount } from 'svelte';
@@ -440,6 +441,17 @@
 				{/each}
 			</div>
 		</div>
+
+		<!-- Spotify -->
+		{#if tauriMode}
+			<div class="settings-section">
+				<h2>Spotify</h2>
+				<p class="section-desc">
+					Connect your Spotify account to play artist top tracks in Spotify Desktop.
+				</p>
+				<SpotifySettings />
+			</div>
+		{/if}
 
 		<!-- Identity -->
 		<div class="settings-section">
