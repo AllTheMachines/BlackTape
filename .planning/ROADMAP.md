@@ -147,6 +147,6 @@ Plans:
 | 27. Search + Knowledge Base | v1.4 | 5/5 | Complete | 2026-02-25 |
 | 28. UX Cleanup + Scope Reduction | v1.5 | 7/7 | Complete | 2026-02-26 |
 | 29. Streaming Foundation | v1.6 | 4/4 | Complete | 2026-02-27 |
-| 30. Spotify Integration | 3/3 | Complete   | 2026-02-27 | - |
+| 30. Spotify Integration | 3/3 | Complete    | 2026-02-27 | - |
 | 31. Embedded Players | v1.6 | 0/? | Not started | - |
 | 32. Album Playback + Polish | v1.6 | 0/? | Not started | - |
