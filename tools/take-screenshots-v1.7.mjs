@@ -739,6 +739,7 @@ async function run() {
   // Fix: v1.6 had same track repeated. Now adds tracks from 3 different artists.
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 11. Queue panel ---');
+  if (alreadyDone('queue-panel.png')) { console.log('  ⊘ skip'); } else {
   await reconnectCDP(); // Fresh start — page.evaluate() can hang after many navigations
   // Clear existing queue from localStorage
   await page.evaluate(() => {
