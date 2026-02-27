@@ -800,12 +800,14 @@ async function run() {
   else if (qItems === 0) bug('queue-panel', `${totalQueued} tracks queued but queue panel shows 0 items`);
   else console.log(`  ↳ Queue shows ${qItems} items`);
   await save(page, 'queue-panel.png');
+  } // end screen 11
 
   // ═══════════════════════════════════════════════════════════════════════════
   // 12. Library — two-pane layout
   // Requires local music folder — cannot automate native file picker via CDP.
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 12. Library ---');
+  if (alreadyDone('library-two-pane.png')) { console.log('  ⊘ skip'); } else {
   await ensureAlive();
   await goto(page, '/library', 4000);
   await page.evaluate(() => window.scrollTo(0, 0));
@@ -820,11 +822,13 @@ async function run() {
     console.log(`  ↳ ${libInfo.itemCount} items, albumPane=${libInfo.hasAlbumPane}, trackPane=${libInfo.hasTrackPane}`);
   }
   await save(page, 'library-two-pane.png');
+  } // end screen 12
 
   // ═══════════════════════════════════════════════════════════════════════════
   // 13. Discover — ambient + Iceland
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 13. Discover: ambient + Iceland ---');
+  if (alreadyDone('discover-ambient-iceland.png')) { console.log('  ⊘ skip'); } else {
   await ensureAlive();
   await goto(page, '/discover?tags=ambient', 4000);
   const cInput = page.locator('#country-input, input[placeholder*="Country" i]').first();
@@ -840,11 +844,13 @@ async function run() {
   await waitForCardImages(page, 12000, 3);
   await checkGridLayout(page, 'discover-ambient-iceland');
   await save(page, 'discover-ambient-iceland.png');
+  } // end screen 13
 
   // ═══════════════════════════════════════════════════════════════════════════
   // 14. Discover — noise rock + Japan
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 14. Discover: noise rock + Japan ---');
+  if (alreadyDone('discover-noise-rock-japan.png')) { console.log('  ⊘ skip'); } else {
   await ensureAlive();
   await goto(page, '/discover?tags=noise+rock', 4000);
   const cInput2 = page.locator('#country-input, input[placeholder*="Country" i]').first();
@@ -860,11 +866,13 @@ async function run() {
   await waitForCardImages(page, 12000, 3);
   await checkGridLayout(page, 'discover-noise-rock-japan');
   await save(page, 'discover-noise-rock-japan.png');
+  } // end screen 14
 
   // ═══════════════════════════════════════════════════════════════════════════
   // 15. Discover — metal + Finland
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 15. Discover: metal + Finland ---');
+  if (alreadyDone('discover-metal-finland.png')) { console.log('  ⊘ skip'); } else {
   await ensureAlive();
   await goto(page, '/discover?tags=metal', 4000);
   const cInput3 = page.locator('#country-input, input[placeholder*="Country" i]').first();
@@ -880,12 +888,14 @@ async function run() {
   await waitForCardImages(page, 12000, 3);
   await checkGridLayout(page, 'discover-metal-finland');
   await save(page, 'discover-metal-finland.png');
+  } // end screen 15
 
   // ═══════════════════════════════════════════════════════════════════════════
   // 16. Time Machine — 1983 with post-punk filter
   // Fix: v1.6 unfiltered showed truck-driving country. Apply .tag-input filter.
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 16. Time Machine: 1983 ---');
+  if (alreadyDone('time-machine-1983.png')) { console.log('  ⊘ skip'); } else {
   await ensureAlive();
   await goto(page, '/time-machine?year=1983', 6000);
   const tmFilter16 = page.locator('.tag-input, input[placeholder*="Filter by genre" i]').first();
@@ -911,11 +921,13 @@ async function run() {
   if (tm83cards === 0) bug('time-machine-1983', 'No artist cards for 1983');
   else console.log(`  ↳ ${tm83cards} artists, ${tm83imgs} images`);
   await save(page, 'time-machine-1983.png');
+  } // end screen 16
 
   // ═══════════════════════════════════════════════════════════════════════════
   // 17. Time Machine — 1977 with punk filter
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 17. Time Machine: 1977 ---');
+  if (alreadyDone('time-machine-1977.png')) { console.log('  ⊘ skip'); } else {
   await ensureAlive();
   await goto(page, '/time-machine?year=1977', 6000);
   const tmFilter17 = page.locator('.tag-input, input[placeholder*="Filter by genre" i]').first();
@@ -943,11 +955,13 @@ async function run() {
   if (tm77cards === 0) bug('time-machine-1977', 'No artists for 1977');
   else console.log(`  ↳ ${tm77cards} artists, ${tm77imgs} images`);
   await save(page, 'time-machine-1977.png');
+  } // end screen 17
 
   // ═══════════════════════════════════════════════════════════════════════════
   // 18. Style Map — zoomed out overview
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 18. Style Map (overview) ---');
+  if (alreadyDone('style-map-overview.png')) { console.log('  ⊘ skip'); } else {
   await ensureAlive();
   await goto(page, '/style-map', 8000);
   await page.waitForSelector('[data-ready]', { timeout: 15000 }).catch(() => {});
@@ -967,12 +981,14 @@ async function run() {
   if (smInfo.clipped > 0) bug('style-map-overview', `${smInfo.clipped} text labels clipped at canvas edges`);
   console.log(`  ↳ ${smInfo.textCount} text nodes, ${smInfo.clipped} clipped`);
   await save(page, 'style-map-overview.png');
+  } // end screen 18
 
   // ═══════════════════════════════════════════════════════════════════════════
   // 19. Style Map — actually zoomed in via mouse wheel
   // Fix: v1.6 was pixel-identical to overview (zoom never applied).
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 19. Style Map (zoomed in) ---');
+  if (alreadyDone('style-map-zoomed.png')) { console.log('  ⊘ skip'); } else {
   await ensureAlive();
   await goto(page, '/style-map', 8000);
   await page.waitForSelector('[data-ready]', { timeout: 15000 }).catch(() => {});
@@ -1003,20 +1019,21 @@ async function run() {
     bug('style-map-zoomed', 'Transform unchanged — zoom may not be wired to mouse wheel');
   }
   await save(page, 'style-map-zoomed.png');
+  } // end screen 19
 
   // ═══════════════════════════════════════════════════════════════════════════
   // 20. Knowledge Base — post-punk (skip shoegaze — empty description)
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 20. Knowledge Base: post-punk ---');
-  await ensureAlive();
+  await reconnectCDP(); // fresh start — page.evaluate() can hang after many navigations
   const kbCandidates = ['post-punk', 'krautrock', 'ambient', 'punk', 'shoegaze'];
   let kbDone = false;
   for (const genre of kbCandidates) {
     if (kbDone) break;
-    await goto(page, `/kb/genre/${genre}`, 5000);
-    await tryClick(page, '.popup-close, .map-popup .close, [aria-label="Close"]', 1000);
+    await goto(getPage(), `/kb/genre/${genre}`, 5000);
+    await tryClick(getPage(), '.popup-close, .map-popup .close, [aria-label="Close"]', 1000);
     await new Promise(r => setTimeout(r, 500));
-    const kbChecks = await page.evaluate(() => {
+    const kbChecks = await getPage().evaluate(() => {
       const h1 = document.querySelector('h1')?.textContent?.trim();
       const notFound = !h1 || /not found|404/i.test(document.body.innerText.slice(0, 200));
       const descEl = document.querySelector('.genre-description, .kb-description, [class*="description"], .prose, article p');
