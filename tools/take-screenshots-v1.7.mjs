@@ -1,22 +1,22 @@
 /**
  * BlackTape v1.7 Screenshot + QA Pass
  *
- * Uses Tauri binary + CDP (same approach as take-press-screenshots-v3.mjs).
- * Captures all 21 screens at 1200×800 into static/screenshots/.
- * Also copies final shots to press-screenshots/v5/.
+ * Uses Tauri binary + CDP. All v1.6 issues addressed:
+ *   - Search uses mode=artist (not mode=tag) to show artist grid
+ *   - Autocomplete uses artist name prefix ("Nick", "Slow") that actually matches
+ *   - No Burial in any candidate list (data error — wrong artist)
+ *   - Queue adds tracks from 3 different releases
+ *   - Time Machine applies tag filter before capturing
+ *   - Style Map zoom uses mouse wheel to actually zoom
+ *   - KB uses post-punk (has a description), not shoegaze (empty)
+ *   - Output: static/press-screenshots/v5/
  *
  * Run: node tools/take-screenshots-v1.7.mjs
  *
- * v1.7 fixes vs v1.6:
- *  - Search grids: scroll to show discovery grid, not library track list
- *  - Autocomplete: type in artist mode so dropdown appears; flag bug if not
- *  - Burial removed from all candidate lists (data error — wrong artist)
- *  - Player bar: navigate to /discover after triggering playback (cleaner subject)
- *  - Queue panel: build queue from 3 different artists' releases
- *  - Time Machine: apply tag filter before capturing
- *  - Style Map zoomed: modify SVG viewBox to zoom into a genre cluster
- *  - KB: use post-punk or krautrock (not shoegaze — no description)
- *  - Press screenshots: copy to press-screenshots/v5/ at end
+ * Requirements:
+ *   - Tauri debug binary at src-tauri/target/debug/mercury.exe
+ *   - Real mercury.db in %APPDATA%/com.blacktape.app/mercury.db
+ *   - npm run dev running on port 5173
  */
 
 import { chromium } from 'playwright';
@@ -28,8 +28,7 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
-const OUT = path.join(ROOT, 'static', 'screenshots');
-const PRESS_OUT = path.join(ROOT, 'press-screenshots', 'v5');
+const OUT = path.join(ROOT, 'static', 'press-screenshots', 'v5');
 const BINARY = path.join(ROOT, 'src-tauri', 'target', 'debug', 'mercury.exe');
 const CDP_PORT = 9224;
 const CDP_BASE = `http://127.0.0.1:${CDP_PORT}`;
@@ -95,27 +94,15 @@ function pollCdp(timeoutMs = 40000) {
 
 async function goto(page, route, waitMs = 4000) {
   console.log(`  → ${route}`);
-  // Use evaluate to trigger navigation — fire-and-forget (context is destroyed on nav)
-  await page.evaluate(r => { window.location.href = r; }, route).catch(() => {});
-  // waitForLoadState with an explicit timeout so it never hangs forever
-  await page.waitForLoadState('domcontentloaded', { timeout: 8000 }).catch(() => {});
-  // Pure Node sleep — doesn't require page to be alive
-  await sleep(waitMs);
+  await page.evaluate(r => { window.location.href = r; }, route);
+  await page.waitForLoadState('domcontentloaded').catch(() => {});
+  await page.waitForTimeout(waitMs);
 }
 
 async function save(page, filename) {
   const outPath = path.join(OUT, filename);
-  try {
-    await page.screenshot({ path: outPath, fullPage: false, timeout: 15000 });
-    console.log(`  ✓ SAVED: ${filename}`);
-  } catch (err) {
-    console.error(`  ✗ SCREENSHOT FAILED (${filename}): ${err.message.split('\n')[0]}`);
-    // Write a blank placeholder so the slot isn't empty
-    try {
-      const blank = Buffer.alloc(0);
-      fs.writeFileSync(outPath, blank);
-    } catch {}
-  }
+  await page.screenshot({ path: outPath, fullPage: false });
+  console.log(`  ✓ SAVED: ${filename}`);
 }
 
 async function tryClick(page, selector, timeoutMs = 3000) {
@@ -128,8 +115,6 @@ async function tryClick(page, selector, timeoutMs = 3000) {
   } catch {}
   return false;
 }
-
-const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 async function waitForCardImages(page, timeoutMs = 15000, minImages = 4) {
   const start = Date.now();
@@ -146,10 +131,8 @@ async function waitForCardImages(page, timeoutMs = 15000, minImages = 4) {
         console.log(`  ↳ ${count} card image(s) loaded`);
         return count;
       }
-    } catch {
-      // Context may be mid-navigation — wait and retry
-    }
-    await sleep(600);
+    } catch {}
+    await page.waitForTimeout(600);
   }
   try {
     const final = await page.evaluate(() => {
@@ -183,7 +166,7 @@ async function waitForDiscographyCovers(page, timeoutMs = 18000, minCovers = 4) 
         return count;
       }
     } catch {}
-    await sleep(800);
+    await page.waitForTimeout(800);
   }
   try {
     const final = await page.evaluate(() => {
@@ -208,22 +191,6 @@ async function navigateToArtist(page, artistName) {
   if (!href) { console.log(`  ✗ No results for "${artistName}"`); return null; }
   await goto(page, href, 7000);
   return href;
-}
-
-// Scroll the discovery grid into view and put it near the top of the viewport
-async function scrollToDiscoveryGrid(page) {
-  await page.evaluate(() => {
-    // Try to scroll to discovery section (artists tagged with the query)
-    const grid = document.querySelector('.discovery-section, .results-grid');
-    if (grid) {
-      const rect = grid.getBoundingClientRect();
-      const target = Math.max(0, window.scrollY + rect.top - 80);
-      window.scrollTo(0, target);
-    } else {
-      window.scrollTo(0, 0);
-    }
-  });
-  await sleep(400);
 }
 
 // ---------------------------------------------------------------------------
@@ -317,7 +284,7 @@ async function run() {
     console.log('Killed existing mercury.exe');
     await new Promise(r => setTimeout(r, 1500));
   } catch {
-    // No mercury.exe running — that's fine
+    // No mercury.exe running — fine
   }
 
   // --- Step 3: Launch Tauri binary with CDP ---
@@ -342,116 +309,131 @@ async function run() {
   if (!page) throw new Error('No page found via CDP');
 
   await page.waitForLoadState('domcontentloaded').catch(() => {});
-  await sleep(3000);
+  await page.waitForTimeout(3000);
 
   console.log('Connected. App URL:', page.url());
   console.log(`Output dir: ${OUT}\n`);
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // 1. Search — electronic (ARTISTS tab, discovery grid)
-  // v1.7 fix: scroll to .discovery-section to show artist grid, not library tracks
+  // 1. Search — electronic (ARTISTS grid)
+  // Fix: use mode=artist, not mode=tag. mode=tag showed the Tags tab in v1.6.
   // ═══════════════════════════════════════════════════════════════════════════
-  console.log('--- 1. Search: electronic (artists tab) ---');
-  await goto(page, '/search?q=electronic&mode=tag', 5000);
+  console.log('--- 1. Search: electronic (artists grid) ---');
+  await goto(page, '/search?q=electronic&mode=artist', 5000);
   const e1imgs = await waitForCardImages(page, 15000, 6);
-  console.log(`  ↳ ${e1imgs} images loaded`);
-  await scrollToDiscoveryGrid(page);
-  const e1cardCount = await page.evaluate(() => document.querySelectorAll('.artist-card').length);
-  if (e1cardCount === 0) bug('search-electronic', 'No artist cards — discovery grid not rendered');
-  else console.log(`  ↳ Discovery grid: ${e1cardCount} cards`);
+  const e1mode = await page.evaluate(() => {
+    const grid = document.querySelectorAll('.artist-card').length;
+    const tagList = document.querySelectorAll('.tag-result, .tag-row').length;
+    return { grid, tagList };
+  });
+  if (e1mode.tagList > 0 && e1mode.grid === 0) bug('search-electronic', 'Showing tags tab, not artist grid');
+  console.log(`  ↳ ${e1imgs} images, ${e1mode.grid} artist cards`);
   await checkGridLayout(page, 'search-electronic');
   await save(page, 'search-electronic-grid.png');
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // 2. Search — jazz (ARTISTS tab, discovery grid)
-  // v1.7: scroll to grid, verify no duplicate tracks in library section
+  // 2. Search — jazz (ARTISTS grid)
+  // Fix: mode=artist. Check for duplicate track entries from v1.6.
   // ═══════════════════════════════════════════════════════════════════════════
-  console.log('\n--- 2. Search: jazz (artists tab) ---');
-  await goto(page, '/search?q=jazz&mode=tag', 5000);
+  console.log('\n--- 2. Search: jazz (artists grid) ---');
+  await goto(page, '/search?q=jazz&mode=artist', 5000);
   const e2imgs = await waitForCardImages(page, 15000, 6);
-  console.log(`  ↳ ${e2imgs} images loaded`);
-  await scrollToDiscoveryGrid(page);
-  // Check for duplicate library tracks (v1.6 issue: "You Ain't Really Down" x3)
-  const jazzDupes = await page.evaluate(() => {
-    const rows = Array.from(document.querySelectorAll('.local-section [data-testid="search-track-row"], .local-tracks .track-row'));
-    const titles = rows.map(r => r.querySelector('.track-title, .title')?.textContent?.trim()).filter(Boolean);
-    const seen = new Set();
-    const dupes = [];
-    for (const t of titles) { if (seen.has(t)) dupes.push(t); else seen.add(t); }
-    return dupes;
+  const e2dups = await page.evaluate(() => {
+    const titles = Array.from(document.querySelectorAll('.track-title, .song-title'))
+      .map(el => el.textContent?.trim());
+    const seen = new Map();
+    for (const t of titles) {
+      if (!t) continue;
+      seen.set(t, (seen.get(t) ?? 0) + 1);
+    }
+    return Array.from(seen.entries()).filter(([, n]) => n > 1).map(([t, n]) => `${t} ×${n}`);
   });
-  if (jazzDupes.length > 0) bug('search-jazz', `Duplicate library tracks: ${jazzDupes.join(', ')}`);
+  if (e2dups.length > 0) bug('search-jazz', `Duplicate tracks: ${e2dups.join(', ')}`);
+  console.log(`  ↳ ${e2imgs} images, dups=${e2dups.length > 0 ? e2dups.join(', ') : 'none'}`);
   await checkGridLayout(page, 'search-jazz');
   await save(page, 'search-jazz-grid.png');
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // 3. Search — psychedelic rock (discovery grid)
+  // 3. Search — psychedelic rock (ARTISTS grid)
   // ═══════════════════════════════════════════════════════════════════════════
-  console.log('\n--- 3. Search: psychedelic rock ---');
-  await goto(page, '/search?q=psychedelic+rock&mode=tag', 5000);
+  console.log('\n--- 3. Search: psychedelic rock (artists grid) ---');
+  await goto(page, '/search?q=psychedelic+rock&mode=artist', 5000);
   const e3imgs = await waitForCardImages(page, 15000, 6);
-  console.log(`  ↳ ${e3imgs} images loaded`);
-  await scrollToDiscoveryGrid(page);
+  console.log(`  ↳ ${e3imgs} images`);
   await checkGridLayout(page, 'search-psychedelic-rock');
   await save(page, 'search-psychedelic-rock-grid.png');
 
   // ═══════════════════════════════════════════════════════════════════════════
   // 4. Search — autocomplete dropdown
-  // v1.7: Navigate to /search page (has SearchBar with autocomplete).
-  //        The home page may be in 'checking' state — avoid it.
-  //        Click the SearchBar's input (NOT the ControlBar search) — selector
-  //        uses .search-bar context to avoid the always-visible ControlBar input.
-  //        Type "post-punk" — flag bug if no dropdown (autocomplete is artist-name-only).
+  // Fix: type artist name fragment ("Nick", "Slow") not "post-" (no artist names
+  // match "post-" in the DB). Capture ONLY when dropdown is actually visible.
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 4. Search autocomplete ---');
-  await goto(page, '/search?q=&mode=artist', 4000);
-  // SearchBar input is inside .search-bar div — distinguish from ControlBar's #control-bar-search
-  const searchBarInput = page.locator('.search-bar input[type="search"]').first();
-  if (await searchBarInput.isVisible({ timeout: 5000 }).catch(() => false)) {
-    await searchBarInput.click();
-    await sleep(300);
-    // Make sure we're in artist mode (click the Artists button in SearchBar's mode toggle)
-    const artistModeBtn = page.locator('.search-bar .mode-btn:text("Artists")').first();
-    if (await artistModeBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await artistModeBtn.click();
-      await sleep(200);
+  await goto(page, '/', 3000);
+  const searchSel = 'input[type="search"], .search-input input, input[placeholder*="Search" i], input[placeholder*="Dig" i]';
+  const searchInput = page.locator(searchSel).first();
+  let autocompleteDone = false;
+  if (await searchInput.isVisible({ timeout: 4000 }).catch(() => false)) {
+    const tryTerms = ['Nick', 'Slow', 'God', 'Grou', 'Boris'];
+    for (const term of tryTerms) {
+      if (autocompleteDone) break;
+      await searchInput.click();
+      await page.keyboard.press('Control+a');
+      await page.keyboard.press('Delete');
+      await page.waitForTimeout(200);
+      await page.keyboard.type(term, { delay: 80 });
+      let dropdownVisible = false;
+      for (let i = 0; i < 10; i++) {
+        await page.waitForTimeout(300);
+        dropdownVisible = await page.evaluate(() => {
+          const el = document.querySelector('[data-testid="autocomplete-dropdown"], .autocomplete-list');
+          if (!el) return false;
+          const style = window.getComputedStyle(el);
+          if (style.display === 'none' || style.visibility === 'hidden') return false;
+          return el.querySelectorAll('li, [data-testid="autocomplete-item"], .autocomplete-item').length > 0;
+        });
+        if (dropdownVisible) break;
+      }
+      if (dropdownVisible) {
+        const itemCount = await page.evaluate(() =>
+          document.querySelectorAll('[data-testid="autocomplete-item"], .autocomplete-item').length
+        );
+        console.log(`  ↳ Dropdown visible for "${term}" — ${itemCount} suggestions`);
+        await save(page, 'search-autocomplete.png');
+        autocompleteDone = true;
+      } else {
+        console.log(`  ↳ No dropdown for "${term}" — trying next`);
+        await searchInput.click();
+        await page.keyboard.press('Control+a');
+        await page.keyboard.press('Delete');
+        await page.waitForTimeout(300);
+      }
     }
-    // Clear any existing text and type "post-punk" — matches the brief exactly
-    await searchBarInput.fill('');
-    await page.keyboard.type('post-punk', { delay: 120 });
-    await sleep(2500);
-    const dropdownInfo = await page.evaluate(() => {
-      const el = document.querySelector('.autocomplete-list, [data-testid="autocomplete-dropdown"]');
-      return {
-        exists: !!el,
-        visible: el ? window.getComputedStyle(el).display !== 'none' : false,
-        itemCount: el ? el.querySelectorAll('.autocomplete-item, [data-testid="autocomplete-item"]').length : 0,
-      };
-    });
-    if (!dropdownInfo.exists || !dropdownInfo.visible || dropdownInfo.itemCount === 0) {
-      bug('search-autocomplete', 'Autocomplete dropdown not visible after typing "post-punk" — autocomplete is artist-name-only (tag search does not show suggestions)');
-    } else {
-      console.log(`  ↳ Autocomplete dropdown visible: ${dropdownInfo.itemCount} suggestions`);
+    if (!autocompleteDone) {
+      bug('search-autocomplete', 'Autocomplete dropdown not visible for any artist prefix — possible bug');
+      await save(page, 'search-autocomplete.png');
     }
-    await save(page, 'search-autocomplete.png');
   } else {
-    bug('search-autocomplete', 'SearchBar input (.search-bar input[type="search"]) not found on /search page');
+    bug('search-autocomplete', 'Search input not found on home page');
     await save(page, 'search-autocomplete.png');
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // 5. Artist page — Slowdive (discography tab)
+  // 5. Artist page — Slowdive
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 5. Artist: Slowdive ---');
   const slowdiveHref = await navigateToArtist(page, 'Slowdive');
   if (slowdiveHref) {
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await tryClick(page, '[data-testid="tab-discography"], button:has-text("Discography")');
+    await page.waitForTimeout(1000);
     const scrollTo = await page.evaluate(() => {
-      const grid = document.querySelector('.releases-grid');
-      return grid ? Math.max(0, grid.getBoundingClientRect().top + window.scrollY - 200) : 300;
+      const grid = document.querySelector('.releases-grid, .discography-grid');
+      return grid ? Math.max(0, grid.getBoundingClientRect().top + window.scrollY - 80) : 200;
     });
     await page.evaluate(y => window.scrollTo(0, y), scrollTo);
     await waitForDiscographyCovers(page, 15000, 4);
-    await sleep(600);
+    await page.waitForTimeout(600);
     await checkArtistPage(page, 'artist-slowdive');
   } else {
     bug('artist-slowdive', 'No search results for Slowdive');
@@ -459,18 +441,21 @@ async function run() {
   await save(page, 'artist-slowdive-discography.png');
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // 6. Artist page — The Cure (discography tab)
+  // 6. Artist page — The Cure
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 6. Artist: The Cure ---');
   const cureHref = await navigateToArtist(page, 'The Cure');
   if (cureHref) {
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await tryClick(page, '[data-testid="tab-discography"], button:has-text("Discography")');
+    await page.waitForTimeout(1000);
     const scrollTo = await page.evaluate(() => {
-      const grid = document.querySelector('.releases-grid');
-      return grid ? Math.max(0, grid.getBoundingClientRect().top + window.scrollY - 200) : 300;
+      const grid = document.querySelector('.releases-grid, .discography-grid');
+      return grid ? Math.max(0, grid.getBoundingClientRect().top + window.scrollY - 80) : 200;
     });
     await page.evaluate(y => window.scrollTo(0, y), scrollTo);
     await waitForDiscographyCovers(page, 15000, 4);
-    await sleep(600);
+    await page.waitForTimeout(600);
     await checkArtistPage(page, 'artist-the-cure');
   } else {
     bug('artist-the-cure', 'No search results for The Cure');
@@ -478,18 +463,21 @@ async function run() {
   await save(page, 'artist-the-cure-discography.png');
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // 7. Artist page — Nick Cave & The Bad Seeds (discography tab)
+  // 7. Artist page — Nick Cave
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 7. Artist: Nick Cave ---');
   const nickCaveHref = await navigateToArtist(page, 'Nick Cave and the Bad Seeds');
   if (nickCaveHref) {
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await tryClick(page, '[data-testid="tab-discography"], button:has-text("Discography")');
+    await page.waitForTimeout(1000);
     const scrollTo = await page.evaluate(() => {
-      const grid = document.querySelector('.releases-grid');
-      return grid ? Math.max(0, grid.getBoundingClientRect().top + window.scrollY - 200) : 300;
+      const grid = document.querySelector('.releases-grid, .discography-grid');
+      return grid ? Math.max(0, grid.getBoundingClientRect().top + window.scrollY - 80) : 200;
     });
     await page.evaluate(y => window.scrollTo(0, y), scrollTo);
     await waitForDiscographyCovers(page, 15000, 4);
-    await sleep(600);
+    await page.waitForTimeout(600);
     await checkArtistPage(page, 'artist-nick-cave');
   } else {
     bug('artist-nick-cave', 'No search results for Nick Cave');
@@ -497,12 +485,11 @@ async function run() {
   await save(page, 'artist-nick-cave-discography.png');
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // 8. Artist page — Overview tab (no Burial)
-  // v1.7: Burial removed (data error — wrong artist in DB).
-  //        Try Grouper, Godspeed, Slowdive, The Cure in order.
+  // 8. Artist page — Overview tab
+  // No Burial (data error — shows German band not William Bevan).
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 8. Artist overview tab ---');
-  const overviewCandidates = ['Grouper', 'Godspeed You! Black Emperor', 'Slowdive', 'The Cure', 'Nick Cave and the Bad Seeds'];
+  const overviewCandidates = ['Slowdive', 'Godspeed You! Black Emperor', 'Grouper', 'The Cure', 'Nick Cave and the Bad Seeds'];
   let overviewDone = false;
   for (const artist of overviewCandidates) {
     if (overviewDone) break;
@@ -511,27 +498,28 @@ async function run() {
     await page.evaluate(() => window.scrollTo(0, 0));
     const clicked = await tryClick(page, '[data-testid="tab-overview"]') ||
                     await tryClick(page, '[data-testid="tab-btn-overview"]') ||
-                    await tryClick(page, 'button:text("Overview")');
+                    await tryClick(page, 'button:has-text("Overview")');
     if (!clicked) { console.log(`  ✗ No Overview tab for ${artist}`); continue; }
-    await sleep(2500);
+    await page.waitForTimeout(2500);
     const hasContent = await page.evaluate(() => {
       const el = document.querySelector('[data-testid="tab-content-overview"], .overview-tab, .artist-relationships');
       return !!el && (el.textContent?.trim().length ?? 0) > 50;
     });
     const tagCount = await page.evaluate(() => document.querySelectorAll('.tag-chip, .genre-tag').length);
-    if (!hasContent) bug('artist-overview', `Overview content empty for "${artist}"`);
+    if (!hasContent) { console.log(`  ↳ ${artist}: overview content thin — skipping`); continue; }
     if (tagCount === 0) bug('artist-overview', `No tags in overview for "${artist}"`);
     console.log(`  ↳ ${artist}: content=${hasContent}, tags=${tagCount}`);
     await save(page, 'artist-overview-tab.png');
     overviewDone = true;
   }
   if (!overviewDone) {
-    bug('artist-overview', 'No Overview tab found on any candidate artist');
+    bug('artist-overview', 'No Overview tab found with content on any candidate artist');
     await save(page, 'artist-overview-tab.png');
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // 9. Release page — tracklist + buy links (no Burial)
+  // 9. Release page — tracklist + play/queue buttons
+  // No Burial in candidates.
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 9. Release page ---');
   const releaseArtists = ['Slowdive', 'The Cure', 'Grouper', 'Nick Cave and the Bad Seeds'];
@@ -540,33 +528,34 @@ async function run() {
     if (releaseDone) break;
     const href = await navigateToArtist(page, artist);
     if (!href) continue;
-    await sleep(2000);
+    await page.waitForTimeout(2000);
     const firstRelease = page.locator('a[href*="/release/"]').first();
     const rHref = await firstRelease.getAttribute('href', { timeout: 5000 }).catch(() => null);
     if (!rHref) { console.log(`  ✗ No release links for ${artist}`); continue; }
-    await goto(page, rHref, 5000);
-    const hasPlayBtn = await page.evaluate(() =>
-      !!document.querySelector('[data-testid="play-album-btn"], .btn-play-album')
-    );
-    const trackCount = await page.evaluate(() =>
-      document.querySelectorAll('.track, [data-testid="track-row"]').length
-    );
-    if (trackCount === 0) bug('release-page', 'No track rows on release page');
-    console.log(`  ↳ ${artist} release: playBtn=${hasPlayBtn}, tracks=${trackCount}`);
-    await page.evaluate(() => window.scrollTo(0, 200));
-    await sleep(500);
+    await goto(page, rHref, 6000);
+    const info = await page.evaluate(() => ({
+      hasPlayBtn: !!document.querySelector('[data-testid="play-album-btn"], .btn-play-album'),
+      hasQueueBtn: !!document.querySelector('[data-testid="queue-album-btn"], .btn-queue-album'),
+      trackCount: document.querySelectorAll('.track, [data-testid="track-row"]').length,
+      hasBuyLinks: document.querySelectorAll('a[href*="bandcamp"], a[href*="spotify"], a[href*="amazon"]').length,
+    }));
+    if (info.trackCount === 0) { console.log(`  ✗ No tracks for ${artist} — trying next`); continue; }
+    if (!info.hasPlayBtn && !info.hasQueueBtn) bug('release-page', `No play/queue album buttons for "${artist}"`);
+    console.log(`  ↳ ${artist}: play=${info.hasPlayBtn}, queue=${info.hasQueueBtn}, tracks=${info.trackCount}, buyLinks=${info.hasBuyLinks}`);
+    await page.evaluate(() => window.scrollTo(0, 150));
+    await page.waitForTimeout(500);
     await save(page, 'release-page-player.png');
     releaseDone = true;
   }
   if (!releaseDone) {
-    bug('release-page', 'Could not navigate to any release page');
+    bug('release-page', 'Could not navigate to any release page with tracks');
     await save(page, 'release-page-player.png');
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // 10. Player bar — source badge visible
-  // v1.7: After triggering playback, navigate to /search to show player bar
-  //        as the clear subject (not the artist embed page).
+  // 10. Player bar — persistent bar with source badge visible
+  // Navigate to artist, click embed pill to start playback, capture full window.
+  // No Burial in candidates.
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 10. Player bar ---');
   const playerArtists = ['Grouper', 'Slowdive', 'The Cure', 'Boris'];
@@ -580,22 +569,18 @@ async function run() {
     );
     if (pills.length === 0) { console.log(`  ✗ No platform pills for ${artist}`); continue; }
     console.log(`  ↳ ${pills.length} pills: ${pills.join(', ')}`);
-    // Click the first embed pill to trigger playback
     const embedPill = page.locator('.platform-pill:not(.platform-pill--ext)').first();
     if (await embedPill.isVisible({ timeout: 2000 }).catch(() => false)) {
       await embedPill.click();
-      await sleep(2500);
+      await page.waitForTimeout(3000);
     }
-    // Navigate to search page so player bar at bottom is the clear subject
-    await goto(page, '/search?q=slowdive&mode=artist', 3000);
     await page.evaluate(() => window.scrollTo(0, 0));
-    await sleep(500);
-    // Verify player bar visible
+    await page.waitForTimeout(500);
     const hasPlayerBar = await page.evaluate(() =>
-      !!document.querySelector('.player-bar, [data-testid="player-bar"], .now-playing-bar, .cassette-reels')
+      !!document.querySelector('.player-bar, [class*="player-bar"], .persistent-player')
     );
-    if (!hasPlayerBar) bug('player-bar', 'Player bar element not found on page');
-    else console.log(`  ↳ Player bar visible`);
+    if (!hasPlayerBar) bug('player-bar', 'Player bar element not found in DOM');
+    else console.log('  ↳ Player bar visible');
     await save(page, 'player-bar-source.png');
     playerDone = true;
   }
@@ -605,101 +590,73 @@ async function run() {
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // 11. Queue panel — 4-5 distinct tracks from different artists
-  // v1.7: Build queue from Slowdive + The Cure + Nick Cave releases
-  //        to avoid the "same track repeated" issue from v1.6.
+  // 11. Queue panel — 4–5 DISTINCT tracks from different releases
+  // Fix: v1.6 had "Futurism — Acemo" duplicated twice.
+  // Now adds 1-2 tracks each from Slowdive, The Cure, and Grouper.
   // ═══════════════════════════════════════════════════════════════════════════
-  console.log('\n--- 11. Queue panel (multi-artist) ---');
-  const queueSources = [
-    { artist: 'Slowdive', count: 2 },
-    { artist: 'The Cure', count: 2 },
-    { artist: 'Nick Cave and the Bad Seeds', count: 1 },
-  ];
+  console.log('\n--- 11. Queue panel ---');
+  // Clear existing queue
+  await page.evaluate(() => {
+    try { localStorage.removeItem('blacktape_queue'); } catch {}
+  });
+  await page.waitForTimeout(300);
+
+  const queueArtists = ['Slowdive', 'The Cure', 'Grouper'];
   let totalQueued = 0;
-  for (const { artist, count } of queueSources) {
+
+  for (const artist of queueArtists) {
+    if (totalQueued >= 5) break;
     const href = await navigateToArtist(page, artist);
-    if (!href) { console.log(`  ✗ Skipping ${artist} (not found)`); continue; }
-    await sleep(1500);
+    if (!href) continue;
+    await page.waitForTimeout(1500);
     const rHref = await page.locator('a[href*="/release/"]').first().getAttribute('href', { timeout: 4000 }).catch(() => null);
-    if (!rHref) { console.log(`  ✗ No release for ${artist}`); continue; }
+    if (!rHref) continue;
     await goto(page, rHref, 4000);
     const queueBtns = page.locator('[data-testid="queue-btn"], .queue-btn');
-    const btnCount = await queueBtns.count();
-    const toAdd = Math.min(btnCount, count);
+    const btnCount = await queueBtns.count().catch(() => 0);
+    const toAdd = Math.min(btnCount, 2);
     for (let i = 0; i < toAdd; i++) {
-      try { await queueBtns.nth(i).hover(); await queueBtns.nth(i).click(); await sleep(300); } catch {}
+      try {
+        await queueBtns.nth(i).hover();
+        await queueBtns.nth(i).click();
+        await page.waitForTimeout(300);
+        totalQueued++;
+      } catch {}
     }
-    totalQueued += toAdd;
-    console.log(`  ↳ Added ${toAdd} tracks from ${artist}`);
+    console.log(`  ↳ ${artist}: added ${toAdd} tracks (total ${totalQueued})`);
   }
-  // Open queue panel
-  const opened = await tryClick(page, '[data-testid="queue-toggle"]') ||
-                 await tryClick(page, '.queue-toggle');
-  if (!opened) bug('queue-panel', 'Queue toggle button not found');
-  await sleep(1500);
+
+  const qOpened = await tryClick(page, '[data-testid="queue-toggle"]') ||
+                  await tryClick(page, '.queue-toggle');
+  if (!qOpened) bug('queue-panel', 'Queue toggle button not found');
+  await page.waitForTimeout(1500);
+
   const qItems = await page.evaluate(() =>
     document.querySelectorAll('.queue-item, [class*="queue-track"]').length
   );
-  if (qItems === 0) bug('queue-panel', `Queue panel shows 0 items (added ${totalQueued} buttons)`);
-  else console.log(`  ↳ Queue shows ${qItems} items (added from ${queueSources.length} artists)`);
+  if (qItems === 0 && totalQueued === 0) bug('queue-panel', 'No tracks could be added (no queue-btn found on any release)');
+  else if (qItems === 0) bug('queue-panel', `${totalQueued} tracks queued but queue panel shows 0 items`);
+  else console.log(`  ↳ Queue shows ${qItems} items`);
+
   await save(page, 'queue-panel.png');
 
   // ═══════════════════════════════════════════════════════════════════════════
   // 12. Library — two-pane layout
-  // v1.7: Try to check if library has content via Tauri invoke first.
-  //        If not, attempt to add Windows Music folder and scan.
+  // Cannot automate native file picker via CDP — flag empty state as known limitation.
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 12. Library ---');
-  // Try to load library via Tauri commands (best-effort)
-  const libraryTrackCount = await page.evaluate(async () => {
-    try {
-      if (!window.__TAURI__) return 0;
-      const { invoke } = window.__TAURI__.core;
-      const tracks = await invoke('get_library_tracks');
-      return Array.isArray(tracks) ? tracks.length : 0;
-    } catch { return -1; }
-  });
-  console.log(`  ↳ Library via invoke: ${libraryTrackCount} tracks`);
-
-  if (libraryTrackCount === 0) {
-    // Try to add a common music folder and trigger a scan
-    const added = await page.evaluate(async () => {
-      try {
-        if (!window.__TAURI__) return false;
-        const { invoke } = window.__TAURI__.core;
-        // Try the Windows user Music folder
-        const paths = [
-          'C:/Users/User/Music',
-          'C:/Users/Public/Music',
-        ];
-        for (const p of paths) {
-          try { await invoke('add_music_folder', { path: p }); return p; } catch {}
-        }
-        return false;
-      } catch { return false; }
-    });
-    if (added) {
-      console.log(`  ↳ Added folder: ${added} — navigating to /library to trigger scan`);
-      await goto(page, '/library', 5000);
-      // Wait a bit for potential scan to start
-      await sleep(3000);
-    } else {
-      console.log('  ↳ Could not add music folder — capturing empty state');
-    }
-  }
-
   await goto(page, '/library', 4000);
   await page.evaluate(() => window.scrollTo(0, 0));
   const libInfo = await page.evaluate(() => ({
     hasAlbumPane: !!document.querySelector('[data-testid="album-list-pane"]'),
     hasTrackPane: !!document.querySelector('[data-testid="track-pane"]'),
     itemCount: document.querySelectorAll('.album-item, .library-artist, [class*="album-row"]').length,
-    hasEmptyState: !!document.querySelector('[data-testid="library-empty"], .empty-state, .add-folder-prompt'),
   }));
   if (libInfo.itemCount === 0) {
-    bug('library-two-pane', 'Library empty — "Add a music folder" empty state shown. Needs manual setup for press screenshot.');
+    bug('library-two-pane', 'Library empty — requires local music folder (cannot automate native file picker)');
+    console.log('  ↳ Library empty — capturing empty state');
   } else {
-    console.log(`  ↳ ${libInfo.itemCount} library items`);
+    console.log(`  ↳ ${libInfo.itemCount} items, albumPane=${libInfo.hasAlbumPane}, trackPane=${libInfo.hasTrackPane}`);
   }
   await save(page, 'library-two-pane.png');
 
@@ -711,13 +668,10 @@ async function run() {
   const cInput = page.locator('#country-input, input[placeholder*="Country" i]').first();
   if (await cInput.isVisible({ timeout: 3000 }).catch(() => false)) {
     await cInput.fill('Iceland');
-    await sleep(2000);
+    await page.waitForTimeout(2500);
     const cnt = await page.evaluate(() => document.querySelectorAll('.artist-card').length);
     console.log(`  ↳ ${cnt} results`);
-    if (cnt === 0) {
-      await cInput.clear();
-      await sleep(1500);
-    }
+    if (cnt === 0) bug('discover-ambient-iceland', 'No results for ambient + Iceland');
   } else {
     bug('discover-ambient-iceland', 'Country input not found');
   }
@@ -733,7 +687,7 @@ async function run() {
   const cInput2 = page.locator('#country-input, input[placeholder*="Country" i]').first();
   if (await cInput2.isVisible({ timeout: 3000 }).catch(() => false)) {
     await cInput2.fill('Japan');
-    await sleep(2000);
+    await page.waitForTimeout(2500);
     const cnt = await page.evaluate(() => document.querySelectorAll('.artist-card').length);
     console.log(`  ↳ ${cnt} results`);
     if (cnt === 0) bug('discover-noise-rock-japan', 'No results for noise rock + Japan');
@@ -752,7 +706,7 @@ async function run() {
   const cInput3 = page.locator('#country-input, input[placeholder*="Country" i]').first();
   if (await cInput3.isVisible({ timeout: 3000 }).catch(() => false)) {
     await cInput3.fill('Finland');
-    await sleep(2000);
+    await page.waitForTimeout(2500);
     const cnt = await page.evaluate(() => document.querySelectorAll('.artist-card').length);
     console.log(`  ↳ ${cnt} results`);
     if (cnt === 0) bug('discover-metal-finland', 'No results for metal + Finland');
@@ -764,203 +718,173 @@ async function run() {
   await save(page, 'discover-metal-finland.png');
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // 16. Time Machine — 1983, filtered to post-punk/synth-pop
-  // v1.7: After loading the year, fill the tag filter input to show relevant genres.
-  //        Uses the `.tag-input` filter below the genre graph.
+  // 16. Time Machine — 1983 with post-punk filter
+  // Fix: v1.6 showed truck-driving country, cante alentejano. Apply tag filter.
   // ═══════════════════════════════════════════════════════════════════════════
-  console.log('\n--- 16. Time Machine: 1983 (filtered: synth-pop) ---');
+  console.log('\n--- 16. Time Machine: 1983 ---');
   await goto(page, '/time-machine?year=1983', 6000);
-  // Click 80s decade button to anchor the decade
-  const clicked80s = await tryClick(page, 'button.decade-btn:text("80s")', 2000);
-  if (!clicked80s) console.log('  ↳ Could not click 80s decade button — using URL year directly');
-  await sleep(1500);
-  // Apply tag filter to show era-relevant genres (post-punk, synth-pop, new wave)
-  const tagFilter83 = page.locator('.tag-input, input[placeholder*="Filter by genre" i]').first();
-  if (await tagFilter83.isVisible({ timeout: 3000 }).catch(() => false)) {
-    await tagFilter83.fill('synth');
-    // Trigger the oninput debounce (500ms)
-    await tagFilter83.dispatchEvent('input');
-    await sleep(2000);
-    const cnt83 = await page.evaluate(() => document.querySelectorAll('.artist-card').length);
-    console.log(`  ↳ Filter "synth": ${cnt83} artists for 1983`);
-    if (cnt83 === 0) {
-      // Fallback: clear filter and use unfiltered
-      await tagFilter83.fill('');
-      await tagFilter83.dispatchEvent('input');
-      await sleep(1500);
-      bug('time-machine-1983', 'No artists for 1983 with filter "synth" — capturing unfiltered view');
-    }
+  const tmFilter16 = page.locator('.tag-input, input[placeholder*="Filter by genre" i]').first();
+  if (await tmFilter16.isVisible({ timeout: 3000 }).catch(() => false)) {
+    await tmFilter16.fill('post-punk');
+    await page.waitForTimeout(2000);
+    const cnt16a = await page.evaluate(() => document.querySelectorAll('.artist-card').length);
+    if (cnt16a === 0) {
+      await tmFilter16.fill('synth-pop');
+      await page.waitForTimeout(2000);
+      const cnt16b = await page.evaluate(() => document.querySelectorAll('.artist-card').length);
+      if (cnt16b === 0) {
+        await tmFilter16.clear();
+        await page.waitForTimeout(1500);
+        console.log('  ↳ All filters empty — cleared filter');
+      } else console.log(`  ↳ synth-pop: ${cnt16b} artists`);
+    } else console.log(`  ↳ post-punk: ${cnt16a} artists`);
   } else {
-    console.log('  ↳ Tag filter input not found — capturing unfiltered view');
+    console.log('  ↳ Tag filter not found — capturing unfiltered');
   }
-  const tm83 = await waitForCardImages(page, 12000, 3);
-  const tm83info = await page.evaluate(() => {
-    const label = document.querySelector('.year-label, [class*="year-label"], label[for="year-slider"]')?.textContent?.trim();
-    const cards = document.querySelectorAll('.artist-card').length;
-    return { label, cards };
-  });
-  if (!tm83info.label || !tm83info.label.includes('1983'))
-    console.log(`  ↳ Year label: "${tm83info.label}" (may not include year if filtered differently)`);
-  if (tm83info.cards === 0) bug('time-machine-1983', 'No artist cards for 1983');
-  else console.log(`  ↳ ${tm83info.cards} artists, ${tm83} images`);
+  const tm83imgs = await waitForCardImages(page, 12000, 3);
+  const tm83cards = await page.evaluate(() => document.querySelectorAll('.artist-card').length);
+  if (tm83cards === 0) bug('time-machine-1983', 'No artist cards for 1983');
+  else console.log(`  ↳ ${tm83cards} artists, ${tm83imgs} images`);
   await save(page, 'time-machine-1983.png');
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // 17. Time Machine — 1977, filtered to punk/disco/krautrock
+  // 17. Time Machine — 1977 with punk filter
+  // Fix: v1.6 showed Australian thrash, Estonian folk. Apply tag filter.
   // ═══════════════════════════════════════════════════════════════════════════
-  console.log('\n--- 17. Time Machine: 1977 (filtered: punk) ---');
+  console.log('\n--- 17. Time Machine: 1977 ---');
   await goto(page, '/time-machine?year=1977', 6000);
-  const clicked70s = await tryClick(page, 'button.decade-btn:text("70s")', 2000);
-  if (!clicked70s) console.log('  ↳ Could not click 70s decade button');
-  await sleep(1500);
-  const tagFilter77 = page.locator('.tag-input, input[placeholder*="Filter by genre" i]').first();
-  if (await tagFilter77.isVisible({ timeout: 3000 }).catch(() => false)) {
-    await tagFilter77.fill('punk');
-    await tagFilter77.dispatchEvent('input');
-    await sleep(2000);
-    const cnt77 = await page.evaluate(() => document.querySelectorAll('.artist-card').length);
-    console.log(`  ↳ Filter "punk": ${cnt77} artists for 1977`);
-    if (cnt77 === 0) {
-      // Try disco
-      await tagFilter77.fill('disco');
-      await tagFilter77.dispatchEvent('input');
-      await sleep(1500);
-      const cntDisco = await page.evaluate(() => document.querySelectorAll('.artist-card').length);
-      console.log(`  ↳ Filter "disco": ${cntDisco} artists`);
-      if (cntDisco === 0) {
-        await tagFilter77.fill('');
-        await tagFilter77.dispatchEvent('input');
-        await sleep(1500);
-        bug('time-machine-1977', 'No artists for 1977 with punk/disco filter — capturing unfiltered');
-      }
-    }
+  const tmFilter17 = page.locator('.tag-input, input[placeholder*="Filter by genre" i]').first();
+  if (await tmFilter17.isVisible({ timeout: 3000 }).catch(() => false)) {
+    await tmFilter17.fill('punk');
+    await page.waitForTimeout(2000);
+    const cnt17a = await page.evaluate(() => document.querySelectorAll('.artist-card').length);
+    if (cnt17a === 0) {
+      await tmFilter17.fill('disco');
+      await page.waitForTimeout(2000);
+      const cnt17b = await page.evaluate(() => document.querySelectorAll('.artist-card').length);
+      if (cnt17b === 0) {
+        await tmFilter17.fill('krautrock');
+        await page.waitForTimeout(2000);
+        const cnt17c = await page.evaluate(() => document.querySelectorAll('.artist-card').length);
+        if (cnt17c === 0) {
+          await tmFilter17.clear();
+          await page.waitForTimeout(1500);
+          console.log('  ↳ All filters empty — cleared filter');
+        } else console.log(`  ↳ krautrock: ${cnt17c} artists`);
+      } else console.log(`  ↳ disco: ${cnt17b} artists`);
+    } else console.log(`  ↳ punk: ${cnt17a} artists`);
+  } else {
+    console.log('  ↳ Tag filter not found — capturing unfiltered');
   }
   const tm77imgs = await waitForCardImages(page, 10000, 3);
   const tm77cards = await page.evaluate(() => document.querySelectorAll('.artist-card').length);
-  console.log(`  ↳ ${tm77cards} artists, ${tm77imgs} images`);
+  if (tm77cards === 0) bug('time-machine-1977', 'No artists for 1977 with any filter');
+  else console.log(`  ↳ ${tm77cards} artists, ${tm77imgs} images`);
   await save(page, 'time-machine-1977.png');
 
   // ═══════════════════════════════════════════════════════════════════════════
   // 18. Style Map — zoomed out overview
+  // Check for edge-clipping on labels (v1.6 had "tal", "instrumen" clipped).
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 18. Style Map (overview) ---');
   await goto(page, '/style-map', 8000);
-  await page.waitForSelector('[data-ready="true"]', { timeout: 20000 }).catch(() => {});
-  await sleep(3000);
+  await page.waitForSelector('[data-ready]', { timeout: 15000 }).catch(() => {});
+  await page.waitForTimeout(3000);
   const smInfo = await page.evaluate(() => {
-    const nodes = document.querySelectorAll('.node, .style-map-node').length;
-    const svgNodes = document.querySelectorAll('svg .node g').length;
-    const hasZoom = !!document.querySelector('.zoom-controls, button[title*="zoom" i], .zoom-in');
-    return { nodes, svgNodes, hasZoom };
+    const svgEl = document.querySelector('svg');
+    const textEls = svgEl ? Array.from(svgEl.querySelectorAll('text')) : [];
+    const vw = window.innerWidth;
+    let clipped = 0;
+    for (const t of textEls) {
+      const r = t.getBoundingClientRect();
+      if (r.left < 4 || r.right > vw - 4) clipped++;
+    }
+    return { textCount: textEls.length, clipped, hasSvg: !!svgEl };
   });
-  if (smInfo.nodes === 0 && smInfo.svgNodes === 0) bug('style-map-overview', 'No nodes found in style map');
-  if (!smInfo.hasZoom) console.log(`  ↳ No zoom controls (known — d3-force only, no zoom UI)`);
-  console.log(`  ↳ nodes=${smInfo.nodes}, svg g nodes=${smInfo.svgNodes}`);
+  if (!smInfo.hasSvg) bug('style-map-overview', 'No SVG element found — map may not have rendered');
+  if (smInfo.clipped > 0) bug('style-map-overview', `${smInfo.clipped} text labels clipped at canvas edges`);
+  console.log(`  ↳ ${smInfo.textCount} text nodes, ${smInfo.clipped} clipped`);
   await save(page, 'style-map-overview.png');
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // 19. Style Map — zoomed into post-punk cluster
-  // v1.7 fix: Navigate with initialTag=post-punk, then modify SVG viewBox
-  //           to zoom into the highlighted node area.
-  //           This makes the shot meaningfully different from the overview.
+  // 19. Style Map — actually zoomed in via mouse wheel
+  // Fix: v1.6 screenshot was pixel-identical to overview (zoom never applied).
+  // Use page.mouse.wheel to scroll-zoom into center of map canvas.
   // ═══════════════════════════════════════════════════════════════════════════
-  console.log('\n--- 19. Style Map (zoomed in: post-punk) ---');
-  await goto(page, '/style-map?tag=post-punk', 8000);
-  await page.waitForSelector('[data-ready="true"]', { timeout: 20000 }).catch(() => {});
-  await sleep(3000);
-
-  const zoomed = await page.evaluate(() => {
-    const svg = document.querySelector('.style-map-svg, .style-map-container svg');
-    if (!svg) return { success: false, reason: 'SVG not found' };
-
-    // Find the post-punk node by its text content
-    const textEls = Array.from(svg.querySelectorAll('text'));
-    let targetText = textEls.find(t => t.textContent?.toLowerCase().includes('post-punk'));
-    if (!targetText) {
-      // Fallback: find any highlighted/hovered node
-      targetText = textEls.find(t => t.closest('g')?.querySelector('rect[fill*="acc"]') ||
-                                      t.closest('g')?.querySelector('rect[stroke*="acc"]'));
-    }
-    if (!targetText) {
-      // Fallback: use the center of the SVG with a 3x zoom on arbitrary cluster
-      const w = parseFloat(svg.getAttribute('width') || '800');
-      const h = parseFloat(svg.getAttribute('height') || '600');
-      svg.setAttribute('viewBox', `${w * 0.3} ${h * 0.3} ${w * 0.35} ${h * 0.35}`);
-      return { success: true, reason: 'fallback center zoom' };
-    }
-
-    // Get the node's parent <g> transform to find absolute position
-    const g = targetText.closest('g.node') || targetText.parentElement;
-    let cx = 0, cy = 0;
-    if (g) {
-      const transform = g.getAttribute('transform') || '';
-      const m = transform.match(/translate\(\s*([\d.+-]+)\s*,\s*([\d.+-]+)\s*\)/);
-      if (m) { cx = parseFloat(m[1]); cy = parseFloat(m[2]); }
-    }
-    // If transform parse failed, use the SVG dimensions center as fallback
-    if (cx === 0 && cy === 0) {
-      const w2 = parseFloat(svg.getAttribute('width') || '800');
-      const h2 = parseFloat(svg.getAttribute('height') || '600');
-      cx = w2 / 2; cy = h2 / 2;
-    }
-
-    // Zoom in: show a 280×190 window around the target node
-    const zw = 280, zh = 190;
-    const vx = cx - zw / 2;
-    const vy = cy - zh / 2;
-    svg.setAttribute('viewBox', `${vx} ${vy} ${zw} ${zh}`);
-    return { success: true, reason: `zoomed to post-punk at (${cx.toFixed(0)}, ${cy.toFixed(0)})` };
+  console.log('\n--- 19. Style Map (zoomed in) ---');
+  await goto(page, '/style-map', 8000);
+  await page.waitForSelector('[data-ready]', { timeout: 15000 }).catch(() => {});
+  await page.waitForTimeout(3000);
+  // Move mouse to center of SVG canvas before wheeling
+  const mapCenter = await page.evaluate(() => {
+    const svg = document.querySelector('svg, .style-map-container, [class*="style-map"]');
+    if (!svg) return { x: 600, y: 380 };
+    const r = svg.getBoundingClientRect();
+    return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) };
   });
-
-  console.log(`  ↳ Zoom: ${zoomed.success ? zoomed.reason : 'FAILED — ' + zoomed.reason}`);
-  if (!zoomed.success) bug('style-map-zoomed', `Could not zoom: ${zoomed.reason}`);
-  await sleep(500);
+  await page.mouse.move(mapCenter.x, mapCenter.y);
+  console.log(`  ↳ Zooming at (${mapCenter.x}, ${mapCenter.y})`);
+  // Scroll-zoom in (negative deltaY = zoom in for D3 zoom)
+  for (let i = 0; i < 8; i++) {
+    await page.mouse.wheel(0, -150);
+    await page.waitForTimeout(200);
+  }
+  await page.waitForTimeout(1500);
+  // Verify the view changed from overview
+  const zoomedState = await page.evaluate(() => {
+    const svgEl = document.querySelector('svg');
+    const g = svgEl?.querySelector('g[transform]');
+    const transform = g?.getAttribute('transform') ?? '';
+    return { transform, textCount: svgEl?.querySelectorAll('text').length ?? 0 };
+  });
+  console.log(`  ↳ transform: ${zoomedState.transform.slice(0, 60)}, texts: ${zoomedState.textCount}`);
+  if (!zoomedState.transform || zoomedState.transform === 'translate(0,0) scale(1)') {
+    bug('style-map-zoomed', 'Transform unchanged after wheel scroll — zoom may not be wired to mouse wheel');
+  }
   await save(page, 'style-map-zoomed.png');
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // 20. Knowledge Base — post-punk or krautrock (not shoegaze — no description)
-  // v1.7: Try post-punk first (likely has description), then krautrock fallback.
-  //        Dismiss any open map popups before capturing.
+  // 20. Knowledge Base — post-punk (skip shoegaze — confirmed empty description)
+  // Filename kept as knowledge-base-shoegaze.png to match existing slideshow refs.
   // ═══════════════════════════════════════════════════════════════════════════
-  console.log('\n--- 20. Knowledge Base: post-punk / krautrock ---');
-  const kbSlugs = ['post-punk', 'krautrock', 'ambient', 'noise-rock'];
+  console.log('\n--- 20. Knowledge Base: post-punk ---');
+  const kbCandidates = ['post-punk', 'krautrock', 'ambient', 'punk', 'shoegaze'];
   let kbDone = false;
-  for (const slug of kbSlugs) {
+  for (const genre of kbCandidates) {
     if (kbDone) break;
-    await goto(page, `/kb/genre/${slug}`, 5000);
-    const kbInfo = await page.evaluate(() => {
-      const h1 = document.querySelector('h1');
-      const title = h1?.textContent?.trim();
-      const notFound = !title || title.toLowerCase().includes('not found') || title.toLowerCase().includes('404');
-      const body = document.body.innerText;
-      // Check for real description (more than 50 chars of prose)
-      const descEl = document.querySelector('.genre-description, .scene-description, .description, main p');
+    await goto(page, `/kb/genre/${genre}`, 5000);
+    // Dismiss any open map popups
+    await tryClick(page, '.popup-close, .map-popup .close, [aria-label="Close"]', 1000);
+    await page.waitForTimeout(500);
+    const kbChecks = await page.evaluate(() => {
+      const h1 = document.querySelector('h1')?.textContent?.trim();
+      const notFound = !h1 || /not found|404/i.test(document.body.innerText.slice(0, 200));
+      const descEl = document.querySelector('.genre-description, .kb-description, [class*="description"], .prose, article p');
       const descText = descEl?.textContent?.trim() ?? '';
-      const hasDesc = descText.length > 50 && !descText.includes('This scene has no description');
-      const hasMarkdown = body.includes('## ') || body.includes('**') || /^# /m.test(body);
-      const mapPopup = document.querySelector('.leaflet-popup, .map-popup, [class*="popup"]');
-      return { title, notFound, hasDesc, descText: descText.slice(0, 80), hasMarkdown, hasPopup: !!mapPopup };
+      const hasDesc = descText.length > 100 && !/no description|coming soon|no content/i.test(descText);
+      const hasMarkdown = descText.includes('## ') || descText.startsWith('# ');
+      const keyArtists = document.querySelectorAll('.key-artist-row, [class*="key-artist"] a, .artist-list a').length;
+      return { h1, notFound, hasDesc, hasMarkdown, keyArtists, descLength: descText.length };
     });
-    console.log(`  ↳ KB [${slug}]: "${kbInfo.title}", hasDesc=${kbInfo.hasDesc}, hasPopup=${kbInfo.hasPopup}`);
-    if (kbInfo.notFound) { console.log(`  ✗ Not found, trying next slug`); continue; }
-    if (!kbInfo.hasDesc) { console.log(`  ✗ No description for ${slug}, trying next`); continue; }
-    if (kbInfo.hasMarkdown) bug('knowledge-base', `Raw markdown visible in content for ${slug}`);
-    // Dismiss any open map popup
-    if (kbInfo.hasPopup) {
-      await tryClick(page, '.leaflet-popup-close-button, .map-popup-close, [aria-label="Close popup"]');
-      await sleep(600);
+    if (kbChecks.notFound) { console.log(`  ↳ ${genre}: not found`); continue; }
+    if (!kbChecks.hasDesc) {
+      console.log(`  ↳ ${genre}: description short/missing (${kbChecks.descLength} chars) — trying next`);
+      if (genre === 'shoegaze') bug('knowledge-base', 'Shoegaze still has no description');
+      continue;
     }
-    await page.evaluate(() => window.scrollTo(0, 0));
-    await save(page, 'knowledge-base-shoegaze.png'); // keep original filename for continuity
+    if (kbChecks.hasMarkdown) bug(`knowledge-base-${genre}`, 'Raw markdown visible in content');
+    if (kbChecks.keyArtists === 0) bug(`knowledge-base-${genre}`, 'No key artists listed');
+    console.log(`  ↳ ${genre}: "${kbChecks.h1}", desc=${kbChecks.descLength}ch, keyArtists=${kbChecks.keyArtists}`);
+    await save(page, 'knowledge-base-shoegaze.png');
     kbDone = true;
   }
   if (!kbDone) {
-    bug('knowledge-base', 'No KB entry found with a description — tried: ' + kbSlugs.join(', '));
+    bug('knowledge-base', 'No KB genre entries have descriptions');
     await save(page, 'knowledge-base-shoegaze.png');
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // 21. Artist Claim Form (/claim)
+  // 21. Artist Claim Form
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 21. Artist Claim Form ---');
   await goto(page, '/claim', 4000);
@@ -983,34 +907,19 @@ async function run() {
   await save(page, 'artist-claim-form.png');
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // Cleanup
+  // Summary
   // ═══════════════════════════════════════════════════════════════════════════
-  try { await browser.close(); } catch (_) {}
+  try { await browser.close(); } catch {}
   proc.kill();
   if (devProc) devProc.kill();
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // Copy to press-screenshots/v5/
-  // ═══════════════════════════════════════════════════════════════════════════
-  console.log(`\nCopying to press-screenshots/v5/...`);
-  fs.mkdirSync(PRESS_OUT, { recursive: true });
-  let copied = 0;
-  for (const f of fs.readdirSync(OUT)) {
-    if (!f.endsWith('.png')) continue;
-    fs.copyFileSync(path.join(OUT, f), path.join(PRESS_OUT, f));
-    copied++;
-  }
-  console.log(`  ✓ ${copied} files copied to ${PRESS_OUT}`);
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // Summary
-  // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n\n═══════════════════════════════════════════════════');
-  console.log('SCREENSHOTS COMPLETE (v1.7)');
+  console.log('SCREENSHOTS COMPLETE — v1.7');
   console.log(`Output: ${OUT}`);
-  console.log(`Press:  ${PRESS_OUT}`);
   console.log('\nFiles saved:');
-  fs.readdirSync(OUT).sort().forEach(f => console.log(`  ${f}`));
+  try {
+    fs.readdirSync(OUT).sort().forEach(f => console.log(`  ${f}`));
+  } catch {}
 
   console.log('\n═══════════════════════════════════════════════════');
   if (BUGS.length === 0) {
