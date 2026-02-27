@@ -13,17 +13,6 @@
 	let { currentTemplateId, allTemplates, onTemplateChange }: Props = $props();
 
 	let searchQuery = $state('');
-	let navInput = $state('');
-
-	function handleNav(e: Event) {
-		e.preventDefault();
-		const val = navInput.trim();
-		if (!val) return;
-		const path = val.startsWith('/') ? val : '/' + val;
-		goto(path);
-		navInput = '';
-	}
-
 	// Split templates into built-ins and user templates for optgroup rendering
 	const builtinIds = ['cockpit', 'focus', 'minimal'];
 	const builtinTemplates = $derived(allTemplates.filter((t) => builtinIds.includes(t.id)));
@@ -81,20 +70,6 @@
 				placeholder="Search..."
 				bind:value={searchQuery}
 				autocomplete="off"
-			/>
-		</form>
-	</div>
-
-	<!-- Center Group: Address bar -->
-	<div class="bar-group bar-center">
-		<form class="nav-form" onsubmit={handleNav}>
-			<input
-				class="nav-input"
-				type="text"
-				placeholder="/artist/radiohead"
-				bind:value={navInput}
-				autocomplete="off"
-				spellcheck="false"
 			/>
 		</form>
 	</div>
@@ -169,38 +144,6 @@
 		flex-shrink: 0;
 	}
 
-	.bar-center {
-		flex: 1;
-		justify-content: center;
-	}
-
-	.nav-form {
-		width: 100%;
-		max-width: 400px;
-	}
-
-	.nav-input {
-		width: 100%;
-		background: var(--bg-4);
-		border: 1px solid var(--b-2);
-		border-radius: var(--r);
-		color: var(--t-1);
-		font-size: 11px;
-		font-family: inherit;
-		padding: 2px 8px;
-		height: 26px;
-		outline: none;
-		box-sizing: border-box;
-	}
-
-	.nav-input::placeholder {
-		color: var(--t-3);
-	}
-
-	.nav-input:focus {
-		border-color: var(--acc);
-	}
-
 	.bar-right {
 		flex-shrink: 0;
 		margin-left: auto;
@@ -219,7 +162,7 @@
 		background: var(--bg-4);
 		border: 1px solid var(--b-2);
 		border-radius: var(--r);
-		color: var(--t-3);
+		color: var(--t-2);
 		cursor: pointer;
 		flex-shrink: 0;
 		transition: color 0.1s, background 0.1s;
