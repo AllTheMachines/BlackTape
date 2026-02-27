@@ -123,11 +123,18 @@ async function tryClick(page, selector, timeoutMs = 3000) {
   return false;
 }
 
+function evalWithTimeout(page, fn, ms = 2500) {
+  return Promise.race([
+    page.evaluate(fn),
+    new Promise((_, reject) => setTimeout(() => reject(new Error('evaluate timeout')), ms)),
+  ]);
+}
+
 async function waitForCardImages(page, timeoutMs = 15000, minImages = 4) {
   const start = Date.now();
   while (Date.now() - start < timeoutMs) {
     try {
-      const count = await page.evaluate(() => {
+      const count = await evalWithTimeout(page, () => {
         let loaded = 0;
         for (const img of document.querySelectorAll('.a-art img[src]')) {
           if (img.complete && img.naturalHeight > 0) loaded++;
@@ -142,7 +149,7 @@ async function waitForCardImages(page, timeoutMs = 15000, minImages = 4) {
     await page.waitForTimeout(600);
   }
   try {
-    const final = await page.evaluate(() => {
+    const final = await evalWithTimeout(page, () => {
       let loaded = 0;
       for (const img of document.querySelectorAll('.a-art img[src]')) {
         if (img.complete && img.naturalHeight > 0) loaded++;
@@ -161,7 +168,7 @@ async function waitForDiscographyCovers(page, timeoutMs = 18000, minCovers = 4) 
   const start = Date.now();
   while (Date.now() - start < timeoutMs) {
     try {
-      const count = await page.evaluate(() => {
+      const count = await evalWithTimeout(page, () => {
         let loaded = 0;
         for (const img of document.querySelectorAll('.cover-art img[src]')) {
           if (img.complete && img.naturalHeight > 0) loaded++;
@@ -176,7 +183,7 @@ async function waitForDiscographyCovers(page, timeoutMs = 18000, minCovers = 4) 
     await page.waitForTimeout(800);
   }
   try {
-    const final = await page.evaluate(() => {
+    const final = await evalWithTimeout(page, () => {
       let loaded = 0;
       for (const img of document.querySelectorAll('.cover-art img[src]')) {
         if (img.complete && img.naturalHeight > 0) loaded++;
@@ -303,6 +310,14 @@ async function launchTauri() {
 
   await page.waitForLoadState('domcontentloaded').catch(() => {});
   await page.waitForTimeout(3000);
+  page.setDefaultTimeout(10000);
+  // Bound ALL page.evaluate() calls — setDefaultTimeout does NOT cover evaluate().
+  // When CDP freezes, evaluate() hangs forever without this.
+  const _evaluate = page.evaluate.bind(page);
+  page.evaluate = (...args) => Promise.race([
+    _evaluate(...args),
+    new Promise((_, rej) => setTimeout(() => rej(new Error('eval timeout')), 8000)),
+  ]);
   console.log('Connected. App URL:', page.url());
 }
 
