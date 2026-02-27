@@ -873,10 +873,41 @@
 		color: var(--text-primary);
 	}
 
-	/* Service-specific active border colors */
+	/* Platform brand colors — text + faint border always, full border on hover/active */
+	.platform-pill--bandcamp {
+		color: var(--bandcamp-color, #1da0c3);
+		border-color: color-mix(in srgb, var(--bandcamp-color, #1da0c3) 35%, transparent);
+	}
+	.platform-pill--bandcamp:hover {
+		border-color: var(--bandcamp-color, #1da0c3);
+	}
 	.platform-pill--bandcamp.active { border-color: var(--bandcamp-color, #1da0c3); }
+
+	.platform-pill--spotify {
+		color: var(--spotify-color, #1db954);
+		border-color: color-mix(in srgb, var(--spotify-color, #1db954) 35%, transparent);
+	}
+	.platform-pill--spotify:hover {
+		border-color: var(--spotify-color, #1db954);
+	}
 	.platform-pill--spotify.active { border-color: var(--spotify-color, #1db954); }
+
+	.platform-pill--soundcloud {
+		color: var(--soundcloud-color, #ff5500);
+		border-color: color-mix(in srgb, var(--soundcloud-color, #ff5500) 35%, transparent);
+	}
+	.platform-pill--soundcloud:hover {
+		border-color: var(--soundcloud-color, #ff5500);
+	}
 	.platform-pill--soundcloud.active { border-color: var(--soundcloud-color, #ff5500); }
+
+	.platform-pill--youtube {
+		color: var(--youtube-color, #ff0000);
+		border-color: color-mix(in srgb, var(--youtube-color, #ff0000) 35%, transparent);
+	}
+	.platform-pill--youtube:hover {
+		border-color: var(--youtube-color, #ff0000);
+	}
 	.platform-pill--youtube.active { border-color: var(--youtube-color, #ff0000); }
 
 	/* External link icon — joined to the right side of a pill button */
