@@ -4,6 +4,10 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+<!-- status -->
+Screenshot QA pass v1.7 — running all 21 screens. Fixing v1.6 issues: artist discovery grid visibility, Time Machine tag filter, Style Map zoom, KB entry with description, queue from multiple artists.
+<!-- /status -->
+
 ---
 
 ## Entry 2026-02-27 — Screenshot QA Pass (v1.6) — All 21 Screens
@@ -9442,3 +9446,6 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit b2f7865** (2026-02-27 17:25) — wip: auto-save
 > Files changed: 2
+
+> **Commit 04afdfe** (2026-02-27 17:25) — wip: auto-save
+> Files changed: 1
