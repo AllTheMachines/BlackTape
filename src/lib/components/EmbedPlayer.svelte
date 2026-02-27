@@ -254,7 +254,7 @@
 <div class="embed-player">
 	{#each orderedPlatforms as platform}
 		{@const urls = links[platform]}
-		{#if urls.length > 0}
+		{#if urls.length > 0 && (!autoLoad || !activePlatform || platform === activePlatform)}
 			<div class="platform-section">
 				{#if platform === 'bandcamp'}
 					{#each urls as url}
