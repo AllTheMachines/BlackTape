@@ -9590,3 +9590,6 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit 16a6582** (2026-02-27 21:27) — wip: auto-save
 > Files changed: 1
+
+> **Commit a3003df** (2026-02-27 21:37) — wip: auto-save
+> Files changed: 4
