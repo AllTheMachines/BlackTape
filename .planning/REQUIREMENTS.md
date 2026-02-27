@@ -35,13 +35,13 @@
 ### Bandcamp (BC)
 
 - [x] **BC-01**: Artist page shows Bandcamp embed player when a Bandcamp link is available (gated on implementation spike validating the `url=` embed parameter — falls back to external link if spike fails)
-- [ ] **BC-02**: Release page "Play Album" button activates the Bandcamp embed for that specific release URL when available, otherwise activates artist-level embed
+- [x] **BC-02**: Release page "Play Album" button activates the Bandcamp embed for that specific release URL when available, otherwise activates artist-level embed
 
 ### Player UX (PLAYER)
 
 - [x] **PLAYER-01**: Player bar displays a service badge showing the currently active streaming source (e.g. "Spotify", "SoundCloud", "Bandcamp")
 - [x] **PLAYER-02**: Artist page shows a source switcher — one button per available service, switching active source without navigating away
-- [ ] **PLAYER-03**: Release page "Play Album" button activates the best available streaming source for that release
+- [x] **PLAYER-03**: Release page "Play Album" button activates the best available streaming source for that release
 
 ### Artist Claim Form (CLAIM)
 
@@ -88,10 +88,10 @@
 | SC-01 | Phase 32 | Complete |
 | SC-02 | Phase 32 | Complete |
 | BC-01 | Phase 32 | Complete |
-| BC-02 | Phase 32 | Pending |
+| BC-02 | Phase 32 | Complete |
 | PLAYER-01 | Phase 29 | Complete |
 | PLAYER-02 | Phase 32 | Complete |
-| PLAYER-03 | Phase 32 | Pending |
+| PLAYER-03 | Phase 32 | Complete |
 | CLAIM-01 | Phase 33 | Pending |
 
 **Coverage:**

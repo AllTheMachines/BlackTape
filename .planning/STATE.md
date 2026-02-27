@@ -4,12 +4,12 @@ milestone: v1.6
 milestone_name: The Playback Milestone
 status: active
 current_phase: 32
-last_updated: "2026-02-27T09:38:13Z"
+last_updated: "2026-02-27T09:50:00Z"
 progress:
   total_phases: 13
-  completed_phases: 11
+  completed_phases: 12
   total_plans: 42
-  completed_plans: 40
+  completed_plans: 41
 ---
 
 # Project State
@@ -23,12 +23,12 @@ See: .planning/PROJECT.md (updated 2026-02-27)
 
 ## Current Position
 
-Phase: 32 of 33 (Embedded Players)
-Plan: 2 of 3 in current phase (32-02 complete)
-Status: Active — Phase 32, Plan 02 complete; Plan 32-03 pending
-Last activity: 2026-02-27 — 32-02 executed (artist page source switcher + EmbedPlayer integration)
+Phase: 32 of 33 (Embedded Players — COMPLETE)
+Plan: 3 of 3 in current phase (32-03 complete — Phase 32 done)
+Status: Active — Phase 32 complete; Phase 33 (Artist Claim Form) pending
+Last activity: 2026-02-27 — 32-03 executed (release page Play Album wired to Bandcamp embed)
 
-Progress: [████████████████████████] 27% of v1.6 (9 plans done across Phases 29+30+31+32-01+32-02)
+Progress: [████████████████████████████] 30% of v1.6 (10 plans done across Phases 29+30+31+32)
 
 ## Performance Metrics
 
@@ -43,7 +43,7 @@ Progress: [███████████████████████
 | 29. Streaming Foundation | 4 | Complete — 4/4 plans done |
 | 30. Spotify Integration | 3 | Complete — 3/3 plans done |
 | 31. v1 Prep | 1 | Complete — 1/1 plans done |
-| 32. Embedded Players | 3 | In progress — 1/3 plans done |
+| 32. Embedded Players | 3 | Complete — 3/3 plans done |
 | 33. Artist Claim Form | TBD | Not started |
 
 **v1.6 metrics so far:**
@@ -57,6 +57,7 @@ Progress: [███████████████████████
 - 31-01: (complete — v1 Prep)
 - 32-01: 7 min, 2 tasks, 4 files + 1 tool created, 0 deviations
 - 32-02: 3 min, 1 task, 1 file, 1 auto-fix (escaped HTML comment from Python replacement)
+- 32-03: 3 min, 1 task, 2 files, 0 deviations
 
 ## Accumulated Context
 
@@ -96,11 +97,15 @@ Progress: [███████████████████████
 - [32-02]: activateService() calls setActiveSource BEFORE updating activeEmbedService — prevents outgoing EmbedPlayer onDestroy from clobbering the source just set by incoming embed
 - [32-02]: availableEmbedServices derives from streamingState.serviceOrder — single source of truth for platform preference, no secondary sorting needed
 - [32-02]: SC oEmbed fetch gated in Tauri onMount block only — /api/soundcloud-oembed endpoint only available in Tauri app server context
+- [32-03]: Play Album button absent from DOM when no Bandcamp URL — not disabled, not grayed out
+- [32-03]: bandcampUrl moved to outer scope (before try block) to be accessible at return statement
+- [32-03]: streamingLinks: { bandcamp: string | null } exposes value without extending ReleaseDetail interface
 
 ### Blockers/Concerns
 
 - [Phase 32 gate]: YouTube Error 153 fallback must be tested in a production .msi build — dev mode passes; production can fail. This is a hard completion gate for Phase 32.
 - [Phase 32 note]: SoundCloud Widget API re-binding after Svelte navigation remount is untested — verify in Phase 32 Plan 02 before marking SC-01 complete.
+- [Phase 32 resolved]: Phase 32 code complete. YouTube Error 153 gate remains for production .msi build validation (not blocking Phase 33).
 
 ### Pending Todos
 
@@ -109,5 +114,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-27
-Stopped at: Completed 32-02-PLAN.md (artist page source switcher + EmbedPlayer integration)
+Stopped at: Completed 32-03-PLAN.md (release page Play Album wired to Bandcamp embed — Phase 32 complete)
 Resume file: None

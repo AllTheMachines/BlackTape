@@ -71,7 +71,7 @@ See `.planning/milestones/v1.5-ROADMAP.md`
 - [x] **Phase 29: Streaming Foundation** â€” activeSource coordination state, service priority drag-to-reorder in Settings, player bar service badge (completed 2026-02-27)
 - [x] **Phase 30: Spotify Integration** â€” PKCE OAuth flow, Spotify Connect API top-track playback, disconnect/reconnect (completed 2026-02-27)
 - [ ] **Phase 31: v1 Prep** â€” Community feature UI removal (Scenes, Rooms, Chat, Fediverse hidden from nav), localhost text fix
-- [ ] **Phase 32: Embedded Players** â€” YouTube IFrame, SoundCloud Widget, Bandcamp embed (spike-gated), source switcher UI, release page Play Album
+- [x] **Phase 32: Embedded Players** â€” YouTube IFrame, SoundCloud Widget, Bandcamp embed (spike-gated), source switcher UI, release page Play Album (completed 2026-02-27)
 - [ ] **Phase 33: Artist Claim Form** â€” /claim route, artist page claim link, local storage
 
 ---
@@ -175,5 +175,5 @@ Plans:
 | 29. Streaming Foundation | v1.6 | 4/4 | Complete | 2026-02-27 |
 | 30. Spotify Integration | v1.6 | 3/3 | Complete | 2026-02-27 |
 | 31. v1 Prep | v1.6 | 0/1 | Not started | - |
-| 32. Embedded Players | 2/3 | In Progress|  | - |
+| 32. Embedded Players | 3/3 | Complete   | 2026-02-27 | - |
 | 33. Artist Claim Form | v1.6 | 0/? | Not started | - |
