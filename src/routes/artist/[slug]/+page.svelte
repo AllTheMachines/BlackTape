@@ -285,6 +285,18 @@
 		}
 	}
 
+	/** Returns a platform-specific CSS class for non-embed streaming link pills. */
+	function extPillClass(url: string): string {
+		try {
+			const host = new URL(url).hostname;
+			if (host.includes('apple.com')) return 'platform-pill--apple-music';
+			if (host.includes('deezer.com')) return 'platform-pill--deezer';
+			if (host.includes('play.google.com')) return 'platform-pill--google-play';
+			if (host.includes('tidal.com')) return 'platform-pill--tidal';
+		} catch { /* ignore */ }
+		return '';
+	}
+
 	/** Toggle the active embed service. Clicking the active service collapses the embed. */
 	function toggleService(svc: PlatformType) {
 		if (activeEmbedService === svc) {
@@ -449,7 +461,7 @@
 						href={link.url}
 						target="_blank"
 						rel="noopener noreferrer"
-						class="platform-pill platform-pill--ext"
+						class="platform-pill platform-pill--ext {extPillClass(link.url)}"
 					>{link.label} ↗</a>
 				{/each}
 			</div>
@@ -864,7 +876,6 @@
 
 	.platform-pill:hover {
 		background: var(--bg-3);
-		color: var(--text-primary);
 	}
 
 	.platform-pill.active {
@@ -929,14 +940,35 @@
 		color: var(--text-primary);
 	}
 
-	/* External-only platform pills (Apple Music, Deezer, Tidal, etc.) */
+	/* External-only platform pills — generic fallback */
 	a.platform-pill--ext {
 		color: var(--t-3);
 	}
 
-	a.platform-pill--ext:hover {
-		color: var(--text-primary);
+	/* Platform-specific colors for non-embed streaming services */
+	.platform-pill--apple-music {
+		color: #fc3c44;
+		border-color: color-mix(in srgb, #fc3c44 35%, transparent);
 	}
+	.platform-pill--apple-music:hover { border-color: #fc3c44; }
+
+	.platform-pill--deezer {
+		color: #a238ff;
+		border-color: color-mix(in srgb, #a238ff 35%, transparent);
+	}
+	.platform-pill--deezer:hover { border-color: #a238ff; }
+
+	.platform-pill--google-play {
+		color: #4285f4;
+		border-color: color-mix(in srgb, #4285f4 35%, transparent);
+	}
+	.platform-pill--google-play:hover { border-color: #4285f4; }
+
+	.platform-pill--tidal {
+		color: #00a0d4;
+		border-color: color-mix(in srgb, #00a0d4 35%, transparent);
+	}
+	.platform-pill--tidal:hover { border-color: #00a0d4; }
 
 	.tags {
 		display: flex;
