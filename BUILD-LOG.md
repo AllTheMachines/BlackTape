@@ -9584,3 +9584,6 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit ee43dfd** (2026-02-27 21:25) — wip: auto-save
 > Files changed: 2
+
+> **Commit 10db73c** (2026-02-27 21:27) — chore: v1.7 press screenshots complete — 21/21 captured
+> Files changed: 2
