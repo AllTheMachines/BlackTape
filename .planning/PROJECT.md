@@ -2,21 +2,9 @@
 
 ## What This Is
 
-A music discovery engine that indexes 2.8M+ artists from open databases, lets you explore through atomic tags, and embeds players from wherever the music already lives — Bandcamp, Spotify, SoundCloud, YouTube. Runs as a Tauri desktop app with a local SQLite database (offline-first). Not a platform. Not a streaming service. A search engine that becomes an ecosystem — with a consistent design system, full queue management, artist relationship data, cross-linked discovery tools, and intelligent search.
+A music discovery engine that indexes 2.8M+ artists from open databases, lets you explore through atomic tags, and embeds players from wherever the music already lives — Bandcamp, Spotify, SoundCloud, YouTube. Runs as a Tauri desktop app with a local SQLite database (offline-first). Not a platform. Not a streaming service. A search engine that becomes an ecosystem — with multi-source streaming (Spotify Connect, YouTube, SoundCloud, Bandcamp), a source switcher UI, service priority ordering, consistent design system, full queue management, artist relationship data, cross-linked discovery tools, and intelligent search.
 
-v1.5 shipped: UX cleanup — search type pills, discovery sidebar, dead link filtering, streaming preference UI. v1.6 in progress: multi-source streaming integration (Spotify, YouTube, SoundCloud, Bandcamp).
-
-## Current Milestone: v1.6 — The Playback Milestone
-
-**Goal:** Wire up multi-source streaming so users can play full tracks from any artist page, with Spotify premium playback, YouTube embeds, SoundCloud and Bandcamp — service priority set once, plays automatically.
-
-**Target features:**
-- Spotify PKCE OAuth with guided onboarding (bundled client ID)
-- YouTube IFrame player (fallback: open in browser)
-- SoundCloud + Bandcamp embed players
-- Service resolution per-artist + source switcher UI
-- Drag-to-reorder service priority in Settings
-- Player bar service badge + release page album playback
+v1.6 shipped: multi-source streaming — Spotify PKCE OAuth + Connect API playback, YouTube/SoundCloud/Bandcamp embeds, source switcher on every artist page, service priority drag-to-reorder, community features cleaned from UI, artist claim form. App is ready for public release.
 
 ## Core Value
 
@@ -63,21 +51,17 @@ Uniqueness is rewarded — the more niche you are, the more discoverable you bec
 - ✓ Discover redesign (filter panel + artist grid) + cross-linking across all 7 discovery tools — v1.4
 - ✓ Search autocomplete (FTS5 prefix, direct-to-artist), city/label intent parsing, intent chips, per-result match badges — v1.4
 - ✓ KB genre page redesign — type badge pill, compact artist rows, colour-coded genre dots, genre map placeholder — v1.4
+- ✓ UX cleanup — search type pills, discovery sidebar, dead link filtering, streaming preference UI, scope reduction (community features scoped back) — v1.5
+- ✓ Streaming state coordination — activeSource module, service priority drag-to-reorder in Settings, player bar service badge — v1.6
+- ✓ Spotify integration — PKCE OAuth guided connect flow, Spotify Connect API top-track playback, clear device-not-found feedback, disconnect/reconnect — v1.6
+- ✓ Community features removed from UI (Scenes, Rooms, Chat, Fediverse hidden from all nav surfaces; code preserved) — v1.6
+- ✓ YouTube + SoundCloud + Bandcamp embeds — artist page source switcher, EmbedPlayer with autoLoad, SoundCloud Widget API, Bandcamp url= spike confirmed — v1.6
+- ✓ Release page Play Album button — activates best available streaming source for that release — v1.6
+- ✓ Artist claim form — /claim route, "Are you X? Claim this page" on every artist page, Cloudflare Worker + KV + email notifications, CORS Tauri fix — v1.6
 
 ### Active
 
-<!-- v1.6 — The Playback Milestone -->
-
-- [ ] User can connect Spotify via guided in-app OAuth flow (bundled client ID, no developer portal)
-- [ ] User can play full tracks from Spotify Premium within the app (Web Playback SDK)
-- [ ] User can play tracks via YouTube IFrame player (fallback: open in browser)
-- [ ] User can play tracks via SoundCloud embed
-- [ ] User can play tracks via Bandcamp embed
-- [ ] App detects which services have content for each artist and shows available sources
-- [ ] User can set streaming service priority order (drag-to-reorder in Settings → Streaming)
-- [ ] Player bar shows which service is currently playing (service badge)
-- [ ] User can switch source mid-session from artist page (source switcher buttons)
-- [ ] User can play a full album from release page with track queue populated from tracklist
+<!-- v1.7 — TBD, defined during /gsd:new-milestone -->
 
 ### Out of Scope
 
@@ -88,6 +72,8 @@ Uniqueness is rewarded — the more niche you are, the more discoverable you bec
 - Tracking / ads — none
 - API-for-profit — no businesses building on top
 - Vanity metrics — no follower counts, like counts, or play counts, ever
+- Spotify Web Playback SDK (in-app audio) — Widevine CDM not available in WebView2 (confirmed unresolved since 2018)
+- Bundled Spotify client_id — Spotify Feb 2026 policy: dev cap = 5 users; Extended Access requires 250k MAU + legal entity
 
 ## Context
 
@@ -103,10 +89,15 @@ Uniqueness is rewarded — the more niche you are, the more discoverable you bec
 
 **v1.4 shipped 2026-02-25.** The Interface — Phases 23–27: full visual redesign, queue management, artist relationships, discovery cross-linking, search improvements. Codebase: ~30,036 LOC TypeScript/Svelte (net reduction from refactoring old styles). 164 code checks passing.
 
-**Tech stack:** SvelteKit (Svelte 5) + Tauri 2.0 + SQLite + FTS5. Client-side AI via llama.cpp sidecar (Qwen2.5 3B) + Nomic Embed. Nostr (NDK) for communications.
+**v1.5 shipped 2026-02-26.** UX Cleanup — Phase 28: 7 plans covering scope reduction, streaming pref UI, dead link filtering, share buttons. 193 code checks passing.
+
+**v1.6 shipped 2026-02-27.** The Playback Milestone — Phases 29–33: multi-source streaming, Spotify integration, embedded players (YouTube/SoundCloud/Bandcamp), artist claim form, UI cleanup. Codebase: ~32,939 LOC TypeScript/Svelte + 4,188 LOC Rust. 193 code checks, 0 failing.
+
+**Tech stack:** SvelteKit (Svelte 5) + Tauri 2.0 + SQLite + FTS5. Client-side AI via llama.cpp sidecar (Qwen2.5 3B) + Nomic Embed. Nostr (NDK) for communications. Cloudflare Worker (artist claim backend).
 
 **Known deployment steps before public launch:**
 - Replace auto-updater endpoint placeholder in `tauri.conf.json`
+- Set up BlackTape domain + Cloudflare Worker (`blacktape-signups.theaterofdelays.workers.dev` → production URL)
 
 Pre-project research (2026-02-14) saved in ControlCenter:
 - `D:/Projects/_ControlCenter/.planning/music-platform/research/` — 4 deep research reports
@@ -144,7 +135,13 @@ Pre-project research (2026-02-14) saved in ControlCenter:
 | TrackRow reusable component pattern (v1.4) | Single component for all track surfaces eliminates duplication; queue actions consistent everywhere | ✓ Good |
 | FTS5 prefix search for autocomplete (v1.4) | Leverages existing FTS5 index; prefix-first ORDER BY ensures best matches appear first | ✓ Good |
 | onmousedown + 150ms blur delay for autocomplete (v1.4) | Prevents race condition where blur fires before click registers — no JS state hacks needed | ✓ Good |
-| Genre map placeholder instead of live ForceGraph (v1.4) | GenreGraph was too heavy for the KB genre page; placeholder acknowledges feature without blocking redesign | — Pending (v1.5 candidate) |
+| Genre map placeholder instead of live ForceGraph (v1.4) | GenreGraph was too heavy for the KB genre page; placeholder acknowledges feature without blocking redesign | — Pending (v1.7 candidate) |
+| User-provided Spotify client_id (not bundled) (v1.6) | Spotify Feb 2026 policy blocks bundled IDs at < 250k MAU; user brings own key via Settings wizard | ✓ Good |
+| Spotify Connect API over Web Playback SDK (v1.6) | Widevine CDM unavailable in WebView2 — Connect API (controls Spotify Desktop) is the only viable path | ✓ Good |
+| Bandcamp url= embed parameter (v1.6) | Spike confirmed: `url=` works in WebView2 (not just iframe src); unlocks album-level embeds from release page | ✓ Good |
+| {#key activeService} pattern for embed unmounting (v1.6) | Svelte's keyed blocks destroy/recreate on key change — cleanest way to unmount competing embeds without manual lifecycle | ✓ Good |
+| Cloudflare Worker for artist claims (v1.6) | Keeps artist claim backend at $0 infra cost; KV storage + Resend email; CORS covers tauri://localhost | ✓ Good |
+| Community features hidden not deleted (v1.6) | Code preserved in $lib/comms/ — only render paths removed; allows revival in v1.7+ if desired | ✓ Good |
 
 ---
-*Last updated: 2026-02-25 after v1.4 milestone — The Interface*
+*Last updated: 2026-02-27 after v1.6 milestone — The Playback Milestone*
