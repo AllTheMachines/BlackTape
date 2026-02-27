@@ -157,8 +157,8 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		width: 26px;
-		height: 26px;
+		width: 32px;
+		height: 32px;
 		background: var(--bg-4);
 		border: 1px solid var(--b-2);
 		border-radius: var(--r);
@@ -166,6 +166,13 @@
 		cursor: pointer;
 		flex-shrink: 0;
 		transition: color 0.1s, background 0.1s;
+	}
+
+	:global(.back-btn svg) {
+		display: block;
+		width: 15px;
+		height: 15px;
+		flex-shrink: 0;
 	}
 
 	.back-btn:hover {
