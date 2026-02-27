@@ -9,7 +9,7 @@
 
 - [x] **INFRA-01**: User can set streaming service priority order via drag-to-reorder in Settings → Streaming (persisted across sessions)
 - [x] **INFRA-02**: App prevents simultaneous playback — only one source (local player or streaming service) active at a time
-- [ ] **INFRA-03**: Artist page detects and shows which streaming services have content for the current artist (derived from existing MusicBrainz link data)
+- [x] **INFRA-03**: Artist page detects and shows which streaming services have content for the current artist (derived from existing MusicBrainz link data)
 
 ### Spotify (SPOT)
 
@@ -69,7 +69,7 @@
 |-------------|-------|--------|
 | INFRA-01 | Phase 29 | Complete |
 | INFRA-02 | Phase 29 | Complete |
-| INFRA-03 | Phase 29 | Pending |
+| INFRA-03 | Phase 29 | Complete |
 | SPOT-01 | Phase 30 | Pending |
 | SPOT-02 | Phase 30 | Pending |
 | SPOT-03 | Phase 30 | Pending |

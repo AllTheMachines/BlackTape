@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-27)
 ## Current Position
 
 Phase: 29 of 32 (Streaming Foundation)
-Plan: 2 of 4 in current phase
-Status: Executing — 29-02 complete, 2 plans remaining
-Last activity: 2026-02-27 — 29-02 executed (Settings drag-to-reorder streaming service priority)
+Plan: 3 of 4 in current phase
+Status: Executing — 29-03 complete, 1 plan remaining
+Last activity: 2026-02-27 — 29-03 executed (Artist page streaming availability badge pills)
 
-Progress: [████████████▓░░░░░░░] 9% of v1.6 (Phase 29 in progress — 2/4 plans done)
+Progress: [████████████████▓░░░] 12% of v1.6 (Phase 29 in progress — 3/4 plans done)
 
 ## Performance Metrics
 
@@ -34,6 +34,7 @@ Progress: [████████████▓░░░░░░░] 9% of v
 **v1.6 metrics so far:**
 - 29-01: 2 min, 3 tasks, 3 files, 0 deviations
 - 29-02: 2 min, 1 task, 1 file, 0 deviations
+- 29-03: 2 min, 1 task, 1 file, 1 auto-fix (Svelte 5 {@const} placement constraint)
 
 ## Accumulated Context
 
@@ -44,6 +45,7 @@ Progress: [████████████▓░░░░░░░] 9% of v
 - [29-01]: Service order validation requires exactly 4 entries — partial/corrupted saves fall back to DEFAULT silently
 - [29-02]: CSS tokens var(--bg-3), var(--b-1), var(--r) used (not var(--bg-elevated)/var(--card-radius) from plan template — those don't exist in this codebase)
 - [29-02]: Streaming section placed after Streaming Preference section for logical grouping; SERVICE_LABELS is a const (static lookup, no reactivity needed)
+- [29-03]: Svelte 5 requires {@const} inside a block tag — used outer {#if OR-condition} wrapper so {@const streamingBadges} is a legal child; functionally identical to plan intent
 - [v1.6 Research]: Spotify Web Playback SDK NOT used — Widevine CDM unavailable in WebView2 (confirmed unresolved since 2018, GitHub spotify/web-playback-sdk#41)
 - [v1.6 Research]: No bundled Spotify client_id — February 2026 policy caps dev mode at 5 users; each user provides their own
 - [v1.6 Research]: Spotify OAuth redirect URI must be http://127.0.0.1 (not localhost — blocked since November 2025)
@@ -66,5 +68,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-27
-Stopped at: Completed 29-streaming-foundation/29-02-PLAN.md
+Stopped at: Completed 29-streaming-foundation/29-03-PLAN.md
 Resume file: None

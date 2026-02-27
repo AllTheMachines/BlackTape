@@ -59,6 +59,17 @@ One task, one commit, zero deviations. The Settings → Streaming drag-to-reorde
 - CSS uses existing design tokens (`var(--bg-3)`, `var(--b-1)`, `var(--r)`, `var(--acc)`) — visually consistent with existing settings sections.
 - `npm run check`: 0 errors, 183 code tests passing.
 
+### 29-03 Execution Complete (1 min)
+
+One task, one commit, one auto-fix. Streaming availability badge pills added to artist page header:
+
+- `artist/[slug]/+page.svelte` updated — badge row inserted between `artist-meta` paragraph and the `tags` div in the `<header class="artist-header">`.
+- Badges are `span.streaming-badge` elements (non-clickable, informational) showing "Bandcamp", "Spotify", "SoundCloud", "YouTube" derived from `data.links.{platform}.length > 0` — zero new API calls.
+- Badge row hidden entirely when no platform has links (outer `{#if}` on OR of all four length checks).
+- **Auto-fix applied:** Svelte 5 requires `{@const}` to be the immediate child of a block tag (`{#if}`, `{#each}`, etc.) — cannot be a direct child of `<header>`. Moved derivation inside the outer `{#if}` wrapper block. This is a Svelte 5 constraint, not a plan deficiency.
+- CSS uses `var(--bg-3)`, `var(--b-1)`, `var(--r)` — consistent with this codebase's token conventions (not `var(--bg-elevated)` which doesn't exist here).
+- `npm run check`: 0 errors, 183 code tests passing.
+
 ---
 
 ## Entry 2026-02-26 — Press Screenshots v2 + Wikipedia Artist Thumbnails
@@ -8621,4 +8632,10 @@ This completes v1.0 — The Playback Milestone. All phases done.
 > Files changed: 5
 
 > **Commit 07e96bf** (2026-02-27 01:28) — feat(29-02): add Streaming service priority drag-to-reorder in Settings
+> Files changed: 1
+
+> **Commit 5704e7f** (2026-02-27 01:30) — docs(29-02): complete streaming service priority Settings UI plan
+> Files changed: 4
+
+> **Commit 181b18d** (2026-02-27 01:32) — feat(29-03): add streaming availability badge pills to artist page header
 > Files changed: 1
