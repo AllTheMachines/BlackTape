@@ -143,3 +143,13 @@
 
 ---
 
+
+## v1.6 The Playback Milestone (Shipped: 2026-02-27)
+
+**Phases completed:** 14 phases, 45 plans, 8 tasks
+
+**Key accomplishments:**
+- (none recorded)
+
+---
+
