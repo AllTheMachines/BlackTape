@@ -4,6 +4,28 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-02-27 — Phase 30-02: Spotify Settings Wizard
+
+Two tasks, two commits, zero deviations. The Settings page now has a guided 3-step Spotify connection flow, and the app hydrates connection state from `ai_settings` on every boot.
+
+**Task 1 — SpotifySettings.svelte:**
+- New component at `src/lib/components/SpotifySettings.svelte` — entirely self-contained, imports from `$lib/spotify/*` only.
+- Step 1 (setup): numbered instructions referencing developer.spotify.com, simplified HTML/CSS browser mockup with the Client ID field highlighted so users know exactly what to copy, Client ID input, Authorize button (disabled until input is non-empty).
+- Step 2 (waiting): spinning ⟳ Unicode character with CSS `animation: spin`, "Waiting for Spotify authorization..." text, Cancel button.
+- Step 3 (success): "Connected as [display name]", Done button (resets wizard step without disconnecting), Disconnect button (no confirmation dialog).
+- `$derived(spotifyState.connected)` gates which view renders. `$effect` syncs `step` to `'success'` if spotifyState.connected becomes true externally (e.g. boot hydration).
+- All Tauri imports are dynamic (consistent with preferences.svelte.ts pattern).
+- Design uses the `import-card` pattern from the existing Import section — bordered card, same CSS tokens.
+
+**Task 2 — Settings page + layout boot hydration:**
+- `src/routes/settings/+page.svelte`: Added `import SpotifySettings` and a new "Spotify" `settings-section` with `{#if tauriMode}` guard, placed after the Streaming Service Priority section.
+- `src/routes/+layout.svelte`: Added `loadSpotifyState` + `setSpotifyConnected` at the end of the Tauri `onMount` block. Connection state now persists across app restarts — if the user previously authenticated, `spotifyState.connected` is `true` immediately on mount.
+- Dynamic imports maintained throughout — no static imports added to layout.
+
+Zero TypeScript errors. 183 code tests passing after each commit.
+
+---
+
 ## Entry 2026-02-27 — Phase 30-01: Spotify Core Module
 
 Three tasks, three commits, zero deviations. The `src/lib/spotify/` module is now the single source of truth for Spotify connection state, PKCE auth, and Connect API playback.
@@ -8793,4 +8815,13 @@ This completes v1.0 — The Playback Milestone. All phases done.
 > Files changed: 1
 
 > **Commit 7cda793** (2026-02-27 08:46) — auto-save: 3 files @ 08:46
+> Files changed: 2
+
+> **Commit 485ce8a** (2026-02-27 08:48) — docs(30-01): complete Spotify core module plan
+> Files changed: 4
+
+> **Commit 3b074bb** (2026-02-27 08:50) — feat(30-02): create SpotifySettings.svelte 3-step wizard
+> Files changed: 1
+
+> **Commit 65dde66** (2026-02-27 08:51) — feat(30-02): wire SpotifySettings into settings page + boot hydration
 > Files changed: 2
