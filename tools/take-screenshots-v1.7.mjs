@@ -24,7 +24,7 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
-const OUT = path.join(ROOT, 'static', 'press-screenshots', 'v5');
+const OUT = path.join(ROOT, 'press-screenshots', 'v5');
 const BINARY = path.join(ROOT, 'src-tauri', 'target', 'debug', 'mercury.exe');
 const CDP_PORT = 9224;
 const CDP_BASE = `http://127.0.0.1:${CDP_PORT}`;
@@ -526,22 +526,11 @@ async function run() {
   console.log('\n--- 5. Artist: Slowdive ---');
   if (alreadyDone('artist-slowdive-discography.png')) { console.log('  ⊘ skip'); } else {
   await ensureAlive();
-  const slowdiveHref = await navigateToArtist(page, 'Slowdive');
-  if (slowdiveHref) {
-    await page.evaluate(() => window.scrollTo(0, 0));
-    await tryClick(page, '[data-testid="tab-discography"], button:has-text("Discography")');
-    await new Promise(r => setTimeout(r, 1000));
-    const scrollTo = await page.evaluate(() => {
-      const grid = document.querySelector('.releases-grid, .discography-grid');
-      return grid ? Math.max(0, grid.getBoundingClientRect().top + window.scrollY - 80) : 200;
-    });
-    await page.evaluate(y => window.scrollTo(0, y), scrollTo);
-    await waitForDiscographyCovers(page, 15000, 4);
-    await new Promise(r => setTimeout(r, 600));
-    await checkArtistPage(page, 'artist-slowdive');
-  } else {
-    bug('artist-slowdive', 'No search results for Slowdive');
-  }
+  await goto(page, '/artist/slowdive', 8000);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await waitForDiscographyCovers(page, 15000, 4);
+  await new Promise(r => setTimeout(r, 600));
+  await checkArtistPage(page, 'artist-slowdive');
   await save(page, 'artist-slowdive-discography.png');
   } // end screen 5
 
@@ -551,22 +540,11 @@ async function run() {
   console.log('\n--- 6. Artist: The Cure ---');
   if (alreadyDone('artist-the-cure-discography.png')) { console.log('  ⊘ skip'); } else {
   await ensureAlive();
-  const cureHref = await navigateToArtist(page, 'The Cure');
-  if (cureHref) {
-    await page.evaluate(() => window.scrollTo(0, 0));
-    await tryClick(page, '[data-testid="tab-discography"], button:has-text("Discography")');
-    await new Promise(r => setTimeout(r, 1000));
-    const scrollTo = await page.evaluate(() => {
-      const grid = document.querySelector('.releases-grid, .discography-grid');
-      return grid ? Math.max(0, grid.getBoundingClientRect().top + window.scrollY - 80) : 200;
-    });
-    await page.evaluate(y => window.scrollTo(0, y), scrollTo);
-    await waitForDiscographyCovers(page, 15000, 4);
-    await new Promise(r => setTimeout(r, 600));
-    await checkArtistPage(page, 'artist-the-cure');
-  } else {
-    bug('artist-the-cure', 'No search results for The Cure');
-  }
+  await goto(page, '/artist/the-cure', 8000);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await waitForDiscographyCovers(page, 15000, 4);
+  await new Promise(r => setTimeout(r, 600));
+  await checkArtistPage(page, 'artist-the-cure');
   await save(page, 'artist-the-cure-discography.png');
   } // end screen 6
 
@@ -576,22 +554,11 @@ async function run() {
   console.log('\n--- 7. Artist: Nick Cave ---');
   if (alreadyDone('artist-nick-cave-discography.png')) { console.log('  ⊘ skip'); } else {
   await ensureAlive();
-  const nickCaveHref = await navigateToArtist(page, 'Nick Cave and the Bad Seeds');
-  if (nickCaveHref) {
-    await page.evaluate(() => window.scrollTo(0, 0));
-    await tryClick(page, '[data-testid="tab-discography"], button:has-text("Discography")');
-    await new Promise(r => setTimeout(r, 1000));
-    const scrollTo = await page.evaluate(() => {
-      const grid = document.querySelector('.releases-grid, .discography-grid');
-      return grid ? Math.max(0, grid.getBoundingClientRect().top + window.scrollY - 80) : 200;
-    });
-    await page.evaluate(y => window.scrollTo(0, y), scrollTo);
-    await waitForDiscographyCovers(page, 15000, 4);
-    await new Promise(r => setTimeout(r, 600));
-    await checkArtistPage(page, 'artist-nick-cave');
-  } else {
-    bug('artist-nick-cave', 'No search results for Nick Cave');
-  }
+  await goto(page, '/artist/nick-cave-the-bad-seeds', 8000);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await waitForDiscographyCovers(page, 15000, 4);
+  await new Promise(r => setTimeout(r, 600));
+  await checkArtistPage(page, 'artist-nick-cave');
   await save(page, 'artist-nick-cave-discography.png');
   } // end screen 7
 
@@ -602,27 +569,30 @@ async function run() {
   console.log('\n--- 8. Artist overview tab ---');
   if (alreadyDone('artist-overview-tab.png')) { console.log('  ⊘ skip'); } else {
   await ensureAlive();
-  // The Cure excluded — artist page returns 500 (MB API issue), corrupts CDP session
-  const overviewCandidates = ['Slowdive', 'Godspeed You! Black Emperor', 'Grouper', 'Nick Cave and the Bad Seeds', 'Boris'];
+  const overviewCandidates = [
+    { name: 'Slowdive', slug: '/artist/slowdive' },
+    { name: 'Godspeed You! Black Emperor', slug: '/artist/godspeed-you-black-emperor' },
+    { name: 'Grouper', slug: '/artist/grouper' },
+    { name: 'Nick Cave', slug: '/artist/nick-cave-the-bad-seeds' },
+  ];
   let overviewDone = false;
   for (const artist of overviewCandidates) {
     if (overviewDone) break;
-    const href = await navigateToArtist(page, artist);
-    if (!href) continue;
+    await goto(page, artist.slug, 8000);
     await page.evaluate(() => window.scrollTo(0, 0));
     const clicked = await tryClick(page, '[data-testid="tab-overview"]') ||
                     await tryClick(page, '[data-testid="tab-btn-overview"]') ||
                     await tryClick(page, 'button:has-text("Overview")');
-    if (!clicked) { console.log(`  ✗ No Overview tab for ${artist}`); continue; }
+    if (!clicked) { console.log(`  ✗ No Overview tab for ${artist.name}`); continue; }
     await new Promise(r => setTimeout(r, 2500));
     const hasContent = await page.evaluate(() => {
       const el = document.querySelector('[data-testid="tab-content-overview"], .overview-tab, .artist-relationships');
       return !!el && (el.textContent?.trim().length ?? 0) > 50;
     });
     const tagCount = await page.evaluate(() => document.querySelectorAll('.tag-chip, .genre-tag').length);
-    if (!hasContent) { console.log(`  ↳ ${artist}: overview content thin — skipping`); continue; }
-    if (tagCount === 0) bug('artist-overview', `No tags in overview for "${artist}"`);
-    console.log(`  ↳ ${artist}: content=${hasContent}, tags=${tagCount}`);
+    if (!hasContent) { console.log(`  ↳ ${artist.name}: overview content thin — skipping`); continue; }
+    if (tagCount === 0) bug('artist-overview', `No tags in overview for "${artist.name}"`);
+    console.log(`  ↳ ${artist.name}: content=${hasContent}, tags=${tagCount}`);
     await save(page, 'artist-overview-tab.png');
     overviewDone = true;
   }
