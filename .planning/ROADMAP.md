@@ -137,7 +137,7 @@ See `.planning/milestones/v1.5-ROADMAP.md`
 | 26. Discover + Cross-Linking + Crate Fix | v1.4 | 4/4 | Complete | 2026-02-25 |
 | 27. Search + Knowledge Base | v1.4 | 5/5 | Complete | 2026-02-25 |
 | 28. UX Cleanup + Scope Reduction | v1.5 | 7/7 | Complete | 2026-02-26 |
-| 29. Streaming Foundation | v1.6 | 0/? | Not started | - |
+| 29. Streaming Foundation | 1/4 | In Progress|  | - |
 | 30. Spotify Integration | v1.6 | 0/? | Not started | - |
 | 31. Embedded Players | v1.6 | 0/? | Not started | - |
 | 32. Album Playback + Polish | v1.6 | 0/? | Not started | - |

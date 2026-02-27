@@ -7,8 +7,8 @@
 
 ### Streaming Infrastructure (INFRA)
 
-- [ ] **INFRA-01**: User can set streaming service priority order via drag-to-reorder in Settings → Streaming (persisted across sessions)
-- [ ] **INFRA-02**: App prevents simultaneous playback — only one source (local player or streaming service) active at a time
+- [x] **INFRA-01**: User can set streaming service priority order via drag-to-reorder in Settings → Streaming (persisted across sessions)
+- [x] **INFRA-02**: App prevents simultaneous playback — only one source (local player or streaming service) active at a time
 - [ ] **INFRA-03**: Artist page detects and shows which streaming services have content for the current artist (derived from existing MusicBrainz link data)
 
 ### Spotify (SPOT)
@@ -35,7 +35,7 @@
 
 ### Player UX (PLAYER)
 
-- [ ] **PLAYER-01**: Player bar displays a service badge showing the currently active streaming source (e.g. "Spotify", "SoundCloud", "Bandcamp")
+- [x] **PLAYER-01**: Player bar displays a service badge showing the currently active streaming source (e.g. "Spotify", "SoundCloud", "Bandcamp")
 - [ ] **PLAYER-02**: Artist page shows a source switcher — one button per available service, switching active source without navigating away
 - [ ] **PLAYER-03**: Release page "Play Album" button activates the best available streaming source for that release
 
@@ -67,8 +67,8 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INFRA-01 | Phase 29 | Pending |
-| INFRA-02 | Phase 29 | Pending |
+| INFRA-01 | Phase 29 | Complete |
+| INFRA-02 | Phase 29 | Complete |
 | INFRA-03 | Phase 29 | Pending |
 | SPOT-01 | Phase 30 | Pending |
 | SPOT-02 | Phase 30 | Pending |
@@ -80,7 +80,7 @@
 | SC-02 | Phase 31 | Pending |
 | BC-01 | Phase 31 | Pending |
 | BC-02 | Phase 32 | Pending |
-| PLAYER-01 | Phase 29 | Pending |
+| PLAYER-01 | Phase 29 | Complete |
 | PLAYER-02 | Phase 31 | Pending |
 | PLAYER-03 | Phase 32 | Pending |
 
