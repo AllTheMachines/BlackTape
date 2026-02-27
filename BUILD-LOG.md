@@ -9455,3 +9455,6 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit 94673fa** (2026-02-27 18:07) — fix(about): link bug report to blacktape.app/bugs, keep mailto for tests
 > Files changed: 1
+
+> **Commit 90e304e** (2026-02-27 18:16) — auto-save: 3 files @ 18:16
+> Files changed: 2
