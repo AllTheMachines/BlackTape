@@ -45,6 +45,13 @@ function bug(screen, description) {
 }
 
 // ---------------------------------------------------------------------------
+// Skip-already-done helper
+// ---------------------------------------------------------------------------
+function alreadyDone(filename) {
+  return fs.existsSync(path.join(OUT, filename));
+}
+
+// ---------------------------------------------------------------------------
 // Core helpers
 // ---------------------------------------------------------------------------
 
@@ -97,6 +104,10 @@ async function goto(page, route, waitMs = 4000) {
 
 async function save(page, filename) {
   const outPath = path.join(OUT, filename);
+  if (fs.existsSync(outPath)) {
+    console.log(`  ⊘ SKIP (exists): ${filename}`);
+    return;
+  }
   await page.screenshot({ path: outPath, fullPage: false, timeout: 15000 });
   console.log(`  ✓ SAVED: ${filename}`);
 }
@@ -295,6 +306,23 @@ async function launchTauri() {
   console.log('Connected. App URL:', page.url());
 }
 
+async function reconnectCDP() {
+  console.log('  ⚡ Reconnecting CDP...');
+  try { await browser.close(); } catch {}
+  if (proc) { proc.kill(); await new Promise(r => setTimeout(r, 2500)); }
+  await launchTauri();
+  console.log('  ✓ CDP reconnected');
+}
+
+async function ensureAlive() {
+  try {
+    await page.evaluate(() => 1);
+  } catch {
+    console.log('  ⚡ CDP unresponsive — reconnecting...');
+    await reconnectCDP();
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
@@ -337,6 +365,8 @@ async function run() {
   // Scroll past local library section to show the discovery grid.
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('--- 1. Search: electronic (tag discovery grid) ---');
+  if (alreadyDone('search-electronic-grid.png')) { console.log('  ⊘ skip'); } else {
+  await ensureAlive();
   await goto(page, '/search?q=electronic&mode=tag', 5000);
   await waitForCardImages(page, 15000, 6);
   const e1info = await page.evaluate(() => ({
@@ -349,11 +379,14 @@ async function run() {
   await scrollToDiscovery(page);
   await checkGridLayout(page, 'search-electronic');
   await save(page, 'search-electronic-grid.png');
+  } // end screen 1
 
   // ═══════════════════════════════════════════════════════════════════════════
   // 2. Search — jazz (TAGS mode)
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 2. Search: jazz (tag discovery grid) ---');
+  if (alreadyDone('search-jazz-grid.png')) { console.log('  ⊘ skip'); } else {
+  await ensureAlive();
   await goto(page, '/search?q=jazz&mode=tag', 5000);
   await waitForCardImages(page, 15000, 6);
   // Check for duplicate library tracks (v1.6 bug)
@@ -374,11 +407,14 @@ async function run() {
   await scrollToDiscovery(page);
   await checkGridLayout(page, 'search-jazz');
   await save(page, 'search-jazz-grid.png');
+  } // end screen 2
 
   // ═══════════════════════════════════════════════════════════════════════════
   // 3. Search — psychedelic rock (TAGS mode)
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 3. Search: psychedelic rock (tag discovery grid) ---');
+  if (alreadyDone('search-psychedelic-rock-grid.png')) { console.log('  ⊘ skip'); } else {
+  await ensureAlive();
   await goto(page, '/search?q=psychedelic+rock&mode=tag', 5000);
   await waitForCardImages(page, 15000, 6);
   const e3cards = await page.evaluate(() => document.querySelectorAll('.artist-card').length);
@@ -387,6 +423,7 @@ async function run() {
   await scrollToDiscovery(page);
   await checkGridLayout(page, 'search-psychedelic-rock');
   await save(page, 'search-psychedelic-rock-grid.png');
+  } // end screen 3
 
   // ═══════════════════════════════════════════════════════════════════════════
   // 4. Search — autocomplete dropdown
@@ -395,6 +432,8 @@ async function run() {
   // Try artist name prefixes that exist in the DB.
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 4. Search autocomplete ---');
+  if (alreadyDone('search-autocomplete.png')) { console.log('  ⊘ skip'); } else {
+  await ensureAlive();
   await goto(page, '/', 3000);
   const searchSel = [
     '.search-input input',
@@ -451,11 +490,14 @@ async function run() {
   // Clear any text left in search input to prevent affecting subsequent navigation
   try { await searchInput.fill(''); } catch {}
   await page.waitForTimeout(500);
+  } // end screen 4
 
   // ═══════════════════════════════════════════════════════════════════════════
   // 5. Artist page — Slowdive
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 5. Artist: Slowdive ---');
+  if (alreadyDone('artist-slowdive-discography.png')) { console.log('  ⊘ skip'); } else {
+  await ensureAlive();
   const slowdiveHref = await navigateToArtist(page, 'Slowdive');
   if (slowdiveHref) {
     await page.evaluate(() => window.scrollTo(0, 0));
@@ -473,11 +515,13 @@ async function run() {
     bug('artist-slowdive', 'No search results for Slowdive');
   }
   await save(page, 'artist-slowdive-discography.png');
+  } // end screen 5
 
   // ═══════════════════════════════════════════════════════════════════════════
   // 6. Artist page — The Cure
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 6. Artist: The Cure ---');
+  await ensureAlive();
   const cureHref = await navigateToArtist(page, 'The Cure');
   if (cureHref) {
     await page.evaluate(() => window.scrollTo(0, 0));
@@ -500,6 +544,7 @@ async function run() {
   // 7. Artist page — Nick Cave
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 7. Artist: Nick Cave ---');
+  await ensureAlive();
   const nickCaveHref = await navigateToArtist(page, 'Nick Cave and the Bad Seeds');
   if (nickCaveHref) {
     await page.evaluate(() => window.scrollTo(0, 0));
@@ -523,6 +568,7 @@ async function run() {
   // No Burial (data error — wrong artist in DB).
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 8. Artist overview tab ---');
+  await ensureAlive();
   const overviewCandidates = ['Slowdive', 'Godspeed You! Black Emperor', 'Grouper', 'The Cure', 'Nick Cave and the Bad Seeds'];
   let overviewDone = false;
   for (const artist of overviewCandidates) {
@@ -556,6 +602,7 @@ async function run() {
   // No Burial in candidates.
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 9. Release page ---');
+  await ensureAlive();
   const releaseArtists = ['Slowdive', 'The Cure', 'Grouper', 'Nick Cave and the Bad Seeds'];
   let releaseDone = false;
   for (const artist of releaseArtists) {
@@ -591,6 +638,7 @@ async function run() {
   // No Burial in candidates.
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 10. Player bar ---');
+  await ensureAlive();
   const playerArtists = ['Grouper', 'Slowdive', 'The Cure', 'Boris'];
   let playerDone = false;
   for (const artist of playerArtists) {
@@ -626,6 +674,7 @@ async function run() {
   // Fix: v1.6 had same track repeated. Now adds tracks from 3 different artists.
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 11. Queue panel ---');
+  await ensureAlive();
   // Clear existing queue from localStorage
   await page.evaluate(() => {
     try { localStorage.removeItem('blacktape_queue'); } catch {}
@@ -675,6 +724,7 @@ async function run() {
   // Requires local music folder — cannot automate native file picker via CDP.
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 12. Library ---');
+  await ensureAlive();
   await goto(page, '/library', 4000);
   await page.evaluate(() => window.scrollTo(0, 0));
   const libInfo = await page.evaluate(() => ({
@@ -693,6 +743,7 @@ async function run() {
   // 13. Discover — ambient + Iceland
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 13. Discover: ambient + Iceland ---');
+  await ensureAlive();
   await goto(page, '/discover?tags=ambient', 4000);
   const cInput = page.locator('#country-input, input[placeholder*="Country" i]').first();
   if (await cInput.isVisible({ timeout: 3000 }).catch(() => false)) {
@@ -712,6 +763,7 @@ async function run() {
   // 14. Discover — noise rock + Japan
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 14. Discover: noise rock + Japan ---');
+  await ensureAlive();
   await goto(page, '/discover?tags=noise+rock', 4000);
   const cInput2 = page.locator('#country-input, input[placeholder*="Country" i]').first();
   if (await cInput2.isVisible({ timeout: 3000 }).catch(() => false)) {
@@ -731,6 +783,7 @@ async function run() {
   // 15. Discover — metal + Finland
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 15. Discover: metal + Finland ---');
+  await ensureAlive();
   await goto(page, '/discover?tags=metal', 4000);
   const cInput3 = page.locator('#country-input, input[placeholder*="Country" i]').first();
   if (await cInput3.isVisible({ timeout: 3000 }).catch(() => false)) {
@@ -751,6 +804,7 @@ async function run() {
   // Fix: v1.6 unfiltered showed truck-driving country. Apply .tag-input filter.
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 16. Time Machine: 1983 ---');
+  await ensureAlive();
   await goto(page, '/time-machine?year=1983', 6000);
   const tmFilter16 = page.locator('.tag-input, input[placeholder*="Filter by genre" i]').first();
   if (await tmFilter16.isVisible({ timeout: 3000 }).catch(() => false)) {
@@ -780,6 +834,7 @@ async function run() {
   // 17. Time Machine — 1977 with punk filter
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 17. Time Machine: 1977 ---');
+  await ensureAlive();
   await goto(page, '/time-machine?year=1977', 6000);
   const tmFilter17 = page.locator('.tag-input, input[placeholder*="Filter by genre" i]').first();
   if (await tmFilter17.isVisible({ timeout: 3000 }).catch(() => false)) {
@@ -811,6 +866,7 @@ async function run() {
   // 18. Style Map — zoomed out overview
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 18. Style Map (overview) ---');
+  await ensureAlive();
   await goto(page, '/style-map', 8000);
   await page.waitForSelector('[data-ready]', { timeout: 15000 }).catch(() => {});
   await page.waitForTimeout(3000);
@@ -835,6 +891,7 @@ async function run() {
   // Fix: v1.6 was pixel-identical to overview (zoom never applied).
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 19. Style Map (zoomed in) ---');
+  await ensureAlive();
   await goto(page, '/style-map', 8000);
   await page.waitForSelector('[data-ready]', { timeout: 15000 }).catch(() => {});
   await page.waitForTimeout(3000);
@@ -869,6 +926,7 @@ async function run() {
   // 20. Knowledge Base — post-punk (skip shoegaze — empty description)
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 20. Knowledge Base: post-punk ---');
+  await ensureAlive();
   const kbCandidates = ['post-punk', 'krautrock', 'ambient', 'punk', 'shoegaze'];
   let kbDone = false;
   for (const genre of kbCandidates) {
@@ -907,6 +965,7 @@ async function run() {
   // 21. Artist Claim Form
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 21. Artist Claim Form ---');
+  await ensureAlive();
   await goto(page, '/claim', 4000);
   await page.evaluate(() => window.scrollTo(0, 0));
   const claimInfo = await page.evaluate(() => {
