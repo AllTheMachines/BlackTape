@@ -102,6 +102,15 @@ None - no external service configuration required.
 - Blockers documented in STATE.md remain: verify existing Spotify OAuth registration uses http://127.0.0.1 not localhost before writing Phase 30 OAuth code
 - Known limitation accepted: Player bar only renders when playerState.currentTrack is non-null; via-badge is invisible if no local track has been loaded (documented as Pitfall 5 in RESEARCH.md — intentional, no complexity added)
 
+## Self-Check: PASSED
+
+- FOUND: `.planning/phases/29-streaming-foundation/29-04-SUMMARY.md`
+- FOUND: `src/lib/components/EmbedPlayer.svelte`
+- FOUND: `src/lib/components/Player.svelte`
+- FOUND: `b3d9bc2` (Task 1 commit)
+- FOUND: `353d0aa` (Task 2 commit)
+- FOUND: `cbe56cc` (Final docs commit)
+
 ---
 *Phase: 29-streaming-foundation*
 *Completed: 2026-02-27*

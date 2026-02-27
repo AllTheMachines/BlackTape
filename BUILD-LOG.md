@@ -8668,3 +8668,9 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit 353d0aa** (2026-02-27 01:36) — feat(29-04): add via-badge to Player bar track-info area
 > Files changed: 1
+
+> **Commit cbe56cc** (2026-02-27 01:38) — docs(29-04): complete audio coordination and player bar badge plan
+> Files changed: 4
+
+> **Commit 23689c1** (2026-02-27 01:42) — docs(phase-29): complete phase execution
+> Files changed: 3

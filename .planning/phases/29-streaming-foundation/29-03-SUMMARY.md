@@ -110,3 +110,15 @@ None - no external service configuration required.
 ---
 *Phase: 29-streaming-foundation*
 *Completed: 2026-02-27*
+
+## Self-Check: PASSED
+
+- FOUND: `src/routes/artist/[slug]/+page.svelte` (modified with streaming-badges div and CSS)
+- FOUND: commit `181b18d` (task commit)
+- FOUND: commit `1fdbd3b` (docs commit)
+- FOUND: `.planning/phases/29-streaming-foundation/29-03-SUMMARY.md` (this file)
+- VERIFIED: `streaming-badges` class present in template and CSS
+- VERIFIED: `streaming-badge` class present in template and CSS
+- VERIFIED: `data.links.bandcamp.length > 0` derivation pattern used (no API calls)
+- VERIFIED: badges are `span` elements (not `a` or `button`)
+- VERIFIED: `npm run check` — 0 errors, 183 tests passing
