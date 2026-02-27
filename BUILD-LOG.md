@@ -4,9 +4,18 @@ A documentary record of building this project from idea to reality.
 
 ---
 
-<!-- status -->
-Screenshot pass v1.7 — 10/21 done. Root cause found: NO Discography tab (tabs are Overview/Stats/About). Discography loads async via MusicBrainz API (5-20s). Fixed: direct slug nav, safeEval() 3s timeout, reconnectCDP() before screens 9+11. Script at screen 11 (queue panel), polling Slowdive for release links.
-<!-- /status -->
+## Entry 2026-02-27 — v1.7 Press Screenshots Complete (21/21)
+
+Manual screenshot session — all 21 press screenshots captured into `press-screenshots/v5/`. Root cause of earlier 500 errors was identified in the previous session: `page.goto()` (hard browser navigation) tears down the WebView2/Tauri bridge; `window.location.href` (SPA navigation) keeps it alive. Script fixed in v1.7.
+
+This session: CDP launch was broken due to `\t` escape corruption in the batch file path (`src-tauri\target` was being written as `src-tauri{TAB}arget`). Fixed by writing the launch script with the Write tool instead of `printf`. Also added `tools/launch-cdp.mjs` — a Node.js launcher that properly sets `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS` via `child_process.spawn` env injection (same pattern as the screenshot script itself), then exits leaving the app running.
+
+**15 screens carried over from previous session + 6 captured today:**
+- `artist-slowdive-discography.png`, `artist-the-cure-discography.png`, `artist-nick-cave-discography.png`
+- `artist-overview-tab.png` — Overview tab is the default selected tab on all artist pages
+- `knowledge-base-shoegaze.png`, `artist-claim-form.png`
+
+All 21 files confirmed in `press-screenshots/v5/`.
 
 ---
 
@@ -9571,4 +9580,7 @@ This completes v1.0 — The Playback Milestone. All phases done.
 > Files changed: 1
 
 > **Commit 4d013d3** (2026-02-27 21:25) — wip: auto-save
+> Files changed: 2
+
+> **Commit ee43dfd** (2026-02-27 21:25) — wip: auto-save
 > Files changed: 2
