@@ -81,7 +81,7 @@
 					<circle cx="10" cy="10" r="2.5" fill="currentColor" opacity="0.75"/>
 					<circle cx="10" cy="10" r="1.2" fill="var(--bg-3)"/>
 				</svg>
-				<svg class="reel reel-reverse" viewBox="0 0 20 20" width="36" height="36">
+				<svg class="reel" viewBox="0 0 20 20" width="36" height="36">
 					<circle cx="10" cy="10" r="8.5" fill="currentColor" fill-opacity="0.18" stroke="currentColor" stroke-width="1.2"/>
 					<circle cx="10" cy="4.5" r="1.8" fill="var(--bg-3)" stroke="currentColor" stroke-width="0.5" stroke-opacity="0.5"/>
 					<circle cx="14.76" cy="12.75" r="1.8" fill="var(--bg-3)" stroke="currentColor" stroke-width="0.5" stroke-opacity="0.5"/>
