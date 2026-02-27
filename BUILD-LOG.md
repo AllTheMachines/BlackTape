@@ -9001,3 +9001,6 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit f3ac71d** (2026-02-27 10:44) — feat(32-02): wire EmbedPlayer into artist page with source switcher
 > Files changed: 1
+
+> **Commit 6417c25** (2026-02-27 10:46) — docs(32-02): complete artist-page-source-switcher plan — EmbedPlayer wired, source switcher live
+> Files changed: 5
