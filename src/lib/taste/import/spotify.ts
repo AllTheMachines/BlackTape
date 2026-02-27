@@ -42,7 +42,7 @@ export async function importFromSpotify(clientId: string): Promise<SpotifyArtist
 	const { verifier, challenge } = await generatePKCE();
 
 	const port = await start();
-	const redirectUri = `http://localhost:${port}/callback`;
+	const redirectUri = `http://127.0.0.1:${port}/callback`;
 
 	const params = new URLSearchParams({
 		response_type: 'code',
