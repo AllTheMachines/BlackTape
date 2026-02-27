@@ -5,7 +5,7 @@ A documentary record of building this project from idea to reality.
 ---
 
 <!-- status -->
-Screenshot pass v1.7 — 7/21 done. Fixed CDP hang: alreadyDone() on all screens, pure JS timers, page.goto() via CDP Page.navigate. Script running now — past screen 8. Screens 13-21 (Discover, Time Machine, Style Map, KB, Claim) are pure navigation, should run clean.
+Screenshot pass v1.7 — 8/21 done. Fixed screen 9 failures: reconnectCDP() before screen 9, Discography tab click before release link lookup, page.evaluate() instead of locator.getAttribute(). Script running now.
 <!-- /status -->
 
 ---
@@ -9496,4 +9496,7 @@ This completes v1.0 — The Playback Milestone. All phases done.
 > Files changed: 3
 
 > **Commit 7968b5f** (2026-02-27 20:03) — wip: auto-save
+> Files changed: 2
+
+> **Commit 52340ba** (2026-02-27 20:05) — wip: auto-save
 > Files changed: 2

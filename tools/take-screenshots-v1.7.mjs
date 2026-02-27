@@ -600,6 +600,7 @@ async function run() {
   // No Burial (data error — wrong artist in DB).
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 8. Artist overview tab ---');
+  if (alreadyDone('artist-overview-tab.png')) { console.log('  ⊘ skip'); } else {
   await ensureAlive();
   // The Cure excluded — artist page returns 500 (MB API issue), corrupts CDP session
   const overviewCandidates = ['Slowdive', 'Godspeed You! Black Emperor', 'Grouper', 'Nick Cave and the Bad Seeds', 'Boris'];
@@ -629,22 +630,25 @@ async function run() {
     bug('artist-overview', 'No Overview tab with content on any candidate artist');
     await save(page, 'artist-overview-tab.png');
   }
+  } // end screen 8
 
   // ═══════════════════════════════════════════════════════════════════════════
   // 9. Release page — tracklist + play/queue buttons
   // No Burial in candidates.
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 9. Release page ---');
-  await ensureAlive();
-  const releaseArtists = ['Slowdive', 'The Cure', 'Grouper', 'Nick Cave and the Bad Seeds'];
+  await reconnectCDP(); // Fresh start after screen 8's instability (multiple reconnects/500s)
+  const releaseArtists = ['Slowdive', 'Grouper', 'Nick Cave and the Bad Seeds'];
   let releaseDone = false;
   for (const artist of releaseArtists) {
     if (releaseDone) break;
     const href = await navigateToArtist(page, artist);
     if (!href) continue;
-    await new Promise(r => setTimeout(r, 2000));
-    const firstRelease = page.locator('a[href*="/release/"]').first();
-    const rHref = await firstRelease.getAttribute('href', { timeout: 5000 }).catch(() => null);
+    // Click Discography tab — artist page defaults to Overview, which has no release links
+    await tryClick(page, '[data-testid="tab-discography"], button:has-text("Discography")');
+    await new Promise(r => setTimeout(r, 2500));
+    // Use evaluate() not locator.getAttribute() — locator calls can hang on CDP
+    const rHref = await page.evaluate(() => document.querySelector('a[href*="/release/"]')?.getAttribute('href') ?? null).catch(() => null);
     if (!rHref) { console.log(`  ✗ No release links for ${artist}`); continue; }
     await goto(page, rHref, 6000);
     const info = await page.evaluate(() => ({
@@ -663,6 +667,7 @@ async function run() {
   }
   if (!releaseDone) {
     bug('release-page', 'Could not navigate to any release page with tracks');
+    await ensureAlive(); // Page may be in bad state — reset before screenshot
     await save(page, 'release-page-player.png');
   }
 
@@ -714,15 +719,17 @@ async function run() {
   }).catch(() => {});
   await new Promise(r => setTimeout(r, 300));
 
-  const queueArtists = ['Slowdive', 'The Cure', 'Grouper'];
+  const queueArtists = ['Slowdive', 'Grouper', 'Nick Cave and the Bad Seeds'];
   let totalQueued = 0;
 
   for (const artist of queueArtists) {
     if (totalQueued >= 5) break;
     const href = await navigateToArtist(page, artist);
     if (!href) continue;
-    await new Promise(r => setTimeout(r, 1500));
-    const rHref = await page.locator('a[href*="/release/"]').first().getAttribute('href', { timeout: 4000 }).catch(() => null);
+    // Click Discography tab then use evaluate() (not locator.getAttribute — can hang on CDP)
+    await tryClick(page, '[data-testid="tab-discography"], button:has-text("Discography")');
+    await new Promise(r => setTimeout(r, 2000));
+    const rHref = await page.evaluate(() => document.querySelector('a[href*="/release/"]')?.getAttribute('href') ?? null).catch(() => null);
     if (!rHref) continue;
     await goto(page, rHref, 4000);
     const queueBtns = page.locator('[data-testid="queue-btn"], .queue-btn');
