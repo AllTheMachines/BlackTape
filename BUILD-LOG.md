@@ -4,6 +4,23 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-02-27 — Phase 30-03: Play on Spotify Button (Artist Page)
+
+One task, one commit, zero deviations. The artist page now has a Spotify play button that triggers top-track playback in the user's running Spotify Desktop app.
+
+**Task 1 — Play on Spotify button + error handling:**
+- Added `spotifyState` import to `src/routes/artist/[slug]/+page.svelte`.
+- `showSpotifyButton` derived state: `tauriMode && spotifyState.connected && data.links.spotify.length > 0`. Button is hidden (not disabled, not grayed out) when any condition is false. No DOM presence at all.
+- `handlePlayOnSpotify` handler: dynamic imports for `getValidAccessToken`, `extractSpotifyArtistId`, `getArtistTopTracks`, `playTracksOnSpotify`, `setActiveSource`. All 4 PlayResult cases handled with exact error messages from the spec.
+- On success: `setActiveSource('spotify')` called — player bar badge updates.
+- `spotifyPlayMessage` resets to `null` at start of each call — no stale errors.
+- Button placed in header after streaming badges, before tags — visible and close to the artist identity without cluttering the name row.
+- CSS: Spotify green `#1DB954`, hover brightens to `#1ed760`, loading state dims to 0.6 opacity.
+
+Zero TypeScript errors (`npm run check`: 0 errors, 8 pre-existing warnings).
+
+---
+
 ## Entry 2026-02-27 — Phase 30-02: Spotify Settings Wizard
 
 Two tasks, two commits, zero deviations. The Settings page now has a guided 3-step Spotify connection flow, and the app hydrates connection state from `ai_settings` on every boot.
@@ -8825,3 +8842,6 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit 65dde66** (2026-02-27 08:51) — feat(30-02): wire SpotifySettings into settings page + boot hydration
 > Files changed: 2
+
+> **Commit 5acc830** (2026-02-27 08:53) — docs(30-02): complete Spotify Settings wizard plan
+> Files changed: 4
