@@ -4,6 +4,39 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-02-27 — Phase 30-01: Spotify Core Module
+
+Three tasks, three commits, zero deviations. The `src/lib/spotify/` module is now the single source of truth for Spotify connection state, PKCE auth, and Connect API playback.
+
+**Task 1 — state.svelte.ts:**
+- New module at `src/lib/spotify/state.svelte.ts` — module-level `$state` pattern, identical to `streaming.svelte.ts`.
+- `SpotifyStoredState` interface: accessToken, refreshToken, tokenExpiry (Unix ms), clientId, displayName.
+- `spotifyState` — reactive: connected, displayName, accessToken, refreshToken, tokenExpiry, clientId.
+- `setSpotifyConnected(data)` — populates all fields, sets connected = true.
+- `clearSpotifyState()` — resets everything to empty/zero/false.
+
+**Task 2 — auth.ts + localhost bug fix:**
+- PKCE helpers (`generateRandomString`, `generatePKCE`) copied verbatim from `taste/import/spotify.ts`.
+- `startSpotifyAuth(clientId)` — full OAuth flow: start plugin server, build auth URL (CSRF state param included), open system browser, await callback with 120s timeout (cancels port on timeout), exchange code, fetch display_name, return `SpotifyStoredState`.
+- `redirectUri` uses `http://127.0.0.1` — Spotify blocked `localhost` redirects in November 2025.
+- `saveSpotifyTokens` — writes all 5 `spotify_*` ai_settings keys.
+- `loadSpotifyState` — returns null if `spotify_access_token` empty/missing.
+- `clearSpotifyTokens` — sets all 5 keys to `''`.
+- `getValidAccessToken` — proactive refresh when within 60s of expiry; calls `setSpotifyConnected` + `saveSpotifyTokens` after refresh.
+- **Bug fix:** `src/lib/taste/import/spotify.ts` line 45: `localhost` → `127.0.0.1`.
+
+**Task 3 — api.ts:**
+- `SpotifyAuthError`, `SpotifyNotFoundError` — typed error classes.
+- `PlayResult` discriminated union: `ok | no_device | premium_required | token_expired`.
+- `extractSpotifyArtistId` — regex extract from `open.spotify.com/artist/` URL.
+- `getArtistTopTracks` — GET `/artists/{id}/top-tracks?market=from_token`; throws on 401/404.
+- `playTracksOnSpotify` — PUT `/me/player/play` with up to 10 URIs; returns `PlayResult`, never throws.
+- No `any` types — typed interfaces for all API response shapes.
+
+Phase 30 plans 02+ can now import from `src/lib/spotify/` for Settings wizard, artist page "Play on Spotify" button, and Connect playback.
+
+---
+
 ## Entry 2026-02-27 — Phase 29 Planning: Streaming Foundation
 
 Planned Phase 29 — Streaming Foundation (v1.6, first phase of The Playback Milestone). Four plans, ready for execution.
@@ -8745,4 +8778,16 @@ This completes v1.0 — The Playback Milestone. All phases done.
 > Files changed: 1
 
 > **Commit 3444b95** (2026-02-27 07:46) — auto-save: 2 files @ 07:46
+> Files changed: 1
+
+> **Commit f7f73ac** (2026-02-27 08:16) — auto-save: 2 files @ 08:16
+> Files changed: 1
+
+> **Commit 24d9654** (2026-02-27 08:43) — feat(30-01): create src/lib/spotify/state.svelte.ts
+> Files changed: 1
+
+> **Commit bff2d8e** (2026-02-27 08:44) — feat(30-01): create src/lib/spotify/auth.ts, fix localhost bug in taste-import
+> Files changed: 2
+
+> **Commit c35798b** (2026-02-27 08:45) — feat(30-01): create src/lib/spotify/api.ts (Connect API + typed errors)
 > Files changed: 1
