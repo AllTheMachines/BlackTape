@@ -1,52 +1,104 @@
 # Work Handoff - 2026-02-27
 
 ## Current Task
-Screenshot QA session COMPLETE — 21 screens captured, bugs triaged. No remaining code work.
+v1.7 screenshot session — capturing all 21 screens into `static/press-screenshots/v5/`
 
 ## Context
-Ran a full screenshot + QA pass on the v1.6 app. All 21 screens captured at 1200×800 into `static/screenshots/`. The session spent time diagnosing and fixing a script approach (needed Tauri binary + CDP, not headless browser), then ran the full pass and triaged all 11 flags raised.
+Running a full screenshot + QA pass of the v1.7 app. Steve provided a detailed spec (21 screens with specific bug fixes from v1.6). The script uses Tauri binary + CDP (Playwright). Screens 1-3 are now saved successfully after fixing the mode=tag issue.
 
 ## Progress
 
 ### Completed
-- Rewrote `tools/take-screenshots-v1.6.mjs` to use Tauri binary + CDP (v3 pattern)
-- Fixed KB route bug in script: `/kb/shoegaze` → `/kb/genre/shoegaze`
-- Added `try/catch` inside polling loops to handle "Execution context was destroyed" errors
-- Ran full 21-screen pass successfully — all screenshots captured with real data
-- Triaged all 11 QA flags: 1 real feature gap (style map no zoom), rest false positives or wrong selectors
-- Fixed QA script selectors: tab bar (`[data-testid="artist-tabs"]`), track rows (`.track`), play button (`.btn-play-album`)
-- Updated BUILD-LOG.md with full session entry
+- Committed BUILD-LOG.md from previous session
+- Created `static/press-screenshots/v5/` output directory
+- Wrote `tools/take-screenshots-v1.7.mjs` (full rewrite of v1.6 script)
+- Fixed critical bug: screens 1-3 now use `mode=tag` (searchByTag) instead of `mode=artist` (FTS name search) — this was why jazz returned 0 results in v1.6
+- Fixed: `scrollToDiscovery()` helper scrolls past local library section to show the discovery grid
+- Fixed: `locator.fill()` replaces `keyboard.type()` for autocomplete (more reliable Svelte event dispatch)
+- **3 screenshots saved** in `static/press-screenshots/v5/`:
+  - `search-electronic-grid.png` ✓ (50 cards, 42 images loaded)
+  - `search-jazz-grid.png` ✓ (50 cards, 48 images loaded — duplicate track bug still present: "You Ain't Really Down (Jazzanova's Hey Baby Remix) ×3")
+  - `search-psychedelic-rock-grid.png` ✓ (50 cards, 38 images loaded)
 
 ### In Progress
-- Nothing actively in progress
+- Script failing at **screen 4 (autocomplete)** — then CDP crashes
 
 ### Remaining
-- **Style Map zoom controls** — flagged as missing feature, not yet implemented
-- **Search autocomplete tag matching** — currently only searches by artist name; "post-punk" typed in search bar won't trigger suggestions. Low priority.
-- Commit the BUILD-LOG.md and script changes
+- Screens 4–21 still need to be captured:
+  4. search-autocomplete.png
+  5. artist-slowdive-discography.png
+  6. artist-the-cure-discography.png
+  7. artist-nick-cave-discography.png
+  8. artist-overview-tab.png
+  9. release-page-player.png
+  10. player-bar-source.png
+  11. queue-panel.png
+  12. library-two-pane.png
+  13. discover-ambient-iceland.png
+  14. discover-noise-rock-japan.png
+  15. discover-metal-finland.png
+  16. time-machine-1983.png
+  17. time-machine-1977.png
+  18. style-map-overview.png
+  19. style-map-zoomed.png
+  20. knowledge-base-shoegaze.png
+  21. artist-claim-form.png
 
-## Key Decisions
-- Play Album button absence is by design: requires `streamingLinks.bandcamp` (Bandcamp embed URL), not just a Bandcamp buy link — these are different fields
-- Artist name overflow in grid cards is CSS working correctly — ellipsis truncates long names, `scrollWidth > clientWidth` is expected behavior
-- Autocomplete is artist-name-only from DB — "post-" with hyphen matches no artist names, not a bug
-- "Burial" in DB that showed up as a German band is a data quality issue (different artist), not a code bug
+## Key Decisions / Root Causes Found
+
+### Screen 4 (Autocomplete) — TWO bugs to fix in script:
+1. **Home page has async DB check** — SearchBar only renders when `dbStatus === 'ready'`. The home page `+page.svelte` shows `<div class="loading"><p>Loading...</p></div>` while checking, then renders `<SearchBar size="large" />` only when ready. The 4000ms `isVisible()` timeout wasn't enough (or the DB check was taking longer). **Fix:** Wait for `dbStatus=ready` by polling for `input[type="search"]` with a longer timeout (8000ms), OR navigate to `/search?q=` (search page) instead of `/` — the search page always has a SearchBar visible.
+
+2. **CDP dies after autocomplete attempt** — After logging "Search input not found on home page", `page.screenshot()` times out with 15000ms exceeded. This means WebView2 crashed or froze. The crash seems to happen after many navigations. The timing suggests the CDP connection becomes unstable after ~3-4 page navigations.
+
+### Search mode clarification (confirmed):
+- `mode=tag` → calls `searchByTag(provider, q)` → returns artists with that tag ✓ CORRECT for genre discovery grids
+- `mode=artist` → calls `searchArtists(provider, q)` → FTS on artist names (wrong for "jazz", "electronic" etc.)
+- "electronic" with mode=artist returned 50 results because many artist names contain "electronic"
+- "jazz" with mode=artist returned 0 because no artists are named "jazz"
+
+### Jazz duplicate tracks bug:
+"You Ain't Really Down (Jazzanova's Hey Baby Remix)" appears ×3 in local library section. This is a data/library bug (not code). The screenshot scrolls past this to show the discovery grid, but the bug exists in the local library.
+
+### CDP stability:
+The WebView2 CDP crashes after extended use. Consider splitting the script into batches, or adding a CDP reconnect mechanism. The crash pattern: works for ~3-5 screens, then freezes on screenshot.
 
 ## Relevant Files
-- `tools/take-screenshots-v1.6.mjs` — Screenshot + QA script, rewritten to use Tauri + CDP
-- `static/screenshots/` — 21 PNG screenshots (1200×800), all with real data
-- `BUILD-LOG.md` — Updated with full session entry
+- `tools/take-screenshots-v1.7.mjs` — Main screenshot script (heavily modified)
+- `static/press-screenshots/v5/` — Output directory (3 files so far)
+- `src/routes/+page.svelte` — Home page (has async dbStatus check before SearchBar renders)
+- `src/lib/components/SearchBar.svelte` — `input[type='search']`, placeholder="Search artists..." or "Search by tag..."
+- `src/routes/search/+page.ts` — Search modes: `mode=tag` calls `searchByTag`, `mode=artist` calls `searchArtists`
+- `BUILD-LOG.md` — Has uncommitted status block update
 
 ## Git Status
 ```
-modified: BUILD-LOG.md     (session entry — uncommitted)
-modified: parachord-reference (submodule, unrelated)
+modified: BUILD-LOG.md               (status block update — uncommitted)
+modified: tools/take-screenshots-v1.7.mjs   (full rewrite)
+modified: static/press-screenshots/v5/search-electronic-grid.png   (new/updated)
+modified: static/press-screenshots/v5/search-jazz-grid.png         (new/updated)
+modified: static/press-screenshots/v5/search-psychedelic-rock-grid.png  (new/updated)
 ```
-`tools/take-screenshots-v1.6.mjs` was already auto-saved in commit `e3f05c6 wip: auto-save` — no action needed there.
 
 ## Next Steps
-1. Commit BUILD-LOG.md: `git add BUILD-LOG.md && git commit -m "docs: screenshot QA v1.6 session entry"`
-2. If continuing QA work: look at Style Map for adding zoom controls (d3-zoom integration)
-3. If moving on to new features: pick up from the roadmap / GSD next phase
+
+1. **Fix screen 4 in script**: Change autocomplete test to use search page instead of home page:
+   ```js
+   await goto(page, '/search?q=Slo&mode=artist', 4000);
+   // SearchBar is always visible on search page — no async DB check
+   const searchInput = page.locator('input[type="search"]').first();
+   await searchInput.fill('Slow');
+   // poll for dropdown...
+   ```
+   OR: On home page, poll for `input[type="search"]` with longer timeout (10000ms) to wait past DB check.
+
+2. **Fix CDP stability**: Add try/catch around each screen block so one failure doesn't abort the run. If CDP dies, catch the error and continue to next screen (saving a blank/error placeholder if needed). Critical — current script aborts completely if CDP dies mid-run.
+
+3. **Re-run script** from screen 4 onward (screens 1-3 already saved, don't need to retake).
+
+4. **After all 21 shots saved**: Compare against v1.6 shots, update slideshow in `src/routes/+page.svelte` with new strong shots.
+
+5. **Commit everything**: `git add tools/take-screenshots-v1.7.mjs static/press-screenshots/v5/ BUILD-LOG.md && git commit -m "feat: v1.7 screenshot session + press-screenshots/v5"`
 
 ## Resume Command
 After running `/clear`, run `/resume` to continue.
