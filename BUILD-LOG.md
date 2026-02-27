@@ -70,6 +70,26 @@ One task, one commit, one auto-fix. Streaming availability badge pills added to 
 - CSS uses `var(--bg-3)`, `var(--b-1)`, `var(--r)` — consistent with this codebase's token conventions (not `var(--bg-elevated)` which doesn't exist here).
 - `npm run check`: 0 errors, 183 code tests passing.
 
+### 29-04 Execution Complete (2 min)
+
+Two tasks, two commits, zero deviations. Audio coordination and the player bar badge are wired.
+
+**Task 1 — EmbedPlayer.svelte:**
+- Added `EMBED_ORIGINS` map mapping `open.spotify.com` → `'spotify'`, `www.youtube.com` + `www.youtube-nocookie.com` → `'youtube'`, etc.
+- Added `detectPlayEvent()` — Spotify checks `data.type` object field; YouTube parses JSON string and checks `event === 'onStateChange' && info === 1` (YouTube IFrame API play state).
+- Added `handleEmbedMessage()` — parses `event.origin`, looks up service, calls `detectPlayEvent`, then `pause()` + `setActiveSource(source)` on a confirmed play event.
+- Registered `window.addEventListener('message', handleEmbedMessage)` on component mount.
+- Updated SoundCloud Widget PLAY handler to call `pause()` + `setActiveSource('soundcloud')` via dynamic imports (avoids circular import in async SC setup function).
+- Added `onDestroy` cleanup: removes message listener + calls `clearActiveSource()` to prevent stale "via X" badge after navigation.
+
+**Task 2 — Player.svelte:**
+- Imported `streamingState` from `streaming.svelte`.
+- Added `sourceLabel()` helper mapping source keys to display names (Spotify, SoundCloud, YouTube, Bandcamp).
+- Added `{#if streamingState.activeSource}<span class="via-badge">via {sourceLabel(...)}</span>{/if}` inside the `track-meta` div, after the album span.
+- Added `.via-badge` CSS (9px, italic, `var(--t-3)`, 0.8 opacity) scoped to the component.
+
+**Phase 29 — Streaming Foundation complete.** All four plans executed. The coordination layer is in place: one audio source plays at a time, the player bar shows context when an embed is active, and the whole thing clears cleanly on navigation. No new npm packages, no new Rust commands — pure frontend wiring.
+
 ---
 
 ## Entry 2026-02-26 — Press Screenshots v2 + Wikipedia Artist Thumbnails
@@ -8638,4 +8658,13 @@ This completes v1.0 — The Playback Milestone. All phases done.
 > Files changed: 4
 
 > **Commit 181b18d** (2026-02-27 01:32) — feat(29-03): add streaming availability badge pills to artist page header
+> Files changed: 1
+
+> **Commit 1fdbd3b** (2026-02-27 01:34) — docs(29-03): complete artist streaming badge pills plan
+> Files changed: 5
+
+> **Commit b3d9bc2** (2026-02-27 01:36) — feat(29-04): add embed play detection and audio coordination to EmbedPlayer
+> Files changed: 1
+
+> **Commit 353d0aa** (2026-02-27 01:36) — feat(29-04): add via-badge to Player bar track-info area
 > Files changed: 1
