@@ -73,7 +73,7 @@
 		<!-- Track info -->
 		<div class="track-info">
 			<div class="cassette-reels" class:playing={playerState.isPlaying}>
-				<svg class="reel" viewBox="0 0 20 20" width="20" height="20">
+				<svg class="reel" viewBox="0 0 20 20" width="36" height="36">
 					<circle cx="10" cy="10" r="8.5" fill="var(--bg-4)" stroke="currentColor" stroke-width="0.8"/>
 					<circle cx="10" cy="4.5" r="1.8" fill="var(--bg-3)"/>
 					<circle cx="14.76" cy="12.75" r="1.8" fill="var(--bg-3)"/>
@@ -81,7 +81,7 @@
 					<circle cx="10" cy="10" r="2.5" fill="currentColor" opacity="0.6"/>
 					<circle cx="10" cy="10" r="1.2" fill="var(--bg-3)"/>
 				</svg>
-				<svg class="reel reel-reverse" viewBox="0 0 20 20" width="20" height="20">
+				<svg class="reel reel-reverse" viewBox="0 0 20 20" width="36" height="36">
 					<circle cx="10" cy="10" r="8.5" fill="var(--bg-4)" stroke="currentColor" stroke-width="0.8"/>
 					<circle cx="10" cy="4.5" r="1.8" fill="var(--bg-3)"/>
 					<circle cx="14.76" cy="12.75" r="1.8" fill="var(--bg-3)"/>
@@ -309,7 +309,8 @@
 		height: var(--player);
 		background: var(--bg-3);
 		border-top: 1px solid var(--b-2);
-		display: flex;
+		display: grid;
+		grid-template-columns: 1fr auto 1fr;
 		align-items: center;
 		padding: 0 14px;
 		gap: 12px;
@@ -318,9 +319,7 @@
 
 	/* Track info — left section */
 	.track-info {
-		flex: 1;
 		min-width: 0;
-		max-width: 240px;
 		display: flex;
 		align-items: center;
 		gap: 8px;
@@ -334,7 +333,7 @@
 	.cassette-reels {
 		display: flex;
 		align-items: center;
-		gap: 4px;
+		gap: 6px;
 		color: var(--t-3);
 		flex-shrink: 0;
 	}
@@ -387,12 +386,12 @@
 
 	/* Center — transport controls + seek */
 	.controls-center {
-		flex: 2;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		gap: 2px;
-		max-width: 600px;
+		width: 100%;
+		max-width: 560px;
 	}
 
 	.transport {
@@ -559,12 +558,10 @@
 
 	/* Right section — volume + queue */
 	.controls-right {
-		flex: 1;
 		display: flex;
 		align-items: center;
 		justify-content: flex-end;
 		gap: 6px;
-		max-width: 240px;
 	}
 
 	.volume-bar {
