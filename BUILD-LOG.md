@@ -8933,3 +8933,6 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit f0361cc** (2026-02-27 10:05) — feat(31-v1-prep): remove community UI surfaces for v1 ship
 > Files changed: 7
+
+> **Commit c57a384** (2026-02-27 10:05) — wip: auto-save
+> Files changed: 1
