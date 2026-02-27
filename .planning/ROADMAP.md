@@ -120,7 +120,9 @@ Plans:
   4. Artist page has no "Scene rooms for {tag}" or "Explore {tag} scene" buttons
   5. Settings page shows no FediverseSettings component
   6. Settings page Spotify redirect URI instructional text says "http://127.0.0.1" not "http://localhost"
-**Plans**: TBD
+**Plans**: 1 plan
+Plans:
+- [ ] 31-01-PLAN.md — Remove community UI surfaces + fix localhost text
 
 ### Phase 32: Embedded Players
 **Goal**: Users can play music through SoundCloud, YouTube, and Bandcamp embeds directly in the app, with a source switcher to change services without leaving the artist page; release page Play Album activates the best available source
@@ -164,6 +166,6 @@ Plans:
 | 28. UX Cleanup + Scope Reduction | v1.5 | 7/7 | Complete | 2026-02-26 |
 | 29. Streaming Foundation | v1.6 | 4/4 | Complete | 2026-02-27 |
 | 30. Spotify Integration | v1.6 | 3/3 | Complete | 2026-02-27 |
-| 31. v1 Prep | v1.6 | 0/? | Not started | - |
+| 31. v1 Prep | v1.6 | 0/1 | Not started | - |
 | 32. Embedded Players | v1.6 | 0/? | Not started | - |
 | 33. Artist Claim Form | v1.6 | 0/? | Not started | - |
