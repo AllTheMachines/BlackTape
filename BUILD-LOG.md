@@ -14,6 +14,23 @@ Track info section restructured to a flex row: `[reels] [track text]`. Text uses
 
 ---
 
+## Entry 2026-02-27 — Artist Page: Platform Pill Brand Colors
+
+All platform pills now show their brand colors — text color always on, faint border always visible, full border on hover. This matches the embed trigger button pattern already in use for Bandcamp/Spotify/SoundCloud/YouTube.
+
+**What changed:**
+
+- **Embed pills** (Bandcamp, Spotify, SoundCloud, YouTube) — brand-colored text + border were already present. Fixed hover: was overriding brand color with `var(--text-primary)`. Removed the override so brand color persists through hover.
+- **External pills** (Apple Music, Deezer, Google Play, Tidal) — added `extPillClass(url)` function that maps hostname to CSS class. Each class sets brand text color + 35% border, full border on hover.
+  - Apple Music: `#fc3c44`
+  - Deezer: `#a238ff`
+  - Google Play: `#4285f4`
+  - Tidal: `#00a0d4`
+
+The pill row now reads as a recognizable set of service icons at a glance — Spotify green, SoundCloud orange, Bandcamp teal, Apple Music red, etc. — without any text labels needed.
+
+---
+
 ## Entry 2026-02-27 — Artist Page: Unified Platform Row
 
 **The problem:** Three separate UI elements were doing overlapping jobs on the artist page — source-switcher tabs (Bandcamp | Spotify | SoundCloud | YouTube), a standalone "Listen On" bar below the header showing all streaming platforms, and a separate "▶ Play on Spotify" button for Spotify-connected users. Result: duplicate Spotify, duplicate YouTube, confusing UI.
@@ -9366,3 +9383,6 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit 8c7a096** (2026-02-27 15:22) — wip: auto-save
 > Files changed: 2
+
+> **Commit e688cff** (2026-02-27 15:25) — wip: auto-save
+> Files changed: 3
