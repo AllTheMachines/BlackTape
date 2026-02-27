@@ -24,12 +24,12 @@
 
 ### YouTube (YT)
 
-- [ ] **YT-01**: Artist page shows YouTube embed player when a YouTube link is available
+- [x] **YT-01**: Artist page shows YouTube embed player when a YouTube link is available
 - [x] **YT-02**: YouTube embed falls back gracefully to "Watch on YouTube" external button when embed is blocked (Error 153 — must be verified in production .msi build)
 
 ### SoundCloud (SC)
 
-- [ ] **SC-01**: Artist page shows SoundCloud embed player when a SoundCloud link is available
+- [x] **SC-01**: Artist page shows SoundCloud embed player when a SoundCloud link is available
 - [x] **SC-02**: SoundCloud embed pauses when a different streaming source becomes active
 
 ### Bandcamp (BC)
@@ -40,7 +40,7 @@
 ### Player UX (PLAYER)
 
 - [x] **PLAYER-01**: Player bar displays a service badge showing the currently active streaming source (e.g. "Spotify", "SoundCloud", "Bandcamp")
-- [ ] **PLAYER-02**: Artist page shows a source switcher — one button per available service, switching active source without navigating away
+- [x] **PLAYER-02**: Artist page shows a source switcher — one button per available service, switching active source without navigating away
 - [ ] **PLAYER-03**: Release page "Play Album" button activates the best available streaming source for that release
 
 ### Artist Claim Form (CLAIM)
@@ -83,14 +83,14 @@
 | SPOT-03 | Phase 30 | Complete |
 | SPOT-04 | Phase 30 | Complete |
 | PREP-01 | Phase 31 | Pending |
-| YT-01 | Phase 32 | Pending |
+| YT-01 | Phase 32 | Complete |
 | YT-02 | Phase 32 | Complete |
-| SC-01 | Phase 32 | Pending |
+| SC-01 | Phase 32 | Complete |
 | SC-02 | Phase 32 | Complete |
 | BC-01 | Phase 32 | Complete |
 | BC-02 | Phase 32 | Pending |
 | PLAYER-01 | Phase 29 | Complete |
-| PLAYER-02 | Phase 32 | Pending |
+| PLAYER-02 | Phase 32 | Complete |
 | PLAYER-03 | Phase 32 | Pending |
 | CLAIM-01 | Phase 33 | Pending |
 

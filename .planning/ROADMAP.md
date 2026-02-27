@@ -137,8 +137,8 @@ Plans:
   6. Release page "Play Album" button activates a streaming embed for that specific release â€” button hidden when no streaming URLs exist for the release
 **Plans**: 3 plans
 Plans:
-- [ ] 32-01-PLAN.md — Embed utilities + EmbedPlayer refactor (autoLoad, activeService, YT Error 153, Bandcamp iframe, SC pause, Bandcamp spike)
-- [ ] 32-02-PLAN.md — Artist page source switcher + EmbedPlayer wiring
+- [x] 32-01-PLAN.md — Embed utilities + EmbedPlayer refactor (autoLoad, activeService, YT Error 153, Bandcamp iframe, SC pause, Bandcamp spike)
+- [x] 32-02-PLAN.md — Artist page source switcher + EmbedPlayer wiring
 - [ ] 32-03-PLAN.md — Release page Play Album + streamingLinks data
 
 ### Phase 33: Artist Claim Form
@@ -175,5 +175,5 @@ Plans:
 | 29. Streaming Foundation | v1.6 | 4/4 | Complete | 2026-02-27 |
 | 30. Spotify Integration | v1.6 | 3/3 | Complete | 2026-02-27 |
 | 31. v1 Prep | v1.6 | 0/1 | Not started | - |
-| 32. Embedded Players | 1/3 | In Progress|  | - |
+| 32. Embedded Players | 2/3 | In Progress|  | - |
 | 33. Artist Claim Form | v1.6 | 0/? | Not started | - |

@@ -24,11 +24,11 @@ See: .planning/PROJECT.md (updated 2026-02-27)
 ## Current Position
 
 Phase: 32 of 33 (Embedded Players)
-Plan: 1 of 3 in current phase (32-01 complete)
-Status: Active — Phase 32, Plan 01 complete; Plans 32-02 and 32-03 pending
-Last activity: 2026-02-27 — 32-01 executed (EmbedPlayer foundation: autoLoad, Bandcamp spike, YouTube error detection)
+Plan: 2 of 3 in current phase (32-02 complete)
+Status: Active — Phase 32, Plan 02 complete; Plan 32-03 pending
+Last activity: 2026-02-27 — 32-02 executed (artist page source switcher + EmbedPlayer integration)
 
-Progress: [██████████████████████] 24% of v1.6 (8 plans done across Phases 29+30+31+32-01)
+Progress: [████████████████████████] 27% of v1.6 (9 plans done across Phases 29+30+31+32-01+32-02)
 
 ## Performance Metrics
 
@@ -56,6 +56,7 @@ Progress: [██████████████████████] 2
 - 30-03: 2 min, 1 task, 2 files, 0 deviations
 - 31-01: (complete — v1 Prep)
 - 32-01: 7 min, 2 tasks, 4 files + 1 tool created, 0 deviations
+- 32-02: 3 min, 1 task, 1 file, 1 auto-fix (escaped HTML comment from Python replacement)
 
 ## Accumulated Context
 
@@ -92,6 +93,9 @@ Progress: [██████████████████████] 2
 - [32-01]: EmbedPlayer ordering switches from streamingPref/PLATFORM_PRIORITY to streamingState.serviceOrder (single source of truth)
 - [32-01]: scWidget stored in component-level $state so SC can be paused reactively when activeSource changes
 - [32-01]: onDestroy guard: only clear activeSource if this component's platform was the active one (avoids clobbering on {#key} remount)
+- [32-02]: activateService() calls setActiveSource BEFORE updating activeEmbedService — prevents outgoing EmbedPlayer onDestroy from clobbering the source just set by incoming embed
+- [32-02]: availableEmbedServices derives from streamingState.serviceOrder — single source of truth for platform preference, no secondary sorting needed
+- [32-02]: SC oEmbed fetch gated in Tauri onMount block only — /api/soundcloud-oembed endpoint only available in Tauri app server context
 
 ### Blockers/Concerns
 
@@ -105,5 +109,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-27
-Stopped at: Completed 32-01-PLAN.md (embed utilities + EmbedPlayer foundation + Bandcamp spike PASSES)
+Stopped at: Completed 32-02-PLAN.md (artist page source switcher + EmbedPlayer integration)
 Resume file: None

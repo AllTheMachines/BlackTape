@@ -4,6 +4,26 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-02-27 — Phase 32-02: Artist Page Source Switcher + EmbedPlayer Integration
+
+One task, one commit. This is the primary user-facing deliverable for embedded players — artists with SoundCloud, YouTube, Bandcamp, or Spotify links now have a playable embedded player instead of static text badges.
+
+**What changed (f3ac71d):**
+
+The static `.streaming-badges` block (four spans with text like "Bandcamp", "Spotify") is gone. In its place: an interactive `.source-switcher` bar with one button per available service, followed by an `EmbedPlayer` that auto-loads the highest-priority service (per the user's configured order from Settings > Streaming).
+
+Key wiring decisions:
+- `availableEmbedServices` is a `$derived` from `streamingState.serviceOrder` — so it respects the user's drag-to-reorder preference automatically.
+- `{#key activeEmbedService}` wraps the `EmbedPlayer` — this guarantees the old iframe is unmounted and destroyed before the new one mounts. No dual-audio. No lingering SC widgets.
+- `activateService(svc)` calls `setActiveSource(svc)` before triggering the `{#key}` re-render — critical ordering to prevent the outgoing EmbedPlayer's `onDestroy` from clobbering the source the incoming one just set.
+- SoundCloud oEmbed HTML is fetched from `/api/soundcloud-oembed` proxy in `onMount` (Tauri only), best-effort — degrades to external link if fetch fails.
+
+The "Play on Spotify" button (Spotify Connect for Spotify Premium users) remains — it's in a separate section below the source switcher.
+
+**Tests:** 193 passing, 0 failing. `npm run check`: 0 errors, 8 pre-existing warnings.
+
+---
+
 ## Entry 2026-02-27 — Phase 32-01: Embedded Players Foundation
 
 Two tasks, two commits. This plan builds the primitives that Plans 32-02 and 32-03 depend on.
@@ -8975,3 +8995,9 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit fd23405** (2026-02-27 10:37) — feat(32-01): Bandcamp spike PASSES — url= parameter confirmed working in WebView2
 > Files changed: 2
+
+> **Commit 8b11374** (2026-02-27 10:40) — docs(32-01): complete embed-player-foundation plan — Bandcamp spike PASSES, EmbedPlayer refactored
+> Files changed: 5
+
+> **Commit f3ac71d** (2026-02-27 10:44) — feat(32-02): wire EmbedPlayer into artist page with source switcher
+> Files changed: 1
