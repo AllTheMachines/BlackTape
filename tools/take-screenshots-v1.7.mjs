@@ -1,7 +1,7 @@
 /**
  * BlackTape v1.7 Screenshot + QA Pass
  *
- * Uses Tauri binary + CDP. All v1.6 issues addressed:
+ * Uses Tauri binary + CDP (page.goto, not window.location.href). All v1.6 issues addressed:
  *   - Search: mode=tag (searchByTag) for genre grid, NOT mode=artist (name FTS)
  *   - Scroll past local library results to show discovery grid before capture
  *   - Autocomplete: locator.fill() instead of keyboard.type() — reliable Svelte event dispatch
@@ -28,6 +28,9 @@ const OUT = path.join(ROOT, 'static', 'press-screenshots', 'v5');
 const BINARY = path.join(ROOT, 'src-tauri', 'target', 'debug', 'mercury.exe');
 const CDP_PORT = 9224;
 const CDP_BASE = `http://127.0.0.1:${CDP_PORT}`;
+// Debug binary loads from dev server. Release binary uses tauri.localhost.
+// The connected URL tells us: page.url() starts with http://localhost:5173 in debug mode.
+const APP_BASE = 'http://localhost:5173';
 const DEV_PORT = 5173;
 const DEV_BASE = `http://localhost:${DEV_PORT}`;
 const http = createRequire(import.meta.url)('http');
@@ -95,12 +98,26 @@ function pollCdp(timeoutMs = 40000) {
   });
 }
 
-async function goto(page, route, waitMs = 4000) {
+async function goto(page, route, waitMs = 2000) {
+  const t0 = Date.now();
+  const url = `${APP_BASE}${route}`;
   console.log(`  → ${route}`);
-  // Fire-and-forget: setting location.href destroys the page context so evaluate()
-  // never resolves. Swallow the timeout — the navigation still happens.
-  await page.evaluate(r => { window.location.href = r; }, route).catch(() => {});
-  await page.waitForLoadState('domcontentloaded').catch(() => {});
+  // Use 'commit' (navigation committed) not 'domcontentloaded' — for SPA routes the
+  // document doesn't change so domcontentloaded can be unreliable after many navigations.
+  // 'commit' resolves as soon as navigation is confirmed by the browser.
+  try {
+    await page.goto(url, { waitUntil: 'commit', timeout: 15000 });
+    console.log(`  ↳ goto committed in ${Date.now() - t0}ms`);
+  } catch (err) {
+    const elapsed = Date.now() - t0;
+    console.error(`  ✗ goto FAILED after ${elapsed}ms: ${err.message.split('\n')[0]}`);
+    console.error(`    URL: ${url}`);
+    // Fall back: fire-and-forget JS navigation. Context may be lost but navigation proceeds.
+    console.error(`    Falling back to window.location.href...`);
+    await page.evaluate(u => { window.location.href = u; }, url).catch(() => {});
+    await page.waitForTimeout(3000);
+    console.log(`  ↳ fallback navigation fired`);
+  }
   await page.waitForTimeout(waitMs);
 }
 
@@ -125,18 +142,11 @@ async function tryClick(page, selector, timeoutMs = 3000) {
   return false;
 }
 
-function evalWithTimeout(page, fn, ms = 2500) {
-  return Promise.race([
-    page.evaluate(fn),
-    new Promise((_, reject) => setTimeout(() => reject(new Error('evaluate timeout')), ms)),
-  ]);
-}
-
 async function waitForCardImages(page, timeoutMs = 15000, minImages = 4) {
   const start = Date.now();
   while (Date.now() - start < timeoutMs) {
     try {
-      const count = await evalWithTimeout(page, () => {
+      const count = await page.evaluate(() => {
         let loaded = 0;
         for (const img of document.querySelectorAll('.a-art img[src]')) {
           if (img.complete && img.naturalHeight > 0) loaded++;
@@ -151,7 +161,7 @@ async function waitForCardImages(page, timeoutMs = 15000, minImages = 4) {
     await page.waitForTimeout(600);
   }
   try {
-    const final = await evalWithTimeout(page, () => {
+    const final = await page.evaluate(() => {
       let loaded = 0;
       for (const img of document.querySelectorAll('.a-art img[src]')) {
         if (img.complete && img.naturalHeight > 0) loaded++;
@@ -170,7 +180,7 @@ async function waitForDiscographyCovers(page, timeoutMs = 18000, minCovers = 4) 
   const start = Date.now();
   while (Date.now() - start < timeoutMs) {
     try {
-      const count = await evalWithTimeout(page, () => {
+      const count = await page.evaluate(() => {
         let loaded = 0;
         for (const img of document.querySelectorAll('.cover-art img[src]')) {
           if (img.complete && img.naturalHeight > 0) loaded++;
@@ -185,7 +195,7 @@ async function waitForDiscographyCovers(page, timeoutMs = 18000, minCovers = 4) 
     await page.waitForTimeout(800);
   }
   try {
-    const final = await evalWithTimeout(page, () => {
+    const final = await page.evaluate(() => {
       let loaded = 0;
       for (const img of document.querySelectorAll('.cover-art img[src]')) {
         if (img.complete && img.naturalHeight > 0) loaded++;
@@ -312,14 +322,7 @@ async function launchTauri() {
 
   await page.waitForLoadState('domcontentloaded').catch(() => {});
   await page.waitForTimeout(3000);
-  page.setDefaultTimeout(10000);
-  // Bound ALL page.evaluate() calls — setDefaultTimeout does NOT cover evaluate().
-  // When CDP freezes, evaluate() hangs forever without this.
-  const _evaluate = page.evaluate.bind(page);
-  page.evaluate = (...args) => Promise.race([
-    _evaluate(...args),
-    new Promise((_, rej) => setTimeout(() => rej(new Error('eval timeout')), 8000)),
-  ]);
+  page.setDefaultTimeout(15000);
   console.log('Connected. App URL:', page.url());
 }
 
@@ -343,6 +346,12 @@ async function ensureAlive() {
 // ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
+let _runStart = Date.now();
+function ts() {
+  const s = Math.floor((Date.now() - _runStart) / 1000);
+  return `[${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}]`;
+}
+
 async function run() {
   if (!fs.existsSync(BINARY)) {
     console.error('Binary not found:', BINARY);
@@ -351,26 +360,8 @@ async function run() {
   }
 
   // --- Step 1: Ensure dev server is running on 5173 ---
-  let devProc = null;
-  let devServerAlreadyRunning = false;
-  try {
-    await pollHttp(DEV_BASE, 2000);
-    devServerAlreadyRunning = true;
-    console.log('Dev server already running on', DEV_PORT);
-  } catch {
-    devServerAlreadyRunning = false;
-  }
-
-  if (!devServerAlreadyRunning) {
-    console.log('Starting dev server on port 5173...');
-    devProc = spawn('npm', ['run', 'dev'], {
-      cwd: ROOT, shell: true, stdio: 'ignore', detached: false,
-    });
-    devProc.on('error', err => console.error('Dev server error:', err.message));
-    await pollHttp(DEV_BASE, 60000);
-    console.log('Dev server ready.');
-    await new Promise(r => setTimeout(r, 2000));
-  }
+  // Tauri .exe compiled build serves from frontendDist — dev server not required.
+  // But if one is running, leave it alone.
 
   // --- Step 2: Launch Tauri with CDP ---
   await launchTauri();
@@ -381,7 +372,7 @@ async function run() {
   // Key fix: mode=tag calls searchByTag('electronic'), NOT FTS artist name search.
   // Scroll past local library section to show the discovery grid.
   // ═══════════════════════════════════════════════════════════════════════════
-  console.log('--- 1. Search: electronic (tag discovery grid) ---');
+  console.log(`${ts()} --- 1. Search: electronic (tag discovery grid) ---`);
   if (alreadyDone('search-electronic-grid.png')) { console.log('  ⊘ skip'); } else {
   await ensureAlive();
   await goto(page, '/search?q=electronic&mode=tag', 5000);
@@ -1007,7 +998,6 @@ async function run() {
   // ═══════════════════════════════════════════════════════════════════════════
   try { await browser.close(); } catch {}
   if (proc) proc.kill();
-  if (devProc) devProc.kill();
 
   console.log('\n\n═══════════════════════════════════════════════════');
   console.log('SCREENSHOTS COMPLETE — v1.7');

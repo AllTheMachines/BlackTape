@@ -5,7 +5,7 @@ A documentary record of building this project from idea to reality.
 ---
 
 <!-- status -->
-Screenshot QA pass v1.7 — running all 21 screens. Fixing v1.6 issues: artist discovery grid visibility, Time Machine tag filter, Style Map zoom, KB entry with description, queue from multiple artists.
+Screenshot pass v1.7 — 5/21 done. Rewriting screenshot script to use Playwright native browser (drop CDP/WebView2 which crashes mid-session). Running remaining 16 screens now.
 <!-- /status -->
 
 ---
@@ -9485,3 +9485,6 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit 3452203** (2026-02-27 19:16) — auto-save: 3 files @ 19:16
 > Files changed: 2
+
+> **Commit 13b3fc3** (2026-02-27 19:22) — wip: auto-save
+> Files changed: 3
