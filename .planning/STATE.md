@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-02-27)
 ## Current Position
 
 Phase: 29 of 32 (Streaming Foundation)
-Plan: 0 of ? in current phase
-Status: Ready to plan
-Last activity: 2026-02-27 — v1.6 roadmap created (Phases 29–32, 15 requirements mapped)
+Plan: 0 of 4 in current phase
+Status: Ready to execute — 4 plans written
+Last activity: 2026-02-27 — Phase 29 planned (4 plans: streaming state, Settings UI, artist badges, audio coordination)
 
 Progress: [████████████░░░░░░░░] 0% of v1.6 (Phases 29–32 not started)
 
@@ -26,7 +26,7 @@ Progress: [████████████░░░░░░░░] 0% of v
 
 | Phase | Plans | Status |
 |-------|-------|--------|
-| 29. Streaming Foundation | TBD | Not started |
+| 29. Streaming Foundation | 4 | Planned — ready to execute |
 | 30. Spotify Integration | TBD | Not started |
 | 31. Embedded Players | TBD | Not started |
 | 32. Album Playback + Polish | TBD | Not started |

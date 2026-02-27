@@ -4,6 +4,45 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-02-27 — Phase 29 Planning: Streaming Foundation
+
+Planned Phase 29 — Streaming Foundation (v1.6, first phase of The Playback Milestone). Four plans, ready for execution.
+
+### What's Being Built
+
+Phase 29 is pure infrastructure — no audio hosted, no new APIs, no new npm packages. Everything is derived from existing codebase patterns:
+
+- **`streaming.svelte.ts`** — New global state module: `streamingState.activeSource` (which embed is playing) + `streamingState.serviceOrder` (priority for future auto-resolution). Same `$state` at module level pattern as `playerState`.
+- **Settings → Streaming section** — Drag-to-reorder list of 4 services. Grip icon left, text name right. Order persists via existing `set_ai_setting` Tauri invoke. Same drag pattern as `Queue.svelte`.
+- **Artist page streaming badges** — Text-only pill badges ("Bandcamp", "Spotify", etc.) below the artist name. Derived from `data.links` array lengths — zero new API calls. Hidden entirely when no streaming links exist.
+- **Audio coordination + player bar badge** — `EmbedPlayer.svelte` listens for postMessage events from Spotify/YouTube iframes and the existing SoundCloud Widget API PLAY event. When any embed plays, local audio is paused (position preserved) and `activeSource` is set. Player bar shows "via SoundCloud" etc. in the track-info area. Cleared on component destroy.
+
+### Plan Structure
+
+| Plan | Wave | Covers | Files |
+|------|------|--------|-------|
+| 29-01 | 1 | INFRA-01 (foundation), INFRA-02, PLAYER-01 | streaming.svelte.ts (new), preferences.svelte.ts, +layout.svelte |
+| 29-02 | 2 | INFRA-01 (UI) | settings/+page.svelte |
+| 29-03 | 2 | INFRA-03 | artist/[slug]/+page.svelte |
+| 29-04 | 2 | INFRA-02, PLAYER-01 | EmbedPlayer.svelte, Player.svelte |
+
+Plans 02, 03, 04 all depend on Plan 01 (state module must exist first) but run independently of each other — no file conflicts between them.
+
+### Key Decisions Honored
+
+From `29-CONTEXT.md` (locked decisions, non-negotiable):
+- Text-only everywhere — no logos, no icons in Settings list, artist badges, or player bar
+- Pause (not stop) local audio — position is preserved for manual resume
+- Badge row hidden entirely when no streaming links (no empty state message)
+- postMessage coordination trigger (not polling)
+- "via X" in player bar only shows during embed activity, clears on iframe destroy
+
+<!-- status -->
+Phase 29 plans written — 4 plans ready for execution. Starting with 29-01.
+<!-- /status -->
+
+---
+
 ## Entry 2026-02-26 — Press Screenshots v2 + Wikipedia Artist Thumbnails
 
 ### Wikipedia Thumbnails in Artist Cards
@@ -8537,4 +8576,10 @@ This completes v1.0 — The Playback Milestone. All phases done.
 > Files changed: 1
 
 > **Commit 03fcb40** (2026-02-27 01:02) — docs(29): capture phase context
+> Files changed: 1
+
+> **Commit 4d26a9c** (2026-02-27 01:03) — wip: auto-save
+> Files changed: 1
+
+> **Commit 22a31a7** (2026-02-27 01:08) — docs(29): research streaming foundation phase
 > Files changed: 1
