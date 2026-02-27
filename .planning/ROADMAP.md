@@ -176,4 +176,4 @@ Plans:
 | 30. Spotify Integration | v1.6 | 3/3 | Complete | 2026-02-27 |
 | 31. v1 Prep | v1.6 | 0/1 | Not started | - |
 | 32. Embedded Players | v1.6 | 3/3 | Complete | 2026-02-27 |
-| 33. Artist Claim Form | v1.6 | 0/2 | Not started | - |
+| 33. Artist Claim Form | 1/2 | In Progress|  | - |
