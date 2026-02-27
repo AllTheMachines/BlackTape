@@ -8893,3 +8893,12 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit a05764c** (2026-02-27 09:32) — wip: auto-save
 > Files changed: 1
+
+> **Commit 1f4ad24** (2026-02-27 09:35) — wip: auto-save
+> Files changed: 2
+
+> **Commit a2c7bed** (2026-02-27 09:41) — docs: pre-phase-31 planning cleanup
+> Files changed: 11
+
+> **Commit e53dbeb** (2026-02-27 09:44) — docs(31): research phase v1-prep community feature removal
+> Files changed: 1
