@@ -4,6 +4,30 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-02-27 — Phase 32-03: Release Page Play Album Wired to Bandcamp Embed
+
+One task, one commit. The release page "Play Album" button now does something real.
+
+Since the Bandcamp spike passed in 32-01 (url= parameter works in WebView2), the path was clear: expose `bandcampUrl` from the load function as `streamingLinks`, gate the button on `tauriMode && data.streamingLinks?.bandcamp`, and show an inline iframe when clicked.
+
+**What changed (8c36100):**
+
+The `handlePlayAlbum` stub — which existed only as a placeholder — is now wired. Three changes:
+
+1. `+page.ts`: `bandcampUrl` was already fetched from MusicBrainz URL relations but scoped inside the try block and not in the return object. Moved the declaration to outer scope (same pattern as `release`), and added `streamingLinks: { bandcamp: bandcampUrl }` to the return.
+
+2. `+page.svelte`: Imported `bandcampEmbedUrl` from `$lib/embeds/bandcamp`. Added `showInlineEmbed = $state(false)`. `handlePlayAlbum` now sets it to true. Play Album button is now gated: `{#if tauriMode && data.streamingLinks?.bandcamp}` — absent from DOM entirely when no Bandcamp URL in MusicBrainz data. Added inline iframe block that renders after click.
+
+3. CSS: Added `.release-embed-wrap` for the iframe container.
+
+The button is gone from the DOM when no Bandcamp data exists — not disabled, not grayed out, not there. The BuyOnBar already shows "Buy on Bandcamp" as an external link when available, so this is the play-first experience for those who want it.
+
+**Tests:** 193 passing, 0 failing. `npm run check`: 0 errors, 8 pre-existing warnings.
+
+Phase 32 complete pending the YouTube Error 153 gate (production .msi build test — dev mode always passes).
+
+---
+
 ## Entry 2026-02-27 — Phase 32-02: Artist Page Source Switcher + EmbedPlayer Integration
 
 One task, one commit. This is the primary user-facing deliverable for embedded players — artists with SoundCloud, YouTube, Bandcamp, or Spotify links now have a playable embedded player instead of static text badges.
@@ -9004,3 +9028,9 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit 6417c25** (2026-02-27 10:46) — docs(32-02): complete artist-page-source-switcher plan — EmbedPlayer wired, source switcher live
 > Files changed: 5
+
+> **Commit d081328** (2026-02-27 10:46) — auto-save: 2 files @ 10:46
+> Files changed: 1
+
+> **Commit 8c36100** (2026-02-27 10:49) — feat(32-03): wire release page Play Album to inline Bandcamp embed
+> Files changed: 2
