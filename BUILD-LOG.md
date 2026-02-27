@@ -8884,3 +8884,9 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit 766e525** (2026-02-27 09:26) — wip: auto-save
 > Files changed: 1
+
+> **Commit 2e17273** (2026-02-27 09:27) — wip: auto-save
+> Files changed: 1
+
+> **Commit 613b72c** (2026-02-27 09:32) — wip: docs cleanup paused mid-session — continue-here.md has full state
+> Files changed: 2
