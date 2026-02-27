@@ -8,7 +8,8 @@
 	import { onMount } from 'svelte';
 	import { themeState, applyPalette, clearPalette } from '$lib/theme/engine.svelte';
 	import { generatePalette, tasteTagsToHue } from '$lib/theme/palette';
-	import { saveThemePreference, saveStreamingPreference, saveLayoutPreference, saveUserTemplates, streamingPref } from '$lib/theme/preferences.svelte';
+	import { saveThemePreference, saveStreamingPreference, saveLayoutPreference, saveUserTemplates, streamingPref, saveServiceOrder } from '$lib/theme/preferences.svelte';
+	import { streamingState } from '$lib/player/streaming.svelte';
 	import { TEMPLATE_LIST, createUserTemplateRecord, expandUserTemplate } from '$lib/theme/templates';
 	import type { LayoutTemplate } from '$lib/theme/templates';
 	import { tasteProfile } from '$lib/taste/profile.svelte';
@@ -16,6 +17,17 @@
 
 	let tauriMode = $state(false);
 	let newTemplateName = $state('');
+
+	// ─── Streaming service order drag state ──────────────────────────────────────
+	let dragSrcIdx = $state<number | null>(null);
+	let isDragTarget = $state<number | null>(null);
+
+	const SERVICE_LABELS: Record<string, string> = {
+		bandcamp: 'Bandcamp',
+		spotify: 'Spotify',
+		soundcloud: 'SoundCloud',
+		youtube: 'YouTube'
+	};
 
 	// ─── Identity state ───────────────────────────────────────────────────────────
 	let identityHandle = $state('');
@@ -247,6 +259,14 @@
 		streamingPref.platform = platform;
 		saveStreamingPreference(platform);
 	}
+
+	function reorderServices(fromIdx: number, toIdx: number): void {
+		const order = [...streamingState.serviceOrder];
+		const [moved] = order.splice(fromIdx, 1);
+		order.splice(toIdx, 0, moved);
+		streamingState.serviceOrder = order;
+		saveServiceOrder(order); // fire-and-forget
+	}
 </script>
 
 <svelte:head>
@@ -386,6 +406,38 @@
 					<option value="soundcloud">SoundCloud</option>
 					<option value="youtube">YouTube</option>
 				</select>
+			</div>
+		</div>
+
+		<!-- Streaming Service Priority -->
+		<div class="settings-section">
+			<h2>Streaming</h2>
+			<p class="section-desc">
+				Drag to set your preferred service order. Used for future auto-resolution of streaming sources.
+			</p>
+
+			<div class="service-order-list">
+				{#each streamingState.serviceOrder as service, i}
+					<div
+						class="service-row"
+						class:drag-over={isDragTarget === i}
+						draggable={true}
+						ondragstart={() => { dragSrcIdx = i; }}
+						ondragover={(e) => { e.preventDefault(); isDragTarget = i; }}
+						ondragleave={() => { isDragTarget = null; }}
+						ondrop={(e) => {
+							e.preventDefault();
+							if (dragSrcIdx !== null && dragSrcIdx !== i) reorderServices(dragSrcIdx, i);
+							dragSrcIdx = null;
+							isDragTarget = null;
+						}}
+						ondragend={() => { dragSrcIdx = null; isDragTarget = null; }}
+						role="listitem"
+					>
+						<span class="drag-grip">⠿</span>
+						<span class="service-name">{SERVICE_LABELS[service] ?? service}</span>
+					</div>
+				{/each}
 			</div>
 		</div>
 
@@ -1097,5 +1149,46 @@
 
 	.platform-select:focus {
 		border-color: var(--b-3);
+	}
+
+	/* ─── Streaming service order ─────────────────────────────── */
+	.service-order-list {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+		max-width: 320px;
+	}
+
+	.service-row {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		padding: 8px 12px;
+		background: var(--bg-3);
+		border: 1px solid var(--b-1);
+		border-radius: var(--r);
+		cursor: grab;
+		user-select: none;
+	}
+
+	.service-row:active {
+		cursor: grabbing;
+	}
+
+	.service-row.drag-over {
+		border-color: var(--acc);
+		background: var(--bg-3);
+	}
+
+	.drag-grip {
+		color: var(--t-3);
+		font-size: 14px;
+		line-height: 1;
+		cursor: grab;
+	}
+
+	.service-name {
+		font-size: 13px;
+		color: var(--t-1);
 	}
 </style>
