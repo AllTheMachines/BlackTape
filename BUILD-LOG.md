@@ -4,6 +4,20 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-02-27 — Animated Cassette Wheels in Player Bar
+
+Very on-brand for BlackTape: two spinning cassette reels now live in the player bar, left of the track title. They sit static when paused, and spin (one clockwise, one counterclockwise — mimicking real tape direction) when playing.
+
+**Implementation:** Pure SVG + CSS. Each reel is a 20×20 inline SVG: outer ring filled with `var(--bg-4)`, three circular windows (120° apart) filled with `var(--bg-3)` to look like holes, a dimmed center hub, and a hub hole. Reuses the existing `@keyframes spin` from the loading spinner. Animation is paused by default; `.cassette-reels.playing .reel` switches `animation-play-state: running`. The right reel uses `animation-direction: reverse` for opposite rotation.
+
+Track info section restructured to a flex row: `[reels] [track text]`. Text uses `flex: 1; min-width: 0` to keep ellipsis overflow working.
+
+<!-- status -->
+Session in progress — cassette wheels done ✓. Next: artist page streaming section redesign.
+<!-- /status -->
+
+---
+
 ## Entry 2026-02-27 — UI Polish: Everything Square
 
 Steve doesn't like round buttons. So everything is now square.
@@ -9257,3 +9271,6 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit bd0e11a** (2026-02-27 14:04) — wip: auto-save
 > Files changed: 2
+
+> **Commit ce0eb48** (2026-02-27 14:06) — wip: auto-save
+> Files changed: 1

@@ -72,16 +72,36 @@
 	<div class="player-bar">
 		<!-- Track info -->
 		<div class="track-info">
-			<div class="track-title">{playerState.currentTrack.title}</div>
-			<div class="track-meta">
-				<span class="track-artist">{playerState.currentTrack.artist}</span>
-				{#if playerState.currentTrack.album}
-					<span class="meta-sep">&mdash;</span>
-					<span class="track-album">{playerState.currentTrack.album}</span>
-				{/if}
-				{#if streamingState.activeSource}
-					<span class="via-badge">via {sourceLabel(streamingState.activeSource)}</span>
-				{/if}
+			<div class="cassette-reels" class:playing={playerState.isPlaying}>
+				<svg class="reel" viewBox="0 0 20 20" width="20" height="20">
+					<circle cx="10" cy="10" r="8.5" fill="var(--bg-4)" stroke="currentColor" stroke-width="0.8"/>
+					<circle cx="10" cy="4.5" r="1.8" fill="var(--bg-3)"/>
+					<circle cx="14.76" cy="12.75" r="1.8" fill="var(--bg-3)"/>
+					<circle cx="5.24" cy="12.75" r="1.8" fill="var(--bg-3)"/>
+					<circle cx="10" cy="10" r="2.5" fill="currentColor" opacity="0.6"/>
+					<circle cx="10" cy="10" r="1.2" fill="var(--bg-3)"/>
+				</svg>
+				<svg class="reel reel-reverse" viewBox="0 0 20 20" width="20" height="20">
+					<circle cx="10" cy="10" r="8.5" fill="var(--bg-4)" stroke="currentColor" stroke-width="0.8"/>
+					<circle cx="10" cy="4.5" r="1.8" fill="var(--bg-3)"/>
+					<circle cx="14.76" cy="12.75" r="1.8" fill="var(--bg-3)"/>
+					<circle cx="5.24" cy="12.75" r="1.8" fill="var(--bg-3)"/>
+					<circle cx="10" cy="10" r="2.5" fill="currentColor" opacity="0.6"/>
+					<circle cx="10" cy="10" r="1.2" fill="var(--bg-3)"/>
+				</svg>
+			</div>
+			<div class="track-text">
+				<div class="track-title">{playerState.currentTrack.title}</div>
+				<div class="track-meta">
+					<span class="track-artist">{playerState.currentTrack.artist}</span>
+					{#if playerState.currentTrack.album}
+						<span class="meta-sep">&mdash;</span>
+						<span class="track-album">{playerState.currentTrack.album}</span>
+					{/if}
+					{#if streamingState.activeSource}
+						<span class="via-badge">via {sourceLabel(streamingState.activeSource)}</span>
+					{/if}
+				</div>
 			</div>
 		</div>
 
@@ -301,6 +321,37 @@
 		flex: 1;
 		min-width: 0;
 		max-width: 240px;
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+
+	.track-text {
+		flex: 1;
+		min-width: 0;
+	}
+
+	.cassette-reels {
+		display: flex;
+		align-items: center;
+		gap: 4px;
+		color: var(--t-3);
+		flex-shrink: 0;
+	}
+
+	.reel {
+		display: block;
+		transform-origin: 50% 50%;
+		animation: spin 2.2s linear infinite;
+		animation-play-state: paused;
+	}
+
+	.reel-reverse {
+		animation-direction: reverse;
+	}
+
+	.cassette-reels.playing .reel {
+		animation-play-state: running;
 	}
 
 	.track-title {
