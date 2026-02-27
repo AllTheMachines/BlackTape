@@ -1,9 +1,9 @@
 /**
- * Bandcamp URL handling — external link only.
+ * Bandcamp URL handling.
  *
- * Bandcamp has NO oEmbed and requires album IDs not available from
- * MusicBrainz URLs. Per locked decision: always show "Listen on Bandcamp"
- * as an external link fallback. No embed generation.
+ * Bandcamp has NO oEmbed. The url= parameter approach (bandcampEmbedUrl)
+ * is used for embed generation — spike confirmed PASSES in Tauri WebView2.
+ * External link functions retained for fallback (timeout) and non-embed contexts.
  */
 
 const BANDCAMP_PATTERN = /bandcamp\.com/;
@@ -28,10 +28,11 @@ export function isBandcampUrl(url: string): boolean {
 /**
  * Construct a Bandcamp EmbeddedPlayer URL using the url= parameter.
  *
- * Spike status: [PENDING — see Task 2 in plan 32-01]
- * If the spike succeeds in Tauri WebView2, this function is used for BC embeds.
- * If the spike fails, this function exists but BC renders as ExternalLink only.
- *
+ * SPIKE RESULT (2026-02-27): PASSES in Tauri WebView2 on Windows.
+ * Confirmed: url= parameter renders Bandcamp compact player in WebView2.
+ * Method: Launched mercury.exe debug binary with CDP, injected iframe with url= param,
+ * observed onload event firing within 12 seconds (tools/bandcamp-spike.mjs).
+ * Implementation: EmbedPlayer renders iframe using this URL for BC-01 and BC-02.
  * Format confirmed by Bluesky social app PR #9445 (2024).
  */
 export function bandcampEmbedUrl(url: string): string {
