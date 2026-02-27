@@ -5,6 +5,8 @@
 	import { youtubeEmbedUrl, isYoutubeChannel } from '$lib/embeds/youtube';
 	import ExternalLink from './ExternalLink.svelte';
 	import { streamingPref } from '$lib/theme/preferences.svelte';
+	import { onDestroy } from 'svelte';
+	import { setActiveSource, clearActiveSource, type StreamingSource } from '$lib/player/streaming.svelte';
 
 	let {
 		links,
@@ -21,6 +23,66 @@
 
 	function revealEmbed(key: string) {
 		loadedEmbeds[key] = true;
+	}
+
+	/** Maps embed origins to StreamingSource identifiers. */
+	const EMBED_ORIGINS: Record<string, StreamingSource> = {
+		'open.spotify.com': 'spotify',
+		'www.youtube.com': 'youtube',
+		'www.youtube-nocookie.com': 'youtube',
+		'w.soundcloud.com': 'soundcloud',
+		'bandcamp.com': 'bandcamp'
+	};
+
+	/**
+	 * Detect whether a postMessage event represents playback starting.
+	 * Schema is undocumented for Spotify; verified from community reports as of Feb 2026.
+	 * YouTube schema from: https://developers.google.com/youtube/iframe_api_reference#Events
+	 */
+	function detectPlayEvent(data: unknown, source: StreamingSource): boolean {
+		if (source === 'spotify') {
+			if (typeof data === 'object' && data !== null) {
+				const d = data as Record<string, unknown>;
+				// Known Spotify embed event types as of Feb 2026 — verify in dev with console.log
+				return d['type'] === 'playback_update' || d['type'] === 'player_state_changed';
+			}
+			return false;
+		}
+		if (source === 'youtube') {
+			if (typeof data === 'string') {
+				try {
+					const d = JSON.parse(data) as Record<string, unknown>;
+					return d['event'] === 'onStateChange' && d['info'] === 1; // 1 = playing
+				} catch { return false; }
+			}
+			return false;
+		}
+		// SoundCloud handled by Widget API — not via postMessage
+		return false;
+	}
+
+	/** Handle postMessage events from embed iframes. */
+	function handleEmbedMessage(event: MessageEvent): void {
+		let source: StreamingSource = null;
+		try {
+			const hostname = new URL(event.origin).hostname;
+			// Check exact hostname match first, then youtube.com substring for nocookie variants
+			source = EMBED_ORIGINS[hostname] ?? (hostname.includes('youtube.com') ? 'youtube' : null);
+		} catch {
+			return;
+		}
+		if (!source) return;
+
+		const isPlay = detectPlayEvent(event.data, source);
+		if (isPlay) {
+			import('$lib/player/audio.svelte').then(({ pause }) => pause());
+			setActiveSource(source);
+		}
+	}
+
+	// Register postMessage listener on mount; clean up on destroy.
+	if (typeof window !== 'undefined') {
+		window.addEventListener('message', handleEmbedMessage);
 	}
 
 	/** Platform order respects user's streaming preference — preferred platform shown first. */
@@ -59,6 +121,9 @@
 
 		widget.bind(sc.Widget.Events.PLAY, () => {
 			progressFired = false;  // reset on new play start
+			// Audio coordination: pause local playback, set active source
+			import('$lib/player/audio.svelte').then(({ pause }) => pause());
+			import('$lib/player/streaming.svelte').then(({ setActiveSource }) => setActiveSource('soundcloud'));
 		});
 
 		widget.bind(sc.Widget.Events.PLAY_PROGRESS, (data: unknown) => {
@@ -107,6 +172,13 @@
 				});
 			}, 500);
 		}
+	});
+
+	onDestroy(() => {
+		if (typeof window !== 'undefined') {
+			window.removeEventListener('message', handleEmbedMessage);
+		}
+		clearActiveSource();
 	});
 </script>
 
