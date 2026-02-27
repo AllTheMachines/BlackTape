@@ -159,3 +159,49 @@ export async function saveUserTemplates(templates: UserTemplateRecord[]): Promis
 		console.error('Failed to save user templates:', err);
 	}
 }
+
+// ─── Streaming service order ──────────────────────────────────────────────────
+
+const KNOWN_SERVICES = ['bandcamp', 'spotify', 'soundcloud', 'youtube'];
+const DEFAULT_SERVICE_ORDER = ['bandcamp', 'spotify', 'soundcloud', 'youtube'];
+
+/**
+ * Load the user's streaming service priority order from taste.db.
+ * Returns DEFAULT_SERVICE_ORDER if not set or if the stored value is invalid.
+ * Validates that the parsed array contains exactly 4 entries, all known services.
+ */
+export async function loadServiceOrder(): Promise<string[]> {
+	try {
+		const invoke = await getInvoke();
+		const settings = await invoke<Record<string, string>>('get_all_ai_settings');
+		const raw = settings['streaming_service_order'];
+		if (!raw) return DEFAULT_SERVICE_ORDER;
+		const parsed = JSON.parse(raw) as unknown;
+		if (
+			Array.isArray(parsed) &&
+			parsed.length === 4 &&
+			parsed.every((s): s is string => typeof s === 'string' && KNOWN_SERVICES.includes(s))
+		) {
+			return parsed as string[];
+		}
+		return DEFAULT_SERVICE_ORDER;
+	} catch {
+		return DEFAULT_SERVICE_ORDER;
+	}
+}
+
+/**
+ * Save the streaming service priority order to taste.db.
+ * Call after each drag-to-reorder interaction in Settings → Streaming.
+ */
+export async function saveServiceOrder(order: string[]): Promise<void> {
+	try {
+		const invoke = await getInvoke();
+		await invoke('set_ai_setting', {
+			key: 'streaming_service_order',
+			value: JSON.stringify(order)
+		});
+	} catch (err) {
+		console.error('Failed to save service order:', err);
+	}
+}
