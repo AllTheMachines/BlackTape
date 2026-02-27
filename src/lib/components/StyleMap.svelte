@@ -167,7 +167,7 @@
 		width: 100%;
 		position: relative;
 		background: var(--bg-base);
-		border-radius: 8px;
+		border-radius: 0;
 		overflow: hidden;
 	}
 

@@ -269,7 +269,7 @@
 		gap: var(--space-xs);
 		padding: 6px 12px;
 		border: none;
-		border-radius: var(--r);
+		border-radius: 0;
 		font-size: 0.8rem;
 		font-weight: 500;
 		cursor: pointer;
@@ -309,21 +309,21 @@
 		padding: var(--space-md);
 		background: var(--bg-2);
 		border: 1px solid var(--b-1);
-		border-radius: var(--r);
+		border-radius: 0;
 	}
 
 	.progress-bar {
 		width: 100%;
 		height: 4px;
 		background: var(--progress-bg);
-		border-radius: 2px;
+		border-radius: 0;
 		overflow: hidden;
 	}
 
 	.progress-fill {
 		height: 100%;
 		background: var(--progress-color);
-		border-radius: 2px;
+		border-radius: 0;
 		transition: width 0.3s ease;
 	}
 
@@ -407,7 +407,7 @@
 	.loading-dialog {
 		background: var(--bg-2);
 		border: 1px solid var(--b-1);
-		border-radius: var(--r-lg, 8px);
+		border-radius: 0;
 		padding: 32px 48px;
 		display: flex;
 		flex-direction: column;

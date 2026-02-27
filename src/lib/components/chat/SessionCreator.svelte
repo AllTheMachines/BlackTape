@@ -79,12 +79,12 @@
   .session-creator { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
   h3 { color: var(--text-primary); font-size: 0.95rem; margin: 0; }
   label { display: flex; flex-direction: column; gap: 6px; font-size: 0.8rem; color: var(--text-secondary); }
-  input { background: var(--bg-primary); color: var(--text-primary); border: 1px solid var(--border); border-radius: 6px; padding: 8px; font-size: 0.875rem; font-family: inherit; }
+  input { background: var(--bg-primary); color: var(--text-primary); border: 1px solid var(--border); border-radius: 0; padding: 8px; font-size: 0.875rem; font-family: inherit; }
   .visibility-row { display: flex; align-items: center; gap: 16px; font-size: 0.8rem; color: var(--text-secondary); }
   .radio-opt { flex-direction: row; align-items: center; gap: 4px; }
-  .start-btn { background: var(--accent); color: var(--bg-primary); border: none; border-radius: 6px; padding: 10px; cursor: pointer; font-weight: 600; }
+  .start-btn { background: var(--accent); color: var(--bg-primary); border: none; border-radius: 0; padding: 10px; cursor: pointer; font-weight: 600; }
   .start-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-  .invite-code { background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 6px; }
+  .invite-code { background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 0; padding: 12px; display: flex; flex-direction: column; gap: 6px; }
   code { font-family: monospace; font-size: 1.2rem; font-weight: 700; color: var(--accent); letter-spacing: 0.1em; }
   .note { font-size: 0.7rem; color: var(--text-secondary); margin: 0; }
   .required { color: var(--accent); }

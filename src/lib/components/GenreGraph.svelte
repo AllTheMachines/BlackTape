@@ -300,7 +300,7 @@
 		width: 100%;
 		position: relative;
 		background: var(--bg-base);
-		border-radius: 8px;
+		border-radius: 0;
 		overflow: hidden;
 	}
 
@@ -331,7 +331,7 @@
 		gap: 12px;
 		background: var(--bg-elevated, #1e1e1e);
 		border: 1px solid var(--border-default, #444);
-		border-radius: 6px;
+		border-radius: 0;
 		padding: 6px 10px;
 		font-size: 0.75rem;
 		color: var(--text-secondary, #aaa);

@@ -220,7 +220,7 @@
 
 	.decade-buttons { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
 	.decade-btn {
-		padding: 0.4rem 1rem; border-radius: 999px; border: 1px solid var(--b-2);
+		padding: 0.4rem 1rem; border-radius: 0; border: 1px solid var(--b-2);
 		background: transparent; cursor: pointer; font-size: 0.85rem; color: inherit;
 		transition: background 0.15s, border-color 0.15s;
 	}
@@ -231,13 +231,13 @@
 	.year-label { font-size: 1.5rem; font-weight: 600; min-width: 3.5rem; text-align: right; }
 	.year-slider { flex: 1; accent-color: var(--acc); }
 
-	.genre-evolution-panel { margin-bottom: 1.5rem; border-radius: 8px; overflow: hidden; background: var(--bg-3); }
+	.genre-evolution-panel { margin-bottom: 1.5rem; border-radius: 0; overflow: hidden; background: var(--bg-3); }
 
 	.tag-filter-row { margin-bottom: 1.5rem; }
 	.tag-input {
 		width: 100%; max-width: 400px; padding: 0.5rem 0.75rem;
 		background: var(--bg-3); border: 1px solid var(--b-2);
-		border-radius: 6px; color: inherit; font-size: 0.9rem;
+		border-radius: 0; color: inherit; font-size: 0.9rem;
 	}
 
 	.year-snapshot { margin-bottom: 1.25rem; }

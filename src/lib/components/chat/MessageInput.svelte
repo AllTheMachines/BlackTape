@@ -112,7 +112,7 @@
 		background: var(--bg-base);
 		color: var(--text-primary);
 		border: 1px solid var(--border-default);
-		border-radius: 6px;
+		border-radius: 0;
 		padding: 8px;
 		font-size: 0.875rem;
 		font-family: inherit;
@@ -126,7 +126,7 @@
 		background: var(--link-color);
 		color: var(--bg-base);
 		border: none;
-		border-radius: 6px;
+		border-radius: 0;
 		padding: 8px 12px;
 		cursor: pointer;
 		font-size: 1rem;

@@ -39,7 +39,7 @@
 		padding: var(--space-xs) var(--space-md);
 		background: var(--bg-elevated);
 		border: 1px solid var(--border-default);
-		border-radius: 999px;
+		border-radius: 0;
 		font-size: 0.85rem;
 		color: var(--text-primary);
 		text-decoration: none;

@@ -43,7 +43,7 @@
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
 		padding: 2px 7px;
-		border-radius: 3px;
+		border-radius: 0;
 		border: 1px solid currentColor;
 		opacity: 0.9;
 	}

@@ -94,7 +94,7 @@
 		background: var(--bg-secondary);
 		color: var(--text-primary);
 		cursor: pointer;
-		border-radius: 3px;
+		border-radius: 0;
 		font-size: 0.75rem;
 	}
 	.tool-btn.active {
@@ -124,7 +124,7 @@
 		background: var(--accent);
 		color: #fff;
 		border: none;
-		border-radius: 4px;
+		border-radius: 0;
 		cursor: pointer;
 		font-size: 0.85rem;
 	}

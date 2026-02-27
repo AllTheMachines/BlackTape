@@ -154,7 +154,7 @@
 		padding: 0.75rem 1rem;
 		border-left: 3px solid var(--color-accent, #888);
 		background: var(--color-surface-alt, rgba(255, 255, 255, 0.04));
-		border-radius: 0 4px 4px 0;
+		border-radius: 0;
 	}
 
 	.ai-badge {
@@ -164,7 +164,7 @@
 		letter-spacing: 0.08em;
 		padding: 0.1em 0.4em;
 		border: 1px solid currentColor;
-		border-radius: 3px;
+		border-radius: 0;
 		opacity: 0.6;
 		margin-bottom: 0.4rem;
 		text-transform: uppercase;

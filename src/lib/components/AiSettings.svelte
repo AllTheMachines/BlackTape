@@ -435,7 +435,7 @@
 		padding: var(--space-lg);
 		background: var(--bg-surface);
 		border: 1px solid var(--border-subtle);
-		border-radius: var(--card-radius);
+		border-radius: 0;
 		margin-bottom: var(--space-lg);
 	}
 
@@ -484,7 +484,7 @@
 		inset: 0;
 		background: var(--bg-elevated);
 		border: 1px solid var(--border-default);
-		border-radius: 11px;
+		border-radius: 0;
 		transition: background 0.2s, border-color 0.2s;
 	}
 
@@ -516,7 +516,7 @@
 		padding: var(--space-md);
 		background: var(--bg-elevated);
 		border: 1px solid var(--border-default);
-		border-radius: var(--card-radius);
+		border-radius: 0;
 	}
 
 	.download-prompt h3 {
@@ -557,7 +557,7 @@
 	.model-status {
 		font-size: 0.75rem;
 		padding: 2px 8px;
-		border-radius: 3px;
+		border-radius: 0;
 	}
 
 	.model-status.downloaded {
@@ -585,14 +585,14 @@
 		width: 100%;
 		height: 4px;
 		background: var(--progress-bg);
-		border-radius: 2px;
+		border-radius: 0;
 		overflow: hidden;
 	}
 
 	.progress-fill {
 		height: 100%;
 		background: var(--text-accent);
-		border-radius: 2px;
+		border-radius: 0;
 		transition: width 0.3s ease;
 	}
 
@@ -629,7 +629,7 @@
 		padding: var(--space-sm) var(--space-md);
 		background: var(--bg-elevated);
 		border: 1px solid var(--border-subtle);
-		border-radius: var(--card-radius);
+		border-radius: 0;
 		cursor: pointer;
 		transition: border-color 0.15s;
 	}
@@ -671,7 +671,7 @@
 		gap: var(--space-sm);
 		padding: var(--space-sm) var(--space-md);
 		background: var(--bg-elevated);
-		border-radius: var(--card-radius);
+		border-radius: 0;
 		font-size: 0.8rem;
 		color: var(--text-secondary);
 	}
@@ -723,7 +723,7 @@
 		padding: 8px 12px;
 		background: var(--bg-elevated);
 		border: 1px solid var(--border-default);
-		border-radius: var(--input-radius);
+		border-radius: 0;
 		color: var(--text-primary);
 		font-size: 0.85rem;
 		font-family: var(--font-sans);
@@ -773,7 +773,7 @@
 		gap: var(--space-xs);
 		padding: 6px 14px;
 		border: none;
-		border-radius: var(--card-radius);
+		border-radius: 0;
 		font-size: 0.8rem;
 		font-weight: 500;
 		cursor: pointer;
@@ -837,7 +837,7 @@
 		padding: var(--space-sm, 8px) var(--space-md, 12px);
 		background: var(--bg-surface, var(--bg-4));
 		border: 1px solid var(--border-subtle, var(--b-2));
-		border-radius: var(--card-radius, var(--r));
+		border-radius: 0;
 		cursor: pointer;
 		text-align: left;
 		transition: border-color 0.1s, background 0.1s;
@@ -875,7 +875,7 @@
 		background: var(--bg-4);
 		color: var(--t-3);
 		border: 1px solid var(--b-2);
-		border-radius: var(--r);
+		border-radius: 0;
 	}
 
 	.provider-card-check {

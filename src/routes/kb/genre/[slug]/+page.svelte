@@ -192,7 +192,7 @@
 	.genre-type-pill {
 		display: inline-block;
 		padding: 2px 8px;
-		border-radius: var(--r, 2px);
+		border-radius: 0;
 		font-size: 0.65rem;
 		font-weight: 600;
 		text-transform: uppercase;
@@ -244,7 +244,7 @@
 		background: var(--bg-3);
 		border: 1px solid var(--b-1);
 		padding: 1px 5px;
-		border-radius: var(--r, 2px);
+		border-radius: 0;
 	}
 
 	.genre-cta {
@@ -337,7 +337,7 @@
 		padding: 4px 10px;
 		background: var(--bg-2);
 		border: 1px solid var(--b-1);
-		border-radius: var(--r, 2px);
+		border-radius: 0;
 		text-decoration: none;
 		font-size: 0.8rem;
 		color: var(--t-2);
@@ -379,7 +379,7 @@
 		padding: 14px 20px;
 		background: var(--bg-2);
 		border: 1px dashed var(--b-1);
-		border-radius: var(--r, 2px);
+		border-radius: 0;
 		text-align: center;
 		margin: 14px 20px;
 	}

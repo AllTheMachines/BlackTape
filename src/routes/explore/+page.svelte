@@ -470,7 +470,7 @@
 		padding: 8px 20px;
 		background: var(--bg-3);
 		border: 1px solid var(--b-2);
-		border-radius: var(--r);
+		border-radius: 0;
 		color: var(--t-1);
 		font-size: 0.85rem;
 		font-weight: 500;
@@ -555,7 +555,7 @@
 		font-family: var(--font-sans);
 		background: var(--bg-3);
 		border: 1px solid var(--b-1);
-		border-radius: var(--input-radius);
+		border-radius: 0;
 		color: var(--t-1);
 		outline: none;
 		transition: border-color 0.15s;
@@ -588,7 +588,7 @@
 		padding: 4px 10px;
 		background: var(--bg-3);
 		border: 1px solid var(--b-1);
-		border-radius: 999px;
+		border-radius: 0;
 		font-size: 0.75rem;
 	}
 
@@ -634,7 +634,7 @@
 		width: 2rem;
 		height: 1.4rem;
 		background: var(--bg-3);
-		border-radius: 4px;
+		border-radius: 0;
 		flex-shrink: 0;
 		animation: skeleton-pulse 1.5s ease-in-out infinite;
 	}
@@ -649,7 +649,7 @@
 	.skeleton-line {
 		height: 1rem;
 		background: var(--bg-3);
-		border-radius: 4px;
+		border-radius: 0;
 		animation: skeleton-pulse 1.5s ease-in-out infinite;
 	}
 
@@ -694,7 +694,7 @@
 		font-family: var(--font-sans);
 		background: var(--bg-3);
 		border: 1px solid var(--b-1);
-		border-radius: var(--input-radius);
+		border-radius: 0;
 		color: var(--t-1);
 		outline: none;
 		transition: border-color 0.15s;
@@ -735,7 +735,7 @@
 		padding: 8px 20px;
 		background: var(--bg-3);
 		border: 1px solid var(--b-2);
-		border-radius: var(--r);
+		border-radius: 0;
 		color: var(--t-1);
 		font-size: 0.85rem;
 		font-weight: 500;

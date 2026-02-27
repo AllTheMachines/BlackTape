@@ -67,7 +67,8 @@
 </div>
 
 <style>
-	.kb-landing {		padding: 20px;
+	.kb-landing {
+		padding: 20px;
 	}
 
 	.kb-header {
@@ -100,7 +101,7 @@
 	.skeleton-line {
 		height: 0.875rem;
 		background: var(--bg-3);
-		border-radius: 4px;
+		border-radius: 0;
 		animation: skeleton-pulse 1.5s ease-in-out infinite;
 	}
 
@@ -129,7 +130,7 @@
 	.kb-empty code {
 		background: var(--bg-3);
 		padding: 2px 6px;
-		border-radius: 4px;
+		border-radius: 0;
 		font-family: monospace;
 		font-size: 0.85em;
 	}

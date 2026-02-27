@@ -155,7 +155,7 @@
 	.cover-art {
 		width: 100%;
 		aspect-ratio: 1;
-		border-radius: var(--card-radius);
+		border-radius: 0;
 		overflow: hidden;
 		background: var(--bg-elevated);
 		border: 1px solid var(--border-subtle);
@@ -216,7 +216,7 @@
 		text-transform: uppercase;
 		letter-spacing: 0.05em;
 		padding: 1px 5px;
-		border-radius: 3px;
+		border-radius: 0;
 		background: var(--bg-hover);
 		color: var(--text-secondary);
 	}
@@ -246,7 +246,7 @@
 		font-size: 0.7rem;
 		font-weight: 600;
 		padding: 2px 6px;
-		border-radius: 3px;
+		border-radius: 0;
 		text-decoration: none;
 		background: var(--bg-elevated);
 		border: 1px solid var(--border-default);

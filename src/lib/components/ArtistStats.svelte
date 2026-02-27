@@ -200,14 +200,14 @@
 		flex: 1;
 		height: 6px;
 		background: var(--border-subtle);
-		border-radius: 3px;
+		border-radius: 0;
 		overflow: hidden;
 	}
 
 	.tag-bar-fill {
 		height: 100%;
 		background: var(--text-accent);
-		border-radius: 3px;
+		border-radius: 0;
 		min-width: 2px;
 	}
 </style>

@@ -105,7 +105,8 @@
 </div>
 
 <style>
-	.backers-page {		padding: 20px;
+	.backers-page {
+		padding: 20px;
 	}
 
 	.backers-header {
@@ -201,7 +202,7 @@
 		color: var(--t-3);
 		background: transparent;
 		border: 1px solid var(--b-1);
-		border-radius: 4px;
+		border-radius: 0;
 		padding: 0.2rem 0.6rem;
 		cursor: pointer;
 		transition: color 0.15s, border-color 0.15s;

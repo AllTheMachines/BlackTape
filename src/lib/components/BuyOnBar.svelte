@@ -57,7 +57,7 @@
 		font-size: 0.8rem;
 		font-weight: 500;
 		padding: 4px 10px;
-		border-radius: 4px;
+		border-radius: 0;
 		text-decoration: none;
 		background: var(--bg-elevated);
 		border: 1px solid var(--border-default);

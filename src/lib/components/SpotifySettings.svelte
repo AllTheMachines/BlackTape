@@ -172,7 +172,7 @@
 	.import-card {
 		background: var(--bg-3);
 		border: 1px solid var(--b-1);
-		border-radius: var(--r);
+		border-radius: 0;
 		padding: var(--space-md);
 		display: flex;
 		flex-direction: column;
@@ -197,7 +197,7 @@
 		text-transform: uppercase;
 		letter-spacing: 0.05em;
 		padding: 2px 6px;
-		border-radius: 3px;
+		border-radius: 0;
 		background: color-mix(in oklch, var(--acc) 15%, transparent);
 		color: var(--acc);
 		border: 1px solid color-mix(in oklch, var(--acc) 40%, transparent);
@@ -250,7 +250,7 @@
 		font-size: 0.75rem;
 		background: var(--bg-2);
 		padding: 1px 5px;
-		border-radius: 3px;
+		border-radius: 0;
 		color: var(--t-1);
 		font-family: monospace;
 		border: 1px solid var(--b-1);
@@ -266,7 +266,7 @@
 
 	.dashboard-mockup {
 		border: 1px solid var(--b-2);
-		border-radius: 6px;
+		border-radius: 0;
 		overflow: hidden;
 		font-size: 0.72rem;
 		max-width: 340px;
@@ -311,7 +311,7 @@
 		align-items: center;
 		gap: 8px;
 		padding: 4px 6px;
-		border-radius: 3px;
+		border-radius: 0;
 	}
 
 	.mockup-field.highlighted {
@@ -377,7 +377,7 @@
 		color: var(--t-1);
 		border: 1px solid var(--b-2);
 		padding: var(--space-xs) var(--space-sm);
-		border-radius: var(--input-radius, 4px);
+		border-radius: 0;
 		font-size: 0.85rem;
 		outline: none;
 		transition: border-color 0.15s;
@@ -416,7 +416,7 @@
 		color: var(--t-1);
 		border: 1px solid var(--b-2);
 		padding: var(--space-xs) var(--space-sm);
-		border-radius: var(--input-radius, 4px);
+		border-radius: 0;
 		cursor: pointer;
 		font-size: 0.8rem;
 		white-space: nowrap;
@@ -437,7 +437,7 @@
 		color: var(--t-3);
 		border: 1px solid var(--b-1);
 		padding: var(--space-xs) var(--space-sm);
-		border-radius: var(--input-radius, 4px);
+		border-radius: 0;
 		cursor: pointer;
 		font-size: 0.8rem;
 		white-space: nowrap;

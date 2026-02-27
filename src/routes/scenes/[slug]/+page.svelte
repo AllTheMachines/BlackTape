@@ -349,7 +349,7 @@
 	.follow-btn {
 		padding: 6px 14px;
 		font-size: 0.8rem;
-		border-radius: 999px;
+		border-radius: 0;
 		border: 1px solid var(--border-default, var(--b-1));
 		background: transparent;
 		color: var(--t-2);
@@ -401,7 +401,7 @@
 		letter-spacing: 0.08em;
 		color: var(--accent, #60a5fa);
 		border: 1px solid var(--accent, #60a5fa);
-		border-radius: 999px;
+		border-radius: 0;
 		padding: 2px 8px;
 	}
 
@@ -409,7 +409,7 @@
 		position: relative;
 		padding: var(--space-md);
 		background: var(--bg-2);
-		border-radius: 8px;
+		border-radius: 0;
 		margin-bottom: var(--space-lg);
 		border-left: 3px solid var(--accent, #60a5fa);
 	}
@@ -444,7 +444,7 @@
 		background: var(--tag-bg);
 		color: var(--tag-text);
 		border: 1px solid var(--tag-border);
-		border-radius: 999px;
+		border-radius: 0;
 		font-size: 0.8rem;
 		text-decoration: none;
 		transition:
@@ -583,7 +583,7 @@
 		font-size: 0.875rem;
 		background: var(--bg-3);
 		border: 1px solid var(--b-1);
-		border-radius: 6px;
+		border-radius: 0;
 		color: var(--t-1);
 		outline: none;
 		transition: border-color 0.15s;
@@ -598,7 +598,7 @@
 		font-size: 0.8rem;
 		background: var(--bg-3);
 		border: 1px solid var(--b-1);
-		border-radius: 6px;
+		border-radius: 0;
 		color: var(--t-2);
 		cursor: pointer;
 		transition: background 0.15s, color 0.15s;
@@ -629,7 +629,7 @@
 		text-decoration: none;
 		padding: 0.25rem 0.5rem;
 		border: 1px solid var(--b-1);
-		border-radius: 4px;
+		border-radius: 0;
 		line-height: 1;
 		transition: color 0.15s, border-color 0.15s;
 		flex-shrink: 0;
@@ -675,7 +675,7 @@
 		padding: var(--space-sm) var(--space-md);
 		background: var(--bg-2);
 		border: 1px solid var(--b-1);
-		border-radius: 8px;
+		border-radius: 0;
 		font-size: 0.85rem;
 	}
 
@@ -702,7 +702,7 @@
 	.room-start-btn {
 		padding: 4px 12px;
 		font-size: 0.8rem;
-		border-radius: 999px;
+		border-radius: 0;
 		border: 1px solid var(--b-1);
 		background: transparent;
 		color: var(--acc);

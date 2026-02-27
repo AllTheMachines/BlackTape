@@ -218,7 +218,7 @@
 		gap: var(--spacing-sm);
 	}
 	.fingerprint-svg {
-		border-radius: 8px;
+		border-radius: 0;
 		max-width: 100%;
 	}
 	.fingerprint-empty {
@@ -232,7 +232,7 @@
 		background: var(--bg-secondary);
 		border: 1px solid var(--border);
 		color: var(--text-primary);
-		border-radius: 4px;
+		border-radius: 0;
 		cursor: pointer;
 		font-size: 0.8rem;
 	}

@@ -128,14 +128,14 @@
 		color: var(--text-accent);
 		background: var(--bg-elevated);
 		padding: 0.1em 0.4em;
-		border-radius: 3px;
+		border-radius: 0;
 	}
 
 	.path-box {
 		width: 100%;
 		background: var(--bg-surface);
 		border: 1px solid var(--border-default);
-		border-radius: var(--card-radius);
+		border-radius: 0;
 		padding: var(--space-md);
 		margin-bottom: var(--space-xl);
 	}
@@ -162,7 +162,7 @@
 		font-family: var(--font-sans);
 		background: var(--bg-elevated);
 		border: 1px solid var(--border-default);
-		border-radius: var(--input-radius);
+		border-radius: 0;
 		color: var(--text-primary);
 		cursor: pointer;
 		transition: border-color 0.2s, background 0.2s;

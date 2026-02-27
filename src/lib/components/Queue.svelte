@@ -140,7 +140,7 @@
 		font-size: 0.75rem;
 		cursor: pointer;
 		padding: 2px 6px;
-		border-radius: 3px;
+		border-radius: 0;
 	}
 
 	.clear-btn:hover {
@@ -157,7 +157,7 @@
 		color: var(--text-muted);
 		cursor: pointer;
 		padding: 4px;
-		border-radius: 4px;
+		border-radius: 0;
 	}
 
 	.close-btn:hover {
@@ -270,7 +270,7 @@
 		color: var(--text-muted);
 		cursor: pointer;
 		padding: 2px;
-		border-radius: 3px;
+		border-radius: 0;
 		opacity: 0;
 		transition: opacity 0.15s;
 	}

@@ -39,7 +39,7 @@
 	.scene-map {
 		height: 280px;
 		width: 100%;
-		border-radius: 8px;
+		border-radius: 0;
 		overflow: hidden;
 	}
 </style>

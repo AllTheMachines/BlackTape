@@ -323,12 +323,13 @@
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
 		padding: 2px 6px;
-		border-radius: var(--r);
+		border-radius: 0;
 		white-space: nowrap;
 		flex-shrink: 0;
 	}
 
-	.room-page {		padding: 20px;
+	.room-page {
+		padding: 20px;
 	}
 
 	/* ── Loading / not-found states ── */
@@ -358,7 +359,7 @@
 		background: var(--acc);
 		color: #fff;
 		border: none;
-		border-radius: 6px;
+		border-radius: 0;
 		padding: 10px 24px;
 		font-size: 1rem;
 		cursor: pointer;
@@ -399,7 +400,7 @@
 	.leave-btn {
 		background: transparent;
 		border: 1px solid var(--b-1);
-		border-radius: 6px;
+		border-radius: 0;
 		color: var(--t-2);
 		padding: 8px 16px;
 		cursor: pointer;
@@ -443,7 +444,7 @@
 	.room-iframe {
 		width: 100%;
 		aspect-ratio: 16 / 9;
-		border-radius: 8px;
+		border-radius: 0;
 		border: none;
 		display: block;
 	}
@@ -451,7 +452,7 @@
 	.no-video-placeholder {
 		width: 100%;
 		aspect-ratio: 16 / 9;
-		border-radius: 8px;
+		border-radius: 0;
 		background: var(--bg-3);
 		border: 1px solid var(--b-1);
 		display: flex;
@@ -470,7 +471,7 @@
 	.guest-controls {
 		background: var(--bg-2);
 		border: 1px solid var(--b-1);
-		border-radius: 8px;
+		border-radius: 0;
 		padding: var(--space-md);
 	}
 
@@ -494,7 +495,7 @@
 		flex: 1;
 		min-width: 0;
 		padding: 8px 12px;
-		border-radius: 6px;
+		border-radius: 0;
 		border: 1px solid var(--b-1);
 		background: var(--bg-3);
 		color: var(--t-1);
@@ -516,7 +517,7 @@
 	.set-video-btn,
 	.suggest-btn {
 		padding: 8px 16px;
-		border-radius: 6px;
+		border-radius: 0;
 		border: none;
 		background: var(--acc);
 		color: #fff;
@@ -556,7 +557,7 @@
 	.participants-section {
 		background: var(--bg-2);
 		border: 1px solid var(--b-1);
-		border-radius: 8px;
+		border-radius: 0;
 		padding: var(--space-md);
 	}
 
@@ -588,7 +589,7 @@
 		gap: 4px;
 		padding: 8px;
 		background: var(--bg-3);
-		border-radius: 6px;
+		border-radius: 0;
 		border: 1px solid var(--b-1);
 	}
 
@@ -613,7 +614,7 @@
 
 	.approve-btn {
 		padding: 4px 10px;
-		border-radius: 4px;
+		border-radius: 0;
 		border: none;
 		background: var(--acc);
 		color: #fff;
@@ -627,7 +628,7 @@
 
 	.reject-btn {
 		padding: 4px 8px;
-		border-radius: 4px;
+		border-radius: 0;
 		border: 1px solid var(--b-1);
 		background: transparent;
 		color: var(--t-2);
@@ -642,7 +643,7 @@
 
 	.retract-btn {
 		padding: 4px 10px;
-		border-radius: 4px;
+		border-radius: 0;
 		border: 1px solid var(--b-1);
 		background: transparent;
 		color: var(--t-2);
@@ -698,7 +699,7 @@
 		font-size: 0.7rem;
 		background: var(--acc);
 		color: #fff;
-		border-radius: 4px;
+		border-radius: 0;
 		padding: 1px 5px;
 		font-weight: 600;
 		letter-spacing: 0.02em;

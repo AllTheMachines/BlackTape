@@ -163,7 +163,7 @@
 	.type-chip {
 		padding: 3px 10px;
 		border: 1px solid var(--b-2);
-		border-radius: 12px;
+		border-radius: 0;
 		font-size: 11px;
 		color: var(--t-3);
 		text-decoration: none;
@@ -239,7 +239,7 @@
 		padding: 3px var(--space-sm);
 		background: var(--acc-bg);
 		border: 1px solid var(--b-acc, rgba(196, 165, 90, 0.3));
-		border-radius: var(--r, 2px);
+		border-radius: 0;
 		font-size: 0.78rem;
 		color: var(--acc, #c4a55a);
 		font-weight: 500;

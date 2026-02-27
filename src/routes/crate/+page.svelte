@@ -175,7 +175,8 @@
 </div>
 
 <style>
-	.crate-page {		padding: 20px;
+	.crate-page {
+		padding: 20px;
 	}
 
 	.discover-mode-desc {
@@ -208,7 +209,7 @@
 	.filter-input {
 		background: var(--bg-2);
 		border: 1px solid var(--b-2);
-		border-radius: 4px;
+		border-radius: 0;
 		color: var(--t-1);
 		font-size: 0.875rem;
 		padding: 6px 10px;
@@ -222,7 +223,7 @@
 	.filter-select {
 		background: var(--bg-2);
 		border: 1px solid var(--b-2);
-		border-radius: 4px;
+		border-radius: 0;
 		color: var(--t-1);
 		font-size: 0.875rem;
 		padding: 6px 10px;
@@ -232,7 +233,7 @@
 	.dig-btn {
 		background: var(--acc);
 		border: none;
-		border-radius: 4px;
+		border-radius: 0;
 		color: var(--bg-base);
 		cursor: pointer;
 		font-size: 0.875rem;

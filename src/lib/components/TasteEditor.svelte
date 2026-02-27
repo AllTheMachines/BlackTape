@@ -342,7 +342,7 @@
 		padding: var(--space-md);
 		background: var(--bg-elevated);
 		border: 1px solid var(--border-default);
-		border-radius: var(--card-radius);
+		border-radius: 0;
 	}
 
 	.editor-section h3 {
@@ -379,7 +379,7 @@
 		align-items: center;
 		justify-content: space-between;
 		padding: var(--space-xs) var(--space-sm);
-		border-radius: 4px;
+		border-radius: 0;
 		transition: background 0.1s;
 	}
 
@@ -406,7 +406,7 @@
 	.source-badge {
 		font-size: 0.65rem;
 		padding: 1px 6px;
-		border-radius: 9999px;
+		border-radius: 0;
 		white-space: nowrap;
 		flex-shrink: 0;
 	}
@@ -452,7 +452,7 @@
 		width: 100px;
 		height: 4px;
 		background: var(--border-default);
-		border-radius: 2px;
+		border-radius: 0;
 		outline: none;
 		cursor: pointer;
 	}
@@ -490,7 +490,7 @@
 		align-items: center;
 		justify-content: space-between;
 		padding: var(--space-xs) var(--space-sm);
-		border-radius: 4px;
+		border-radius: 0;
 		transition: background 0.1s;
 	}
 
@@ -514,7 +514,7 @@
 		background: transparent;
 		color: var(--text-muted);
 		cursor: pointer;
-		border-radius: 4px;
+		border-radius: 0;
 		padding: 0;
 		transition: color 0.15s, background 0.15s;
 	}
@@ -535,7 +535,7 @@
 		padding: 6px 10px;
 		background: var(--bg-surface);
 		border: 1px solid var(--border-default);
-		border-radius: var(--input-radius);
+		border-radius: 0;
 		color: var(--text-primary);
 		font-size: 0.8rem;
 		font-family: var(--font-sans);
@@ -555,7 +555,7 @@
 		padding: 6px 14px;
 		background: var(--bg-surface);
 		border: 1px solid var(--border-default);
-		border-radius: var(--card-radius);
+		border-radius: 0;
 		color: var(--text-primary);
 		font-size: 0.8rem;
 		font-weight: 500;

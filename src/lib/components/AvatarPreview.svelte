@@ -20,7 +20,7 @@
 
 <style>
 	.avatar-preview {
-		border-radius: 4px;
+		border-radius: 0;
 		overflow: hidden;
 		background: var(--bg-secondary);
 		flex-shrink: 0;

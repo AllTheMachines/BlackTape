@@ -234,7 +234,7 @@
 		color: var(--text-muted);
 		cursor: pointer;
 		padding: 4px;
-		border-radius: 4px;
+		border-radius: 0;
 		transition: color 0.15s;
 		flex-shrink: 0;
 	}

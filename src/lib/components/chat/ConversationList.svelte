@@ -154,7 +154,7 @@
 		color: var(--bg-base);
 		font-size: 0.65rem;
 		font-weight: 700;
-		border-radius: 10px;
+		border-radius: 0;
 		padding: 1px 6px;
 		min-width: 18px;
 		text-align: center;
@@ -174,7 +174,7 @@
 		width: 100%;
 		background: var(--bg-elevated);
 		border: 1px solid var(--border-default);
-		border-radius: var(--input-radius);
+		border-radius: 0;
 		color: var(--text-primary);
 		font-size: 0.8rem;
 		padding: 6px 10px;
@@ -194,7 +194,7 @@
 		background: var(--link-color);
 		color: var(--bg-base);
 		border: none;
-		border-radius: var(--input-radius);
+		border-radius: 0;
 		padding: 6px 12px;
 		font-size: 0.8rem;
 		font-weight: 600;

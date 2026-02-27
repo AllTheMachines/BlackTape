@@ -699,7 +699,7 @@
 		padding: 20px;
 		background: var(--bg-2);
 		border: 1px solid var(--b-1);
-		border-radius: var(--r);
+		border-radius: 0;
 		margin-bottom: var(--space-lg);
 	}
 
@@ -799,7 +799,7 @@
 		background: var(--bg-3);
 		border: 1px solid var(--b-1);
 		padding: var(--space-sm);
-		border-radius: var(--r);
+		border-radius: 0;
 		cursor: pointer;
 		text-align: center;
 		display: flex;
@@ -896,7 +896,7 @@
 		color: var(--t-1);
 		border: 1px solid var(--b-2);
 		padding: var(--space-xs) var(--space-sm);
-		border-radius: var(--input-radius, 4px);
+		border-radius: 0;
 		font-size: 0.85rem;
 		outline: none;
 		transition: border-color 0.15s;
@@ -915,7 +915,7 @@
 		color: var(--t-1);
 		border: 1px solid var(--b-2);
 		padding: var(--space-xs) var(--space-sm);
-		border-radius: var(--input-radius, 4px);
+		border-radius: 0;
 		cursor: pointer;
 		font-size: 0.85rem;
 		white-space: nowrap;
@@ -939,7 +939,7 @@
 		color: var(--t-1);
 		border: 1px solid var(--b-2);
 		padding: var(--space-xs) var(--space-sm);
-		border-radius: var(--input-radius, 4px);
+		border-radius: 0;
 		font-size: 0.85rem;
 		outline: none;
 		transition: border-color 0.15s;
@@ -960,7 +960,7 @@
 		display: flex;
 		gap: 0;
 		border: 1px solid var(--b-2);
-		border-radius: var(--input-radius, 4px);
+		border-radius: 0;
 		overflow: hidden;
 	}
 
@@ -1000,7 +1000,7 @@
 	.import-card {
 		background: var(--bg-3);
 		border: 1px solid var(--b-1);
-		border-radius: var(--r);
+		border-radius: 0;
 		padding: var(--space-md);
 		margin-top: var(--space-md);
 		display: flex;
@@ -1026,7 +1026,7 @@
 		text-transform: uppercase;
 		letter-spacing: 0.05em;
 		padding: 2px 6px;
-		border-radius: 3px;
+		border-radius: 0;
 		background: var(--bg-3);
 		color: var(--t-3);
 		border: 1px solid var(--b-1);
@@ -1052,7 +1052,7 @@
 		font-size: 0.75rem;
 		background: var(--bg-3);
 		padding: 1px 4px;
-		border-radius: 3px;
+		border-radius: 0;
 		color: var(--t-2);
 	}
 
@@ -1074,7 +1074,7 @@
 		color: var(--t-1);
 		border: 1px solid var(--b-2);
 		padding: var(--space-xs) var(--space-sm);
-		border-radius: var(--input-radius, 4px);
+		border-radius: 0;
 		cursor: pointer;
 		font-size: 0.8rem;
 		white-space: nowrap;
@@ -1096,7 +1096,7 @@
 		color: var(--t-1);
 		border: 1px solid var(--b-2);
 		padding: var(--space-xs) var(--space-sm);
-		border-radius: var(--input-radius, 4px);
+		border-radius: 0;
 		cursor: pointer;
 		font-size: 0.8rem;
 		white-space: nowrap;
@@ -1131,7 +1131,7 @@
 		color: var(--t-1);
 		border: 1px solid var(--b-2);
 		padding: var(--space-sm) var(--space-md);
-		border-radius: var(--input-radius, 4px);
+		border-radius: 0;
 		cursor: pointer;
 		font-size: 0.85rem;
 		transition: border-color 0.15s, background 0.15s;
@@ -1149,7 +1149,7 @@
 		color: var(--t-1);
 		border: 1px solid var(--b-2);
 		padding: var(--space-xs) var(--space-sm);
-		border-radius: var(--input-radius, 4px);
+		border-radius: 0;
 		font-size: 0.85rem;
 		outline: none;
 		cursor: pointer;
@@ -1175,7 +1175,7 @@
 		padding: 8px 12px;
 		background: var(--bg-3);
 		border: 1px solid var(--b-1);
-		border-radius: var(--r);
+		border-radius: 0;
 		cursor: grab;
 		user-select: none;
 	}

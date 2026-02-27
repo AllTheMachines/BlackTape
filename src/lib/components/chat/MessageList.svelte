@@ -61,7 +61,7 @@
 		flex-direction: column;
 		gap: 2px;
 		padding: 6px 8px;
-		border-radius: 6px;
+		border-radius: 0;
 		background: var(--bg-elevated);
 	}
 	.message.own {

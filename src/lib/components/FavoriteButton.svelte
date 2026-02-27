@@ -69,7 +69,7 @@
 		padding: 4px;
 		cursor: pointer;
 		color: var(--text-muted);
-		border-radius: 4px;
+		border-radius: 0;
 		transition: color 0.2s, transform 0.15s;
 	}
 

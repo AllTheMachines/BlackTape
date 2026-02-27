@@ -184,7 +184,7 @@
 		color: var(--text-primary, #e0e0e0);
 		border: 1px solid var(--border-default, #3a3a3a);
 		padding: 6px 10px;
-		border-radius: var(--input-radius, 4px);
+		border-radius: 0;
 		font-size: 0.85rem;
 		outline: none;
 		transition: border-color 0.15s;
@@ -211,7 +211,7 @@
 		color: var(--text-primary, #e0e0e0);
 		border: 1px solid var(--border-default, #3a3a3a);
 		padding: 8px 16px;
-		border-radius: var(--input-radius, 4px);
+		border-radius: 0;
 		cursor: pointer;
 		font-size: 0.85rem;
 		transition: border-color 0.15s, background 0.15s;
@@ -231,7 +231,7 @@
 	.ap-paths {
 		background: var(--bg-elevated, #2a2a2a);
 		border: 1px solid var(--border-subtle, #2a2a2a);
-		border-radius: var(--card-radius, 6px);
+		border-radius: 0;
 		padding: 12px 16px;
 		margin-top: 16px;
 	}
@@ -254,7 +254,7 @@
 		font-size: 0.75rem;
 		background: var(--bg-hover, #2e2e2e);
 		padding: 2px 6px;
-		border-radius: 3px;
+		border-radius: 0;
 		color: var(--text-primary, #e0e0e0);
 		word-break: break-all;
 	}
@@ -270,7 +270,7 @@
 		padding: 12px 16px;
 		background: var(--bg-elevated, #2a2a2a);
 		border: 1px solid var(--border-subtle, #2a2a2a);
-		border-radius: var(--card-radius, 6px);
+		border-radius: 0;
 	}
 
 	.ap-help p {
@@ -288,7 +288,7 @@
 		font-size: 0.75rem;
 		background: var(--bg-hover, #2e2e2e);
 		padding: 1px 4px;
-		border-radius: 3px;
+		border-radius: 0;
 		color: var(--text-secondary, #a0a0a0);
 	}
 </style>

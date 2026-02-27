@@ -285,7 +285,7 @@
 		width: 220px;
 		height: 220px;
 		flex-shrink: 0;
-		border-radius: var(--r);
+		border-radius: 0;
 		overflow: hidden;
 		background: var(--bg-3);
 		border: 1px solid var(--b-1);
@@ -339,7 +339,7 @@
 		text-transform: uppercase;
 		letter-spacing: 0.05em;
 		padding: 2px 6px;
-		border-radius: 3px;
+		border-radius: 0;
 		background: var(--bg-3);
 		color: var(--t-2);
 		border: 1px solid var(--b-1);
@@ -379,7 +379,7 @@
 		color: #000;
 		border: none;
 		padding: 6px 14px;
-		border-radius: var(--r);
+		border-radius: 0;
 		font-size: 0.8rem;
 		font-weight: 600;
 		cursor: pointer;
@@ -396,7 +396,7 @@
 		color: var(--t-1);
 		border: 1px solid var(--b-2);
 		padding: 6px 14px;
-		border-radius: var(--r);
+		border-radius: 0;
 		font-size: 0.8rem;
 		cursor: pointer;
 	}
@@ -407,7 +407,7 @@
 
 	.release-embed-wrap {
 		margin-top: var(--space-sm);
-		border-radius: var(--r);
+		border-radius: 0;
 		overflow: hidden;
 	}
 
@@ -507,7 +507,7 @@
 		border: 1px solid var(--border);
 		background: var(--bg-secondary);
 		color: var(--t-1);
-		border-radius: 4px;
+		border-radius: 0;
 		cursor: pointer;
 	}
 	.save-shelf-btn.saved { border-color: var(--accent); color: var(--accent); }
@@ -518,7 +518,7 @@
 		z-index: 50;
 		background: var(--bg-secondary);
 		border: 1px solid var(--border);
-		border-radius: 4px;
+		border-radius: 0;
 		min-width: 160px;
 		padding: 4px 0;
 		box-shadow: 0 4px 12px rgba(0,0,0,0.3);
@@ -543,7 +543,7 @@
 		background: var(--bg-tertiary);
 		border: 1px solid var(--border);
 		color: var(--t-1);
-		border-radius: 3px;
+		border-radius: 0;
 		font-size: 0.8rem;
 	}
 

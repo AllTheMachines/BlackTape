@@ -186,7 +186,7 @@
 		padding: 0.5rem 0.75rem;
 		background: var(--bg-2);
 		border: 1px solid var(--b-1);
-		border-radius: 4px;
+		border-radius: 0;
 		color: var(--t-1);
 		font-size: 0.875rem;
 		box-sizing: border-box;
@@ -215,7 +215,7 @@
 		background: var(--acc);
 		color: #fff;
 		border: none;
-		border-radius: 4px;
+		border-radius: 0;
 		cursor: pointer;
 		font-size: 0.875rem;
 		align-self: flex-start;

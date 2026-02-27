@@ -38,7 +38,7 @@
 		display: block;
 		background: var(--bg-surface);
 		border: 1px solid var(--border-subtle);
-		border-radius: var(--card-radius);
+		border-radius: 0;
 		padding: var(--space-md);
 		text-decoration: none;
 		color: inherit;
@@ -79,7 +79,7 @@
 		letter-spacing: 0.08em;
 		color: var(--accent, #60a5fa);
 		border: 1px solid var(--accent, #60a5fa);
-		border-radius: 999px;
+		border-radius: 0;
 		padding: 1px 6px;
 		white-space: nowrap;
 		flex-shrink: 0;

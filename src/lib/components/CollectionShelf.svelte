@@ -79,7 +79,7 @@
 	.shelf-card {
 		background: var(--bg-secondary);
 		border: 1px solid var(--border);
-		border-radius: 4px;
+		border-radius: 0;
 		padding: var(--spacing-sm);
 		display: flex;
 		flex-direction: column;

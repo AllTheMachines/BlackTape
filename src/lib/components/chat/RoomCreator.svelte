@@ -82,17 +82,17 @@
   label { display: flex; flex-direction: column; gap: 6px; font-size: 0.8rem; color: var(--text-secondary); }
   input, textarea {
     background: var(--bg-primary); color: var(--text-primary);
-    border: 1px solid var(--border); border-radius: 6px; padding: 8px;
+    border: 1px solid var(--border); border-radius: 0; padding: 8px;
     font-size: 0.875rem; font-family: inherit;
   }
   .tag-input-row { display: flex; gap: 6px; }
   .tags { display: flex; flex-wrap: wrap; gap: 6px; }
   .tag {
     background: var(--bg-tertiary); border: 1px solid var(--border);
-    border-radius: 4px; padding: 2px 8px; font-size: 0.75rem; display: flex; align-items: center; gap: 4px;
+    border-radius: 0; padding: 2px 8px; font-size: 0.75rem; display: flex; align-items: center; gap: 4px;
   }
   .tag button { background: none; border: none; cursor: pointer; color: var(--text-secondary); padding: 0; }
-  .create-btn { background: var(--accent); color: var(--bg-primary); border: none; border-radius: 6px; padding: 10px; cursor: pointer; font-weight: 600; }
+  .create-btn { background: var(--accent); color: var(--bg-primary); border: none; border-radius: 0; padding: 10px; cursor: pointer; font-weight: 600; }
   .create-btn:disabled { opacity: 0.5; cursor: not-allowed; }
   .required { color: var(--accent); }
   .error { color: #e55; font-size: 0.8rem; margin: 0; }

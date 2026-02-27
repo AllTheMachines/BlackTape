@@ -63,7 +63,8 @@
 </div>
 
 <style>
-	.about-page {		padding: 20px;
+	.about-page {
+		padding: 20px;
 	}
 
 	.about-header {
@@ -129,7 +130,7 @@
 		text-decoration: none;
 		padding: var(--space-sm, 0.5rem) var(--space-md, 1rem);
 		border: 1px solid var(--acc);
-		border-radius: 4px;
+		border-radius: 0;
 		transition: background 0.15s, color 0.15s;
 	}
 
@@ -144,7 +145,7 @@
 		text-decoration: none;
 		padding: var(--space-sm, 0.5rem) var(--space-md, 1rem);
 		border: 1px solid var(--b-1);
-		border-radius: 4px;
+		border-radius: 0;
 		transition: color 0.15s, border-color 0.15s;
 	}
 
@@ -167,7 +168,7 @@
 		text-decoration: none;
 		padding: 0.25rem 0.6rem;
 		border: 1px solid color-mix(in srgb, var(--acc) 40%, transparent);
-		border-radius: 4px;
+		border-radius: 0;
 		transition: background 0.15s, color 0.15s;
 	}
 

@@ -157,12 +157,13 @@
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
 		padding: 2px 6px;
-		border-radius: var(--r);
+		border-radius: 0;
 		white-space: nowrap;
 		flex-shrink: 0;
 	}
 
-	.scenes-page {		padding: 20px;
+	.scenes-page {
+		padding: 20px;
 	}
 
 	.scenes-header {
@@ -193,7 +194,8 @@
 		padding: var(--space-2xl) var(--space-lg);
 		text-align: center;
 		color: var(--t-3);
-		font-size: 0.9rem;	}
+		font-size: 0.9rem;
+	}
 
 	.scenes-section {
 		margin-bottom: var(--space-2xl);
@@ -235,7 +237,7 @@
 		font-size: 0.8rem;
 		background: transparent;
 		border: 1px solid var(--b-1);
-		border-radius: 999px;
+		border-radius: 0;
 		color: var(--t-3);
 		cursor: pointer;
 		transition: color 0.15s, border-color 0.15s;
@@ -273,7 +275,7 @@
 		font-size: 0.8rem;
 		background: transparent;
 		border: 1px solid var(--b-1);
-		border-radius: 999px;
+		border-radius: 0;
 		color: var(--t-3);
 		cursor: pointer;
 		transition: color 0.15s, border-color 0.15s;

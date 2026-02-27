@@ -181,7 +181,7 @@
 	.genre-evolution-wrap {
 		width: 100%;
 		background: var(--color-surface-2, #1a1a1a);
-		border-radius: 8px;
+		border-radius: 0;
 		overflow: hidden;
 	}
 

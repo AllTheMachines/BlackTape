@@ -152,7 +152,8 @@
 </div>
 
 <style>
-	.new-rising-page {		padding: 20px;
+	.new-rising-page {
+		padding: 20px;
 	}
 
 	.page-header {
@@ -192,7 +193,7 @@
 		font-size: 0.8rem;
 		background: transparent;
 		border: 1px solid transparent;
-		border-radius: 999px;
+		border-radius: 0;
 		color: var(--t-3);
 		cursor: pointer;
 		transition: color 0.15s, border-color 0.15s;
@@ -231,7 +232,7 @@
 		padding: var(--space-md);
 		background: var(--bg-2);
 		border: 1px solid var(--b-1);
-		border-radius: 8px;
+		border-radius: 0;
 		text-decoration: none;
 		transition: border-color 0.15s, background 0.15s;
 	}
@@ -270,7 +271,8 @@
 		padding: var(--space-2xl) var(--space-lg);
 		text-align: center;
 		color: var(--t-3);
-		font-size: 0.9rem;		margin: 0 auto var(--space-lg);
+		font-size: 0.9rem;
+		margin: 0 auto var(--space-lg);
 	}
 
 	.view-note {

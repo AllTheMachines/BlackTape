@@ -80,7 +80,7 @@
 		padding: var(--space-md);
 		background: var(--bg-surface);
 		border: 1px solid var(--border-subtle);
-		border-radius: var(--card-radius);
+		border-radius: 0;
 	}
 
 	.fm-header {
@@ -103,7 +103,7 @@
 		color: var(--text-muted);
 		cursor: pointer;
 		padding: 4px;
-		border-radius: 4px;
+		border-radius: 0;
 		display: flex;
 		align-items: center;
 	}
@@ -132,7 +132,7 @@
 		justify-content: space-between;
 		padding: var(--space-sm) var(--space-md);
 		background: var(--bg-elevated);
-		border-radius: 4px;
+		border-radius: 0;
 		gap: var(--space-md);
 	}
 
@@ -166,7 +166,7 @@
 		color: var(--text-muted);
 		cursor: pointer;
 		padding: 4px;
-		border-radius: 4px;
+		border-radius: 0;
 		display: flex;
 		align-items: center;
 	}
@@ -188,7 +188,7 @@
 		border: 1px dashed var(--border-default);
 		color: var(--text-secondary);
 		padding: 6px 12px;
-		border-radius: var(--card-radius);
+		border-radius: 0;
 		font-size: 0.8rem;
 		cursor: pointer;
 		transition: color 0.15s, border-color 0.15s;

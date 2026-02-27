@@ -879,7 +879,7 @@
 		padding: var(--space-xs) var(--space-sm);
 		background: var(--bg-2);
 		border: 1px solid var(--b-1);
-		border-radius: var(--r);
+		border-radius: 0;
 		color: var(--text-secondary);
 		font-size: 0.8rem;
 		cursor: pointer;
@@ -1006,7 +1006,7 @@
 		padding: 0 10px;
 		background: var(--bg-3);
 		border: 1px solid var(--b-2);
-		border-radius: var(--r);
+		border-radius: 0;
 		font-size: 11px;
 		font-weight: 500;
 		color: var(--t-2);
@@ -1094,7 +1094,7 @@
 		color: #000;
 		border: none;
 		padding: 5px 12px;
-		border-radius: var(--r);
+		border-radius: 0;
 		font-size: 0.75rem;
 		font-weight: 600;
 		cursor: pointer;
@@ -1111,7 +1111,7 @@
 		color: var(--t-1);
 		border: 1px solid var(--b-2);
 		padding: 5px 12px;
-		border-radius: var(--r);
+		border-radius: 0;
 		font-size: 0.75rem;
 		cursor: pointer;
 	}
@@ -1161,7 +1161,7 @@
 		padding: 0 var(--space-sm);
 		background: var(--bg-4);
 		border: 1px solid var(--b-2);
-		border-radius: var(--r);
+		border-radius: 0;
 		font-size: 0.75rem;
 		color: var(--t-3);
 		cursor: pointer;
@@ -1223,7 +1223,7 @@
 	.inline-player {
 		margin-top: var(--space-md);
 		border: 1px solid var(--b-1);
-		border-radius: var(--r);
+		border-radius: 0;
 		overflow: hidden;
 	}
 
@@ -1272,7 +1272,7 @@
 		padding: 0 10px;
 		background: var(--bg-3);
 		border: 1px solid var(--b-2);
-		border-radius: var(--r);
+		border-radius: 0;
 		font-size: 11px;
 		color: var(--t-2);
 		text-decoration: none;
@@ -1294,7 +1294,7 @@
 		border: 1px solid var(--border);
 		background: var(--bg-secondary);
 		color: var(--t-1);
-		border-radius: var(--r);
+		border-radius: 0;
 		cursor: pointer;
 	}
 	.save-shelf-btn.saved { border-color: var(--accent); color: var(--accent); }
@@ -1305,7 +1305,7 @@
 		z-index: 50;
 		background: var(--bg-secondary);
 		border: 1px solid var(--border);
-		border-radius: var(--r);
+		border-radius: 0;
 		min-width: 160px;
 		padding: 4px 0;
 		box-shadow: 0 4px 12px rgba(0,0,0,0.3);
@@ -1330,7 +1330,7 @@
 		background: var(--bg-tertiary);
 		border: 1px solid var(--border);
 		color: var(--t-1);
-		border-radius: 3px;
+		border-radius: 0;
 		font-size: 0.8rem;
 	}
 
@@ -1377,7 +1377,7 @@
 		align-self: flex-start;
 		background: none;
 		border: 1px solid var(--b-2);
-		border-radius: var(--r);
+		border-radius: 0;
 		padding: 6px 12px;
 		cursor: pointer;
 		color: var(--t-3);
@@ -1398,7 +1398,7 @@
 		padding: var(--space-md);
 		background: var(--bg-3);
 		border: 1px solid var(--b-1);
-		border-radius: var(--r);
+		border-radius: 0;
 	}
 
 	.embed-mode-row {
@@ -1409,7 +1409,7 @@
 	.mode-btn {
 		padding: 4px 10px;
 		border: 1px solid var(--b-2);
-		border-radius: var(--r);
+		border-radius: 0;
 		background: none;
 		color: var(--t-3);
 		font-size: 0.8rem;
@@ -1426,7 +1426,7 @@
 	.embed-code {
 		background: var(--bg-surface, var(--bg-primary));
 		border: 1px solid var(--b-1);
-		border-radius: var(--r);
+		border-radius: 0;
 		padding: var(--space-sm);
 		font-size: 0.75rem;
 		font-family: monospace;
@@ -1444,7 +1444,7 @@
 	.embed-action-btn {
 		padding: 4px 10px;
 		border: 1px solid var(--b-2);
-		border-radius: var(--r);
+		border-radius: 0;
 		background: none;
 		color: var(--t-3);
 		font-size: 0.8rem;
@@ -1474,7 +1474,7 @@
 	.embed-curator-input {
 		padding: 3px 8px;
 		border: 1px solid var(--b-2);
-		border-radius: var(--r);
+		border-radius: 0;
 		background: var(--bg-surface, var(--bg-primary));
 		color: var(--t-1);
 		font-size: 0.78rem;
@@ -1515,7 +1515,7 @@
 		text-decoration: none;
 		padding: 0.25rem 0.6rem;
 		border: 1px solid color-mix(in srgb, var(--acc) 40%, transparent);
-		border-radius: var(--r);
+		border-radius: 0;
 		transition: background 0.15s, color 0.15s;
 	}
 
@@ -1528,7 +1528,7 @@
 		padding: 0.25rem 0.6rem;
 		font-size: 0.8rem;
 		border: 1px solid var(--border-default, #333);
-		border-radius: var(--r);
+		border-radius: 0;
 		background: transparent;
 		color: var(--text-secondary, #b3b3b3);
 		cursor: pointer;
@@ -1554,7 +1554,7 @@
 		height: 26px;
 		background: var(--bg-4);
 		border: 1px solid var(--b-2);
-		border-radius: var(--r);
+		border-radius: 0;
 		text-decoration: none;
 		font-size: 12px;
 		transition: border-color 0.1s, background 0.1s;

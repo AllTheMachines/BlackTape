@@ -153,7 +153,7 @@
 	.skeleton-line {
 		height: 1.1rem;
 		background: var(--bg-elevated);
-		border-radius: 4px;
+		border-radius: 0;
 		animation: skeleton-pulse 1.5s ease-in-out infinite;
 	}
 

@@ -155,7 +155,7 @@
 		text-transform: uppercase;
 		background: transparent;
 		border: 1px solid var(--border-default);
-		border-radius: var(--input-radius);
+		border-radius: 0;
 		color: var(--text-muted);
 		cursor: pointer;
 		transition:
@@ -183,7 +183,7 @@
 		width: 100%;
 		background: var(--bg-elevated);
 		border: 1px solid var(--border-default);
-		border-radius: var(--input-radius);
+		border-radius: 0;
 		color: var(--text-primary);
 		outline: none;
 		transition: border-color 0.2s;
@@ -239,7 +239,7 @@
 		padding: 0;
 		background: var(--bg-elevated);
 		border: 1px solid var(--border-default);
-		border-radius: var(--r, 2px);
+		border-radius: 0;
 		overflow: hidden;
 	}
 

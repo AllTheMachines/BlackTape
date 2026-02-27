@@ -25,7 +25,7 @@
   p { color: var(--text-secondary); font-size: 0.875rem; line-height: 1.5; margin: 0; }
   .go-settings {
     margin-top: 8px; padding: 8px 20px; background: var(--accent);
-    color: var(--bg-primary); border-radius: 6px; text-decoration: none;
+    color: var(--bg-primary); border-radius: 0; text-decoration: none;
     font-size: 0.875rem; font-weight: 600;
   }
 </style>

@@ -177,7 +177,7 @@
 
 	.activation-badge {
 		padding: 2px 8px;
-		border-radius: 10px;
+		border-radius: 0;
 		font-size: 0.7rem;
 		font-weight: 500;
 		background: var(--bg-base);
@@ -206,7 +206,7 @@
 		max-height: 300px;
 		overflow-y: auto;
 		border: 1px solid var(--border-subtle);
-		border-radius: var(--card-radius);
+		border-radius: 0;
 	}
 
 	.history-item {
@@ -259,7 +259,7 @@
 		color: var(--text-muted);
 		cursor: pointer;
 		padding: 2px 6px;
-		border-radius: 3px;
+		border-radius: 0;
 		font-size: 1rem;
 		line-height: 1;
 		flex-shrink: 0;
@@ -278,7 +278,7 @@
 
 	.action-btn {
 		padding: 6px 14px;
-		border-radius: 4px;
+		border-radius: 0;
 		border: 1px solid var(--border-subtle);
 		background: var(--bg-surface);
 		color: var(--text-secondary);

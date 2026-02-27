@@ -300,7 +300,7 @@
 		background: var(--tag-bg);
 		color: var(--tag-text);
 		border: 1px solid var(--tag-border);
-		border-radius: 999px;
+		border-radius: 0;
 		text-decoration: none;
 		transition: background 0.1s, border-color 0.1s;
 		white-space: nowrap;
@@ -378,7 +378,7 @@
 		font-size: 0.7rem;
 		cursor: pointer;
 		padding: 2px 4px;
-		border-radius: 3px;
+		border-radius: 0;
 	}
 
 	.clear-queue-btn:hover {
@@ -399,7 +399,7 @@
 		align-items: center;
 		gap: var(--space-xs);
 		padding: 3px var(--space-xs);
-		border-radius: 3px;
+		border-radius: 0;
 		cursor: pointer;
 		transition: background 0.1s;
 	}
@@ -462,7 +462,7 @@
 		color: var(--text-muted);
 		cursor: pointer;
 		padding: 2px;
-		border-radius: 2px;
+		border-radius: 0;
 		opacity: 0;
 		transition: opacity 0.15s;
 		flex-shrink: 0;

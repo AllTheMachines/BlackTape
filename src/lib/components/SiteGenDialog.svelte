@@ -211,7 +211,7 @@
 	.card {
 		background: #1c1c1c;
 		border: 1px solid #333;
-		border-radius: 8px;
+		border-radius: 0;
 		padding: 1.5rem;
 		max-width: 480px;
 		width: 100%;
@@ -277,7 +277,7 @@
 
 	.btn {
 		padding: 0.45rem 1rem;
-		border-radius: 5px;
+		border-radius: 0;
 		font-size: 0.9rem;
 		font-weight: 500;
 		cursor: pointer;
@@ -355,7 +355,7 @@
 		color: #b5c8ff;
 		background: #141414;
 		border: 1px solid #333;
-		border-radius: 4px;
+		border-radius: 0;
 		padding: 0.4rem 0.6rem;
 		word-break: break-all;
 		margin-bottom: 0.75rem;
@@ -374,7 +374,7 @@
 		color: #e07e7e;
 		background: #1a1010;
 		border: 1px solid #4a2020;
-		border-radius: 4px;
+		border-radius: 0;
 		padding: 0.5rem 0.75rem;
 		overflow-x: auto;
 		white-space: pre-wrap;
