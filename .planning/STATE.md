@@ -1,40 +1,15 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: — The Playback Milestone
-status: unknown
-last_updated: "2026-02-27T08:02:13.519Z"
+milestone: v1.6
+milestone_name: The Playback Milestone
+status: planning
+current_phase: 31
+last_updated: "2026-02-27T09:00:00.000Z"
 progress:
   total_phases: 13
   completed_phases: 11
-  total_plans: 39
+  total_plans: 42
   completed_plans: 39
----
-
----
-gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: — The Playback Milestone
-status: unknown
-last_updated: "2026-02-27T07:52:58.031Z"
-progress:
-  total_phases: 13
-  completed_phases: 10
-  total_plans: 39
-  completed_plans: 38
----
-
----
-gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: — The Playback Milestone
-status: unknown
-last_updated: "2026-02-27T00:42:04.307Z"
-progress:
-  total_phases: 10
-  completed_phases: 10
-  total_plans: 36
-  completed_plans: 36
 ---
 
 # Project State
@@ -44,13 +19,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-02-27)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Phase 30 — Spotify Integration
+**Current focus:** Phase 31 — v1 Prep
 
 ## Current Position
 
-Phase: 30 of 32 (Spotify Integration)
-Plan: 3 of 3 in current phase (Phase 30 COMPLETE)
-Status: Phase 30 complete — all 3 plans done (core module, settings wizard, artist page button). Next: Phase 31 (Embedded Players)
+Phase: 31 of 33 (v1 Prep)
+Plan: 0 of ? in current phase (Phase 31 not started)
+Status: Planning Phase 31 (v1 Prep — community feature UI removal, localhost text fix)
 Last activity: 2026-02-27 — 30-03 executed (Play on Spotify button + error handling on artist page)
 
 Progress: [█████████████████████] 21% of v1.6 (7 plans done across Phase 29+30)
@@ -67,8 +42,9 @@ Progress: [█████████████████████] 21% 
 |-------|-------|--------|
 | 29. Streaming Foundation | 4 | Complete — 4/4 plans done |
 | 30. Spotify Integration | 3 | Complete — 3/3 plans done |
-| 31. Embedded Players | TBD | Not started |
-| 32. Album Playback + Polish | TBD | Not started |
+| 31. v1 Prep | TBD | Not started |
+| 32. Embedded Players | TBD | Not started |
+| 33. Artist Claim Form | TBD | Not started |
 
 **v1.6 metrics so far:**
 - 29-01: 2 min, 3 tasks, 3 files, 0 deviations
@@ -109,13 +85,13 @@ Progress: [█████████████████████] 21% 
 - [30-03]: showSpotifyButton uses {#if} (absent from DOM) not disabled — matches CONTEXT.md "hidden not grayed out" spec
 - [30-03]: Dynamic imports inside handlePlayOnSpotify for all Spotify modules — avoids circular deps, consistent with collections/QR pattern
 - [30-03]: spotifyPlayMessage resets to null on each play attempt — no stale error state across retries
+- [v1.6 Community]: Community features (Scenes, Rooms, Chat/DMs, Fediverse) removed from all UI in Phase 31 — code preserved, zero UI visibility, no "coming soon" banners
 
 ### Blockers/Concerns
 
-- [Phase 31 gate]: Bandcamp spike required at Phase 31 start (30 min) — test `url=` param with iframe src `https://bandcamp.com/EmbeddedPlayer/url=https%3A%2F%2Fburial.bandcamp.com%2Falbum%2Funtrue/size=large/transparent=true/`. Renders = implement embed. Blank/error = external-link-only for v1.6.
-- [Phase 31 gate]: YouTube Error 153 fallback must be tested in a production .msi build — dev mode passes; production can fail. This is a hard completion gate for Phase 31.
-- [Phase 30 pre-check]: RESOLVED — taste-import localhost bug fixed in 30-01 (bff2d8e). All Spotify OAuth flows now use 127.0.0.1.
-- [Phase 31 note]: SoundCloud Widget API re-binding after Svelte navigation remount is untested — verify in Phase 31 before marking SC-01 complete.
+- [Phase 32 gate]: Bandcamp spike required at Phase 32 start (30 min) — test `url=` param with iframe src `https://bandcamp.com/EmbeddedPlayer/url=https%3A%2F%2Fburial.bandcamp.com%2Falbum%2Funtrue/size=large/transparent=true/`. Renders = implement embed. Blank/error = external-link-only for v1.6.
+- [Phase 32 gate]: YouTube Error 153 fallback must be tested in a production .msi build — dev mode passes; production can fail. This is a hard completion gate for Phase 32.
+- [Phase 32 note]: SoundCloud Widget API re-binding after Svelte navigation remount is untested — verify in Phase 32 before marking SC-01 complete.
 
 ### Pending Todos
 
@@ -124,5 +100,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-27
-Stopped at: Completed 30-spotify-integration/30-03-PLAN.md (Artist page Play on Spotify button — Phase 30 complete)
+Stopped at: Docs cleanup (pre-Phase 31) — ROADMAP/STATE/MILESTONES/REQUIREMENTS updated, phase dirs renamed
 Resume file: None

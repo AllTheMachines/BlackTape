@@ -18,6 +18,10 @@
 - [x] **SPOT-03**: App shows clear feedback when Spotify Desktop is not detected (not running or no active device)
 - [x] **SPOT-04**: User can disconnect and reconnect Spotify from Settings
 
+### v1 Prep (PREP)
+
+- [ ] **PREP-01**: Community features (Scenes, Rooms, Chat/DMs, Fediverse) removed from all navigation and UI surfaces — code preserved, not visible to users
+
 ### YouTube (YT)
 
 - [ ] **YT-01**: Artist page shows YouTube embed player when a YouTube link is available
@@ -38,6 +42,10 @@
 - [x] **PLAYER-01**: Player bar displays a service badge showing the currently active streaming source (e.g. "Spotify", "SoundCloud", "Bandcamp")
 - [ ] **PLAYER-02**: Artist page shows a source switcher — one button per available service, switching active source without navigating away
 - [ ] **PLAYER-03**: Release page "Play Album" button activates the best available streaming source for that release
+
+### Artist Claim Form (CLAIM)
+
+- [ ] **CLAIM-01**: Artist claim form at /claim — fields: artist name, email, message; "Is this you? Claim this page" link on all artist pages; submissions stored in localStorage
 
 ## Future Requirements
 
@@ -74,19 +82,21 @@
 | SPOT-02 | Phase 30 | Complete |
 | SPOT-03 | Phase 30 | Complete |
 | SPOT-04 | Phase 30 | Complete |
-| YT-01 | Phase 31 | Pending |
-| YT-02 | Phase 31 | Pending |
-| SC-01 | Phase 31 | Pending |
-| SC-02 | Phase 31 | Pending |
-| BC-01 | Phase 31 | Pending |
+| PREP-01 | Phase 31 | Pending |
+| YT-01 | Phase 32 | Pending |
+| YT-02 | Phase 32 | Pending |
+| SC-01 | Phase 32 | Pending |
+| SC-02 | Phase 32 | Pending |
+| BC-01 | Phase 32 | Pending |
 | BC-02 | Phase 32 | Pending |
 | PLAYER-01 | Phase 29 | Complete |
-| PLAYER-02 | Phase 31 | Pending |
+| PLAYER-02 | Phase 32 | Pending |
 | PLAYER-03 | Phase 32 | Pending |
+| CLAIM-01 | Phase 33 | Pending |
 
 **Coverage:**
-- v1.6 requirements: 15 total
-- Mapped to phases: 15
+- v1.6 requirements: 17 total
+- Mapped to phases: 17
 - Unmapped: 0 ✓
 
 ---

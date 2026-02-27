@@ -128,16 +128,18 @@
 
 ## v1.6 The Playback Milestone (In Progress)
 
-**Phases:** 29+ (starting 2026-02-26)
+**Phases:** 29–33 (starting 2026-02-26)
 
 **Goals:**
-1. Spotify integration — PKCE OAuth (bundled client ID), guided step-by-step connection, Web Playback SDK full track streaming
+1. Spotify integration — PKCE OAuth (user provides own Client ID), guided connection, Spotify Connect API (controls Spotify Desktop app)
 2. YouTube integration — IFrame player (fallback: open-in-browser), no auth required
 3. SoundCloud integration — Widget API embeds, no auth
-4. Bandcamp integration — embed player, no auth
+4. Bandcamp integration — embed player, no auth (gated on implementation spike)
 5. Service resolution — detect available sources per artist, priority order with drag-to-reorder
 6. Player bar service indicator + source switcher on artist pages
-7. Release page album playback with full track queue
+7. Release page Play Album button activating best available streaming source
+8. Community features (Scenes, Rooms, Chat, Fediverse) hidden from all UI surfaces — code preserved
+9. Artist claim form — /claim route, artist page link, local storage (no backend for v1)
 
 ---
 
