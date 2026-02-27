@@ -18,16 +18,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-02-27)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Phase 29 — Streaming Foundation
+**Current focus:** Phase 30 — Spotify Integration
 
 ## Current Position
 
-Phase: 29 of 32 (Streaming Foundation)
-Plan: 4 of 4 in current phase
-Status: Phase 29 complete — all 4 plans executed. Next: Phase 30 (Spotify Integration)
-Last activity: 2026-02-27 — 29-04 executed (Audio coordination + player bar via-badge)
+Phase: 30 of 32 (Spotify Integration)
+Plan: 1 of TBD in current phase
+Status: Phase 30 in progress — 30-01 (core module) complete. Next: 30-02 (Settings wizard)
+Last activity: 2026-02-27 — 30-01 executed (Spotify core module: state + auth + Connect API)
 
-Progress: [████████████████████] 12% of v1.6 (Phase 29 complete — 4/4 plans done)
+Progress: [████████████████████] 15% of v1.6 (5 plans done across Phase 29+30)
 
 ## Performance Metrics
 
@@ -39,8 +39,8 @@ Progress: [████████████████████] 12% of 
 
 | Phase | Plans | Status |
 |-------|-------|--------|
-| 29. Streaming Foundation | 4 | In progress — 2/4 plans done |
-| 30. Spotify Integration | TBD | Not started |
+| 29. Streaming Foundation | 4 | Complete — 4/4 plans done |
+| 30. Spotify Integration | TBD | In progress — 1/TBD plans done |
 | 31. Embedded Players | TBD | Not started |
 | 32. Album Playback + Polish | TBD | Not started |
 
@@ -49,6 +49,7 @@ Progress: [████████████████████] 12% of 
 - 29-02: 2 min, 1 task, 1 file, 0 deviations
 - 29-03: 2 min, 1 task, 1 file, 1 auto-fix (Svelte 5 {@const} placement constraint)
 - 29-04: 2 min, 2 tasks, 2 files, 0 deviations
+- 30-01: 3 min, 3 tasks, 4 files, 0 deviations
 
 ## Accumulated Context
 
@@ -70,12 +71,17 @@ Progress: [████████████████████] 12% of 
 - [29-04]: Dynamic imports used for audio.svelte inside SC Widget PLAY handler (async function) to avoid circular import issues
 - [29-04]: EMBED_ORIGINS map uses exact hostname match + hostname.includes('youtube.com') fallback for YouTube nocookie variants
 - [29-04]: Spotify play detection via data.type field (object); YouTube via JSON.parse + event/info===1 (string); SC via existing Widget PLAY event
+- [30-01]: spotifyState module uses module-level $state (no class, no store) — same pattern as streamingState
+- [30-01]: redirectUri uses 127.0.0.1 (Spotify blocked localhost redirects November 2025) — also fixed pre-existing bug in taste-import/spotify.ts
+- [30-01]: PlayResult discriminated union for Connect API — playTracksOnSpotify never throws, always returns ok/no_device/premium_required/token_expired
+- [30-01]: Proactive refresh at tokenExpiry - 60s to prevent mid-playback failures; keeps existing refreshToken if not rotated in response
+- [30-01]: All 5 Spotify tokens stored in ai_settings table — no new DB tables or Rust commands needed
 
 ### Blockers/Concerns
 
 - [Phase 31 gate]: Bandcamp spike required at Phase 31 start (30 min) — test `url=` param with iframe src `https://bandcamp.com/EmbeddedPlayer/url=https%3A%2F%2Fburial.bandcamp.com%2Falbum%2Funtrue/size=large/transparent=true/`. Renders = implement embed. Blank/error = external-link-only for v1.6.
 - [Phase 31 gate]: YouTube Error 153 fallback must be tested in a production .msi build — dev mode passes; production can fail. This is a hard completion gate for Phase 31.
-- [Phase 30 pre-check]: Verify existing Spotify taste-import OAuth registration uses http://127.0.0.1 not localhost before writing any Phase 30 OAuth code.
+- [Phase 30 pre-check]: RESOLVED — taste-import localhost bug fixed in 30-01 (bff2d8e). All Spotify OAuth flows now use 127.0.0.1.
 - [Phase 31 note]: SoundCloud Widget API re-binding after Svelte navigation remount is untested — verify in Phase 31 before marking SC-01 complete.
 
 ### Pending Todos
@@ -85,5 +91,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-27
-Stopped at: Completed 29-streaming-foundation/29-04-PLAN.md (Phase 29 complete)
+Stopped at: Completed 30-spotify-integration/30-01-PLAN.md (Spotify core module)
 Resume file: None

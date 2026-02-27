@@ -13,10 +13,10 @@
 
 ### Spotify (SPOT)
 
-- [ ] **SPOT-01**: User can connect Spotify via guided step-by-step flow in Settings (enter own Client ID, PKCE OAuth, "Spotify Desktop required" clearly communicated throughout)
-- [ ] **SPOT-02**: App plays artist's top tracks in the user's running Spotify Desktop app via Spotify Connect API
-- [ ] **SPOT-03**: App shows clear feedback when Spotify Desktop is not detected (not running or no active device)
-- [ ] **SPOT-04**: User can disconnect and reconnect Spotify from Settings
+- [x] **SPOT-01**: User can connect Spotify via guided step-by-step flow in Settings (enter own Client ID, PKCE OAuth, "Spotify Desktop required" clearly communicated throughout)
+- [x] **SPOT-02**: App plays artist's top tracks in the user's running Spotify Desktop app via Spotify Connect API
+- [x] **SPOT-03**: App shows clear feedback when Spotify Desktop is not detected (not running or no active device)
+- [x] **SPOT-04**: User can disconnect and reconnect Spotify from Settings
 
 ### YouTube (YT)
 
@@ -70,10 +70,10 @@
 | INFRA-01 | Phase 29 | Complete |
 | INFRA-02 | Phase 29 | Complete |
 | INFRA-03 | Phase 29 | Complete |
-| SPOT-01 | Phase 30 | Pending |
-| SPOT-02 | Phase 30 | Pending |
-| SPOT-03 | Phase 30 | Pending |
-| SPOT-04 | Phase 30 | Pending |
+| SPOT-01 | Phase 30 | Complete |
+| SPOT-02 | Phase 30 | Complete |
+| SPOT-03 | Phase 30 | Complete |
+| SPOT-04 | Phase 30 | Complete |
 | YT-01 | Phase 31 | Pending |
 | YT-02 | Phase 31 | Pending |
 | SC-01 | Phase 31 | Pending |
