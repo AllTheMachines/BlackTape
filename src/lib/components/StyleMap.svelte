@@ -35,9 +35,15 @@
 	let container: HTMLDivElement;
 	let hoveredTag = $state<string | null>(null);
 
-	// Compute node radius from artist_count (log scale to prevent huge dominant nodes)
-	function nodeRadius(artistCount: number): number {
-		return Math.max(6, Math.min(30, Math.log10(artistCount) * 8));
+	// Estimate label rectangle width from tag string length
+	const FONT_SIZE = 11;
+	const CHAR_WIDTH = 6.5;
+	const PAD_X = 10;
+	const PAD_Y = 5;
+	const RECT_H = FONT_SIZE + PAD_Y * 2;
+
+	function labelWidth(tag: string): number {
+		return Math.max(40, tag.length * CHAR_WIDTH + PAD_X * 2);
 	}
 
 	onMount(() => {
@@ -59,7 +65,7 @@
 				.strength((d: any) => d.strength * 0.4))
 			.force('charge', forceManyBody().strength(-120))
 			.force('center', forceCenter(width / 2, height / 2))
-			.force('collide', forceCollide().radius((d: any) => nodeRadius(d.artistCount) + 8));
+			.force('collide', forceCollide().radius((d: any) => labelWidth(d.id) / 2 + 6));
 
 		// Run to static completion — no continuous rerenders
 		simulation.tick(500);
@@ -105,7 +111,7 @@
 					<line
 						x1={edge.x1} y1={edge.y1}
 						x2={edge.x2} y2={edge.y2}
-						stroke="var(--border-default)"
+						stroke="var(--b-1)"
 						stroke-width={Math.max(0.5, edge.strength * 3)}
 						stroke-opacity={0.3 + edge.strength * 0.4}
 					/>
@@ -115,7 +121,7 @@
 			<!-- Nodes -->
 			<g class="nodes">
 				{#each layoutNodes as node}
-					{@const r = nodeRadius(node.artistCount)}
+					{@const w = labelWidth(node.id)}
 					{@const isHovered = hoveredTag === node.id}
 					<g
 						class="node"
@@ -128,25 +134,27 @@
 						onmouseenter={() => hoveredTag = node.id}
 						onmouseleave={() => hoveredTag = null}
 					>
-						<circle
-							{r}
-							fill={isHovered ? 'var(--text-accent)' : 'var(--bg-elevated)'}
-							stroke={isHovered ? 'var(--text-accent)' : 'var(--border-default)'}
-							stroke-width="1.5"
+						<rect
+							x={-w / 2}
+							y={-RECT_H / 2}
+							width={w}
+							height={RECT_H}
+							rx="2"
+							fill={isHovered ? 'var(--acc)' : 'var(--bg-3)'}
+							stroke={isHovered ? 'var(--acc)' : 'var(--b-1)'}
+							stroke-width="1"
 							style="cursor: pointer; transition: fill 0.15s, stroke 0.15s;"
 						/>
-						{#if r > 10 || isHovered}
-							<text
-								text-anchor="middle"
-								dy="0.35em"
-								font-size={Math.max(8, Math.min(12, r * 0.8))}
-								fill={isHovered ? 'var(--bg-base)' : 'var(--text-secondary)'}
-								pointer-events="none"
-								style="transition: fill 0.15s; user-select: none;"
-							>
-								{node.id}
-							</text>
-						{/if}
+						<text
+							text-anchor="middle"
+							dy="0.35em"
+							font-size={FONT_SIZE}
+							fill={isHovered ? 'var(--bg-1)' : 'var(--t-2)'}
+							pointer-events="none"
+							style="transition: fill 0.15s; user-select: none;"
+						>
+							{node.id}
+						</text>
 					</g>
 				{/each}
 			</g>
