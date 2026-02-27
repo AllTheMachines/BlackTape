@@ -21,6 +21,8 @@
 	import EmbedPlayer from '$lib/components/EmbedPlayer.svelte';
 	import { streamingState, setActiveSource } from '$lib/player/streaming.svelte';
 	import type { PlatformType } from '$lib/embeds/types';
+	import { spotifyEmbedUrl } from '$lib/embeds/spotify';
+	import { youtubeEmbedUrl } from '$lib/embeds/youtube';
 
 	let { data } = $props();
 
@@ -267,6 +269,22 @@
 			}))
 	);
 
+	/**
+	 * Returns true only if this platform has an actual embeddable iframe for this artist.
+	 * Bandcamp artist-root pages and YouTube channel URLs cannot be embedded — clicking
+	 * those should open the external link directly, not show an empty embed area.
+	 */
+	function hasEmbedContent(svc: PlatformType): boolean {
+		const urls = data.links[svc];
+		if (!urls || urls.length === 0) return false;
+		switch (svc) {
+			case 'spotify':   return urls.some(u => spotifyEmbedUrl(u) !== null);
+			case 'youtube':   return urls.some(u => youtubeEmbedUrl(u) !== null);
+			case 'bandcamp':  return urls.some(u => u.includes('/album/') || u.includes('/track/'));
+			case 'soundcloud': return true; // oEmbed fetched async; EmbedPlayer falls back gracefully
+		}
+	}
+
 	/** Toggle the active embed service. Clicking the active service collapses the embed. */
 	function toggleService(svc: PlatformType) {
 		if (activeEmbedService === svc) {
@@ -396,23 +414,35 @@
 			<!-- Unified platform row: replaces source-switcher tabs + Listen On section -->
 			<div class="platform-row" data-testid="platform-row">
 				{#each availableEmbedServices as svc (svc.key)}
-					<div class="platform-pill-group">
-						<button
+					{#if hasEmbedContent(svc.key)}
+						<!-- Has embeddable iframe: split pill — button toggles embed, ↗ opens externally -->
+						<div class="platform-pill-group">
+							<button
+								class="platform-pill platform-pill--{svc.key}"
+								class:active={activeEmbedService === svc.key}
+								onclick={() => toggleService(svc.key)}
+								data-testid="platform-pill-{svc.key}"
+							>{svc.label}</button>
+							{#if data.links[svc.key][0]}
+								<a
+									href={data.links[svc.key][0]}
+									target="_blank"
+									rel="noopener noreferrer"
+									class="platform-ext-icon"
+									title="Open on {svc.label}"
+								>↗</a>
+							{/if}
+						</div>
+					{:else if data.links[svc.key][0]}
+						<!-- No embeddable content (e.g. Bandcamp artist page, YouTube channel): plain link -->
+						<a
+							href={data.links[svc.key][0]}
+							target="_blank"
+							rel="noopener noreferrer"
 							class="platform-pill platform-pill--{svc.key}"
-							class:active={activeEmbedService === svc.key}
-							onclick={() => toggleService(svc.key)}
 							data-testid="platform-pill-{svc.key}"
-						>{svc.label}</button>
-						{#if data.links[svc.key][0]}
-							<a
-								href={data.links[svc.key][0]}
-								target="_blank"
-								rel="noopener noreferrer"
-								class="platform-ext-icon"
-								title="Open on {svc.label}"
-							>↗</a>
-						{/if}
-					</div>
+						>{svc.label} ↗</a>
+					{/if}
 				{/each}
 				{#each nonEmbedStreamingLinks as link}
 					<a
