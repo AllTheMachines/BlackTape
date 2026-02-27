@@ -10,6 +10,7 @@
 	} from '$lib/player/queue.svelte';
 	import Queue from './Queue.svelte';
 	import NowPlayingDiscovery from './NowPlayingDiscovery.svelte';
+	import { streamingState } from '$lib/player/streaming.svelte';
 
 	let showQueue = $state(false);
 	let showExpanded = $state(false);
@@ -49,6 +50,16 @@
 		if (mode === 'one') return '1';
 		return '';
 	}
+
+	function sourceLabel(source: string): string {
+		const labels: Record<string, string> = {
+			spotify: 'Spotify',
+			soundcloud: 'SoundCloud',
+			youtube: 'YouTube',
+			bandcamp: 'Bandcamp'
+		};
+		return labels[source] ?? source;
+	}
 </script>
 
 {#if playerState.currentTrack}
@@ -67,6 +78,9 @@
 				{#if playerState.currentTrack.album}
 					<span class="meta-sep">&mdash;</span>
 					<span class="track-album">{playerState.currentTrack.album}</span>
+				{/if}
+				{#if streamingState.activeSource}
+					<span class="via-badge">via {sourceLabel(streamingState.activeSource)}</span>
 				{/if}
 			</div>
 		</div>
@@ -309,6 +323,15 @@
 	.meta-sep {
 		margin: 0 0.3em;
 		color: var(--t-3);
+	}
+
+	.via-badge {
+		font-size: 9px;
+		color: var(--t-3);
+		font-style: italic;
+		margin-left: 6px;
+		opacity: 0.8;
+		white-space: nowrap;
 	}
 
 	/* Center — transport controls + seek */
