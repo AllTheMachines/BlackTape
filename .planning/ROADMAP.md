@@ -68,7 +68,7 @@ See `.planning/milestones/v1.5-ROADMAP.md`
 
 **Milestone Goal:** Wire up multi-source streaming so users can play full tracks from any artist page — Spotify, YouTube, SoundCloud, Bandcamp — with service priority set once and playback automatic.
 
-- [x] **Phase 29: Streaming Foundation** — activeSource coordination state, service priority drag-to-reorder in Settings, player bar service badge (completed 2026-02-27)
+- [x] **Phase 29: Streaming Foundation** — activeSource coordination state, service priority drag-to-reorder in Settings, player bar service badge (completed 2026-02-27)
 - [ ] **Phase 30: Spotify Integration** — PKCE OAuth flow, Spotify Connect API top-track playback, disconnect/reconnect
 - [ ] **Phase 31: Embedded Players** — SoundCloud Widget, YouTube IFrame + Error 153 fallback, Bandcamp embed (spike-gated), source switcher UI
 - [ ] **Phase 32: Album Playback + Polish** — Release page "Play Album", Bandcamp album-specific embed, UX guidance pass
@@ -86,7 +86,12 @@ See `.planning/milestones/v1.5-ROADMAP.md`
   2. Artist page shows service availability badges (which of Spotify/YouTube/SoundCloud/Bandcamp have content for this artist) derived from existing MusicBrainz link data — no new API calls
   3. When a streaming embed becomes active, any local audio playback stops; only one audio source plays at a time
   4. Player bar shows a service badge ("via SoundCloud", "via Spotify", etc.) that updates when the active source changes; shows nothing when no streaming source is active
-**Plans**: TBD
+**Plans**: 4 plans
+Plans:
+- [x] 29-01-PLAN.md — Streaming state module + service order persistence
+- [x] 29-02-PLAN.md — Settings streaming UI drag-to-reorder
+- [x] 29-03-PLAN.md — Artist page service availability badges
+- [x] 29-04-PLAN.md — Audio coordination + player bar via-badge
 
 ### Phase 30: Spotify Integration
 **Goal**: Users can connect their own Spotify account and play artist top tracks in their running Spotify Desktop app from within BlackTape
@@ -97,7 +102,11 @@ See `.planning/milestones/v1.5-ROADMAP.md`
   2. When Spotify is the active service and Spotify Desktop is running with an active device, clicking play on an artist triggers top-track playback in Spotify Desktop via Connect API
   3. When Spotify Desktop is not running or has no active device, the app displays a clear inline message ("Open Spotify Desktop and start playing anything, then try again") — no silent failure
   4. User can disconnect Spotify from Settings (clears token) and reconnect without restarting the app
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 30-01-PLAN.md — Spotify module: state, auth (PKCE OAuth), and Connect API
+- [ ] 30-02-PLAN.md — Settings wizard (3-step connection flow) + boot hydration
+- [ ] 30-03-PLAN.md — Artist page Play on Spotify button + error handling
 
 ### Phase 31: Embedded Players
 **Goal**: Users can play music through SoundCloud, YouTube, and Bandcamp embeds directly in the app, with a source switcher to change services without leaving the artist page
@@ -137,7 +146,7 @@ See `.planning/milestones/v1.5-ROADMAP.md`
 | 26. Discover + Cross-Linking + Crate Fix | v1.4 | 4/4 | Complete | 2026-02-25 |
 | 27. Search + Knowledge Base | v1.4 | 5/5 | Complete | 2026-02-25 |
 | 28. UX Cleanup + Scope Reduction | v1.5 | 7/7 | Complete | 2026-02-26 |
-| 29. Streaming Foundation | 4/4 | Complete    | 2026-02-27 | - |
-| 30. Spotify Integration | v1.6 | 0/? | Not started | - |
+| 29. Streaming Foundation | v1.6 | 4/4 | Complete | 2026-02-27 |
+| 30. Spotify Integration | v1.6 | 0/3 | Not started | - |
 | 31. Embedded Players | v1.6 | 0/? | Not started | - |
 | 32. Album Playback + Polish | v1.6 | 0/? | Not started | - |
