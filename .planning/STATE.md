@@ -36,11 +36,11 @@ See: .planning/PROJECT.md (updated 2026-02-27)
 ## Current Position
 
 Phase: 30 of 32 (Spotify Integration)
-Plan: 2 of TBD in current phase
-Status: Phase 30 in progress — 30-02 (Settings wizard) complete. Next: 30-03 (Artist page Play on Spotify button)
-Last activity: 2026-02-27 — 30-02 executed (SpotifySettings wizard + settings page + boot hydration)
+Plan: 3 of 3 in current phase (Phase 30 COMPLETE)
+Status: Phase 30 complete — all 3 plans done (core module, settings wizard, artist page button). Next: Phase 31 (Embedded Players)
+Last activity: 2026-02-27 — 30-03 executed (Play on Spotify button + error handling on artist page)
 
-Progress: [████████████████████] 18% of v1.6 (6 plans done across Phase 29+30)
+Progress: [█████████████████████] 21% of v1.6 (7 plans done across Phase 29+30)
 
 ## Performance Metrics
 
@@ -53,7 +53,7 @@ Progress: [████████████████████] 18% of 
 | Phase | Plans | Status |
 |-------|-------|--------|
 | 29. Streaming Foundation | 4 | Complete — 4/4 plans done |
-| 30. Spotify Integration | TBD | In progress — 2/TBD plans done |
+| 30. Spotify Integration | 3 | Complete — 3/3 plans done |
 | 31. Embedded Players | TBD | Not started |
 | 32. Album Playback + Polish | TBD | Not started |
 
@@ -64,6 +64,7 @@ Progress: [████████████████████] 18% of 
 - 29-04: 2 min, 2 tasks, 2 files, 0 deviations
 - 30-01: 3 min, 3 tasks, 4 files, 0 deviations
 - 30-02: 2 min, 2 tasks, 3 files, 0 deviations
+- 30-03: 2 min, 1 task, 2 files, 0 deviations
 
 ## Accumulated Context
 
@@ -92,6 +93,9 @@ Progress: [████████████████████] 18% of 
 - [30-01]: All 5 Spotify tokens stored in ai_settings table — no new DB tables or Rust commands needed
 - [Phase 30]: SpotifySettings wizard: self-contained, no props, drives from spotifyState.connected derived
 - [Phase 30]: HTML/CSS mockup for Spotify dashboard in settings wizard — no binary assets, won't go stale
+- [30-03]: showSpotifyButton uses {#if} (absent from DOM) not disabled — matches CONTEXT.md "hidden not grayed out" spec
+- [30-03]: Dynamic imports inside handlePlayOnSpotify for all Spotify modules — avoids circular deps, consistent with collections/QR pattern
+- [30-03]: spotifyPlayMessage resets to null on each play attempt — no stale error state across retries
 
 ### Blockers/Concerns
 
@@ -107,5 +111,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-27
-Stopped at: Completed 30-spotify-integration/30-02-PLAN.md (Spotify Settings wizard)
+Stopped at: Completed 30-spotify-integration/30-03-PLAN.md (Artist page Play on Spotify button — Phase 30 complete)
 Resume file: None

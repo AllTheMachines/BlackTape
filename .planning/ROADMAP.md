@@ -69,7 +69,7 @@ See `.planning/milestones/v1.5-ROADMAP.md`
 **Milestone Goal:** Wire up multi-source streaming so users can play full tracks from any artist page — Spotify, YouTube, SoundCloud, Bandcamp — with service priority set once and playback automatic.
 
 - [x] **Phase 29: Streaming Foundation** — activeSource coordination state, service priority drag-to-reorder in Settings, player bar service badge (completed 2026-02-27)
-- [ ] **Phase 30: Spotify Integration** — PKCE OAuth flow, Spotify Connect API top-track playback, disconnect/reconnect
+- [x] **Phase 30: Spotify Integration** — PKCE OAuth flow, Spotify Connect API top-track playback, disconnect/reconnect (completed 2026-02-27)
 - [ ] **Phase 31: Embedded Players** — SoundCloud Widget, YouTube IFrame + Error 153 fallback, Bandcamp embed (spike-gated), source switcher UI
 - [ ] **Phase 32: Album Playback + Polish** — Release page "Play Album", Bandcamp album-specific embed, UX guidance pass
 
@@ -147,6 +147,6 @@ Plans:
 | 27. Search + Knowledge Base | v1.4 | 5/5 | Complete | 2026-02-25 |
 | 28. UX Cleanup + Scope Reduction | v1.5 | 7/7 | Complete | 2026-02-26 |
 | 29. Streaming Foundation | v1.6 | 4/4 | Complete | 2026-02-27 |
-| 30. Spotify Integration | 2/3 | In Progress|  | - |
+| 30. Spotify Integration | 3/3 | Complete   | 2026-02-27 | - |
 | 31. Embedded Players | v1.6 | 0/? | Not started | - |
 | 32. Album Playback + Polish | v1.6 | 0/? | Not started | - |
