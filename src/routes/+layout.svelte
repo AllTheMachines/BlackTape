@@ -12,6 +12,7 @@
 	import { loadTasteProfile, tasteProfile } from '$lib/taste/profile.svelte';
 	import { loadPlaybackSettings } from '$lib/player/playback.svelte';
 	import { restoreQueueFromStorage } from '$lib/player/queue.svelte';
+	import { loadLibrary } from '$lib/library/store.svelte';
 	import { onMount } from 'svelte';
 	import PanelLayout from '$lib/components/PanelLayout.svelte';
 	import LeftSidebar from '$lib/components/LeftSidebar.svelte';
@@ -45,8 +46,9 @@
 
 		if (isTauri()) {
 			await loadAiSettings();
-			loadTasteProfile();  // fire-and-forget — populates tasteProfile state async
-			loadPlaybackSettings();  // fire-and-forget — loads private mode + play count
+			loadTasteProfile();    // fire-and-forget — populates tasteProfile state async
+			loadPlaybackSettings(); // fire-and-forget — loads private mode + play count
+			loadLibrary();          // fire-and-forget — pre-loads library so it's ready instantly
 			if (aiState.enabled) {
 				initializeAi();
 			}

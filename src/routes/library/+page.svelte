@@ -62,7 +62,7 @@
 	<title>Library</title>
 </svelte:head>
 
-{#if libraryState.isLoading}
+{#if libraryState.isLoading && !libraryState.isLoaded}
 	<div class="loading-overlay">
 		<div class="loading-dialog">
 			<div class="loading-spinner"></div>
