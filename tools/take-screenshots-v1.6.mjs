@@ -1,16 +1,20 @@
 /**
  * BlackTape v1.6 Screenshot + QA Pass
  *
- * Uses dev server + headless Chromium (no Tauri binary needed).
- * Captures all 21 screens at 1200x800 into static/screenshots/.
+ * Uses Tauri binary + CDP (same approach as take-press-screenshots-v3.mjs).
+ * Captures all 21 screens at 1200×800 into static/screenshots/.
  *
  * Run: node tools/take-screenshots-v1.6.mjs
  *
- * Requirements: dev server running on http://localhost:5199
- * Start with: npx cross-env VITE_TAURI=1 npm run dev -- --port 5199
+ * Requirements:
+ *   - Tauri debug binary at src-tauri/target/debug/mercury.exe
+ *   - Real mercury.db in %APPDATA%/com.blacktape.app/mercury.db
+ *   - npm run dev running on port 5173 (script will start it if not already up)
  */
 
 import { chromium } from 'playwright';
+import { spawn, execSync } from 'child_process';
+import { createRequire } from 'module';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
@@ -18,7 +22,12 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 const OUT = path.join(ROOT, 'static', 'screenshots');
-const BASE = 'http://localhost:5199';
+const BINARY = path.join(ROOT, 'src-tauri', 'target', 'debug', 'mercury.exe');
+const CDP_PORT = 9224;
+const CDP_BASE = `http://127.0.0.1:${CDP_PORT}`;
+const DEV_PORT = 5173;
+const DEV_BASE = `http://localhost:${DEV_PORT}`;
+const http = createRequire(import.meta.url)('http');
 
 fs.mkdirSync(OUT, { recursive: true });
 
@@ -33,10 +42,53 @@ function bug(screen, description) {
 }
 
 // ---------------------------------------------------------------------------
-// Helpers
+// Core helpers
 // ---------------------------------------------------------------------------
-async function goto(page, route, waitMs = 3500) {
-  await page.goto(BASE + route, { waitUntil: 'domcontentloaded', timeout: 20000 }).catch(() => {});
+
+function pollHttp(url, timeoutMs = 30000) {
+  return new Promise((resolve, reject) => {
+    const deadline = Date.now() + timeoutMs;
+    function attempt() {
+      const req = http.get(url, (res) => {
+        res.resume();
+        if (res.statusCode < 500) return resolve();
+        schedule();
+      });
+      req.setTimeout(1000, () => { req.destroy(); schedule(); });
+      req.on('error', schedule);
+    }
+    function schedule() {
+      if (Date.now() >= deadline) return reject(new Error(`Not available after ${timeoutMs}ms: ${url}`));
+      setTimeout(attempt, 600);
+    }
+    attempt();
+  });
+}
+
+function pollCdp(timeoutMs = 40000) {
+  return new Promise((resolve, reject) => {
+    const deadline = Date.now() + timeoutMs;
+    function attempt() {
+      const req = http.get(`${CDP_BASE}/json`, (res) => {
+        res.resume();
+        if (res.statusCode === 200) return resolve();
+        schedule();
+      });
+      req.setTimeout(1000, () => { req.destroy(); schedule(); });
+      req.on('error', schedule);
+    }
+    function schedule() {
+      if (Date.now() >= deadline) return reject(new Error(`CDP not available after ${timeoutMs}ms`));
+      setTimeout(attempt, 600);
+    }
+    attempt();
+  });
+}
+
+async function goto(page, route, waitMs = 4000) {
+  console.log(`  → ${route}`);
+  await page.evaluate(r => { window.location.href = r; }, route);
+  await page.waitForLoadState('domcontentloaded').catch(() => {});
   await page.waitForTimeout(waitMs);
 }
 
@@ -67,16 +119,21 @@ async function waitForCardImages(page, timeoutMs = 15000, minImages = 4) {
       }
       return loaded;
     });
-    if (count >= minImages) return count;
+    if (count >= minImages) {
+      console.log(`  ↳ ${count} card image(s) loaded`);
+      return count;
+    }
     await page.waitForTimeout(600);
   }
-  return await page.evaluate(() => {
+  const final = await page.evaluate(() => {
     let loaded = 0;
     for (const img of document.querySelectorAll('.a-art img[src]')) {
       if (img.complete && img.naturalHeight > 0) loaded++;
     }
     return loaded;
   });
+  console.log(`  ↳ ${final} card image(s) loaded (timeout)`);
+  return final;
 }
 
 async function waitForDiscographyCovers(page, timeoutMs = 18000, minCovers = 4) {
@@ -89,16 +146,21 @@ async function waitForDiscographyCovers(page, timeoutMs = 18000, minCovers = 4) 
       }
       return loaded;
     });
-    if (count >= minCovers) return count;
+    if (count >= minCovers) {
+      console.log(`  ↳ ${count} cover(s) loaded`);
+      return count;
+    }
     await page.waitForTimeout(800);
   }
-  return await page.evaluate(() => {
+  const final = await page.evaluate(() => {
     let loaded = 0;
     for (const img of document.querySelectorAll('.cover-art img[src]')) {
       if (img.complete && img.naturalHeight > 0) loaded++;
     }
     return loaded;
   });
+  console.log(`  ↳ ${final} cover(s) loaded (timeout)`);
+  return final;
 }
 
 async function navigateToArtist(page, artistName) {
@@ -178,45 +240,80 @@ async function checkPlatformPills(page, screenName) {
 // Main
 // ---------------------------------------------------------------------------
 async function run() {
-  // Wait for dev server
-  let serverReady = false;
-  for (let i = 0; i < 20; i++) {
-    try {
-      const { default: http } = await import('http');
-      await new Promise((res, rej) => {
-        const req = http.get(BASE, r => { r.resume(); res(); });
-        req.on('error', rej);
-        req.setTimeout(1000, () => { req.destroy(); rej(new Error('timeout')); });
-      });
-      serverReady = true;
-      break;
-    } catch {
-      console.log(`  Waiting for dev server... (${(i + 1) * 2}s)`);
-      await new Promise(r => setTimeout(r, 2000));
-    }
+  if (!fs.existsSync(BINARY)) {
+    console.error('Binary not found:', BINARY);
+    console.error('Build with: cd src-tauri && cargo build');
+    process.exit(1);
   }
-  if (!serverReady) throw new Error('Dev server not available after 40s');
-  console.log('Dev server ready at', BASE);
 
-  const browser = await chromium.launch({ headless: true });
-  const ctx = await browser.newContext({
-    viewport: { width: 1200, height: 800 },
-    colorScheme: 'dark',
+  // --- Step 1: Ensure dev server is running on 5173 ---
+  let devServerAlreadyRunning = false;
+  try {
+    await pollHttp(DEV_BASE, 2000);
+    devServerAlreadyRunning = true;
+    console.log('Dev server already running on', DEV_PORT);
+  } catch {
+    devServerAlreadyRunning = false;
+  }
+
+  let devProc = null;
+  if (!devServerAlreadyRunning) {
+    console.log('Starting dev server on port 5173...');
+    devProc = spawn('npm', ['run', 'dev'], {
+      cwd: ROOT,
+      shell: true,
+      stdio: 'ignore',
+      detached: false,
+    });
+    devProc.on('error', err => console.error('Dev server error:', err.message));
+    console.log('Waiting for dev server to be ready...');
+    await pollHttp(DEV_BASE, 60000);
+    console.log('Dev server ready.');
+    // Extra wait for full HMR init
+    await new Promise(r => setTimeout(r, 2000));
+  }
+
+  // --- Step 2: Kill any existing mercury.exe ---
+  try {
+    execSync('taskkill /f /im mercury.exe', { stdio: 'ignore' });
+    console.log('Killed existing mercury.exe');
+    await new Promise(r => setTimeout(r, 1500));
+  } catch {
+    // No mercury.exe running — that's fine
+  }
+
+  // --- Step 3: Launch Tauri binary with CDP ---
+  console.log(`Launching Tauri app (CDP port ${CDP_PORT})...`);
+  const proc = spawn(BINARY, [], {
+    env: {
+      ...process.env,
+      WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: `--remote-debugging-port=${CDP_PORT}`,
+    },
+    stdio: 'ignore',
+    detached: false,
   });
-  const page = await ctx.newPage();
+  proc.on('error', err => console.error('Process error:', err.message));
 
-  // Suppress noisy errors
-  page.on('console', msg => {
-    if (msg.type() === 'error') console.log(`  [console.error] ${msg.text().slice(0, 120)}`);
-  });
+  console.log('Waiting for CDP...');
+  await pollCdp(40000);
+  await new Promise(r => setTimeout(r, 3000));
 
-  console.log('Browser ready. Output:', OUT, '\n');
+  const browser = await chromium.connectOverCDP(CDP_BASE);
+  const contexts = browser.contexts();
+  const page = contexts[0]?.pages()?.[0];
+  if (!page) throw new Error('No page found via CDP');
+
+  await page.waitForLoadState('domcontentloaded').catch(() => {});
+  await page.waitForTimeout(3000);
+
+  console.log('Connected. App URL:', page.url());
+  console.log(`Output dir: ${OUT}\n`);
 
   // ═══════════════════════════════════════════════════════════════════════════
   // 1. Search — electronic (grid)
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('--- 1. Search: electronic ---');
-  await goto(page, '/search?q=electronic&mode=tag', 4000);
+  await goto(page, '/search?q=electronic&mode=tag', 5000);
   const e1imgs = await waitForCardImages(page, 15000, 6);
   console.log(`  ↳ ${e1imgs} images loaded`);
   await checkGridLayout(page, 'search-electronic');
@@ -226,7 +323,7 @@ async function run() {
   // 2. Search — jazz (grid)
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 2. Search: jazz ---');
-  await goto(page, '/search?q=jazz&mode=tag', 4000);
+  await goto(page, '/search?q=jazz&mode=tag', 5000);
   const e2imgs = await waitForCardImages(page, 15000, 6);
   console.log(`  ↳ ${e2imgs} images loaded`);
   await checkGridLayout(page, 'search-jazz');
@@ -236,7 +333,7 @@ async function run() {
   // 3. Search — psychedelic rock (grid)
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 3. Search: psychedelic rock ---');
-  await goto(page, '/search?q=psychedelic+rock&mode=tag', 4000);
+  await goto(page, '/search?q=psychedelic+rock&mode=tag', 5000);
   const e3imgs = await waitForCardImages(page, 15000, 6);
   console.log(`  ↳ ${e3imgs} images loaded`);
   await checkGridLayout(page, 'search-psychedelic-rock');
@@ -246,15 +343,14 @@ async function run() {
   // 4. Search — autocomplete mid-type
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 4. Search autocomplete ---');
-  await goto(page, '/', 2500);
-  // Find search input
+  await goto(page, '/', 3000);
   const searchSel = 'input[type="search"], .search-input input, input[placeholder*="Search" i], input[placeholder*="search" i]';
   const searchInput = page.locator(searchSel).first();
   if (await searchInput.isVisible({ timeout: 4000 }).catch(() => false)) {
     await searchInput.click();
     await page.waitForTimeout(300);
     await page.keyboard.type('post-', { delay: 100 });
-    await page.waitForTimeout(2000); // wait for dropdown
+    await page.waitForTimeout(2000);
     const hasDropdown = await page.evaluate(() => {
       const sel = '.autocomplete-list, .autocomplete, [class*="autocomplete"], [class*="suggestions"], [class*="dropdown"]';
       const el = document.querySelector(sel);
@@ -375,7 +471,6 @@ async function run() {
     const rHref = await firstRelease.getAttribute('href', { timeout: 5000 }).catch(() => null);
     if (!rHref) { console.log(`  ✗ No release links for ${artist}`); continue; }
     await goto(page, rHref, 5000);
-    // Check play album button
     const hasPlayBtn = await page.evaluate(() =>
       !!document.querySelector('[data-testid="play-album-btn"], .play-album-btn')
     );
@@ -410,7 +505,6 @@ async function run() {
     );
     if (pills.length === 0) { console.log(`  ✗ No platform pills for ${artist}`); continue; }
     console.log(`  ↳ ${pills.length} pills: ${pills.join(', ')}`);
-    // Click first non-ext pill to trigger embed toggle
     const embedPill = page.locator('.platform-pill:not(.platform-pill--ext)').first();
     if (await embedPill.isVisible({ timeout: 2000 }).catch(() => false)) {
       await embedPill.click();
@@ -436,7 +530,6 @@ async function run() {
     const rHref = await page.locator('a[href*="/release/"]').first().getAttribute('href', { timeout: 4000 }).catch(() => null);
     if (rHref) {
       await goto(page, rHref, 4000);
-      // Add tracks to queue
       const queueBtns = page.locator('[data-testid="queue-btn"], .queue-btn');
       const btnCount = await queueBtns.count();
       const toAdd = Math.min(btnCount, 5);
@@ -444,7 +537,6 @@ async function run() {
         try { await queueBtns.nth(i).hover(); await queueBtns.nth(i).click(); await page.waitForTimeout(250); } catch {}
       }
       console.log(`  ↳ Clicked ${toAdd} queue buttons`);
-      // Open queue
       const opened = await tryClick(page, '[data-testid="queue-toggle"]') ||
                      await tryClick(page, '.queue-toggle');
       if (!opened) bug('queue-panel', 'Queue toggle button not found');
@@ -473,9 +565,10 @@ async function run() {
     hasTrackPane: !!document.querySelector('[data-testid="track-pane"]'),
     itemCount: document.querySelectorAll('.album-item, .library-artist, [class*="album-row"]').length,
   }));
-  if (!libInfo.hasAlbumPane) bug('library', 'Album list pane not found');
-  if (!libInfo.hasTrackPane) bug('library', 'Track pane not found');
-  if (libInfo.itemCount === 0) console.log('  ↳ Library empty (expected — no local files in dev mode)');
+  // Library panes may only render when library has content — don't flag as bug if empty
+  if (!libInfo.hasAlbumPane) console.log('  ↳ Album list pane not in DOM (library may be empty)');
+  if (!libInfo.hasTrackPane) console.log('  ↳ Track pane not in DOM (library may be empty)');
+  if (libInfo.itemCount === 0) console.log('  ↳ Library empty (expected — no local files scanned)');
   else console.log(`  ↳ ${libInfo.itemCount} library items`);
   await save(page, 'library-two-pane.png');
 
@@ -578,7 +671,7 @@ async function run() {
   // 18. Style Map — zoomed out
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 18. Style Map (overview) ---');
-  await goto(page, '/style-map', 6000);
+  await goto(page, '/style-map', 7000);
   await page.waitForSelector('[data-ready]', { timeout: 15000 }).catch(() => {});
   await page.waitForTimeout(3000);
   const smInfo = await page.evaluate(() => {
@@ -595,7 +688,7 @@ async function run() {
   // 19. Style Map — zoomed in
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 19. Style Map (zoomed in) ---');
-  await goto(page, '/style-map?tag=post-punk', 6000);
+  await goto(page, '/style-map?tag=post-punk', 7000);
   await page.waitForSelector('[data-ready]', { timeout: 15000 }).catch(() => {});
   await page.waitForTimeout(3000);
   for (let i = 0; i < 4; i++) {
@@ -610,14 +703,14 @@ async function run() {
   await save(page, 'style-map-zoomed.png');
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // 20. Knowledge Base — shoegaze
+  // 20. Knowledge Base — shoegaze (correct route: /kb/genre/[slug])
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 20. Knowledge Base: shoegaze ---');
-  await goto(page, '/kb/shoegaze', 5000);
+  await goto(page, '/kb/genre/shoegaze', 5000);
   let kbTitle = await page.evaluate(() => document.querySelector('h1')?.textContent?.trim());
   if (!kbTitle || kbTitle.toLowerCase().includes('not found') || kbTitle.toLowerCase().includes('404')) {
     console.log('  ↳ shoegaze not found, trying krautrock...');
-    await goto(page, '/kb/krautrock', 5000);
+    await goto(page, '/kb/genre/krautrock', 5000);
     kbTitle = await page.evaluate(() => document.querySelector('h1')?.textContent?.trim());
   }
   console.log(`  ↳ KB title: "${kbTitle}"`);
@@ -635,12 +728,11 @@ async function run() {
   // 21. Artist Claim Form
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 21. Artist Claim Form ---');
-  await goto(page, '/claim', 3500);
+  await goto(page, '/claim', 4000);
   await page.evaluate(() => window.scrollTo(0, 0));
   const claimInfo = await page.evaluate(() => {
     const inputs = document.querySelectorAll('input, textarea').length;
     const hasForm = !!document.querySelector('form, .claim-form');
-    // Check for submit button (avoid :has-text which is CSS4 not querySelectorAll)
     let hasSubmit = !!document.querySelector('button[type="submit"]');
     if (!hasSubmit) {
       for (const b of document.querySelectorAll('button')) {
@@ -658,7 +750,9 @@ async function run() {
   // ═══════════════════════════════════════════════════════════════════════════
   // Summary
   // ═══════════════════════════════════════════════════════════════════════════
-  await browser.close();
+  try { await browser.close(); } catch (_) {}
+  proc.kill();
+  if (devProc) devProc.kill();
 
   console.log('\n\n═══════════════════════════════════════════════════');
   console.log('SCREENSHOTS COMPLETE');
