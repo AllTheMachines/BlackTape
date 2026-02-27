@@ -66,12 +66,13 @@ See `.planning/milestones/v1.5-ROADMAP.md`
 
 ### 🚧 v1.6 — The Playback Milestone (In Progress)
 
-**Milestone Goal:** Wire up multi-source streaming so users can play full tracks from any artist page — Spotify, YouTube, SoundCloud, Bandcamp — with service priority set once and playback automatic.
+**Milestone Goal:** Ship v1 — multi-source streaming (Spotify Connect, YouTube, SoundCloud, Bandcamp embeds), clean UI with community features hidden, artist claim form.
 
 - [x] **Phase 29: Streaming Foundation** — activeSource coordination state, service priority drag-to-reorder in Settings, player bar service badge (completed 2026-02-27)
-- [x] **Phase 30: Spotify Integration** — PKCE OAuth flow, Spotify Connect API top-track playback, disconnect/reconnect (completed 2026-02-27)
-- [ ] **Phase 31: Embedded Players** — SoundCloud Widget, YouTube IFrame + Error 153 fallback, Bandcamp embed (spike-gated), source switcher UI
-- [ ] **Phase 32: Album Playback + Polish** — Release page "Play Album", Bandcamp album-specific embed, UX guidance pass
+- [x] **Phase 30: Spotify Integration** — PKCE OAuth flow, Spotify Connect API top-track playback, disconnect/reconnect (completed 2026-02-27)
+- [ ] **Phase 31: v1 Prep** — Community feature UI removal (Scenes, Rooms, Chat, Fediverse hidden from nav), localhost text fix
+- [ ] **Phase 32: Embedded Players** — YouTube IFrame, SoundCloud Widget, Bandcamp embed (spike-gated), source switcher UI, release page Play Album
+- [ ] **Phase 33: Artist Claim Form** — /claim route, artist page claim link, local storage
 
 ---
 
@@ -104,30 +105,45 @@ Plans:
   4. User can disconnect Spotify from Settings (clears token) and reconnect without restarting the app
 **Plans**: 3 plans
 Plans:
-- [ ] 30-01-PLAN.md — Spotify module: state, auth (PKCE OAuth), and Connect API
-- [ ] 30-02-PLAN.md — Settings wizard (3-step connection flow) + boot hydration
-- [ ] 30-03-PLAN.md — Artist page Play on Spotify button + error handling
+- [x] 30-01-PLAN.md — Spotify module: state, auth (PKCE OAuth), and Connect API
+- [x] 30-02-PLAN.md — Settings wizard (3-step connection flow) + boot hydration
+- [x] 30-03-PLAN.md — Artist page Play on Spotify button + error handling
 
-### Phase 31: Embedded Players
-**Goal**: Users can play music through SoundCloud, YouTube, and Bandcamp embeds directly in the app, with a source switcher to change services without leaving the artist page
-**Depends on**: Phase 29
-**Requirements**: SC-01, SC-02, YT-01, YT-02, BC-01, PLAYER-02
+### Phase 31: v1 Prep
+**Goal**: Community features (Scenes, Rooms, Chat/DMs, Fediverse) removed from all navigation and UI surfaces — code preserved, not visible to users; localhost text fix in Settings
+**Depends on**: Phase 30
+**Requirements**: PREP-01
+**Success Criteria** (what must be TRUE):
+  1. Scenes, Rooms, Chat, and Fediverse links are absent from all navigation surfaces (both Tauri header and web nav)
+  2. ChatOverlay is not rendered anywhere in the app
+  3. Nostr initialization (initNostr, subscribeToIncomingDMs) is not called on app mount
+  4. Artist page has no "Scene rooms for {tag}" or "Explore {tag} scene" buttons
+  5. Settings page shows no FediverseSettings component
+  6. Settings page Spotify redirect URI instructional text says "http://127.0.0.1" not "http://localhost"
+**Plans**: TBD
+
+### Phase 32: Embedded Players
+**Goal**: Users can play music through SoundCloud, YouTube, and Bandcamp embeds directly in the app, with a source switcher to change services without leaving the artist page; release page Play Album activates the best available source
+**Depends on**: Phase 31
+**Requirements**: SC-01, SC-02, YT-01, YT-02, BC-01, BC-02, PLAYER-02, PLAYER-03
 **Success Criteria** (what must be TRUE):
   1. Artist page auto-loads the highest-priority available service embed without requiring a click-to-reveal; SoundCloud Widget API play/pause control works including after Svelte navigation remount
   2. YouTube embed renders for video URLs; when a YouTube embed fails with Error 153, the player area is replaced with a "Watch on YouTube" button — fallback tested in production .msi build, not just dev mode
   3. Bandcamp: spike runs first (30 min) — if `url=` parameter works, Bandcamp embed renders with 5-second load timeout and "Visit on Bandcamp" fallback; if spike fails, Bandcamp remains external-link-only for v1.6 and the phase documents this decision
   4. Source switcher shows one button per available service on the artist page; clicking a button switches the active embed without page navigation and updates the player bar badge
   5. When a different embed becomes active, the previously active embed is unmounted (not just paused) to prevent simultaneous audio
+  6. Release page "Play Album" button activates a streaming embed for that specific release — button hidden when no streaming URLs exist for the release
 **Plans**: TBD
 
-### Phase 32: Album Playback + Polish
-**Goal**: Users can play a full album from a release page using the best available streaming source, with Bandcamp album-specific embeds where available
-**Depends on**: Phase 31
-**Requirements**: BC-02, PLAYER-03
+### Phase 33: Artist Claim Form
+**Goal**: Artists can submit a claim request for their artist page via a /claim route, linked from every artist page
+**Depends on**: Phase 32
+**Requirements**: CLAIM-01
 **Success Criteria** (what must be TRUE):
-  1. Release page "Play Album" button activates a streaming embed for that specific release: Bandcamp album URL first (if Phase 31 spike succeeded), then SoundCloud oEmbed, then Spotify artist embed, then YouTube — button is hidden entirely when no streaming URLs exist for the release
-  2. When Bandcamp's Phase 31 spike succeeded, release page "Play Album" uses the release's own Bandcamp URL (from release.links), not the artist-level Bandcamp URL
-  3. Spotify artist page shows inline guidance ("For full tracks, log in to Spotify in BlackTape") when Spotify is the active service; YouTube shows clear "Watch on YouTube" CTA when only a channel URL exists
+  1. Every artist page shows an "Is this you? Claim this page" link that navigates to /claim with the artist name pre-filled
+  2. /claim route renders a form with fields: artist name, email, message
+  3. Form submission stores the claim request in localStorage and shows a confirmation
+  4. No backend required — v1 is local storage only
 **Plans**: TBD
 
 ---
@@ -147,6 +163,7 @@ Plans:
 | 27. Search + Knowledge Base | v1.4 | 5/5 | Complete | 2026-02-25 |
 | 28. UX Cleanup + Scope Reduction | v1.5 | 7/7 | Complete | 2026-02-26 |
 | 29. Streaming Foundation | v1.6 | 4/4 | Complete | 2026-02-27 |
-| 30. Spotify Integration | 3/3 | Complete    | 2026-02-27 | - |
-| 31. Embedded Players | v1.6 | 0/? | Not started | - |
-| 32. Album Playback + Polish | v1.6 | 0/? | Not started | - |
+| 30. Spotify Integration | v1.6 | 3/3 | Complete | 2026-02-27 |
+| 31. v1 Prep | v1.6 | 0/? | Not started | - |
+| 32. Embedded Players | v1.6 | 0/? | Not started | - |
+| 33. Artist Claim Form | v1.6 | 0/? | Not started | - |
