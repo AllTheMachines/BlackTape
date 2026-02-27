@@ -4,6 +4,7 @@
 	import BuyOnBar from '$lib/components/BuyOnBar.svelte';
 	import LinerNotes from '$lib/components/LinerNotes.svelte';
 	import { isTauri } from '$lib/platform';
+	import { bandcampEmbedUrl } from '$lib/embeds/bandcamp';
 	import type { ReleaseDetail } from './+page';
 
 	let { data } = $props();
@@ -22,11 +23,11 @@
 	let coverError = $state(false);
 	let tauriMode = $state(false);
 	let creditsExpanded = $state(false);
+	/** Show inline Bandcamp embed after Play Album is clicked. */
+	let showInlineEmbed = $state(false);
 
 	function handlePlayAlbum() {
-		// Stub: Play Album requires matching MusicBrainz release tracks to local library files.
-		// No local-library-to-MB matching mechanism exists yet. Deferred to a future phase.
-		// The button is present so the UI hierarchy is established; it will be wired when matching is built.
+		showInlineEmbed = true;
 	}
 	function handleQueueAlbum() {
 		// Stub: same constraint as handlePlayAlbum — deferred to local file matching phase.
@@ -160,13 +161,30 @@
 
 			{#if tauriMode}
 				<div class="album-actions" data-testid="album-actions">
-					<button class="btn-play-album" onclick={handlePlayAlbum} data-testid="play-album-btn">
-						Play Album
-					</button>
+					<!-- Play Album: only shown when Bandcamp URL available AND in Tauri mode -->
+					{#if data.streamingLinks?.bandcamp}
+						<button class="btn-play-album" onclick={handlePlayAlbum} data-testid="play-album-btn">
+							Play Album
+						</button>
+					{/if}
 					<button class="btn-queue-album" onclick={handleQueueAlbum} data-testid="queue-album-btn">
 						+ Queue Album
 					</button>
 				</div>
+
+				<!-- Inline Bandcamp embed - shown after Play Album clicked -->
+				{#if showInlineEmbed && data.streamingLinks?.bandcamp}
+					<div class="release-embed-wrap">
+						<iframe
+							src={bandcampEmbedUrl(data.streamingLinks.bandcamp)}
+							width="100%"
+							height="120"
+							frameborder="0"
+							allow="autoplay"
+							title="Bandcamp album player"
+						></iframe>
+					</div>
+				{/if}
 			{/if}
 		</div>
 		</header>
@@ -245,7 +263,8 @@
 </div>
 
 <style>
-	.release-page {		padding: 20px;
+	.release-page {
+		padding: 20px;
 	}
 
 	.release-loading {
@@ -384,6 +403,12 @@
 
 	.btn-queue-album:hover {
 		border-color: var(--b-3);
+	}
+
+	.release-embed-wrap {
+		margin-top: var(--space-sm);
+		border-radius: var(--r);
+		overflow: hidden;
 	}
 
 	/* Tracklist */
