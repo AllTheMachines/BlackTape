@@ -49,9 +49,15 @@ No new npm packages. No new Rust commands. No UI changes. Pure infrastructure �
 
 Plans 29-02 (Settings drag-to-reorder), 29-03 (artist streaming badges), and 29-04 (audio coordination) can now all proceed, each independently consuming this foundation.
 
-<!-- status -->
-29-01 complete (2min). Plans 29-02, 29-03, 29-04 ready to run — all depend on 29-01 state module now in place.
-<!-- /status -->
+### 29-02 Execution Complete (1 min)
+
+One task, one commit, zero deviations. The Settings → Streaming drag-to-reorder UI is live:
+
+- `settings/+page.svelte` updated — `Streaming` section added after `Streaming Preference`, contains a `service-order-list` with 4 draggable rows (Bandcamp, Spotify, SoundCloud, YouTube). Each row has a `⠿` grip icon and service name text.
+- Drag state (`dragSrcIdx`, `isDragTarget`) follows the exact same pattern as `Queue.svelte`.
+- `reorderServices()` splices `streamingState.serviceOrder` and calls `saveServiceOrder()` fire-and-forget on every drop.
+- CSS uses existing design tokens (`var(--bg-3)`, `var(--b-1)`, `var(--r)`, `var(--acc)`) — visually consistent with existing settings sections.
+- `npm run check`: 0 errors, 183 code tests passing.
 
 ---
 
@@ -8609,4 +8615,10 @@ This completes v1.0 — The Playback Milestone. All phases done.
 > Files changed: 1
 
 > **Commit b0b0b38** (2026-02-27 01:24) — feat(29-01): wire service order loading into root layout boot
+> Files changed: 1
+
+> **Commit c7d0783** (2026-02-27 01:26) — docs(29-01): complete streaming foundation state module plan
+> Files changed: 5
+
+> **Commit 07e96bf** (2026-02-27 01:28) — feat(29-02): add Streaming service priority drag-to-reorder in Settings
 > Files changed: 1
