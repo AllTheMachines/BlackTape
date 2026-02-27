@@ -45,7 +45,7 @@
 
 ### Artist Claim Form (CLAIM)
 
-- [ ] **CLAIM-01**: Artist claim form at /claim — fields: artist name, email, message; "Is this you? Claim this page" link on all artist pages; submissions stored in localStorage
+- [x] **CLAIM-01**: Artist claim form at /claim — fields: artist name, email, message; "Is this you? Claim this page" link on all artist pages; submissions stored in localStorage
 
 ## Future Requirements
 
@@ -92,7 +92,7 @@
 | PLAYER-01 | Phase 29 | Complete |
 | PLAYER-02 | Phase 32 | Complete |
 | PLAYER-03 | Phase 32 | Complete |
-| CLAIM-01 | Phase 33 | Pending |
+| CLAIM-01 | Phase 33 | Complete |
 
 **Coverage:**
 - v1.6 requirements: 17 total

@@ -32,16 +32,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-02-27)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Phase 32 — Embedded Players
+**Current focus:** Phase 33 — Artist Claim Form
 
 ## Current Position
 
-Phase: 32 of 33 (Embedded Players — COMPLETE)
-Plan: 3 of 3 in current phase (32-03 complete — Phase 32 done)
-Status: Active — Phase 32 complete; Phase 33 (Artist Claim Form) pending
-Last activity: 2026-02-27 — 32-03 executed (release page Play Album wired to Bandcamp embed)
+Phase: 33 of 33 (Artist Claim Form — in progress)
+Plan: 1 of TBD in current phase (33-01 complete — Worker backend done)
+Status: Active — Phase 33 in progress; 33-01 complete (worker backend)
+Last activity: 2026-02-27 — 33-01 executed (Cloudflare Worker /claim endpoint + CORS Tauri fix + /admin claims)
 
-Progress: [████████████████████████████] 30% of v1.6 (10 plans done across Phases 29+30+31+32)
+Progress: [████████████████████████████] 31% of v1.6 (11 plans done across Phases 29+30+31+32+33)
 
 ## Performance Metrics
 
@@ -57,7 +57,7 @@ Progress: [███████████████████████
 | 30. Spotify Integration | 3 | Complete — 3/3 plans done |
 | 31. v1 Prep | 1 | Complete — 1/1 plans done |
 | 32. Embedded Players | 3 | Complete — 3/3 plans done |
-| 33. Artist Claim Form | TBD | Not started |
+| 33. Artist Claim Form | TBD | In progress — 1 plan done |
 
 **v1.6 metrics so far:**
 - 29-01: 2 min, 3 tasks, 3 files, 0 deviations
@@ -71,6 +71,7 @@ Progress: [███████████████████████
 - 32-01: 7 min, 2 tasks, 4 files + 1 tool created, 0 deviations
 - 32-02: 3 min, 1 task, 1 file, 1 auto-fix (escaped HTML comment from Python replacement)
 - 32-03: 3 min, 1 task, 2 files, 0 deviations
+- 33-01: 5 min, 2 tasks, 1 file (blacktapesite repo), 0 deviations
 
 ## Accumulated Context
 
@@ -113,6 +114,9 @@ Progress: [███████████████████████
 - [32-03]: Play Album button absent from DOM when no Bandcamp URL — not disabled, not grayed out
 - [32-03]: bandcampUrl moved to outer scope (before try block) to be accessible at return statement
 - [32-03]: streamingLinks: { bandcamp: string | null } exposes value without extending ReleaseDetail interface
+- [33-01]: CORS null-origin (Tauri app) gets wildcard '*' — allowedOrigins.includes('') is always false, !origin branch catches it cleanly
+- [33-01]: claim: KV prefix matches contact: pattern — consistent with existing /contact endpoint convention
+- [33-01]: Worker file lives in separate git repo (D:/Projects/blacktapesite) — commits made there, not in Mercury
 
 ### Blockers/Concerns
 
@@ -127,5 +131,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-27
-Stopped at: Completed 32-03-PLAN.md (release page Play Album wired to Bandcamp embed — Phase 32 complete)
+Stopped at: Completed 33-01-PLAN.md (Cloudflare Worker /claim endpoint + CORS Tauri fix + /admin Artist Claims section — deployed)
 Resume file: None
