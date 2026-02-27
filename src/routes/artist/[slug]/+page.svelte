@@ -20,6 +20,9 @@
 	import { page } from '$app/stores';
 	import { setQueue, addToQueue } from '$lib/player/queue.svelte';
 	import type { PlayerTrack } from '$lib/player/state.svelte';
+	import EmbedPlayer from '$lib/components/EmbedPlayer.svelte';
+	import { streamingState, setActiveSource } from '$lib/player/streaming.svelte';
+	import type { PlatformType } from '$lib/embeds/types';
 
 	let { data } = $props();
 
@@ -85,6 +88,25 @@
 		// see streamingPref.platform === '' before layout's load completes. Fire-and-forget
 		// here guarantees the artist page is self-sufficient regardless of load order.
 		loadStreamingPreference();
+
+		// Fetch SoundCloud oEmbed HTML if SC link available
+		if (data.links.soundcloud.length > 0) {
+			(async () => {
+				try {
+					const scUrl = data.links.soundcloud[0];
+					const resp = await fetch(
+						`/api/soundcloud-oembed?url=${encodeURIComponent(scUrl)}`,
+						{ headers: { Accept: 'application/json' } }
+					);
+					if (resp.ok) {
+						const result = await resp.json() as { html: string | null };
+						soundcloudEmbedHtml = result.html ?? null;
+					}
+				} catch {
+					// Best-effort — SC embed degrades to external link
+				}
+			})();
+		}
 
 		// Silent visit tracking — best-effort, never shown in UI
 		(async () => {
@@ -215,6 +237,30 @@
 	}
 	function handleQueueAll() {
 		for (const t of topPlayerTracks) addToQueue(t);
+	}
+
+	/** Active embed service for source switcher. Null = show highest-priority available. */
+	let activeEmbedService = $state<PlatformType | null>(null);
+
+	/** SoundCloud oEmbed HTML — fetched on mount if SC link available. */
+	let soundcloudEmbedHtml = $state<string | null>(null);
+
+	/** Available streaming services with content for this artist, ordered by user preference. */
+	let availableEmbedServices = $derived(
+		streamingState.serviceOrder
+			.filter(svc => (data.links[svc as PlatformType] ?? []).length > 0)
+			.map(svc => ({
+				key: svc as PlatformType,
+				label: ({ bandcamp: 'Bandcamp', spotify: 'Spotify', soundcloud: 'SoundCloud', youtube: 'YouTube' } as Record<string, string>)[svc] ?? svc
+			}))
+	);
+
+	/** Switch the active embed service. Uses {#key} in template for unmount semantics. */
+	function activateService(svc: PlatformType) {
+		// Set active source BEFORE triggering {#key} re-render to prevent
+		// the old EmbedPlayer's onDestroy from clearing it after the new one sets it.
+		setActiveSource(svc);
+		activeEmbedService = svc;
 	}
 
 	/** Spotify "Play on Spotify" button state. */
@@ -391,18 +437,29 @@
 			<p class="artist-meta">{headerMeta()}</p>
 		{/if}
 
-		{#if data.links.bandcamp.length > 0 || data.links.spotify.length > 0 || data.links.soundcloud.length > 0 || data.links.youtube.length > 0}
-			{@const streamingBadges = [
-				{ key: 'bandcamp', label: 'Bandcamp', has: data.links.bandcamp.length > 0 },
-				{ key: 'spotify', label: 'Spotify', has: data.links.spotify.length > 0 },
-				{ key: 'soundcloud', label: 'SoundCloud', has: data.links.soundcloud.length > 0 },
-				{ key: 'youtube', label: 'YouTube', has: data.links.youtube.length > 0 }
-			].filter(b => b.has)}
-			<div class="streaming-badges">
-				{#each streamingBadges as badge (badge.key)}
-					<span class="streaming-badge">{badge.label}</span>
+		{#if availableEmbedServices.length > 0}
+			<!-- Source switcher: replaces static streaming-badges -->
+			<div class="source-switcher" data-testid="source-switcher">
+				{#each availableEmbedServices as svc (svc.key)}
+					<button
+						class="source-btn source-btn--{svc.key}"
+						class:active={activeEmbedService === svc.key || (activeEmbedService === null && availableEmbedServices[0]?.key === svc.key)}
+						onclick={() => activateService(svc.key)}
+						data-testid="source-btn-{svc.key}"
+					>{svc.label}</button>
 				{/each}
 			</div>
+
+			<!-- {#key} guarantees old iframe unmounts before new one mounts (stops audio) -->
+			{#key activeEmbedService}
+				<EmbedPlayer
+					links={data.links}
+					soundcloudEmbedHtml={soundcloudEmbedHtml ?? undefined}
+					artistName={data.artist.name}
+					autoLoad={true}
+					activeService={activeEmbedService}
+				/>
+			{/key}
 		{/if}
 
 		{#if showSpotifyButton}
@@ -787,28 +844,42 @@
 		margin-top: 5px;
 	}
 
-	/* ─── Streaming availability badges ─────────────────────── */
-	.streaming-badges {
+	/* ─── Source switcher (replaces static streaming badges) ── */
+	.source-switcher {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 6px;
-		margin-top: 6px;
-		margin-bottom: 2px;
+		gap: var(--space-xs);
+		margin-bottom: var(--space-sm);
 	}
 
-	.streaming-badge {
-		display: inline-block;
-		padding: 2px 8px;
-		font-size: 10px;
-		font-weight: 500;
-		letter-spacing: 0.03em;
-		color: var(--t-2);
-		background: var(--bg-3);
+	.source-btn {
+		padding: var(--space-xs) var(--space-sm);
+		background: var(--bg-2);
 		border: 1px solid var(--b-1);
-		border-radius: 10px;
-		cursor: default;
-		user-select: none;
+		border-radius: var(--r);
+		color: var(--text-secondary);
+		font-size: 0.8rem;
+		cursor: pointer;
+		transition: background 0.12s, border-color 0.12s, color 0.12s;
 	}
+
+	.source-btn:hover {
+		background: var(--bg-3);
+		color: var(--text-primary);
+	}
+
+	.source-btn.active {
+		background: var(--bg-3);
+		border-color: var(--text-secondary);
+		color: var(--text-primary);
+		font-weight: 500;
+	}
+
+	/* Service-specific active colors */
+	.source-btn--bandcamp.active { border-color: var(--bandcamp-color, #1da0c3); }
+	.source-btn--spotify.active { border-color: var(--spotify-color, #1db954); }
+	.source-btn--soundcloud.active { border-color: var(--soundcloud-color, #ff5500); }
+	.source-btn--youtube.active { border-color: var(--youtube-color, #ff0000); }
 
 	.tags {
 		display: flex;
