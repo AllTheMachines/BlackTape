@@ -4,35 +4,28 @@
 v1.7 screenshot session — capture all 21 screens into `static/press-screenshots/v5/`
 
 ## Context
-Running screenshot script using Tauri CDP approach. Root cause of previous crashes diagnosed and fixed.
+Running a full screenshot + QA pass of the v1.7 app for press/documentation. CDP/WebView2 crashes were debugged and largely fixed. Script is actively running in background. 7 of 21 screenshots captured.
 
 ## Progress
 
 ### Completed
-- Built `tools/take-screenshots-v1.7.mjs` (full script for all 21 screens)
-- Fixed CDP navigation: replaced `window.location.href` with `page.goto()` (CDP Page.navigate)
-- Added `alreadyDone()` checks to ALL screens (screens 6+7 were missing them — root cause of hang)
-- Replaced all `page.waitForTimeout()` with `new Promise(r => setTimeout(r, ms))` (pure JS, no CDP)
-- `getPage()` accessor so reconnect inside `goto()` uses fresh page reference
-- `ensureAlive()` now detects 500 error pages and navigates home before continuing
-- `goto()` now reconnects CDP on timeout and retries navigation
-- The Cure excluded from screen 8+ candidates (returns 500 errors, corrupts CDP)
-- **7 screenshots saved** in `static/press-screenshots/v5/`:
-  - `search-electronic-grid.png` ✓
-  - `search-jazz-grid.png` ✓
-  - `search-psychedelic-rock-grid.png` ✓
-  - `search-autocomplete.png` ✓
-  - `artist-slowdive-discography.png` ✓
-  - `artist-the-cure-discography.png` ✓ (500 error page, but captured)
-  - `artist-nick-cave-discography.png` ✓
+- `search-electronic-grid.png` ✓
+- `search-jazz-grid.png` ✓
+- `search-psychedelic-rock-grid.png` ✓
+- `search-autocomplete.png` ✓
+- `artist-slowdive-discography.png` ✓
+- `artist-the-cure-discography.png` ✓ (500 error page captured — app bug)
+- `artist-nick-cave-discography.png` ✓ (likely 500 error page — app bug)
 
 ### In Progress
-- Script running (background task: bydsuwme1) — last seen on `/artist/nick-cave-the-bad-seeds` (screen 8)
-- Nick Cave artist page likely also returns 500. ensureAlive() at screen 9 start will detect and reset.
-- Reconnect works: proved during Grouper search (auto-reconnected, continued)
+- **Script running** — background task `bydsuwme1`
+- Last seen: navigated to `/artist/nick-cave-the-bad-seeds` for screen 8 (overview tab)
+- Screen 8 is iterating candidates: Slowdive (no overview tab), GY!BE (no results), Grouper (no overview tab), Nick Cave (navigated, waiting...)
+- Nick Cave's artist page likely also returns 500. The `waitForDiscographyCovers` 18s timeout will expire, then `ensureAlive()` before screen 9 will detect+reset
+- After screen 8, screens 9-21 should run. Screens 13-21 (Discover, Time Machine, Style Map, KB, Claim Form) don't need artist navigation — expect them to be stable.
 
-### Remaining (screens 8-21 + potentially reshooting 6-7 once app bug is fixed)
-8. artist-overview-tab.png
+### Remaining (screens 8-21)
+8. artist-overview-tab.png — in progress
 9. release-page-player.png
 10. player-bar-source.png
 11. queue-panel.png
@@ -47,34 +40,58 @@ Running screenshot script using Tauri CDP approach. Root cause of previous crash
 20. knowledge-base-shoegaze.png
 21. artist-claim-form.png
 
-## Root Cause (SOLVED)
-The hang was: screens 6+7 had NO `alreadyDone()` check. They re-navigated to The Cure's artist page every run. The Cure's artist page returns a 500 error (MB API issue). After getting a 500, subsequent CDP navigate calls hang indefinitely, even though the goto() commits quickly (31ms).
+## Key Decisions & Fixes Applied This Session
 
-## Architecture Notes
-- Debug binary (`mercury.exe`) connects to dev server on `http://localhost:5173`
-- APP_BASE = `http://localhost:5173` (not tauri.localhost — that's release builds only)
-- All `page.waitForTimeout()` replaced with `new Promise(r => setTimeout(r, ms))`
-- `navigateToArtist()` uses `page.evaluate()` with 8s timeout instead of `locator.getAttribute()`
-- `ensureAlive()` uses Promise.race with 12s timeout to detect hung CDP
-- `goto()` uses `waitUntil: 'commit'` (not domcontentloaded — SPA doesn't reload the document)
-- `goto()` falls back to `reconnectCDP()` on timeout
+1. **CDP navigation fix**: replaced `window.location.href` via `page.evaluate()` with `page.goto()` (CDP Page.navigate). Previous approach destroyed the JS context on every navigation.
+
+2. **`alreadyDone()` checks missing on screens 6+7**: Root cause of most hangs. Screens 6+7 re-navigated to The Cure's 500-error page every run, corrupting the CDP session. Fixed by wrapping those screens in `alreadyDone()` blocks like screen 5.
+
+3. **Pure JS timers**: All `page.waitForTimeout()` replaced with `new Promise(r => setTimeout(r, ms))`. CDP-based timers hang when the session is unstable.
+
+4. **Auto-reconnect**: `goto()` now catches timeouts, calls `reconnectCDP()`, and retries. Proved working (Grouper search reconnected successfully).
+
+5. **`ensureAlive()` upgraded**: Uses `Promise.race` with 12s timeout. Detects h1="500" error pages and navigates home before continuing.
+
+6. **`getPage()` accessor**: Module-level `page` variable accessed via `getPage()` inside `goto()` to get fresh reference after reconnects (avoids parameter shadowing).
+
+7. **The Cure excluded from screen 8+ candidates**: Returns 500 from MusicBrainz API, corrupts CDP.
+
+## App Bugs Found (not script bugs)
+- `/artist/the-cure` returns h1="500" — MusicBrainz API lookup failing for their MBID
+- `/artist/nick-cave-the-bad-seeds` likely same issue
+- These artists should also be excluded from screens 9-11 candidate lists
 
 ## Relevant Files
-- `tools/take-screenshots-v1.7.mjs` — Main screenshot script
-- `static/press-screenshots/v5/` — Output directory (7 files so far)
-- `BUILD-LOG.md` — Has status block
+- `tools/take-screenshots-v1.7.mjs` — Main screenshot script (heavily modified this session)
+- `static/press-screenshots/v5/` — Output directory (7 files)
+- `BUILD-LOG.md` — Has `<!-- status -->` block (needs cleanup when session ends)
 
-## Known App Bugs (logged by script)
-- The Cure artist page: returns 500 (MusicBrainz API lookup failing for their MBID)
-- Nick Cave artist page: also returned 500 in some runs
-- These are app bugs, not script bugs
+## Git Status
+```
+modified: BUILD-LOG.md    (status block update — uncommitted)
+modified: parachord-reference (submodule, ignore)
+tools/take-screenshots-v1.7.mjs is NOT tracked by git (it's in .gitignore or untracked — check)
+```
 
 ## Next Steps
-1. Check if background task `bydsuwme1` completed (check output file)
-2. If it got stuck again: check where it hung (artist page navigation)
-3. Run: `ls static/press-screenshots/v5/` to see what's been captured
-4. After all 21 shots: commit everything and update BUILD-LOG.md with session summary
-5. Consider fixing The Cure / Nick Cave artist page 500 errors (separate task)
+
+**Option A — Let it run:**
+Wait for background task `bydsuwme1` to finish. Check output:
+```
+type "C:\Users\User\AppData\Local\Temp\claude\D--Projects-Mercury\tasks\bydsuwme1.output"
+```
+Then check what screenshots landed: `ls static/press-screenshots/v5/`
+
+**Option B — If stuck again on Nick Cave (screen 8):**
+Kill the task, add Nick Cave to excluded list in screen 8 candidates, also check screens 9-11 candidate lists and remove The Cure + Nick Cave from those too. Then rerun.
+
+**Option C — If screens 9-21 fail:**
+The release page (screen 9) uses `page.locator('a[href*="/release/"]').first().getAttribute()` — this locator call can hang just like the old artist card lookup. Replace with `page.evaluate(() => document.querySelector('a[href*="/release/"]')?.getAttribute('href'))` if needed.
+
+**After all 21 shots:**
+1. Commit everything: `git add BUILD-LOG.md tools/take-screenshots-v1.7.mjs && git commit -m "v1.7 screenshot pass"`
+2. Update BUILD-LOG.md with session summary (remove status block)
+3. Update HANDOFF.md (clear it)
 
 ## Resume Command
 After running `/clear`, run `/resume` to continue.
