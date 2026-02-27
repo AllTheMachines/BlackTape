@@ -637,19 +637,33 @@ async function run() {
   // No Burial in candidates.
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 9. Release page ---');
+  if (alreadyDone('release-page-player.png')) { console.log('  ⊘ skip'); } else {
   await reconnectCDP(); // Fresh start after screen 8's instability (multiple reconnects/500s)
-  const releaseArtists = ['Slowdive', 'Grouper', 'Nick Cave and the Bad Seeds'];
+  // Navigate directly by slug — avoid navigateToArtist() search-navigate pattern that corrupts CDP
+  const releaseArtistSlugs = [
+    { name: 'Slowdive', slug: '/artist/slowdive' },
+    { name: 'Grouper', slug: '/artist/grouper' },
+    { name: 'Nick Cave', slug: '/artist/nick-cave-the-bad-seeds' },
+  ];
+  // Safe evaluate with timeout — page.evaluate can hang on unstable CDP sessions
+  const safeEval9 = (fn) => Promise.race([
+    getPage().evaluate(fn),
+    new Promise((_, rej) => setTimeout(() => rej(new Error('eval timeout')), 3000)),
+  ]).catch(() => null);
   let releaseDone = false;
-  for (const artist of releaseArtists) {
+  for (const { name, slug } of releaseArtistSlugs) {
     if (releaseDone) break;
-    const href = await navigateToArtist(page, artist);
-    if (!href) continue;
-    // Click Discography tab — artist page defaults to Overview, which has no release links
-    await tryClick(page, '[data-testid="tab-discography"], button:has-text("Discography")');
-    await new Promise(r => setTimeout(r, 2500));
-    // Use evaluate() not locator.getAttribute() — locator calls can hang on CDP
-    const rHref = await page.evaluate(() => document.querySelector('a[href*="/release/"]')?.getAttribute('href') ?? null).catch(() => null);
-    if (!rHref) { console.log(`  ✗ No release links for ${artist}`); continue; }
+    await goto(page, slug, 3000);
+    // Poll for release links — overview tab is default, releases loaded via MB API (can take 5-20s)
+    // Note: there is NO Discography tab; discography section lives in the Overview tab.
+    let rHref = null;
+    for (let i = 0; i < 25; i++) {
+      rHref = await safeEval9(() => document.querySelector('a[href*="/release/"]')?.getAttribute('href') ?? null);
+      if (rHref) { console.log(`  ↳ ${name}: release link found (${Math.round(i * 0.8)}s)`); break; }
+      await new Promise(r => setTimeout(r, 800));
+    }
+    if (!rHref) { console.log(`  ✗ No release links for ${name} (timeout 20s)`); continue; }
+    console.log(`  ↳ navigating to release: ${rHref}`);
     await goto(page, rHref, 6000);
     const info = await page.evaluate(() => ({
       hasPlayBtn: !!document.querySelector('[data-testid="play-album-btn"], .btn-play-album'),
@@ -657,9 +671,9 @@ async function run() {
       trackCount: document.querySelectorAll('.track, [data-testid="track-row"]').length,
       hasBuyLinks: document.querySelectorAll('a[href*="bandcamp"], a[href*="spotify"], a[href*="amazon"]').length,
     }));
-    if (info.trackCount === 0) { console.log(`  ✗ No tracks for ${artist} — trying next`); continue; }
-    if (!info.hasPlayBtn && !info.hasQueueBtn) bug('release-page', `No play/queue album buttons for "${artist}"`);
-    console.log(`  ↳ ${artist}: play=${info.hasPlayBtn}, queue=${info.hasQueueBtn}, tracks=${info.trackCount}, buyLinks=${info.hasBuyLinks}`);
+    if (info.trackCount === 0) { console.log(`  ✗ No tracks for ${name} — trying next`); continue; }
+    if (!info.hasPlayBtn && !info.hasQueueBtn) bug('release-page', `No play/queue album buttons for "${name}"`);
+    console.log(`  ↳ ${name}: play=${info.hasPlayBtn}, queue=${info.hasQueueBtn}, tracks=${info.trackCount}, buyLinks=${info.hasBuyLinks}`);
     await page.evaluate(() => window.scrollTo(0, 150));
     await new Promise(r => setTimeout(r, 500));
     await save(page, 'release-page-player.png');
@@ -670,23 +684,35 @@ async function run() {
     await ensureAlive(); // Page may be in bad state — reset before screenshot
     await save(page, 'release-page-player.png');
   }
+  } // end screen 9
 
   // ═══════════════════════════════════════════════════════════════════════════
   // 10. Player bar — persistent bar with source badge
   // No Burial in candidates.
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 10. Player bar ---');
+  if (alreadyDone('player-bar-source.png')) { console.log('  ⊘ skip'); } else {
   await ensureAlive();
-  const playerArtists = ['Grouper', 'Slowdive', 'The Cure', 'Boris'];
+  // Navigate directly by slug — avoid navigateToArtist() search-navigate pattern
+  const playerArtistSlugs = [
+    { name: 'Grouper', slug: '/artist/grouper' },
+    { name: 'Slowdive', slug: '/artist/slowdive' },
+    { name: 'Nick Cave', slug: '/artist/nick-cave-the-bad-seeds' },
+  ];
   let playerDone = false;
-  for (const artist of playerArtists) {
+  for (const { name, slug } of playerArtistSlugs) {
     if (playerDone) break;
-    const href = await navigateToArtist(page, artist);
-    if (!href) continue;
-    const pills = await page.evaluate(() =>
-      Array.from(document.querySelectorAll('.platform-pill')).map(p => p.textContent?.trim().slice(0, 20))
-    );
-    if (pills.length === 0) { console.log(`  ✗ No platform pills for ${artist}`); continue; }
+    await goto(page, slug, 5000);
+    // Wait for platform pills to load (may require external API)
+    let pills = [];
+    for (let i = 0; i < 12; i++) {
+      pills = await page.evaluate(() =>
+        Array.from(document.querySelectorAll('.platform-pill')).map(p => p.textContent?.trim().slice(0, 20))
+      ).catch(() => []);
+      if (pills.length > 0) break;
+      await new Promise(r => setTimeout(r, 800));
+    }
+    if (pills.length === 0) { console.log(`  ✗ No platform pills for ${name}`); continue; }
     console.log(`  ↳ ${pills.length} pills: ${pills.join(', ')}`);
     const embedPill = page.locator('.platform-pill:not(.platform-pill--ext)').first();
     if (await embedPill.isVisible({ timeout: 2000 }).catch(() => false)) {
@@ -706,31 +732,46 @@ async function run() {
     bug('player-bar', 'No platform pills found on any candidate artist');
     await save(page, 'player-bar-source.png');
   }
+  } // end screen 10
 
   // ═══════════════════════════════════════════════════════════════════════════
   // 11. Queue panel — 4–5 DISTINCT tracks from different releases
   // Fix: v1.6 had same track repeated. Now adds tracks from 3 different artists.
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 11. Queue panel ---');
-  await ensureAlive();
+  await reconnectCDP(); // Fresh start — page.evaluate() can hang after many navigations
   // Clear existing queue from localStorage
   await page.evaluate(() => {
     try { localStorage.removeItem('blacktape_queue'); } catch {}
   }).catch(() => {});
   await new Promise(r => setTimeout(r, 300));
 
-  const queueArtists = ['Slowdive', 'Grouper', 'Nick Cave and the Bad Seeds'];
+  // Navigate directly by slug — avoid navigateToArtist() search-navigate pattern
+  const queueArtistSlugs = [
+    { name: 'Slowdive', slug: '/artist/slowdive' },
+    { name: 'Grouper', slug: '/artist/grouper' },
+    { name: 'Nick Cave', slug: '/artist/nick-cave-the-bad-seeds' },
+  ];
   let totalQueued = 0;
 
-  for (const artist of queueArtists) {
+  // Helper: safe evaluate with 3s timeout (page.evaluate can hang on unstable CDP)
+  const safeEval = (fn) => Promise.race([
+    getPage().evaluate(fn),
+    new Promise((_, rej) => setTimeout(() => rej(new Error('eval timeout')), 3000)),
+  ]).catch(() => null);
+
+  for (const { name, slug } of queueArtistSlugs) {
     if (totalQueued >= 5) break;
-    const href = await navigateToArtist(page, artist);
-    if (!href) continue;
-    // Click Discography tab then use evaluate() (not locator.getAttribute — can hang on CDP)
-    await tryClick(page, '[data-testid="tab-discography"], button:has-text("Discography")');
-    await new Promise(r => setTimeout(r, 2000));
-    const rHref = await page.evaluate(() => document.querySelector('a[href*="/release/"]')?.getAttribute('href') ?? null).catch(() => null);
-    if (!rHref) continue;
+    await goto(page, slug, 3000);
+    // Poll for release links — discography is in Overview tab (no separate tab to click).
+    let rHref2 = null;
+    for (let i = 0; i < 25; i++) {
+      rHref2 = await safeEval(() => document.querySelector('a[href*="/release/"]')?.getAttribute('href') ?? null);
+      if (rHref2) { console.log(`  ↳ ${name}: release link found (${Math.round(i * 0.8)}s)`); break; }
+      await new Promise(r => setTimeout(r, 800));
+    }
+    if (!rHref2) { console.log(`  ✗ No release links for ${name} (timeout 20s)`); continue; }
+    const rHref = rHref2;
     await goto(page, rHref, 4000);
     const queueBtns = page.locator('[data-testid="queue-btn"], .queue-btn');
     const btnCount = await queueBtns.count().catch(() => 0);
@@ -743,7 +784,7 @@ async function run() {
         totalQueued++;
       } catch {}
     }
-    console.log(`  ↳ ${artist}: added ${toAdd} tracks (total ${totalQueued})`);
+    console.log(`  ↳ ${name}: added ${toAdd} tracks (total ${totalQueued})`);
   }
 
   const qOpened = await tryClick(page, '[data-testid="queue-toggle"]') ||

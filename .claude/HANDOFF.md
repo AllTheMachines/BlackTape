@@ -4,31 +4,28 @@
 v1.7 screenshot session — capture all 21 screens into `static/press-screenshots/v5/`
 
 ## Context
-Running a full screenshot + QA pass of the v1.7 app for press/documentation. CDP/WebView2 crashes were debugged and largely fixed. Script is actively running in background. 7 of 21 screenshots captured.
+Running a full screenshot + QA pass of the v1.7 app for press/documentation. Script is running in background (task ID: `bgvizbfw0`). 10 of 21 screenshots captured.
 
 ## Progress
 
-### Completed
+### Completed (10/21)
 - `search-electronic-grid.png` ✓
 - `search-jazz-grid.png` ✓
 - `search-psychedelic-rock-grid.png` ✓
 - `search-autocomplete.png` ✓
 - `artist-slowdive-discography.png` ✓
-- `artist-the-cure-discography.png` ✓ (500 error page captured — app bug)
-- `artist-nick-cave-discography.png` ✓ (likely 500 error page — app bug)
+- `artist-the-cure-discography.png` ✓ (bug: 500 error page captured)
+- `artist-nick-cave-discography.png` ✓ (bug: likely 500 error)
+- `artist-overview-tab.png` ✓ (bug: no overview tab found on any artist)
+- `release-page-player.png` ✓ (bug: no release links found — now fixed)
+- `player-bar-source.png` ✓ (bug: no platform pills)
 
 ### In Progress
-- **Script running** — background task `bydsuwme1`
-- Last seen: navigated to `/artist/nick-cave-the-bad-seeds` for screen 8 (overview tab)
-- Screen 8 is iterating candidates: Slowdive (no overview tab), GY!BE (no results), Grouper (no overview tab), Nick Cave (navigated, waiting...)
-- Nick Cave's artist page likely also returns 500. The `waitForDiscographyCovers` 18s timeout will expire, then `ensureAlive()` before screen 9 will detect+reset
-- After screen 8, screens 9-21 should run. Screens 13-21 (Discover, Time Machine, Style Map, KB, Claim Form) don't need artist navigation — expect them to be stable.
+- **Script running** — background task `bgvizbfw0`
+- Screen 11 (queue panel): reconnected fresh CDP, navigating to `/artist/slowdive`, polling for release links
 
-### Remaining (screens 8-21)
-8. artist-overview-tab.png — in progress
-9. release-page-player.png
-10. player-bar-source.png
-11. queue-panel.png
+### Remaining (screens 11-21)
+11. queue-panel.png — in progress (Slowdive, polling for releases)
 12. library-two-pane.png
 13. discover-ambient-iceland.png
 14. discover-noise-rock-japan.png
@@ -40,58 +37,59 @@ Running a full screenshot + QA pass of the v1.7 app for press/documentation. CDP
 20. knowledge-base-shoegaze.png
 21. artist-claim-form.png
 
-## Key Decisions & Fixes Applied This Session
+## Root Cause Discovered
 
-1. **CDP navigation fix**: replaced `window.location.href` via `page.evaluate()` with `page.goto()` (CDP Page.navigate). Previous approach destroyed the JS context on every navigation.
+**The artist page has NO "Discography" tab.** Tabs are: Overview, Stats, About. The discography is in the Overview tab (the DEFAULT), loaded async via MusicBrainz API (2 sequential API calls, takes 5-20s).
 
-2. **`alreadyDone()` checks missing on screens 6+7**: Root cause of most hangs. Screens 6+7 re-navigated to The Cure's 500-error page every run, corrupting the CDP session. Fixed by wrapping those screens in `alreadyDone()` blocks like screen 5.
+**Previous failures (screens 9, 10, 11) were caused by:**
+1. `tryClick` for non-existent Discography tab — wasted 3s, did nothing
+2. Only waiting 2500ms — not enough for MB API response
+3. `page.evaluate()` hanging on stale CDP session after many navigations
+4. `navigateToArtist()` search-navigate pattern corrupting CDP state
 
-3. **Pure JS timers**: All `page.waitForTimeout()` replaced with `new Promise(r => setTimeout(r, ms))`. CDP-based timers hang when the session is unstable.
+## Key Fixes Applied This Session
 
-4. **Auto-reconnect**: `goto()` now catches timeouts, calls `reconnectCDP()`, and retries. Proved working (Grouper search reconnected successfully).
-
-5. **`ensureAlive()` upgraded**: Uses `Promise.race` with 12s timeout. Detects h1="500" error pages and navigates home before continuing.
-
-6. **`getPage()` accessor**: Module-level `page` variable accessed via `getPage()` inside `goto()` to get fresh reference after reconnects (avoids parameter shadowing).
-
-7. **The Cure excluded from screen 8+ candidates**: Returns 500 from MusicBrainz API, corrupts CDP.
+1. **`alreadyDone()` on screens 8-10** — all skip cleanly on re-run
+2. **`reconnectCDP()` before screens 9 and 11** — fresh Tauri instance guarantees clean state
+3. **Direct slug navigation** — removed `navigateToArtist()` for screens 9-11, use `/artist/slowdive` etc. directly
+4. **`safeEval()` helper** — `Promise.race(page.evaluate(...), 3s timeout)` prevents hanging
+5. **Release link polling** — polls `a[href*="/release/"]` every 800ms up to 25 iterations (20s max)
+6. **Removed bogus Discography tab click** — no such tab exists
 
 ## App Bugs Found (not script bugs)
-- `/artist/the-cure` returns h1="500" — MusicBrainz API lookup failing for their MBID
-- `/artist/nick-cave-the-bad-seeds` likely same issue
-- These artists should also be excluded from screens 9-11 candidate lists
+- `/artist/the-cure` returns h1="500" — MusicBrainz API lookup failing
+- `/artist/nick-cave-the-bad-seeds` same issue
+- Artist overview tab has no content on any tested artist (Slowdive, Grouper, Boris, etc.) — feature not populated
+- Release pages: no play/queue album buttons found (may be app feature not implemented)
+- Platform pills not appearing on artist pages (links tab feature may need more load time)
 
 ## Relevant Files
-- `tools/take-screenshots-v1.7.mjs` — Main screenshot script (heavily modified this session)
-- `static/press-screenshots/v5/` — Output directory (7 files)
+- `tools/take-screenshots-v1.7.mjs` — Main screenshot script
+- `static/press-screenshots/v5/` — Output directory (10 files)
 - `BUILD-LOG.md` — Has `<!-- status -->` block (needs cleanup when session ends)
-
-## Git Status
-```
-modified: BUILD-LOG.md    (status block update — uncommitted)
-modified: parachord-reference (submodule, ignore)
-tools/take-screenshots-v1.7.mjs is NOT tracked by git (it's in .gitignore or untracked — check)
-```
 
 ## Next Steps
 
-**Option A — Let it run:**
-Wait for background task `bydsuwme1` to finish. Check output:
+**Option A — Wait for script to finish:**
+Check task `bgvizbfw0` output:
 ```
-type "C:\Users\User\AppData\Local\Temp\claude\D--Projects-Mercury\tasks\bydsuwme1.output"
+type "C:\Users\User\AppData\Local\Temp\claude\D--Projects-Mercury\tasks\bgvizbfw0.output"
 ```
-Then check what screenshots landed: `ls static/press-screenshots/v5/`
+Then check screenshots: `ls static/press-screenshots/v5/`
 
-**Option B — If stuck again on Nick Cave (screen 8):**
-Kill the task, add Nick Cave to excluded list in screen 8 candidates, also check screens 9-11 candidate lists and remove The Cure + Nick Cave from those too. Then rerun.
+**Option B — If screen 11 hangs on release links:**
+The `safeEval()` should timeout after 3s and retry. After 20s total, it'll log "No release links for Slowdive (timeout 20s)" and try Grouper, then Nick Cave. If all fail, it saves a bug screenshot.
 
-**Option C — If screens 9-21 fail:**
-The release page (screen 9) uses `page.locator('a[href*="/release/"]').first().getAttribute()` — this locator call can hang just like the old artist card lookup. Replace with `page.evaluate(() => document.querySelector('a[href*="/release/"]')?.getAttribute('href'))` if needed.
+The real fix needed is to understand WHY `a[href*="/release/"]` doesn't appear even after the MB API call. From the source: the discography renders when `data.releases.length > 0`. If the MB API returns 0 release groups for Slowdive (unlikely — they have 4 albums), or if the API fails silently, the section won't render.
+
+**Option C — If script completes screens 12-21:**
+Screens 12-21 are all pure route navigation (no artist API dependency), should work cleanly.
 
 **After all 21 shots:**
-1. Commit everything: `git add BUILD-LOG.md tools/take-screenshots-v1.7.mjs && git commit -m "v1.7 screenshot pass"`
-2. Update BUILD-LOG.md with session summary (remove status block)
-3. Update HANDOFF.md (clear it)
+1. Check `ls static/press-screenshots/v5/` — should have 21 files
+2. Commit: `git add static/press-screenshots/v5/ BUILD-LOG.md tools/take-screenshots-v1.7.mjs && git commit -m "chore: v1.7 press screenshots + QA log"`
+3. Update BUILD-LOG.md with session summary (remove status block)
+4. Clear HANDOFF.md
 
 ## Resume Command
 After running `/clear`, run `/resume` to continue.

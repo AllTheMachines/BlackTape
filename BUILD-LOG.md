@@ -5,7 +5,7 @@ A documentary record of building this project from idea to reality.
 ---
 
 <!-- status -->
-Screenshot pass v1.7 — 8/21 done. Fixed screen 9 failures: reconnectCDP() before screen 9, Discography tab click before release link lookup, page.evaluate() instead of locator.getAttribute(). Script running now.
+Screenshot pass v1.7 — 10/21 done. Root cause found: NO Discography tab (tabs are Overview/Stats/About). Discography loads async via MusicBrainz API (5-20s). Fixed: direct slug nav, safeEval() 3s timeout, reconnectCDP() before screens 9+11. Script at screen 11 (queue panel), polling Slowdive for release links.
 <!-- /status -->
 
 ---
@@ -9500,3 +9500,6 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit 52340ba** (2026-02-27 20:05) — wip: auto-save
 > Files changed: 2
+
+> **Commit 917b453** (2026-02-27 20:16) — auto-save: 6 files @ 20:16
+> Files changed: 5
