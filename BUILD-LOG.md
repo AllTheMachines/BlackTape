@@ -9194,3 +9194,6 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit c027160** (2026-02-27 13:13) — fix: async D3 simulations, remove URL bar, fix back button color
 > Files changed: 2
+
+> **Commit 3084e61** (2026-02-27 13:14) — wip: auto-save
+> Files changed: 1
