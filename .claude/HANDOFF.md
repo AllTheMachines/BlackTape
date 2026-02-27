@@ -1,107 +1,66 @@
 # Work Handoff - 2026-02-27
 
 ## Current Task
-Manual screenshot session — capture remaining 6 screens for v1.7 press screenshots into `press-screenshots/v5/`
+Automated demo recording — run the full hyperspeed brief unattended while ffmpeg records the screen.
 
-## Context
-v5 screenshot run had 500 errors on all artist pages. Root cause found and fixed: the v1.7 script used `page.goto()` (Playwright hard navigation) which tears down the WebView2/Tauri bridge context. v1.6 used `window.location.href` (SPA navigation) which keeps the bridge alive. Fixed the goto() function and switched artist pages to direct slug navigation.
+## What's Ready
 
-## Progress
+All scripts written and tested (CDP connection verified):
 
-### Completed (15/21 — already in press-screenshots/v5/)
-- search-electronic-grid.png ✓
-- search-jazz-grid.png ✓
-- search-psychedelic-rock-grid.png ✓
-- search-autocomplete.png ✓
-- discover-ambient-iceland.png ✓
-- discover-noise-rock-japan.png ✓
-- discover-metal-finland.png ✓
-- library-two-pane.png ✓
-- player-bar-source.png ✓
-- queue-panel.png ✓
-- release-page-player.png ✓
-- style-map-overview.png ✓
-- style-map-zoomed.png ✓
-- time-machine-1977.png ✓
-- time-machine-1983.png ✓
+| Script | Purpose |
+|--------|---------|
+| `tools/launch-cdp.mjs` | Launch mercury.exe with CDP on port 9224 |
+| `tools/record-and-run.mjs` | **Main script**: fullscreen + ffmpeg record + full demo |
+| `tools/record-demo.mjs` | Demo automation only (no recording) |
+| `tools/snap.mjs` | One-shot screenshot |
 
-### Remaining (6/21)
-1. `artist-slowdive-discography.png` — navigate to Slowdive artist page
-2. `artist-the-cure-discography.png` — navigate to The Cure artist page
-3. `artist-nick-cave-discography.png` — navigate to Nick Cave artist page
-4. `artist-overview-tab.png` — any artist, Overview tab with content
-5. `knowledge-base-shoegaze.png` — /kb/genre/post-punk (or similar with description)
-6. `artist-claim-form.png` — /claim page
+## How to Run
 
-## Key Decisions
-- **Root cause of 500s**: `page.goto()` = hard browser navigation = destroys Tauri invoke bridge. `window.location.href` = SPA navigation = keeps bridge alive. Fixed in goto() function.
-- **Direct slug navigation**: Artist pages now go directly to `/artist/slug` instead of through search results page.
-- **Confirmed slugs from live DB** (`C:/Users/User/AppData/Roaming/com.blacktape.app/mercury.db`):
-  - Slowdive → `slowdive`
-  - The Cure → `the-cure`
-  - Nick Cave & the Bad Seeds → `nick-cave-the-bad-seeds`
-  - Godspeed You! Black Emperor → `godspeed-you-black-emperor`
-- **Output folder**: `D:/Projects/Mercury/press-screenshots/v5/` (NOT static/press-screenshots/v5/)
-- **Manual session**: Script auto-run was blocked by user. Switched to manual: Steve navigates, Claude screenshots via CDP.
-
-## Relevant Files
-- `tools/take-screenshots-v1.7.mjs` — Screenshot script (fixed: goto uses window.location.href, direct slug nav, correct OUT path)
-- `tools/snap.mjs` — NEW: one-shot screenshot tool (`node tools/snap.mjs filename.png`)
-- `press-screenshots/v5/` — Output folder (15 good files, 6 still needed)
-- `BUILD-LOG.md` — Has uncommitted changes (status block, needs cleanup at session end)
-
-## CDP Setup
-The app must be launched with CDP enabled via env var. The `snap.mjs` tool connects to port 9224.
-
-**Launch command** (run in cmd.exe, NOT bash — env var must be set in same shell):
-```
-taskkill /f /im mercury.exe
-set WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=9224
-D:\Projects\Mercury\src-tauri\target\debug\mercury.exe
-```
-Then verify CDP: `curl http://127.0.0.1:9224/json/version`
-
-**Take a screenshot**: `node tools/snap.mjs filename.png`
-
-## Manual Session Workflow
-Steve navigates to the right place in the app, says "ready", Claude runs:
 ```bash
-cd /d/Projects/Mercury && node tools/snap.mjs <filename.png>
+# 1. Launch app with CDP (if not already running)
+node tools/launch-cdp.mjs
+
+# 2. Run the full automated recording
+node tools/record-and-run.mjs
 ```
 
-### Navigation instructions for each remaining screen:
+Output: `press-screenshots/demo-recording.mp4`
 
-1. **artist-slowdive-discography.png**
-   - Type "Slowdive" in homepage search → click Slowdive in autocomplete/results
+The script will:
+1. Connect to the running app via CDP
+2. Set the window to fullscreen via Tauri API
+3. Start ffmpeg recording the desktop (gdigrab, 30fps, CRF 18)
+4. Drive through the full demo brief: Search → Artist pages → Playback → Queue → Library → Discover → Time Machine → Style Map → KB → Service Priority
+5. Stop ffmpeg and exit fullscreen when done
 
-2. **artist-the-cure-discography.png**
-   - Type "The Cure" in homepage search → click The Cure
+## Key Details
 
-3. **artist-nick-cave-discography.png**
-   - Type "Nick Cave" in homepage search → click "Nick Cave & the Bad Seeds"
+- CDP port: 9224
+- ffmpeg: available at system PATH (v5.1, confirmed)
+- Artist slugs confirmed in live DB: slowdive, the-cure, nick-cave-the-bad-seeds, godspeed-you-black-emperor, boris, grouper
+- COUNT_MS = 1200ms per "count" (natural pace, will look good at 6x speedup)
+- Discover uses `.tag-chip` buttons for genre, `#country-input` for ISO country codes (JP, FI, IS, US, DE)
+- Time Machine uses `#year-slider` range input with ArrowRight key presses
+- Queue/settings drag uses `page.dragAndDrop()` (HTML5 drag API)
 
-4. **artist-overview-tab.png**
-   - Go to any working artist page → click "Overview" tab → confirm there's content
+## Known Risks / What Might Need Adjustment
 
-5. **knowledge-base-shoegaze.png**
-   - Click "Knowledge Base" in left nav → navigate to any genre with a description
+- **Playback**: Embedded player requires Bandcamp/SoundCloud links — Slowdive should have these but GYBE may not. If player doesn't load, the playback section will still run but player bar may be empty
+- **Queue remove button**: Only visible on hover — script hovers first then clicks `.queue-remove`
+- **Style Map node click**: D3 `circle` nodes may not be individually clickable via CDP locators — script has fallback to just `count(3)` if click fails
+- **Settings Streaming tab**: No data-testid on tab — uses `clickText('Streaming')` fallback
+- **Library**: Needs saved albums to show in the pane — if library is empty, left pane will be empty
 
-6. **artist-claim-form.png**
-   - Click "Profile" or navigate to /claim page (artist claim form)
+## CDP Launch Fix (discovered this session)
+The `printf` bash command was corrupting paths: `\t` in `src-tauri\target` was becoming a tab character. Fixed by using the Write tool to create the batch file. Ultimately replaced with `launch-cdp.mjs` which uses Node.js `child_process.spawn` for reliable env var injection.
 
 ## Git Status
-```
-M  BUILD-LOG.md       (status block — clean up at session end)
-?? tools/snap.mjs     (new file, untracked)
-```
-Note: `tools/take-screenshots-v1.7.mjs` changes were already staged/committed in earlier auto-saves.
+All 21 press screenshots committed. New scripts (launch-cdp.mjs, record-demo.mjs, record-and-run.mjs) are untracked — commit after the recording runs successfully.
 
-## After All 6 Done
+## After Recording
 ```bash
-git add press-screenshots/v5/ tools/snap.mjs tools/take-screenshots-v1.7.mjs BUILD-LOG.md
-git commit -m "chore: v1.7 press screenshots complete + script fixes"
+git add tools/launch-cdp.mjs tools/record-demo.mjs tools/record-and-run.mjs tools/snap.mjs
+git commit -m "chore: add demo recording scripts (CDP launch + automated demo)"
 ```
-Then update BUILD-LOG.md with session summary and remove `<!-- status -->` block.
 
-## Resume Command
-After running `/clear`, run `/resume` to continue.
+Then update BUILD-LOG.md with the session summary.
