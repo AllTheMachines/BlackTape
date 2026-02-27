@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-27)
 ## Current Position
 
 Phase: 29 of 32 (Streaming Foundation)
-Plan: 3 of 4 in current phase
-Status: Executing — 29-03 complete, 1 plan remaining
-Last activity: 2026-02-27 — 29-03 executed (Artist page streaming availability badge pills)
+Plan: 4 of 4 in current phase
+Status: Phase 29 complete — all 4 plans executed. Next: Phase 30 (Spotify Integration)
+Last activity: 2026-02-27 — 29-04 executed (Audio coordination + player bar via-badge)
 
-Progress: [████████████████▓░░░] 12% of v1.6 (Phase 29 in progress — 3/4 plans done)
+Progress: [████████████████████] 12% of v1.6 (Phase 29 complete — 4/4 plans done)
 
 ## Performance Metrics
 
@@ -35,6 +35,7 @@ Progress: [████████████████▓░░░] 12% of 
 - 29-01: 2 min, 3 tasks, 3 files, 0 deviations
 - 29-02: 2 min, 1 task, 1 file, 0 deviations
 - 29-03: 2 min, 1 task, 1 file, 1 auto-fix (Svelte 5 {@const} placement constraint)
+- 29-04: 2 min, 2 tasks, 2 files, 0 deviations
 
 ## Accumulated Context
 
@@ -53,6 +54,9 @@ Progress: [████████████████▓░░░] 12% of 
 - [v1.6 Research]: activeSource coordination state must be built in Phase 29 before any service — cannot be retrofitted afterward
 - [v1.6 Research]: Token refresh must use single-flight mutex — PKCE rotate immediately invalidates old refresh token; concurrent refresh = 400 error
 - [v1.6 Research]: Do NOT use @tauri-apps/plugin-stronghold — deprecated, removed in Tauri v3; use ai_settings table in taste.db instead
+- [29-04]: Dynamic imports used for audio.svelte inside SC Widget PLAY handler (async function) to avoid circular import issues
+- [29-04]: EMBED_ORIGINS map uses exact hostname match + hostname.includes('youtube.com') fallback for YouTube nocookie variants
+- [29-04]: Spotify play detection via data.type field (object); YouTube via JSON.parse + event/info===1 (string); SC via existing Widget PLAY event
 
 ### Blockers/Concerns
 
@@ -68,5 +72,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-27
-Stopped at: Completed 29-streaming-foundation/29-03-PLAN.md
+Stopped at: Completed 29-streaming-foundation/29-04-PLAN.md (Phase 29 complete)
 Resume file: None
