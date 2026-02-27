@@ -97,7 +97,9 @@ function pollCdp(timeoutMs = 40000) {
 
 async function goto(page, route, waitMs = 4000) {
   console.log(`  → ${route}`);
-  await page.evaluate(r => { window.location.href = r; }, route);
+  // Fire-and-forget: setting location.href destroys the page context so evaluate()
+  // never resolves. Swallow the timeout — the navigation still happens.
+  await page.evaluate(r => { window.location.href = r; }, route).catch(() => {});
   await page.waitForLoadState('domcontentloaded').catch(() => {});
   await page.waitForTimeout(waitMs);
 }

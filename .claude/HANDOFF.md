@@ -1,104 +1,106 @@
 # Work Handoff - 2026-02-27
 
 ## Current Task
-v1.7 screenshot session — capturing all 21 screens into `static/press-screenshots/v5/`
+v1.7 screenshot session — capture all 21 screens into `static/press-screenshots/v5/`
 
 ## Context
-Running a full screenshot + QA pass of the v1.7 app. Steve provided a detailed spec (21 screens with specific bug fixes from v1.6). The script uses Tauri binary + CDP (Playwright). Screens 1-3 are now saved successfully after fixing the mode=tag issue.
+Running a full screenshot + QA pass of the v1.7 app. 5 of 21 screens are done. The CDP/WebView2 approach is fundamentally broken for this — every run gets through screens 1-5 (now skipped) and crashes on screen 6 with "Fatal: eval timeout". The approach needs to change.
 
 ## Progress
 
 ### Completed
-- Committed BUILD-LOG.md from previous session
-- Created `static/press-screenshots/v5/` output directory
-- Wrote `tools/take-screenshots-v1.7.mjs` (full rewrite of v1.6 script)
-- Fixed critical bug: screens 1-3 now use `mode=tag` (searchByTag) instead of `mode=artist` (FTS name search) — this was why jazz returned 0 results in v1.6
-- Fixed: `scrollToDiscovery()` helper scrolls past local library section to show the discovery grid
-- Fixed: `locator.fill()` replaces `keyboard.type()` for autocomplete (more reliable Svelte event dispatch)
-- **3 screenshots saved** in `static/press-screenshots/v5/`:
-  - `search-electronic-grid.png` ✓ (50 cards, 42 images loaded)
-  - `search-jazz-grid.png` ✓ (50 cards, 48 images loaded — duplicate track bug still present: "You Ain't Really Down (Jazzanova's Hey Baby Remix) ×3")
-  - `search-psychedelic-rock-grid.png` ✓ (50 cards, 38 images loaded)
+- Built `tools/take-screenshots-v1.7.mjs` (full script for all 21 screens)
+- Added skip-if-exists to `save()` so re-runs skip already-done screens
+- Added `ensureAlive()` + `reconnectCDP()` for crash recovery
+- Added `evalWithTimeout()` wrapper and monkey-patched `page.evaluate` with 8s timeout
+- **5 screenshots saved** in `static/press-screenshots/v5/`:
+  - `search-electronic-grid.png` ✓
+  - `search-jazz-grid.png` ✓
+  - `search-psychedelic-rock-grid.png` ✓
+  - `search-autocomplete.png` ✓
+  - `artist-slowdive-discography.png` ✓
 
 ### In Progress
-- Script failing at **screen 4 (autocomplete)** — then CDP crashes
+- **BLOCKED** — script crashes at screen 6 every single time
 
 ### Remaining
-- Screens 4–21 still need to be captured:
-  4. search-autocomplete.png
-  5. artist-slowdive-discography.png
-  6. artist-the-cure-discography.png
-  7. artist-nick-cave-discography.png
-  8. artist-overview-tab.png
-  9. release-page-player.png
-  10. player-bar-source.png
-  11. queue-panel.png
-  12. library-two-pane.png
-  13. discover-ambient-iceland.png
-  14. discover-noise-rock-japan.png
-  15. discover-metal-finland.png
-  16. time-machine-1983.png
-  17. time-machine-1977.png
-  18. style-map-overview.png
-  19. style-map-zoomed.png
-  20. knowledge-base-shoegaze.png
-  21. artist-claim-form.png
+Screens 6–21 still need capture:
+6. artist-the-cure-discography.png
+7. artist-nick-cave-discography.png
+8. artist-overview-tab.png
+9. release-page-player.png
+10. player-bar-source.png
+11. queue-panel.png
+12. library-two-pane.png
+13. discover-ambient-iceland.png
+14. discover-noise-rock-japan.png
+15. discover-metal-finland.png
+16. time-machine-1983.png
+17. time-machine-1977.png
+18. style-map-overview.png
+19. style-map-zoomed.png
+20. knowledge-base-shoegaze.png
+21. artist-claim-form.png
 
-## Key Decisions / Root Causes Found
+## Root Cause Analysis
 
-### Screen 4 (Autocomplete) — TWO bugs to fix in script:
-1. **Home page has async DB check** — SearchBar only renders when `dbStatus === 'ready'`. The home page `+page.svelte` shows `<div class="loading"><p>Loading...</p></div>` while checking, then renders `<SearchBar size="large" />` only when ready. The 4000ms `isVisible()` timeout wasn't enough (or the DB check was taking longer). **Fix:** Wait for `dbStatus=ready` by polling for `input[type="search"]` with a longer timeout (8000ms), OR navigate to `/search?q=` (search page) instead of `/` — the search page always has a SearchBar visible.
+The crash is **not a script bug** — it's a fundamental CDP/WebView2 reliability issue.
 
-2. **CDP dies after autocomplete attempt** — After logging "Search input not found on home page", `page.screenshot()` times out with 15000ms exceeded. This means WebView2 crashed or froze. The crash seems to happen after many navigations. The timing suggests the CDP connection becomes unstable after ~3-4 page navigations.
+**What happens:**
+1. Script connects to Tauri via CDP (WebView2 remote debugging)
+2. `goto()` navigates by setting `window.location.href` via `page.evaluate()`
+3. Setting location.href destroys the current page context → the evaluate() never resolves
+4. After navigation, the new page's evaluate() context takes >8s to become available
+5. The monkey-patched 8s timeout fires → "Fatal: eval timeout"
 
-### Search mode clarification (confirmed):
-- `mode=tag` → calls `searchByTag(provider, q)` → returns artists with that tag ✓ CORRECT for genre discovery grids
-- `mode=artist` → calls `searchArtists(provider, q)` → FTS on artist names (wrong for "jazz", "electronic" etc.)
-- "electronic" with mode=artist returned 50 results because many artist names contain "electronic"
-- "jazz" with mode=artist returned 0 because no artists are named "jazz"
+**Why screens 1-5 worked but 6 doesn't:**
+Screens 1-5 navigate to `/search?q=...` (SPA route change, same page context). Screen 6 uses `navigateToArtist()` which does TWO navigations (search page → artist page), which causes double context destruction.
 
-### Jazz duplicate tracks bug:
-"You Ain't Really Down (Jazzanova's Hey Baby Remix)" appears ×3 in local library section. This is a data/library bug (not code). The screenshot scrolls past this to show the discovery grid, but the bug exists in the local library.
+## The Fix (DO THIS NEXT)
 
-### CDP stability:
-The WebView2 CDP crashes after extended use. Consider splitting the script into batches, or adding a CDP reconnect mechanism. The crash pattern: works for ~3-5 screens, then freezes on screenshot.
+**Switch from CDP/Tauri to Playwright's own browser + dev server.**
+
+Instead of connecting to the Tauri binary via CDP, launch a regular Playwright Chromium browser directly to `http://localhost:5173`. The app content is identical — Tauri just wraps it. The screenshots won't have the desktop window chrome but the UI content is the same.
+
+**Changes needed in `tools/take-screenshots-v1.7.mjs`:**
+
+1. Remove Tauri binary launch + CDP connection entirely
+2. Replace `launchTauri()` with:
+```js
+async function launchBrowser() {
+  browser = await chromium.launch({ headless: false });
+  const context = await browser.newContext({ viewport: { width: 1200, height: 800 } });
+  page = await context.newPage();
+  await page.goto('http://localhost:5173/');
+  await page.waitForLoadState('networkidle');
+  console.log('Browser ready:', page.url());
+}
+```
+3. Change all `goto(page, '/route', ms)` to use `page.goto('http://localhost:5173/route')` — Playwright's native navigation handles page context correctly, never hangs
+4. Remove monkey-patch, evalWithTimeout, reconnectCDP — no longer needed
+5. Keep all the screen capture logic (it's all correct)
+
+The dev server is already running on port 5173. This approach is simpler, faster, and stable.
 
 ## Relevant Files
-- `tools/take-screenshots-v1.7.mjs` — Main screenshot script (heavily modified)
-- `static/press-screenshots/v5/` — Output directory (3 files so far)
-- `src/routes/+page.svelte` — Home page (has async dbStatus check before SearchBar renders)
-- `src/lib/components/SearchBar.svelte` — `input[type='search']`, placeholder="Search artists..." or "Search by tag..."
-- `src/routes/search/+page.ts` — Search modes: `mode=tag` calls `searchByTag`, `mode=artist` calls `searchArtists`
-- `BUILD-LOG.md` — Has uncommitted status block update
+- `tools/take-screenshots-v1.7.mjs` — Main screenshot script (heavily modified, see below)
+- `static/press-screenshots/v5/` — Output directory (5 files so far)
+- `BUILD-LOG.md` — Has uncommitted status block
 
 ## Git Status
 ```
-modified: BUILD-LOG.md               (status block update — uncommitted)
-modified: tools/take-screenshots-v1.7.mjs   (full rewrite)
-modified: static/press-screenshots/v5/search-electronic-grid.png   (new/updated)
-modified: static/press-screenshots/v5/search-jazz-grid.png         (new/updated)
-modified: static/press-screenshots/v5/search-psychedelic-rock-grid.png  (new/updated)
+modified: BUILD-LOG.md               (status block — uncommitted)
+modified: tools/take-screenshots-v1.7.mjs   (CDP fixes that didn't work)
+modified: parachord-reference        (submodule, ignore)
 ```
 
 ## Next Steps
 
-1. **Fix screen 4 in script**: Change autocomplete test to use search page instead of home page:
-   ```js
-   await goto(page, '/search?q=Slo&mode=artist', 4000);
-   // SearchBar is always visible on search page — no async DB check
-   const searchInput = page.locator('input[type="search"]').first();
-   await searchInput.fill('Slow');
-   // poll for dropdown...
-   ```
-   OR: On home page, poll for `input[type="search"]` with longer timeout (10000ms) to wait past DB check.
-
-2. **Fix CDP stability**: Add try/catch around each screen block so one failure doesn't abort the run. If CDP dies, catch the error and continue to next screen (saving a blank/error placeholder if needed). Critical — current script aborts completely if CDP dies mid-run.
-
-3. **Re-run script** from screen 4 onward (screens 1-3 already saved, don't need to retake).
-
-4. **After all 21 shots saved**: Compare against v1.6 shots, update slideshow in `src/routes/+page.svelte` with new strong shots.
-
-5. **Commit everything**: `git add tools/take-screenshots-v1.7.mjs static/press-screenshots/v5/ BUILD-LOG.md && git commit -m "feat: v1.7 screenshot session + press-screenshots/v5"`
+1. **Rewrite `launchTauri()` → `launchBrowser()`** using Playwright's native Chromium launch (not CDP). Remove all CDP-specific code.
+2. **Change `goto()` helper** to use `page.goto('http://localhost:5173' + route)` instead of `page.evaluate(r => { window.location.href = r; }, route)` — this is the real fix.
+3. **Remove monkey-patch + evalWithTimeout** — these were band-aids for the wrong problem.
+4. **Run the script** — dev server is already running on 5173, just needs the browser approach.
+5. **After all 21 shots**: commit everything and update BUILD-LOG.md.
 
 ## Resume Command
 After running `/clear`, run `/resume` to continue.
