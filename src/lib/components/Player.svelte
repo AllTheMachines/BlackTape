@@ -359,7 +359,7 @@
 		background: var(--bg-4);
 		border: 1px solid var(--b-2);
 		border-radius: var(--r);
-		color: var(--t-2);
+		color: var(--t-1);
 		cursor: pointer;
 		transition: background 0.1s, color 0.1s;
 		position: relative;

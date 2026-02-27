@@ -44,7 +44,7 @@
 	<div class="bar-group bar-left">
 		{#if $page.url.pathname !== '/'}
 			<button class="back-btn" onclick={() => history.back()} title="Go back" aria-label="Go back">
-				<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+				<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
 					<polyline points="15 18 9 12 15 6" />
 				</svg>
 			</button>
@@ -162,7 +162,7 @@
 		background: var(--bg-4);
 		border: 1px solid var(--b-2);
 		border-radius: var(--r);
-		color: var(--t-2);
+		color: var(--t-1);
 		cursor: pointer;
 		flex-shrink: 0;
 		transition: color 0.1s, background 0.1s;
