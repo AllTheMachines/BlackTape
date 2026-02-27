@@ -4,6 +4,22 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-02-27 — Phase 33-02: Artist Claim Form + Artist Page Claim Link
+
+Two tasks, two commits. Artists can now discover they can claim their page directly from the page itself.
+
+**What was built:**
+
+1. `/claim` route — a new SvelteKit page with a 3-field form (artist name, email, verification message). State machine handles idle → loading → submitted transitions. Artist name is pre-filled and read-only when arriving from an artist page via `?artist=` param. On successful POST to the Cloudflare Worker at `blacktape-signups.theaterofdelays.workers.dev/claim`, the form is replaced with a warm confirmation message and a back-link to the artist's page (via the `?from=` slug param).
+
+2. Artist page claim link — a small quiet line below the artist name row: "Are you {Artist Name}? Claim this page". Font size 0.75rem, `var(--t-3)` color, accent on hover. Not gated behind `tauriMode` — visible everywhere. Link encodes the artist name with `encodeURIComponent` to handle Sigur Rós, AC/DC, !!!, etc.
+
+**One deviation from plan:** `<svelte:head>` placement. Svelte 5 prohibits `<svelte:head>` inside `{#if}` blocks — it must be at the template root. Fixed immediately (Rule 1 auto-fix: bug) by moving it to top level. The `<title>` still says the right thing regardless of submitted state.
+
+**Tests:** 193 passing, 0 failing. `npm run check`: 0 errors, 8 pre-existing warnings.
+
+---
+
 ## Entry 2026-02-27 — Phase 32-03: Release Page Play Album Wired to Bandcamp Embed
 
 One task, one commit. The release page "Play Album" button now does something real.
@@ -9061,3 +9077,15 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit d7c2450** (2026-02-27 11:37) — docs(33): create phase plan
 > Files changed: 3
+
+> **Commit cf9d5ae** (2026-02-27 11:39) — wip: auto-save
+> Files changed: 1
+
+> **Commit 6e555aa** (2026-02-27 11:42) — feat(33-02): add /claim artist page claim form
+> Files changed: 1
+
+> **Commit f698a40** (2026-02-27 11:42) — feat(33-02): add claim link to artist page header
+> Files changed: 1
+
+> **Commit ffbab6c** (2026-02-27 11:43) — docs(33-01): complete artist claim worker backend plan
+> Files changed: 4

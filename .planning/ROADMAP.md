@@ -72,7 +72,7 @@ See `.planning/milestones/v1.5-ROADMAP.md`
 - [x] **Phase 30: Spotify Integration** — PKCE OAuth flow, Spotify Connect API top-track playback, disconnect/reconnect (completed 2026-02-27)
 - [ ] **Phase 31: v1 Prep** — Community feature UI removal (Scenes, Rooms, Chat, Fediverse hidden from nav), localhost text fix
 - [x] **Phase 32: Embedded Players** — YouTube IFrame, SoundCloud Widget, Bandcamp embed (spike-gated), source switcher UI, release page Play Album (completed 2026-02-27)
-- [ ] **Phase 33: Artist Claim Form** — /claim route, artist page claim link, Cloudflare Worker backend
+- [x] **Phase 33: Artist Claim Form** — /claim route, artist page claim link, Cloudflare Worker backend (completed 2026-02-27)
 
 ---
 
@@ -176,4 +176,4 @@ Plans:
 | 30. Spotify Integration | v1.6 | 3/3 | Complete | 2026-02-27 |
 | 31. v1 Prep | v1.6 | 0/1 | Not started | - |
 | 32. Embedded Players | v1.6 | 3/3 | Complete | 2026-02-27 |
-| 33. Artist Claim Form | 1/2 | In Progress|  | - |
+| 33. Artist Claim Form | 2/2 | Complete   | 2026-02-27 | - |

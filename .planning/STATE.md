@@ -36,12 +36,12 @@ See: .planning/PROJECT.md (updated 2026-02-27)
 
 ## Current Position
 
-Phase: 33 of 33 (Artist Claim Form — in progress)
-Plan: 1 of TBD in current phase (33-01 complete — Worker backend done)
-Status: Active — Phase 33 in progress; 33-01 complete (worker backend)
-Last activity: 2026-02-27 — 33-01 executed (Cloudflare Worker /claim endpoint + CORS Tauri fix + /admin claims)
+Phase: 33 of 33 (Artist Claim Form — COMPLETE)
+Plan: 2 of 2 in current phase (33-02 complete — claim form + artist page link done)
+Status: Active — Phase 33 complete; all v1.6 phases done
+Last activity: 2026-02-27 — 33-02 executed (/claim form page + artist page claim link)
 
-Progress: [████████████████████████████] 31% of v1.6 (11 plans done across Phases 29+30+31+32+33)
+Progress: [████████████████████████████████] 34% of v1.6 (12 plans done across Phases 29+30+31+32+33)
 
 ## Performance Metrics
 
@@ -57,7 +57,7 @@ Progress: [███████████████████████
 | 30. Spotify Integration | 3 | Complete — 3/3 plans done |
 | 31. v1 Prep | 1 | Complete — 1/1 plans done |
 | 32. Embedded Players | 3 | Complete — 3/3 plans done |
-| 33. Artist Claim Form | TBD | In progress — 1 plan done |
+| 33. Artist Claim Form | 2 | Complete — 2/2 plans done |
 
 **v1.6 metrics so far:**
 - 29-01: 2 min, 3 tasks, 3 files, 0 deviations
@@ -72,6 +72,7 @@ Progress: [███████████████████████
 - 32-02: 3 min, 1 task, 1 file, 1 auto-fix (escaped HTML comment from Python replacement)
 - 32-03: 3 min, 1 task, 2 files, 0 deviations
 - 33-01: 5 min, 2 tasks, 1 file (blacktapesite repo), 0 deviations
+- 33-02: 5 min, 2 tasks, 2 files, 1 auto-fix (Svelte 5 svelte:head placement in {#if} block)
 
 ## Accumulated Context
 
@@ -117,6 +118,9 @@ Progress: [███████████████████████
 - [33-01]: CORS null-origin (Tauri app) gets wildcard '*' — allowedOrigins.includes('') is always false, !origin branch catches it cleanly
 - [33-01]: claim: KV prefix matches contact: pattern — consistent with existing /contact endpoint convention
 - [33-01]: Worker file lives in separate git repo (D:/Projects/blacktapesite) — commits made there, not in Mercury
+- [33-02]: WORKER_URL hardcoded as const in /claim page — public endpoint, no env var needed
+- [33-02]: Claim link NOT gated behind tauriMode — visible in all contexts (web preview + desktop)
+- [33-02]: svelte:head must be at template root (Svelte 5 rule) — cannot be inside {#if} blocks
 
 ### Blockers/Concerns
 
@@ -131,5 +135,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-27
-Stopped at: Completed 33-01-PLAN.md (Cloudflare Worker /claim endpoint + CORS Tauri fix + /admin Artist Claims section — deployed)
+Stopped at: Completed 33-02-PLAN.md (/claim form page + artist page claim link — Phase 33 complete)
 Resume file: None
