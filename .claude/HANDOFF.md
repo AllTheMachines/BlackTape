@@ -1,91 +1,52 @@
 # Work Handoff - 2026-02-27
 
 ## Current Task
-Screenshot QA session — capture all 21 screens at 1200×800, find bugs, fix them.
+Screenshot QA session COMPLETE — 21 screens captured, bugs triaged. No remaining code work.
 
 ## Context
-This session has been fighting to get the screenshot script working. The core problem is now understood and the fix is clear — just needs execution.
+Ran a full screenshot + QA pass on the v1.6 app. All 21 screens captured at 1200×800 into `static/screenshots/`. The session spent time diagnosing and fixing a script approach (needed Tauri binary + CDP, not headless browser), then ran the full pass and triaged all 11 flags raised.
 
-## The Problem (fully diagnosed)
+## Progress
 
-The Tauri debug binary connects to the **Vite dev server at `http://localhost:5173`** (set as `devUrl` in `tauri.conf.json`). It doesn't load from `build/` in debug mode.
+### Completed
+- Rewrote `tools/take-screenshots-v1.6.mjs` to use Tauri binary + CDP (v3 pattern)
+- Fixed KB route bug in script: `/kb/shoegaze` → `/kb/genre/shoegaze`
+- Added `try/catch` inside polling loops to handle "Execution context was destroyed" errors
+- Ran full 21-screen pass successfully — all screenshots captured with real data
+- Triaged all 11 QA flags: 1 real feature gap (style map no zoom), rest false positives or wrong selectors
+- Fixed QA script selectors: tab bar (`[data-testid="artist-tabs"]`), track rows (`.track`), play button (`.btn-play-album`)
+- Updated BUILD-LOG.md with full session entry
 
-When the dev server isn't running on 5173, the binary shows `chrome-error://chromewebdata/` and all navigation fails.
+### In Progress
+- Nothing actively in progress
 
-The dev server (`npm run dev`) alone can't take screenshots because all DB queries fail with:
+### Remaining
+- **Style Map zoom controls** — flagged as missing feature, not yet implemented
+- **Search autocomplete tag matching** — currently only searches by artist name; "post-punk" typed in search bar won't trigger suggestions. Low priority.
+- Commit the BUILD-LOG.md and script changes
+
+## Key Decisions
+- Play Album button absence is by design: requires `streamingLinks.bandcamp` (Bandcamp embed URL), not just a Bandcamp buy link — these are different fields
+- Artist name overflow in grid cards is CSS working correctly — ellipsis truncates long names, `scrollWidth > clientWidth` is expected behavior
+- Autocomplete is artist-name-only from DB — "post-" with hyphen matches no artist names, not a bug
+- "Burial" in DB that showed up as a German band is a data quality issue (different artist), not a code bug
+
+## Relevant Files
+- `tools/take-screenshots-v1.6.mjs` — Screenshot + QA script, rewritten to use Tauri + CDP
+- `static/screenshots/` — 21 PNG screenshots (1200×800), all with real data
+- `BUILD-LOG.md` — Updated with full session entry
+
+## Git Status
 ```
-Error: getProvider() cannot be used in the web build. Create a D1Provider from platform.env.DB in your server hooks.
+modified: BUILD-LOG.md     (session entry — uncommitted)
+modified: parachord-reference (submodule, unrelated)
 ```
+`tools/take-screenshots-v1.6.mjs` was already auto-saved in commit `e3f05c6 wip: auto-save` — no action needed there.
 
-**The correct approach:**
-1. Start `npm run dev` (on port 5173, the default)
-2. Launch the Tauri binary with CDP enabled
-3. Connect Playwright to the binary via CDP — this gets real DB access through `tauri-plugin-sql`
-4. Navigate using `window.location.href` (NOT `page.goto()`) since the binary is already on `tauri://localhost`
-
-## Script Status
-
-`tools/take-screenshots-v1.6.mjs` — exists but currently uses dev server directly (wrong approach).
-
-It needs to be rewritten to use the Tauri binary + CDP approach (like `tools/take-press-screenshots-v3.mjs` does), but:
-- Navigate using `window.location.href = route` (relative URLs work from tauri://localhost)
-- Kill existing mercury.exe before launching
-- Port: 9224
-- Wait longer for initial page load (app may take 5-10s to fully load after CDP connects)
-
-## Exact Fix Needed
-
-Look at `tools/take-press-screenshots-v3.mjs` — it's the working reference implementation. The v3 script successfully captured 49 screenshots. Adopt its `goto()` pattern:
-
-```js
-async function goto(page, route, waitMs = 4000) {
-  console.log(`  → ${route}`);
-  await page.evaluate(r => { window.location.href = r; }, route);
-  await page.waitForLoadState('domcontentloaded').catch(() => {});
-  await page.waitForTimeout(waitMs);
-}
-```
-
-And its startup sequence:
-```js
-await pollCdp(35000);
-await new Promise(r => setTimeout(r, 3000));  // Wait for page to load
-const browser = await chromium.connectOverCDP(CDP_BASE);
-// ... get page
-await page.waitForLoadState('domcontentloaded').catch(() => {});
-await page.waitForTimeout(3000);
-// Don't check URL here — just start navigating
-```
-
-Also: make sure dev server on 5173 is running BEFORE launching the binary.
-
-## Two Real Bugs Found (not script issues — actual app bugs)
-
-1. **`/kb/shoegaze` and `/kb/krautrock` return 404** — The KB genre route is broken. The URL pattern `/kb/[genre]` is not matching. Need to check `src/routes/kb/` structure.
-
-2. **Library pane testids missing** — `[data-testid="album-list-pane"]` and `[data-testid="track-pane"]` not found in the DOM when screenshot was taken. This might be because the library is empty (no local files scanned) and those panes only render with content.
-
-Both bugs need investigation after screenshots are working.
-
-## What Screenshots Look Like Right Now
-
-`static/screenshots/` has 21 files — all captured, but they're empty/blank (dev server with no DB). They need to be retaken with the correct approach.
-
-## Steps to Complete
-
-1. Kill any mercury.exe and dev servers
-2. Start `npm run dev` (port 5173) — let it fully start
-3. Rewrite `tools/take-screenshots-v1.6.mjs` to use the Tauri binary + CDP approach from v3
-4. Run the script
-5. Review screenshots (read each PNG)
-6. Fix any real bugs found (KB routes, library pane visibility, etc.)
-7. Update BUILD-LOG.md with full session summary
-
-## Key Files
-- `tools/take-press-screenshots-v3.mjs` — working reference for Tauri CDP approach
-- `tools/take-screenshots-v1.6.mjs` — script to fix (currently using wrong approach)
-- `static/screenshots/` — output directory (21 blank files currently)
-- `src/routes/kb/` — check for the 404 bug
+## Next Steps
+1. Commit BUILD-LOG.md: `git add BUILD-LOG.md && git commit -m "docs: screenshot QA v1.6 session entry"`
+2. If continuing QA work: look at Style Map for adding zoom controls (d3-zoom integration)
+3. If moving on to new features: pick up from the roadmap / GSD next phase
 
 ## Resume Command
 After running `/clear`, run `/resume` to continue.
