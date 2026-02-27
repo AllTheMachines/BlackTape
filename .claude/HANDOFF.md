@@ -27,8 +27,9 @@ Running screenshot script using Tauri CDP approach. Root cause of previous crash
   - `artist-nick-cave-discography.png` ✓
 
 ### In Progress
-- Script running (background task: bydsuwme1) — should now get through screens 8-21
-- Key fix just applied: screens 6+7 now have alreadyDone() skip — avoids re-navigating to The Cure 500 page
+- Script running (background task: bydsuwme1) — last seen on `/artist/nick-cave-the-bad-seeds` (screen 8)
+- Nick Cave artist page likely also returns 500. ensureAlive() at screen 9 start will detect and reset.
+- Reconnect works: proved during Grouper search (auto-reconnected, continued)
 
 ### Remaining (screens 8-21 + potentially reshooting 6-7 once app bug is fixed)
 8. artist-overview-tab.png
