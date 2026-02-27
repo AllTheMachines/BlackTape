@@ -5,8 +5,6 @@
 	import type { ArtistResult } from '$lib/db/queries';
 	import { isTauri } from '$lib/platform';
 	import { PROJECT_NAME } from '$lib/config';
-	import { openChat, chatState } from '$lib/comms/notifications.svelte.js';
-
 	let { data }: { data: PageData } = $props();
 
 	// Country options: common countries in music databases mapped to ISO codes
@@ -167,10 +165,6 @@
 									href="/style-map?tag={encodeURIComponent(primaryTag)}"
 									class="crate-cross-link"
 								>Explore in Style Map →</a>
-								<button
-									class="crate-cross-link crate-room-link"
-									onclick={() => { chatState.view = 'rooms'; openChat('rooms'); }}
-								>Open scene room →</button>
 							{/if}
 						</div>
 					</div>

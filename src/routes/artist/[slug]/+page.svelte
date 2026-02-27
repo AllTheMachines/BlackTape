@@ -16,7 +16,6 @@
 	import { streamingPref, loadStreamingPreference } from '$lib/theme/preferences.svelte';
 	import { spotifyState } from '$lib/spotify/state.svelte';
 
-	import { openChat, chatState } from '$lib/comms/notifications.svelte.js';
 	import { generateEmbedSnippets } from '$lib/curator/embed-snippet';
 	import { page } from '$app/stores';
 	import { setQueue, addToQueue } from '$lib/player/queue.svelte';
@@ -186,12 +185,6 @@
 		if (l.includes('kickstarter')) return '🚀 ';
 		if (l.includes('opencollective') || l.includes('open collective')) return '♦ ';
 		return '♡ ';
-	}
-
-	/** Open the chat overlay in rooms view for this artist's primary tag. */
-	function openRoomsForArtist() {
-		chatState.view = 'rooms';
-		openChat('rooms');
 	}
 
 	/** Embed widget UI state. */
@@ -441,15 +434,6 @@
 				{/each}
 			</div>
 
-			<div class="explore-scene-panel">
-				<a
-					href="/kb/genre/{tags[0].toLowerCase().replace(/\s+/g, '-')}"
-					class="explore-scene-link"
-				>
-					Explore {tags[0]} scene →
-				</a>
-			</div>
-
 			<div class="style-map-cross-link">
 				<a
 					href="/style-map?tag={encodeURIComponent(tags[0])}"
@@ -460,12 +444,6 @@
 				</a>
 			</div>
 
-			<!-- Scene Rooms discovery link -->
-			<section class="scene-rooms-hint">
-				<button onclick={openRoomsForArtist} class="rooms-link">
-					Scene rooms for {tags[0]} &rarr;
-				</button>
-			</section>
 		{/if}
 
 		{#if effectiveBio}
@@ -860,22 +838,6 @@
 		text-decoration: none;
 	}
 
-	.explore-scene-panel {
-		margin-top: var(--space-xs);
-	}
-
-	.explore-scene-link {
-		font-size: 0.85rem;
-		color: var(--t-3);
-		text-decoration: none;
-		transition: color 0.15s;
-	}
-
-	.explore-scene-link:hover {
-		color: var(--acc);
-		text-decoration: none;
-	}
-
 	.style-map-cross-link {
 		margin-top: var(--space-xs);
 	}
@@ -889,26 +851,6 @@
 
 	.cross-link-secondary:hover {
 		color: var(--acc);
-	}
-
-	.scene-rooms-hint {
-		margin: 4px 0;
-	}
-
-	.rooms-link {
-		background: none;
-		border: 1px solid var(--b-2);
-		border-radius: var(--r);
-		padding: 6px 12px;
-		cursor: pointer;
-		color: var(--t-3);
-		font-size: 0.8rem;
-		transition: border-color 0.15s, color 0.15s;
-	}
-
-	.rooms-link:hover {
-		border-color: var(--acc);
-		color: var(--t-1);
 	}
 
 	.bio {
