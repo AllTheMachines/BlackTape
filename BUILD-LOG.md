@@ -8936,3 +8936,12 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit c57a384** (2026-02-27 10:05) — wip: auto-save
 > Files changed: 1
+
+> **Commit 460e166** (2026-02-27 10:16) — auto-save: 2 files @ 10:16
+> Files changed: 1
+
+> **Commit af393b3** (2026-02-27 10:17) — docs(32): research phase embedded-players
+> Files changed: 1
+
+> **Commit f9f50fc** (2026-02-27 10:25) — docs(32-embedded-players): create phase 32 execution plan
+> Files changed: 4
