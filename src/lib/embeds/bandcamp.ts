@@ -24,3 +24,16 @@ export function bandcampExternalUrl(url: string): string {
 export function isBandcampUrl(url: string): boolean {
 	return BANDCAMP_PATTERN.test(url);
 }
+
+/**
+ * Construct a Bandcamp EmbeddedPlayer URL using the url= parameter.
+ *
+ * Spike status: [PENDING — see Task 2 in plan 32-01]
+ * If the spike succeeds in Tauri WebView2, this function is used for BC embeds.
+ * If the spike fails, this function exists but BC renders as ExternalLink only.
+ *
+ * Format confirmed by Bluesky social app PR #9445 (2024).
+ */
+export function bandcampEmbedUrl(url: string): string {
+	return `https://bandcamp.com/EmbeddedPlayer/url=${encodeURIComponent(url)}/size=large/transparent=true/`;
+}

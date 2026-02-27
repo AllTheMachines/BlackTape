@@ -1,21 +1,24 @@
 <script lang="ts">
 	import type { PlatformLinks, PlatformType } from '$lib/embeds/types';
-	import { PLATFORM_PRIORITY } from '$lib/embeds/types';
 	import { spotifyEmbedUrl } from '$lib/embeds/spotify';
 	import { youtubeEmbedUrl, isYoutubeChannel } from '$lib/embeds/youtube';
+	import { bandcampEmbedUrl } from '$lib/embeds/bandcamp';
 	import ExternalLink from './ExternalLink.svelte';
-	import { streamingPref } from '$lib/theme/preferences.svelte';
 	import { onDestroy } from 'svelte';
-	import { setActiveSource, clearActiveSource, type StreamingSource } from '$lib/player/streaming.svelte';
+	import { streamingState, setActiveSource, clearActiveSource, type StreamingSource } from '$lib/player/streaming.svelte';
 
 	let {
 		links,
 		soundcloudEmbedHtml,
-		artistName  // NEW: passed from artist page for embed play attribution
+		artistName,
+		autoLoad = false,
+		activeService = null
 	}: {
 		links: PlatformLinks;
 		soundcloudEmbedHtml?: string;
 		artistName?: string;
+		autoLoad?: boolean;
+		activeService?: PlatformType | null;
 	} = $props();
 
 	/** Track which embeds the user has clicked to load. */
@@ -24,6 +27,30 @@
 	function revealEmbed(key: string) {
 		loadedEmbeds[key] = true;
 	}
+
+	/** Platform order respects user's service order from streamingState. */
+	let orderedPlatforms = $derived(
+		streamingState.serviceOrder.filter(s =>
+			['bandcamp', 'spotify', 'soundcloud', 'youtube'].includes(s)
+		) as PlatformType[]
+	);
+
+	/** The active platform: parent override first, then first platform with links. */
+	let activePlatform = $derived(
+		activeService
+			?? (orderedPlatforms.find(p => (links[p] ?? []).length > 0) as PlatformType | undefined)
+			?? null
+	);
+
+	/** SoundCloud widget ref — stored so we can call .pause() on source change. */
+	let scWidget = $state<{ pause: () => void; bind: (event: string, handler: (...args: unknown[]) => void) => void } | null>(null);
+
+	/** Bandcamp iframe load state for 5-second timeout. */
+	let bandcampLoaded = $state(false);
+	let bandcampTimeout = $state(false);
+
+	/** YouTube Error 153 (or 100/101/150) — video not embeddable. */
+	let youtubeError = $state(false);
 
 	/** Maps embed origins to StreamingSource identifiers. */
 	const EMBED_ORIGINS: Record<string, StreamingSource> = {
@@ -61,6 +88,20 @@
 		return false;
 	}
 
+	/**
+	 * Detect YouTube embed errors from postMessage data.
+	 * 100=not found, 101/150=embedding disabled by uploader, 153=config/policy error
+	 */
+	function detectYouTubeError(data: unknown): boolean {
+		if (typeof data === 'string') {
+			try {
+				const d = JSON.parse(data) as Record<string, unknown>;
+				return d['event'] === 'onError' && [100, 101, 150, 153].includes(Number(d['info']));
+			} catch { return false; }
+		}
+		return false;
+	}
+
 	/** Handle postMessage events from embed iframes. */
 	function handleEmbedMessage(event: MessageEvent): void {
 		let source: StreamingSource = null;
@@ -78,19 +119,16 @@
 			import('$lib/player/audio.svelte').then(({ pause }) => pause());
 			setActiveSource(source);
 		}
+
+		if (source === 'youtube' && detectYouTubeError(event.data)) {
+			youtubeError = true;
+		}
 	}
 
 	// Register postMessage listener on mount; clean up on destroy.
 	if (typeof window !== 'undefined') {
 		window.addEventListener('message', handleEmbedMessage);
 	}
-
-	/** Platform order respects user's streaming preference — preferred platform shown first. */
-	let orderedPlatforms = $derived(
-		streamingPref.platform
-			? [streamingPref.platform, ...PLATFORM_PRIORITY.filter(p => p !== streamingPref.platform)] as PlatformType[]
-			: PLATFORM_PRIORITY
-	);
 
 	// SoundCloud widget hook — runs after iframe is rendered
 	async function hookSoundCloudWidget(containerEl: HTMLElement): Promise<void> {
@@ -107,6 +145,7 @@
 
 		type SCWidget = {
 			bind: (event: string, handler: (...args: unknown[]) => void) => void;
+			pause: () => void;
 		};
 		type SCWidgetConstructor = ((iframe: HTMLIFrameElement) => SCWidget) & {
 			Events: { PLAY: string; PLAY_PROGRESS: string };
@@ -117,6 +156,9 @@
 		if (!iframe) return;
 
 		const widget = sc.Widget(iframe);
+		// Store widget ref so we can call pause() when another source becomes active
+		scWidget = widget as typeof scWidget;
+
 		let progressFired = false;
 
 		widget.bind(sc.Widget.Events.PLAY, () => {
@@ -174,11 +216,38 @@
 		}
 	});
 
+	// Pause SoundCloud when another source becomes active
+	$effect(() => {
+		if (streamingState.activeSource !== 'soundcloud' && scWidget) {
+			try { scWidget.pause(); } catch { /* SC Widget may not be bound yet */ }
+		}
+	});
+
+	// Bandcamp 5-second load timeout
+	$effect(() => {
+		if (activePlatform === 'bandcamp') {
+			bandcampLoaded = false;
+			bandcampTimeout = false;
+			const timer = setTimeout(() => {
+				if (!bandcampLoaded) bandcampTimeout = true;
+			}, 5000);
+			return () => clearTimeout(timer);
+		}
+	});
+
 	onDestroy(() => {
 		if (typeof window !== 'undefined') {
 			window.removeEventListener('message', handleEmbedMessage);
 		}
-		clearActiveSource();
+		// Only clear if this EmbedPlayer's service was the active one.
+		// If source was switched via {#key} remount, the new EmbedPlayer already
+		// called setActiveSource — don't clobber it.
+		const myService = activePlatform;
+		if (myService && streamingState.activeSource === myService) {
+			clearActiveSource();
+		} else if (!myService) {
+			clearActiveSource();
+		}
 	});
 </script>
 
@@ -189,7 +258,25 @@
 			<div class="platform-section">
 				{#if platform === 'bandcamp'}
 					{#each urls as url}
-						<ExternalLink {url} platform="bandcamp" />
+						{#if bandcampTimeout && !bandcampLoaded}
+							<!-- 5s timeout expired without load — show external link fallback -->
+							<ExternalLink {url} platform="bandcamp" label="Visit on Bandcamp" />
+						{:else if autoLoad && activePlatform === 'bandcamp'}
+							<div class="iframe-wrap bc-wrap">
+								<iframe
+									src={bandcampEmbedUrl(url)}
+									width="100%"
+									height="120"
+									frameborder="0"
+									allow="autoplay"
+									title="Bandcamp player"
+									onload={() => { bandcampLoaded = true; }}
+								></iframe>
+							</div>
+							<ExternalLink {url} platform="bandcamp" label="Visit on Bandcamp" />
+						{:else}
+							<ExternalLink {url} platform="bandcamp" />
+						{/if}
 					{/each}
 
 				{:else if platform === 'spotify'}
@@ -197,7 +284,7 @@
 						{@const embed = spotifyEmbedUrl(url)}
 						{#if embed}
 							{@const key = `spotify-${url}`}
-							{#if loadedEmbeds[key]}
+							{#if autoLoad && activePlatform === 'spotify' || loadedEmbeds[key]}
 								<div class="iframe-wrap">
 									<iframe
 										src={embed}
@@ -236,13 +323,17 @@
 						{@const embed = youtubeEmbedUrl(url)}
 						{#if embed}
 							{@const key = `youtube-${url}`}
-							{#if loadedEmbeds[key]}
+							{#if youtubeError}
+								<!-- Error 153 or similar — video not embeddable -->
+								<ExternalLink {url} platform="youtube" label="Watch on YouTube" />
+							{:else if autoLoad && activePlatform === 'youtube' || loadedEmbeds[key]}
 								<div class="iframe-wrap video-wrap">
 									<iframe
 										src={embed}
 										width="100%"
 										height="100%"
 										frameborder="0"
+										referrerpolicy="no-referrer-when-downgrade"
 										allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
 										allowfullscreen
 										loading="lazy"
@@ -302,6 +393,10 @@
 		left: 0;
 		width: 100%;
 		height: 100%;
+	}
+
+	.bc-wrap {
+		height: 120px;
 	}
 
 	/* SoundCloud oEmbed HTML sometimes includes its own iframe */

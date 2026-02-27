@@ -23,7 +23,7 @@ export function youtubeEmbedUrl(url: string): string | null {
 	for (const pattern of VIDEO_PATTERNS) {
 		const match = url.match(pattern);
 		if (match) {
-			return `https://www.youtube-nocookie.com/embed/${match[1]}`;
+			return `https://www.youtube-nocookie.com/embed/${match[1]}?enablejsapi=1`;
 		}
 	}
 	return null;
