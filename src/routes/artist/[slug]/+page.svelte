@@ -14,6 +14,7 @@
 	import { LINK_CATEGORY_ORDER, LINK_CATEGORY_LABELS } from '$lib/embeds/types';
 	import { isTauri } from '$lib/platform';
 	import { streamingPref, loadStreamingPreference } from '$lib/theme/preferences.svelte';
+	import { spotifyState } from '$lib/spotify/state.svelte';
 
 	import { openChat, chatState } from '$lib/comms/notifications.svelte.js';
 	import { generateEmbedSnippets } from '$lib/curator/embed-snippet';
@@ -223,6 +224,74 @@
 		for (const t of topPlayerTracks) addToQueue(t);
 	}
 
+	/** Spotify "Play on Spotify" button state. */
+	type SpotifyPlayState = 'idle' | 'loading' | 'error';
+	let spotifyPlayState = $state<SpotifyPlayState>('idle');
+	let spotifyPlayMessage = $state<string | null>(null);
+
+	/** Button visible only when tauriMode, connected, and artist has a Spotify URL. */
+	let showSpotifyButton = $derived(
+		tauriMode && spotifyState.connected && data.links.spotify.length > 0
+	);
+
+	async function handlePlayOnSpotify() {
+		spotifyPlayState = 'loading';
+		spotifyPlayMessage = null;
+
+		try {
+			const { getValidAccessToken } = await import('$lib/spotify/auth');
+			const { extractSpotifyArtistId, getArtistTopTracks, playTracksOnSpotify, SpotifyAuthError } = await import('$lib/spotify/api');
+			const { setActiveSource } = await import('$lib/player/streaming.svelte');
+
+			let token: string;
+			try {
+				token = await getValidAccessToken();
+			} catch {
+				spotifyPlayState = 'error';
+				spotifyPlayMessage = 'Spotify session expired — reconnect in Settings.';
+				return;
+			}
+
+			const spotifyArtistId = extractSpotifyArtistId(data.links.spotify[0]);
+			if (!spotifyArtistId) {
+				spotifyPlayState = 'error';
+				spotifyPlayMessage = "Couldn't load tracks for this artist on Spotify.";
+				return;
+			}
+
+			let trackUris: string[];
+			try {
+				trackUris = await getArtistTopTracks(spotifyArtistId, token);
+			} catch (e) {
+				spotifyPlayState = 'error';
+				if (e instanceof SpotifyAuthError) {
+					spotifyPlayMessage = 'Spotify session expired — reconnect in Settings.';
+				} else {
+					spotifyPlayMessage = "Couldn't load tracks for this artist on Spotify.";
+				}
+				return;
+			}
+
+			const result = await playTracksOnSpotify(trackUris, token);
+			if (result === 'ok') {
+				setActiveSource('spotify');
+				spotifyPlayState = 'idle';
+			} else if (result === 'no_device') {
+				spotifyPlayState = 'error';
+				spotifyPlayMessage = 'Open Spotify Desktop and start playing anything, then try again.';
+			} else if (result === 'premium_required') {
+				spotifyPlayState = 'error';
+				spotifyPlayMessage = 'Spotify Premium is required to play tracks from BlackTape.';
+			} else if (result === 'token_expired') {
+				spotifyPlayState = 'error';
+				spotifyPlayMessage = 'Spotify session expired — reconnect in Settings.';
+			}
+		} catch {
+			spotifyPlayState = 'error';
+			spotifyPlayMessage = "Couldn't connect to Spotify. Try again.";
+		}
+	}
+
 	/** Generate QR code on demand (client-side only, lazy import). */
 	async function handleQrClick() {
 		if (!showQr) {
@@ -340,6 +409,21 @@
 				{#each streamingBadges as badge (badge.key)}
 					<span class="streaming-badge">{badge.label}</span>
 				{/each}
+			</div>
+		{/if}
+
+		{#if showSpotifyButton}
+			<div class="spotify-play-wrap">
+				<button
+					class="spotify-play-btn"
+					onclick={handlePlayOnSpotify}
+					disabled={spotifyPlayState === 'loading'}
+				>
+					{spotifyPlayState === 'loading' ? '...' : '▶ Play on Spotify'}
+				</button>
+				{#if spotifyPlayState === 'error' && spotifyPlayMessage}
+					<p class="spotify-play-error">{spotifyPlayMessage}</p>
+				{/if}
 			</div>
 		{/if}
 
@@ -1449,6 +1533,41 @@
 
 	.share-icon {
 		line-height: 1;
+	}
+
+	/* ── Spotify Play Button ────────────────────────────── */
+	.spotify-play-wrap {
+		margin-top: 8px;
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+	}
+
+	.spotify-play-btn {
+		align-self: flex-start;
+		background: #1DB954;
+		color: #000;
+		border: none;
+		border-radius: var(--r, 6px);
+		padding: 0.5rem 1rem;
+		font-weight: 600;
+		cursor: pointer;
+		font-size: 0.9rem;
+	}
+
+	.spotify-play-btn:disabled {
+		opacity: 0.6;
+		cursor: default;
+	}
+
+	.spotify-play-btn:hover:not(:disabled) {
+		background: #1ed760;
+	}
+
+	.spotify-play-error {
+		font-size: 0.85rem;
+		color: var(--text-muted, #888);
+		margin: 0.25rem 0 0;
 	}
 
 	/* ── Responsive ────────────────────────────────────── */
