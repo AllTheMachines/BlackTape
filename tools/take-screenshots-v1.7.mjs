@@ -100,23 +100,14 @@ function pollCdp(timeoutMs = 40000) {
 
 async function goto(_page, route, waitMs = 2000) {
   const t0 = Date.now();
-  const url = `${APP_BASE}${route}`;
   console.log(`  → ${route}`);
-  // Use 'commit' (navigation committed) not 'domcontentloaded' — for SPA routes the
-  // document doesn't change so domcontentloaded can be unreliable after many navigations.
-  // 'commit' resolves as soon as navigation is confirmed by the browser.
-  try {
-    await getPage().goto(url, { waitUntil: 'commit', timeout: 12000 });
-    console.log(`  ↳ goto committed in ${Date.now() - t0}ms`);
-  } catch (err) {
-    const elapsed = Date.now() - t0;
-    console.error(`  ✗ goto FAILED after ${elapsed}ms: ${err.message.split('\n')[0]}`);
-    console.error(`    Reconnecting CDP and retrying...`);
-    await reconnectCDP();
-    // getPage() now returns the fresh page from the reconnected session
-    await getPage().goto(url, { waitUntil: 'commit', timeout: 15000 });
-    console.log(`  ↳ goto committed after reconnect in ${Date.now() - t0}ms`);
-  }
+  // Use window.location.href — SPA-style navigation that keeps the Tauri bridge intact.
+  // page.goto() is a Playwright hard navigation that tears down/reinitializes the WebView2
+  // context, breaking the Tauri invoke bridge and causing 500 errors on dynamic routes.
+  // This matches what happens when the user clicks a link in the app.
+  await getPage().evaluate(r => { window.location.href = r; }, route);
+  await getPage().waitForLoadState('domcontentloaded').catch(() => {});
+  console.log(`  ↳ navigated in ${Date.now() - t0}ms`);
   // Pure JS timer — avoids CDP hanging post-navigation
   await new Promise(r => setTimeout(r, waitMs));
 }
