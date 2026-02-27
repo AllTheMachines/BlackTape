@@ -14,8 +14,6 @@
 	import { LINK_CATEGORY_ORDER, LINK_CATEGORY_LABELS } from '$lib/embeds/types';
 	import { isTauri } from '$lib/platform';
 	import { streamingPref, loadStreamingPreference } from '$lib/theme/preferences.svelte';
-	import { spotifyState } from '$lib/spotify/state.svelte';
-
 	import { generateEmbedSnippets } from '$lib/curator/embed-snippet';
 	import { page } from '$app/stores';
 	import { setQueue, addToQueue } from '$lib/player/queue.svelte';
@@ -179,6 +177,20 @@
 			: streamingLinks
 	);
 
+	/** Non-embed streaming platforms (Apple Music, Deezer, Tidal, etc.) — external links only. */
+	let nonEmbedStreamingLinks = $derived(
+		sortedStreamingLinks.filter(link => {
+			try {
+				const host = new URL(link.url).hostname;
+				return !host.includes('bandcamp.com') &&
+					   !host.includes('spotify.com') &&
+					   !host.includes('soundcloud.com') &&
+					   !host.includes('youtube.com') &&
+					   host !== 'youtu.be';
+			} catch { return true; }
+		})
+	);
+
 	/** Check if categorized links have any content (excluding streaming, shown separately). */
 	let hasAnyLinks = $derived(
 		LINK_CATEGORY_ORDER.some(cat => data.categorizedLinks[cat].length > 0)
@@ -255,79 +267,15 @@
 			}))
 	);
 
-	/** Switch the active embed service. Uses {#key} in template for unmount semantics. */
-	function activateService(svc: PlatformType) {
-		// Set active source BEFORE triggering {#key} re-render to prevent
-		// the old EmbedPlayer's onDestroy from clearing it after the new one sets it.
-		setActiveSource(svc);
-		activeEmbedService = svc;
-	}
-
-	/** Spotify "Play on Spotify" button state. */
-	type SpotifyPlayState = 'idle' | 'loading' | 'error';
-	let spotifyPlayState = $state<SpotifyPlayState>('idle');
-	let spotifyPlayMessage = $state<string | null>(null);
-
-	/** Button visible only when tauriMode, connected, and artist has a Spotify URL. */
-	let showSpotifyButton = $derived(
-		tauriMode && spotifyState.connected && data.links.spotify.length > 0
-	);
-
-	async function handlePlayOnSpotify() {
-		spotifyPlayState = 'loading';
-		spotifyPlayMessage = null;
-
-		try {
-			const { getValidAccessToken } = await import('$lib/spotify/auth');
-			const { extractSpotifyArtistId, getArtistTopTracks, playTracksOnSpotify, SpotifyAuthError } = await import('$lib/spotify/api');
-			const { setActiveSource } = await import('$lib/player/streaming.svelte');
-
-			let token: string;
-			try {
-				token = await getValidAccessToken();
-			} catch {
-				spotifyPlayState = 'error';
-				spotifyPlayMessage = 'Spotify session expired — reconnect in Settings.';
-				return;
-			}
-
-			const spotifyArtistId = extractSpotifyArtistId(data.links.spotify[0]);
-			if (!spotifyArtistId) {
-				spotifyPlayState = 'error';
-				spotifyPlayMessage = "Couldn't load tracks for this artist on Spotify.";
-				return;
-			}
-
-			let trackUris: string[];
-			try {
-				trackUris = await getArtistTopTracks(spotifyArtistId, token);
-			} catch (e) {
-				spotifyPlayState = 'error';
-				if (e instanceof SpotifyAuthError) {
-					spotifyPlayMessage = 'Spotify session expired — reconnect in Settings.';
-				} else {
-					spotifyPlayMessage = "Couldn't load tracks for this artist on Spotify.";
-				}
-				return;
-			}
-
-			const result = await playTracksOnSpotify(trackUris, token);
-			if (result === 'ok') {
-				setActiveSource('spotify');
-				spotifyPlayState = 'idle';
-			} else if (result === 'no_device') {
-				spotifyPlayState = 'error';
-				spotifyPlayMessage = 'Open Spotify Desktop and start playing anything, then try again.';
-			} else if (result === 'premium_required') {
-				spotifyPlayState = 'error';
-				spotifyPlayMessage = 'Spotify Premium is required to play tracks from BlackTape.';
-			} else if (result === 'token_expired') {
-				spotifyPlayState = 'error';
-				spotifyPlayMessage = 'Spotify session expired — reconnect in Settings.';
-			}
-		} catch {
-			spotifyPlayState = 'error';
-			spotifyPlayMessage = "Couldn't connect to Spotify. Try again.";
+	/** Toggle the active embed service. Clicking the active service collapses the embed. */
+	function toggleService(svc: PlatformType) {
+		if (activeEmbedService === svc) {
+			activeEmbedService = null;
+		} else {
+			// Set active source BEFORE triggering {#key} re-render to prevent
+			// the old EmbedPlayer's onDestroy from clearing it after the new one sets it.
+			setActiveSource(svc);
+			activeEmbedService = svc;
 		}
 	}
 
@@ -444,44 +392,50 @@
 			<p class="artist-meta">{headerMeta()}</p>
 		{/if}
 
-		{#if availableEmbedServices.length > 0}
-			<!-- Source switcher: replaces static streaming-badges -->
-			<div class="source-switcher" data-testid="source-switcher">
+		{#if availableEmbedServices.length > 0 || nonEmbedStreamingLinks.length > 0}
+			<!-- Unified platform row: replaces source-switcher tabs + Listen On section -->
+			<div class="platform-row" data-testid="platform-row">
 				{#each availableEmbedServices as svc (svc.key)}
-					<button
-						class="source-btn source-btn--{svc.key}"
-						class:active={activeEmbedService === svc.key || (activeEmbedService === null && availableEmbedServices[0]?.key === svc.key)}
-						onclick={() => activateService(svc.key)}
-						data-testid="source-btn-{svc.key}"
-					>{svc.label}</button>
+					<div class="platform-pill-group">
+						<button
+							class="platform-pill platform-pill--{svc.key}"
+							class:active={activeEmbedService === svc.key}
+							onclick={() => toggleService(svc.key)}
+							data-testid="platform-pill-{svc.key}"
+						>{svc.label}</button>
+						{#if data.links[svc.key][0]}
+							<a
+								href={data.links[svc.key][0]}
+								target="_blank"
+								rel="noopener noreferrer"
+								class="platform-ext-icon"
+								title="Open on {svc.label}"
+							>↗</a>
+						{/if}
+					</div>
+				{/each}
+				{#each nonEmbedStreamingLinks as link}
+					<a
+						href={link.url}
+						target="_blank"
+						rel="noopener noreferrer"
+						class="platform-pill platform-pill--ext"
+					>{link.label} ↗</a>
 				{/each}
 			</div>
 
 			<!-- {#key} guarantees old iframe unmounts before new one mounts (stops audio) -->
-			{#key activeEmbedService}
-				<EmbedPlayer
-					links={data.links}
-					soundcloudEmbedHtml={soundcloudEmbedHtml ?? undefined}
-					artistName={data.artist.name}
-					autoLoad={true}
-					activeService={activeEmbedService}
-				/>
-			{/key}
-		{/if}
-
-		{#if showSpotifyButton}
-			<div class="spotify-play-wrap">
-				<button
-					class="spotify-play-btn"
-					onclick={handlePlayOnSpotify}
-					disabled={spotifyPlayState === 'loading'}
-				>
-					{spotifyPlayState === 'loading' ? '...' : '▶ Play on Spotify'}
-				</button>
-				{#if spotifyPlayState === 'error' && spotifyPlayMessage}
-					<p class="spotify-play-error">{spotifyPlayMessage}</p>
-				{/if}
-			</div>
+			{#if activeEmbedService !== null}
+				{#key activeEmbedService}
+					<EmbedPlayer
+						links={data.links}
+						soundcloudEmbedHtml={soundcloudEmbedHtml ?? undefined}
+						artistName={data.artist.name}
+						autoLoad={true}
+						activeService={activeEmbedService}
+					/>
+				{/key}
+			{/if}
 		{/if}
 
 		{#if tags.length > 0}
@@ -533,25 +487,6 @@
 			</div>
 		{/if}
 	</header>
-
-	<!-- Listen On — always visible regardless of active tab -->
-	{#if sortedStreamingLinks.length > 0}
-		<section class="listen-on">
-			<span class="listen-label">Listen on</span>
-			<div class="listen-links">
-				{#each sortedStreamingLinks as link}
-					<a
-						href={link.url}
-						target="_blank"
-						rel="noopener noreferrer"
-						class="listen-link"
-					>
-						{link.label}
-					</a>
-				{/each}
-			</div>
-		</section>
-	{/if}
 
 	<!-- Tab bar -->
 	<div class="artist-tab-bar" data-testid="artist-tabs">
@@ -867,15 +802,23 @@
 		text-decoration: underline;
 	}
 
-	/* ─── Source switcher (replaces static streaming badges) ── */
-	.source-switcher {
+	/* ─── Platform row (unified: replaces source-switcher + Listen On) ── */
+	.platform-row {
 		display: flex;
 		flex-wrap: wrap;
 		gap: var(--space-xs);
 		margin-bottom: var(--space-sm);
+		align-items: center;
 	}
 
-	.source-btn {
+	.platform-pill-group {
+		display: inline-flex;
+		align-items: stretch;
+	}
+
+	.platform-pill {
+		display: inline-flex;
+		align-items: center;
 		padding: var(--space-xs) var(--space-sm);
 		background: var(--bg-2);
 		border: 1px solid var(--b-1);
@@ -883,26 +826,56 @@
 		color: var(--text-secondary);
 		font-size: 0.8rem;
 		cursor: pointer;
+		text-decoration: none;
 		transition: background 0.12s, border-color 0.12s, color 0.12s;
+		line-height: 1.4;
+		white-space: nowrap;
 	}
 
-	.source-btn:hover {
+	.platform-pill:hover {
 		background: var(--bg-3);
 		color: var(--text-primary);
 	}
 
-	.source-btn.active {
+	.platform-pill.active {
 		background: var(--bg-3);
 		border-color: var(--text-secondary);
 		color: var(--text-primary);
-		font-weight: 500;
 	}
 
-	/* Service-specific active colors */
-	.source-btn--bandcamp.active { border-color: var(--bandcamp-color, #1da0c3); }
-	.source-btn--spotify.active { border-color: var(--spotify-color, #1db954); }
-	.source-btn--soundcloud.active { border-color: var(--soundcloud-color, #ff5500); }
-	.source-btn--youtube.active { border-color: var(--youtube-color, #ff0000); }
+	/* Service-specific active border colors */
+	.platform-pill--bandcamp.active { border-color: var(--bandcamp-color, #1da0c3); }
+	.platform-pill--spotify.active { border-color: var(--spotify-color, #1db954); }
+	.platform-pill--soundcloud.active { border-color: var(--soundcloud-color, #ff5500); }
+	.platform-pill--youtube.active { border-color: var(--youtube-color, #ff0000); }
+
+	/* External link icon — joined to the right side of a pill button */
+	.platform-ext-icon {
+		display: inline-flex;
+		align-items: center;
+		padding: var(--space-xs) 6px;
+		background: var(--bg-2);
+		border: 1px solid var(--b-1);
+		border-left: none;
+		color: var(--t-3);
+		font-size: 0.7rem;
+		text-decoration: none;
+		transition: background 0.12s, color 0.12s;
+	}
+
+	.platform-ext-icon:hover {
+		background: var(--bg-3);
+		color: var(--text-primary);
+	}
+
+	/* External-only platform pills (Apple Music, Deezer, Tidal, etc.) */
+	a.platform-pill--ext {
+		color: var(--t-3);
+	}
+
+	a.platform-pill--ext:hover {
+		color: var(--text-primary);
+	}
 
 	.tags {
 		display: flex;
@@ -970,55 +943,6 @@
 
 	.bio-toggle:hover {
 		text-decoration: underline;
-	}
-
-	/* ── Listen On ────────────────────────────────────── */
-	.listen-on {
-		display: flex;
-		align-items: center;
-		gap: 10px;
-		padding: 8px 20px;
-		background: var(--bg-1);
-		border-bottom: 1px solid var(--b-1);
-	}
-
-	.listen-label {
-		font-size: 9px;
-		font-weight: 600;
-		text-transform: uppercase;
-		letter-spacing: 0.1em;
-		color: var(--t-3);
-		white-space: nowrap;
-		width: 62px;
-		flex-shrink: 0;
-	}
-
-	.listen-links {
-		display: flex;
-		flex-wrap: wrap;
-		gap: var(--space-xs);
-	}
-
-	.listen-link {
-		display: inline-flex;
-		align-items: center;
-		height: 26px;
-		padding: 0 10px;
-		background: var(--bg-3);
-		border: 1px solid var(--b-2);
-		border-radius: 0;
-		font-size: 11px;
-		font-weight: 500;
-		color: var(--t-2);
-		text-decoration: none;
-		transition: background 0.15s, border-color 0.15s;
-		white-space: nowrap;
-	}
-
-	.listen-link:hover {
-		border-color: var(--acc);
-		color: var(--t-1);
-		text-decoration: none;
 	}
 
 	/* ── Tab bar ───────────────────────────────────────── */
@@ -1569,41 +1493,6 @@
 
 	.share-icon {
 		line-height: 1;
-	}
-
-	/* ── Spotify Play Button ────────────────────────────── */
-	.spotify-play-wrap {
-		margin-top: 8px;
-		display: flex;
-		flex-direction: column;
-		gap: 4px;
-	}
-
-	.spotify-play-btn {
-		align-self: flex-start;
-		background: #1DB954;
-		color: #000;
-		border: none;
-		border-radius: 0;
-		padding: 0.5rem 1rem;
-		font-weight: 600;
-		cursor: pointer;
-		font-size: 0.9rem;
-	}
-
-	.spotify-play-btn:disabled {
-		opacity: 0.6;
-		cursor: default;
-	}
-
-	.spotify-play-btn:hover:not(:disabled) {
-		background: #1ed760;
-	}
-
-	.spotify-play-error {
-		font-size: 0.85rem;
-		color: var(--text-muted, #888);
-		margin: 0.25rem 0 0;
 	}
 
 	/* ── Responsive ────────────────────────────────────── */

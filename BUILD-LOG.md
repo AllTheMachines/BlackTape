@@ -12,9 +12,23 @@ Very on-brand for BlackTape: two spinning cassette reels now live in the player 
 
 Track info section restructured to a flex row: `[reels] [track text]`. Text uses `flex: 1; min-width: 0` to keep ellipsis overflow working.
 
-<!-- status -->
-Session in progress — cassette wheels done ✓. Next: artist page streaming section redesign.
-<!-- /status -->
+---
+
+## Entry 2026-02-27 — Artist Page: Unified Platform Row
+
+**The problem:** Three separate UI elements were doing overlapping jobs on the artist page — source-switcher tabs (Bandcamp | Spotify | SoundCloud | YouTube), a standalone "Listen On" bar below the header showing all streaming platforms, and a separate "▶ Play on Spotify" button for Spotify-connected users. Result: duplicate Spotify, duplicate YouTube, confusing UI.
+
+**The fix:** Replaced all three with a single compact platform row.
+
+- **Embed-capable platforms** (Bandcamp, Spotify, SoundCloud, YouTube): pill button + `↗` icon joined together. Click the pill → embed toggles open/closed below. Click `↗` → opens the platform in browser.
+- **Non-embed platforms** (Apple Music, Deezer, Tidal, etc.): standalone pill with `↗` inline. Direct external link.
+- **Toggle behavior**: clicking an active embed platform collapses it (was: source-switcher always kept one platform active).
+- **"Listen On" section removed** entirely — was a separate strip below the header, now merged into the platform row.
+- **"Play on Spotify" button removed** — was a standalone Spotify Desktop app shortcut that looked identical to the embed trigger. The `↗` icon on the Spotify pill opens in the browser (which prompts the desktop app for connected users).
+
+The deduplication bug (2x YouTube, 2x Spotify showing up) is solved structurally: one section now, not two.
+
+Tests: 193/193 passing.
 
 ---
 
@@ -9322,3 +9336,6 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit ef5a5c6** (2026-02-27 14:49) — wip: auto-save
 > Files changed: 1
+
+> **Commit eb51567** (2026-02-27 14:51) — wip: auto-save
+> Files changed: 2
