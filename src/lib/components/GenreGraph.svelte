@@ -44,18 +44,37 @@
 	let container: HTMLDivElement;
 	let hoveredId = $state<number | null>(null);
 
-	// Compute radius from raw node type + connectivity from edges prop
-	function rawNodeRadius(nodeId: number, nodeType: 'genre' | 'scene' | 'city'): number {
-		const degree = edges.filter((e) => e.from_id === nodeId || e.to_id === nodeId).length;
-		const baseByType = nodeType === 'genre' ? 12 : nodeType === 'scene' ? 9 : 6;
-		// Log scale connectivity bonus, clamped
-		const bonus = degree > 0 ? Math.min(12, Math.log10(degree + 1) * 6) : 0;
-		return Math.max(baseByType, baseByType + bonus);
+	const FONT_SIZE = 11;
+	const CHAR_WIDTH = 6.5;
+	const PAD_X = 10;
+	const PAD_Y = 5;
+	const RECT_H = FONT_SIZE + PAD_Y * 2;
+
+	function labelWidth(name: string): number {
+		return Math.max(50, name.length * CHAR_WIDTH + PAD_X * 2);
 	}
 
-	// Build the diamond polygon points for scene nodes (rotated square)
-	function diamondPoints(cx: number, cy: number, r: number): string {
-		return `${cx},${cy - r} ${cx + r},${cy} ${cx},${cy + r} ${cx - r},${cy}`;
+	// Colors per node type
+	function nodeColors(type: 'genre' | 'scene' | 'city', active: boolean) {
+		if (type === 'genre') return {
+			fill: active ? 'var(--acc)' : 'var(--bg-3)',
+			stroke: active ? 'var(--acc)' : 'var(--b-2)',
+			text: active ? 'var(--bg-1)' : 'var(--t-2)',
+			dasharray: undefined as string | undefined
+		};
+		if (type === 'scene') return {
+			fill: active ? 'var(--color-scene-hover, #f0a030)' : 'var(--color-scene, #c07820)',
+			stroke: active ? 'var(--color-scene-hover, #f0a030)' : 'var(--color-scene-border, #a06010)',
+			text: 'var(--bg-1)',
+			dasharray: undefined as string | undefined
+		};
+		// city: transparent fill, dashed border
+		return {
+			fill: 'transparent',
+			stroke: active ? 'var(--color-city-hover, #60c090)' : 'var(--color-city, #3a8060)',
+			text: active ? 'var(--color-city-hover, #60c090)' : 'var(--color-city, #3a8060)',
+			dasharray: '4 3' as string | undefined
+		};
 	}
 
 	function runSimulation() {
@@ -68,10 +87,6 @@
 			type: n.type
 		}));
 
-		// Map node id -> radius for collision
-		const radiusMap = new Map(nodes.map((n) => [n.id, rawNodeRadius(n.id, n.type)]));
-
-		// Edge strength: subgenre links are stronger than influenced_by
 		const simLinks = edges.map((e) => ({
 			source: e.from_id,
 			target: e.to_id,
@@ -90,15 +105,13 @@
 			.force('center', forceCenter(width / 2, height / 2))
 			.force(
 				'collide',
-				forceCollide().radius((d: any) => (radiusMap.get(d.id) ?? 10) + 6)
+				forceCollide().radius((d: any) => labelWidth(d.name) / 2 + 6)
 			);
 
-		// Headless tick — no on('tick') wiring to Svelte state (same pattern as StyleMap)
 		simulation.tick(300);
 		const settled = simulation.nodes() as LayoutNode[];
 		simulation.stop();
 
-		// Build node lookup for edge position computation
 		const nodeMap = new Map(settled.map((n) => [n.id, n]));
 
 		layoutEdges = edges
@@ -125,13 +138,10 @@
 		runSimulation();
 	});
 
-	// Re-run simulation when nodes/edges change (subgraph expansion)
 	$effect(() => {
-		// Track nodes and edges for reactivity
 		const _n = nodes;
 		const _e = edges;
 		if (layoutNodes.length > 0) {
-			// Container is already mounted — re-run simulation
 			runSimulation();
 		}
 	});
@@ -146,12 +156,10 @@
 		}
 	}
 
-	// Determine if a node is focused (for focusSlug emphasis)
 	function isFocused(node: LayoutNode): boolean {
 		return focusSlug !== null && node.slug === focusSlug;
 	}
 
-	// Determine neighbors of hovered node for highlight/dim logic
 	function isNeighbor(nodeId: number): boolean {
 		if (hoveredId === null) return false;
 		return edges.some(
@@ -182,11 +190,9 @@
 						y1={edge.y1}
 						x2={edge.x2}
 						y2={edge.y2}
-						stroke={edge.rel_type === 'subgenre'
-							? 'var(--text-accent, #7c6af7)'
-							: 'var(--border-default, #444)'}
+						stroke={edge.rel_type === 'subgenre' ? 'var(--acc)' : 'var(--b-1)'}
 						stroke-width={edge.rel_type === 'subgenre' ? 1.5 : 0.75}
-						stroke-opacity={edge.rel_type === 'subgenre' ? 0.5 : 0.25}
+						stroke-opacity={edge.rel_type === 'subgenre' ? 0.4 : 0.2}
 						stroke-dasharray={edge.rel_type === 'influenced_by' ? '4 3' : undefined}
 					/>
 				{/each}
@@ -195,10 +201,12 @@
 			<!-- Nodes -->
 			<g class="nodes">
 				{#each layoutNodes as node}
-					{@const r = rawNodeRadius(node.id, node.type)}
+					{@const w = labelWidth(node.name)}
 					{@const focused = isFocused(node)}
 					{@const hovered = hoveredId === node.id}
-					{@const opacity = nodeOpacity(node.id)}
+					{@const active = hovered || focused}
+					{@const colors = nodeColors(node.type, active)}
+					{@const opacity = focused ? 1 : nodeOpacity(node.id)}
 					<!-- svelte-ignore a11y_interactive_supports_focus -->
 					<g
 						class="node"
@@ -206,72 +214,33 @@
 						role="button"
 						tabindex="0"
 						aria-label={node.name}
-						style="opacity: {focused ? 1 : opacity}; cursor: pointer;"
+						style="opacity: {opacity}; cursor: pointer;"
 						onclick={() => handleNodeClick(node)}
 						onkeydown={(e) => e.key === 'Enter' && handleNodeClick(node)}
 						onmouseenter={() => (hoveredId = node.id)}
 						onmouseleave={() => (hoveredId = null)}
 					>
-						{#if node.type === 'genre'}
-							<!-- Genre: filled circle, primary color -->
-							<circle
-								r={focused ? r * 1.4 : r}
-								fill={hovered || focused
-									? 'var(--text-accent, #7c6af7)'
-									: 'var(--bg-elevated, #2a2a2a)'}
-								stroke={hovered || focused
-									? 'var(--text-accent, #7c6af7)'
-									: 'var(--border-default, #555)'}
-								stroke-width={focused ? 2.5 : 1.5}
-								style="transition: fill 0.15s, stroke 0.15s, r 0.2s;"
-							/>
-						{:else if node.type === 'scene'}
-							<!-- Scene: diamond shape, distinct warm color -->
-							<polygon
-								points={diamondPoints(0, 0, focused ? r * 1.4 : r)}
-								fill={hovered || focused
-									? 'var(--color-scene-hover, #f0a030)'
-									: 'var(--color-scene, #c07820)'}
-								stroke={hovered || focused
-									? 'var(--color-scene-hover, #f0a030)'
-									: 'var(--color-scene-border, #a06010)'}
-								stroke-width="1.5"
-								style="transition: fill 0.15s, stroke 0.15s;"
-							/>
-						{:else}
-							<!-- City: small circle with dashed border -->
-							<circle
-								r={focused ? r * 1.4 : r}
-								fill="transparent"
-								stroke={hovered || focused
-									? 'var(--color-city-hover, #60c090)'
-									: 'var(--color-city, #3a8060)'}
-								stroke-width="1.5"
-								stroke-dasharray="3 2"
-								style="transition: stroke 0.15s, r 0.2s;"
-							/>
-							<circle
-								r={Math.max(2, (focused ? r * 1.4 : r) * 0.4)}
-								fill={hovered || focused
-									? 'var(--color-city-hover, #60c090)'
-									: 'var(--color-city, #3a8060)'}
-								style="transition: fill 0.15s;"
-							/>
-						{/if}
-
-						<!-- Node label — show for larger nodes or when hovered -->
-						{#if r > 9 || hovered || focused}
-							<text
-								text-anchor="middle"
-								dy={node.type === 'city' ? (focused ? r * 1.4 : r) + 10 : '0.35em'}
-								font-size={Math.max(8, Math.min(13, r * 0.75))}
-								fill={hovered || focused ? 'var(--text-primary, #fff)' : 'var(--text-secondary, #aaa)'}
-								pointer-events="none"
-								style="transition: fill 0.15s; user-select: none;"
-							>
-								{node.name}
-							</text>
-						{/if}
+						<rect
+							x={-w / 2}
+							y={-RECT_H / 2}
+							width={w}
+							height={RECT_H}
+							fill={colors.fill}
+							stroke={colors.stroke}
+							stroke-width={focused ? 2 : 1}
+							stroke-dasharray={colors.dasharray}
+							style="transition: fill 0.15s, stroke 0.15s;"
+						/>
+						<text
+							text-anchor="middle"
+							dy="0.35em"
+							font-size={FONT_SIZE}
+							fill={colors.text}
+							pointer-events="none"
+							style="transition: fill 0.15s; user-select: none;"
+						>
+							{node.name}
+						</text>
 					</g>
 				{/each}
 			</g>
@@ -279,16 +248,22 @@
 
 		<!-- Legend -->
 		<div class="legend">
-			<span class="legend-item legend-genre">
-				<svg width="12" height="12" viewBox="0 0 12 12"><circle cx="6" cy="6" r="5" fill="var(--bg-elevated, #2a2a2a)" stroke="var(--border-default, #555)" stroke-width="1.5"/></svg>
+			<span class="legend-item">
+				<svg width="24" height="14" viewBox="0 0 24 14">
+					<rect x="0" y="1" width="24" height="12" fill="var(--bg-3)" stroke="var(--b-2)" stroke-width="1"/>
+				</svg>
 				Genre
 			</span>
-			<span class="legend-item legend-scene">
-				<svg width="12" height="12" viewBox="0 0 12 12"><polygon points="6,1 11,6 6,11 1,6" fill="var(--color-scene, #c07820)" stroke="var(--color-scene-border, #a06010)" stroke-width="1.5"/></svg>
+			<span class="legend-item">
+				<svg width="24" height="14" viewBox="0 0 24 14">
+					<rect x="0" y="1" width="24" height="12" fill="var(--color-scene, #c07820)" stroke="var(--color-scene-border, #a06010)" stroke-width="1"/>
+				</svg>
 				Scene
 			</span>
-			<span class="legend-item legend-city">
-				<svg width="12" height="12" viewBox="0 0 12 12"><circle cx="6" cy="6" r="5" fill="transparent" stroke="var(--color-city, #3a8060)" stroke-width="1.5" stroke-dasharray="3 2"/><circle cx="6" cy="6" r="2" fill="var(--color-city, #3a8060)"/></svg>
+			<span class="legend-item">
+				<svg width="24" height="14" viewBox="0 0 24 14">
+					<rect x="0" y="1" width="24" height="12" fill="transparent" stroke="var(--color-city, #3a8060)" stroke-width="1" stroke-dasharray="4 3"/>
+				</svg>
 				City
 			</span>
 		</div>
@@ -300,7 +275,6 @@
 		width: 100%;
 		position: relative;
 		background: var(--bg-base);
-		border-radius: 0;
 		overflow: hidden;
 	}
 
@@ -315,7 +289,7 @@
 		align-items: center;
 		justify-content: center;
 		height: 400px;
-		color: var(--text-muted);
+		color: var(--t-3);
 		font-size: 0.875rem;
 	}
 
@@ -329,12 +303,11 @@
 		right: 12px;
 		display: flex;
 		gap: 12px;
-		background: var(--bg-elevated, #1e1e1e);
-		border: 1px solid var(--border-default, #444);
-		border-radius: 0;
+		background: var(--bg-2);
+		border: 1px solid var(--b-1);
 		padding: 6px 10px;
 		font-size: 0.75rem;
-		color: var(--text-secondary, #aaa);
+		color: var(--t-3);
 	}
 
 	.legend-item {
