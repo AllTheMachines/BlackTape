@@ -140,7 +140,7 @@
 					title="Next"
 					aria-label="Next track"
 				>
-					<svg style="width:22px;height:22px;display:block" viewBox="0 0 24 24" fill="currentColor">
+					<svg style="width:20px;height:20px;display:block;flex-shrink:0" viewBox="0 0 24 24" fill="currentColor">
 						<path d="M6 18l8.5-6L6 6v12zm10-12v12h2V6z" />
 					</svg>
 				</button>
@@ -239,7 +239,7 @@
 				aria-label="Toggle queue"
 				data-testid="queue-toggle"
 			>
-				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+				<svg style="width:22px;height:22px;display:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
 					<line x1="8" y1="6" x2="21" y2="6" />
 					<line x1="8" y1="12" x2="21" y2="12" />
 					<line x1="8" y1="18" x2="21" y2="18" />
@@ -354,8 +354,8 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		width: 26px;
-		height: 26px;
+		width: 32px;
+		height: 32px;
 		background: var(--bg-4);
 		border: 1px solid var(--b-2);
 		border-radius: var(--r);
@@ -367,13 +367,15 @@
 
 	:global(.control-btn svg) {
 		display: block;
-		width: 22px;
-		height: 22px;
+		width: 20px;
+		height: 20px;
+		flex-shrink: 0;
 	}
 
 	:global(.play-btn svg) {
-		width: 26px;
-		height: 26px;
+		width: 24px;
+		height: 24px;
+		flex-shrink: 0;
 	}
 
 	.control-btn:hover {
@@ -382,8 +384,8 @@
 	}
 
 	.control-btn.small {
-		width: 24px;
-		height: 24px;
+		width: 28px;
+		height: 28px;
 	}
 
 	.control-btn.active {
@@ -427,8 +429,8 @@
 	}
 
 	.play-btn {
-		width: 30px;
-		height: 30px;
+		width: 36px;
+		height: 36px;
 		background: var(--acc-bg);
 		border-color: var(--b-acc);
 		color: var(--acc);
