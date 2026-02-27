@@ -365,6 +365,12 @@
 		position: relative;
 	}
 
+	.control-btn svg {
+		display: block;
+		width: 100%;
+		height: 100%;
+	}
+
 	.control-btn:hover {
 		background: var(--bg-5);
 		color: var(--t-1);
