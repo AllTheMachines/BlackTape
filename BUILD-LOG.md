@@ -37,8 +37,20 @@ From `29-CONTEXT.md` (locked decisions, non-negotiable):
 - postMessage coordination trigger (not polling)
 - "via X" in player bar only shows during embed activity, clears on iframe destroy
 
+### 29-01 Execution Complete (2 min)
+
+Three tasks, three commits, zero deviations. The streaming foundation infrastructure is in place:
+
+- `src/lib/player/streaming.svelte.ts` created — global `streamingState` with `activeSource` and `serviceOrder`, plus `setActiveSource` / `clearActiveSource` mutation functions. Follows the exact same module-level `$state` pattern as `playerState`.
+- `preferences.svelte.ts` extended — `loadServiceOrder` and `saveServiceOrder` appended, using the same `get_all_ai_settings` / `set_ai_setting` Tauri invoke pattern as user templates. Validates that stored order is exactly 4 known services before trusting it.
+- `+layout.svelte` wired — service order now loads on Tauri boot alongside theme/layout prefs, written into `streamingState.serviceOrder`. Survives app restarts.
+
+No new npm packages. No new Rust commands. No UI changes. Pure infrastructure — exactly as designed.
+
+Plans 29-02 (Settings drag-to-reorder), 29-03 (artist streaming badges), and 29-04 (audio coordination) can now all proceed, each independently consuming this foundation.
+
 <!-- status -->
-Phase 29 plans written — 4 plans ready for execution. Starting with 29-01.
+29-01 complete (2min). Plans 29-02, 29-03, 29-04 ready to run — all depend on 29-01 state module now in place.
 <!-- /status -->
 
 ---
@@ -8586,3 +8598,15 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit 7a3ee44** (2026-02-27 01:16) — auto-save: 7 files @ 01:16
 > Files changed: 6
+
+> **Commit ac6b70f** (2026-02-27 01:17) — wip: auto-save
+> Files changed: 1
+
+> **Commit 2d79ebd** (2026-02-27 01:23) — feat(29-01): create streaming.svelte.ts state module
+> Files changed: 1
+
+> **Commit 019286d** (2026-02-27 01:23) — feat(29-01): add loadServiceOrder and saveServiceOrder to preferences.svelte.ts
+> Files changed: 1
+
+> **Commit b0b0b38** (2026-02-27 01:24) — feat(29-01): wire service order loading into root layout boot
+> Files changed: 1

@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-27)
 ## Current Position
 
 Phase: 29 of 32 (Streaming Foundation)
-Plan: 0 of 4 in current phase
-Status: Ready to execute — 4 plans written
-Last activity: 2026-02-27 — Phase 29 planned (4 plans: streaming state, Settings UI, artist badges, audio coordination)
+Plan: 1 of 4 in current phase
+Status: Executing — 29-01 complete, 3 plans remaining
+Last activity: 2026-02-27 — 29-01 executed (streaming state module + persistence layer)
 
-Progress: [████████████░░░░░░░░] 0% of v1.6 (Phases 29–32 not started)
+Progress: [████████████▓░░░░░░░] 6% of v1.6 (Phase 29 in progress — 1/4 plans done)
 
 ## Performance Metrics
 
@@ -22,19 +22,25 @@ Progress: [████████████░░░░░░░░] 0% of v
 - 7 plans completed, ~183 tests passing
 - Average: ~5 min/plan
 
-**v1.6 (not yet started):**
+**v1.6 (in progress):**
 
 | Phase | Plans | Status |
 |-------|-------|--------|
-| 29. Streaming Foundation | 4 | Planned — ready to execute |
+| 29. Streaming Foundation | 4 | In progress — 1/4 plans done |
 | 30. Spotify Integration | TBD | Not started |
 | 31. Embedded Players | TBD | Not started |
 | 32. Album Playback + Polish | TBD | Not started |
+
+**v1.6 metrics so far:**
+- 29-01: 2 min, 3 tasks, 3 files, 0 deviations
 
 ## Accumulated Context
 
 ### Decisions
 
+- [29-01]: streamingState module uses module-level $state (no class, no store) — same pattern as playerState in state.svelte.ts
+- [29-01]: Default service order is bandcamp-first to align with discovery-first, artist-friendly philosophy
+- [29-01]: Service order validation requires exactly 4 entries — partial/corrupted saves fall back to DEFAULT silently
 - [v1.6 Research]: Spotify Web Playback SDK NOT used — Widevine CDM unavailable in WebView2 (confirmed unresolved since 2018, GitHub spotify/web-playback-sdk#41)
 - [v1.6 Research]: No bundled Spotify client_id — February 2026 policy caps dev mode at 5 users; each user provides their own
 - [v1.6 Research]: Spotify OAuth redirect URI must be http://127.0.0.1 (not localhost — blocked since November 2025)
@@ -57,5 +63,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-27
-Stopped at: Roadmap created for v1.6 (Phases 29–32). Ready to plan Phase 29.
+Stopped at: Completed 29-streaming-foundation/29-01-PLAN.md
 Resume file: None
