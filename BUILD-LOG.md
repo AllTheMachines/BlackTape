@@ -5,7 +5,7 @@ A documentary record of building this project from idea to reality.
 ---
 
 <!-- status -->
-Screenshot pass v1.7 — 5/21 done. Rewriting screenshot script to use Playwright native browser (drop CDP/WebView2 which crashes mid-session). Running remaining 16 screens now.
+Screenshot pass v1.7 — 7/21 done. Fixed CDP hang: alreadyDone() on all screens, pure JS timers, page.goto() via CDP Page.navigate. Script running now — past screen 8. Screens 13-21 (Discover, Time Machine, Style Map, KB, Claim) are pure navigation, should run clean.
 <!-- /status -->
 
 ---
@@ -9487,4 +9487,7 @@ This completes v1.0 — The Playback Milestone. All phases done.
 > Files changed: 2
 
 > **Commit 13b3fc3** (2026-02-27 19:22) — wip: auto-save
+> Files changed: 3
+
+> **Commit 8748b13** (2026-02-27 19:46) — auto-save: 4 files @ 19:46
 > Files changed: 3

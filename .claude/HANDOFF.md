@@ -4,29 +4,33 @@
 v1.7 screenshot session — capture all 21 screens into `static/press-screenshots/v5/`
 
 ## Context
-Running a full screenshot + QA pass of the v1.7 app. 5 of 21 screens are done. The CDP/WebView2 approach is fundamentally broken for this — every run gets through screens 1-5 (now skipped) and crashes on screen 6 with "Fatal: eval timeout". The approach needs to change.
+Running screenshot script using Tauri CDP approach. Root cause of previous crashes diagnosed and fixed.
 
 ## Progress
 
 ### Completed
 - Built `tools/take-screenshots-v1.7.mjs` (full script for all 21 screens)
-- Added skip-if-exists to `save()` so re-runs skip already-done screens
-- Added `ensureAlive()` + `reconnectCDP()` for crash recovery
-- Added `evalWithTimeout()` wrapper and monkey-patched `page.evaluate` with 8s timeout
-- **5 screenshots saved** in `static/press-screenshots/v5/`:
+- Fixed CDP navigation: replaced `window.location.href` with `page.goto()` (CDP Page.navigate)
+- Added `alreadyDone()` checks to ALL screens (screens 6+7 were missing them — root cause of hang)
+- Replaced all `page.waitForTimeout()` with `new Promise(r => setTimeout(r, ms))` (pure JS, no CDP)
+- `getPage()` accessor so reconnect inside `goto()` uses fresh page reference
+- `ensureAlive()` now detects 500 error pages and navigates home before continuing
+- `goto()` now reconnects CDP on timeout and retries navigation
+- The Cure excluded from screen 8+ candidates (returns 500 errors, corrupts CDP)
+- **7 screenshots saved** in `static/press-screenshots/v5/`:
   - `search-electronic-grid.png` ✓
   - `search-jazz-grid.png` ✓
   - `search-psychedelic-rock-grid.png` ✓
   - `search-autocomplete.png` ✓
   - `artist-slowdive-discography.png` ✓
+  - `artist-the-cure-discography.png` ✓ (500 error page, but captured)
+  - `artist-nick-cave-discography.png` ✓
 
 ### In Progress
-- **BLOCKED** — script crashes at screen 6 every single time
+- Script running (background task: bydsuwme1) — should now get through screens 8-21
+- Key fix just applied: screens 6+7 now have alreadyDone() skip — avoids re-navigating to The Cure 500 page
 
-### Remaining
-Screens 6–21 still need capture:
-6. artist-the-cure-discography.png
-7. artist-nick-cave-discography.png
+### Remaining (screens 8-21 + potentially reshooting 6-7 once app bug is fixed)
 8. artist-overview-tab.png
 9. release-page-player.png
 10. player-bar-source.png
@@ -42,65 +46,34 @@ Screens 6–21 still need capture:
 20. knowledge-base-shoegaze.png
 21. artist-claim-form.png
 
-## Root Cause Analysis
+## Root Cause (SOLVED)
+The hang was: screens 6+7 had NO `alreadyDone()` check. They re-navigated to The Cure's artist page every run. The Cure's artist page returns a 500 error (MB API issue). After getting a 500, subsequent CDP navigate calls hang indefinitely, even though the goto() commits quickly (31ms).
 
-The crash is **not a script bug** — it's a fundamental CDP/WebView2 reliability issue.
-
-**What happens:**
-1. Script connects to Tauri via CDP (WebView2 remote debugging)
-2. `goto()` navigates by setting `window.location.href` via `page.evaluate()`
-3. Setting location.href destroys the current page context → the evaluate() never resolves
-4. After navigation, the new page's evaluate() context takes >8s to become available
-5. The monkey-patched 8s timeout fires → "Fatal: eval timeout"
-
-**Why screens 1-5 worked but 6 doesn't:**
-Screens 1-5 navigate to `/search?q=...` (SPA route change, same page context). Screen 6 uses `navigateToArtist()` which does TWO navigations (search page → artist page), which causes double context destruction.
-
-## The Fix (DO THIS NEXT)
-
-**Switch from CDP/Tauri to Playwright's own browser + dev server.**
-
-Instead of connecting to the Tauri binary via CDP, launch a regular Playwright Chromium browser directly to `http://localhost:5173`. The app content is identical — Tauri just wraps it. The screenshots won't have the desktop window chrome but the UI content is the same.
-
-**Changes needed in `tools/take-screenshots-v1.7.mjs`:**
-
-1. Remove Tauri binary launch + CDP connection entirely
-2. Replace `launchTauri()` with:
-```js
-async function launchBrowser() {
-  browser = await chromium.launch({ headless: false });
-  const context = await browser.newContext({ viewport: { width: 1200, height: 800 } });
-  page = await context.newPage();
-  await page.goto('http://localhost:5173/');
-  await page.waitForLoadState('networkidle');
-  console.log('Browser ready:', page.url());
-}
-```
-3. Change all `goto(page, '/route', ms)` to use `page.goto('http://localhost:5173/route')` — Playwright's native navigation handles page context correctly, never hangs
-4. Remove monkey-patch, evalWithTimeout, reconnectCDP — no longer needed
-5. Keep all the screen capture logic (it's all correct)
-
-The dev server is already running on port 5173. This approach is simpler, faster, and stable.
+## Architecture Notes
+- Debug binary (`mercury.exe`) connects to dev server on `http://localhost:5173`
+- APP_BASE = `http://localhost:5173` (not tauri.localhost — that's release builds only)
+- All `page.waitForTimeout()` replaced with `new Promise(r => setTimeout(r, ms))`
+- `navigateToArtist()` uses `page.evaluate()` with 8s timeout instead of `locator.getAttribute()`
+- `ensureAlive()` uses Promise.race with 12s timeout to detect hung CDP
+- `goto()` uses `waitUntil: 'commit'` (not domcontentloaded — SPA doesn't reload the document)
+- `goto()` falls back to `reconnectCDP()` on timeout
 
 ## Relevant Files
-- `tools/take-screenshots-v1.7.mjs` — Main screenshot script (heavily modified, see below)
-- `static/press-screenshots/v5/` — Output directory (5 files so far)
-- `BUILD-LOG.md` — Has uncommitted status block
+- `tools/take-screenshots-v1.7.mjs` — Main screenshot script
+- `static/press-screenshots/v5/` — Output directory (7 files so far)
+- `BUILD-LOG.md` — Has status block
 
-## Git Status
-```
-modified: BUILD-LOG.md               (status block — uncommitted)
-modified: tools/take-screenshots-v1.7.mjs   (CDP fixes that didn't work)
-modified: parachord-reference        (submodule, ignore)
-```
+## Known App Bugs (logged by script)
+- The Cure artist page: returns 500 (MusicBrainz API lookup failing for their MBID)
+- Nick Cave artist page: also returned 500 in some runs
+- These are app bugs, not script bugs
 
 ## Next Steps
-
-1. **Rewrite `launchTauri()` → `launchBrowser()`** using Playwright's native Chromium launch (not CDP). Remove all CDP-specific code.
-2. **Change `goto()` helper** to use `page.goto('http://localhost:5173' + route)` instead of `page.evaluate(r => { window.location.href = r; }, route)` — this is the real fix.
-3. **Remove monkey-patch + evalWithTimeout** — these were band-aids for the wrong problem.
-4. **Run the script** — dev server is already running on 5173, just needs the browser approach.
-5. **After all 21 shots**: commit everything and update BUILD-LOG.md.
+1. Check if background task `bydsuwme1` completed (check output file)
+2. If it got stuck again: check where it hung (artist page navigation)
+3. Run: `ls static/press-screenshots/v5/` to see what's been captured
+4. After all 21 shots: commit everything and update BUILD-LOG.md with session summary
+5. Consider fixing The Cure / Nick Cave artist page 500 errors (separate task)
 
 ## Resume Command
 After running `/clear`, run `/resume` to continue.

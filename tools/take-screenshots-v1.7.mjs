@@ -98,7 +98,7 @@ function pollCdp(timeoutMs = 40000) {
   });
 }
 
-async function goto(page, route, waitMs = 2000) {
+async function goto(_page, route, waitMs = 2000) {
   const t0 = Date.now();
   const url = `${APP_BASE}${route}`;
   console.log(`  → ${route}`);
@@ -106,19 +106,19 @@ async function goto(page, route, waitMs = 2000) {
   // document doesn't change so domcontentloaded can be unreliable after many navigations.
   // 'commit' resolves as soon as navigation is confirmed by the browser.
   try {
-    await page.goto(url, { waitUntil: 'commit', timeout: 15000 });
+    await getPage().goto(url, { waitUntil: 'commit', timeout: 12000 });
     console.log(`  ↳ goto committed in ${Date.now() - t0}ms`);
   } catch (err) {
     const elapsed = Date.now() - t0;
     console.error(`  ✗ goto FAILED after ${elapsed}ms: ${err.message.split('\n')[0]}`);
-    console.error(`    URL: ${url}`);
-    // Fall back: fire-and-forget JS navigation. Context may be lost but navigation proceeds.
-    console.error(`    Falling back to window.location.href...`);
-    await page.evaluate(u => { window.location.href = u; }, url).catch(() => {});
-    await page.waitForTimeout(3000);
-    console.log(`  ↳ fallback navigation fired`);
+    console.error(`    Reconnecting CDP and retrying...`);
+    await reconnectCDP();
+    // getPage() now returns the fresh page from the reconnected session
+    await getPage().goto(url, { waitUntil: 'commit', timeout: 15000 });
+    console.log(`  ↳ goto committed after reconnect in ${Date.now() - t0}ms`);
   }
-  await page.waitForTimeout(waitMs);
+  // Pure JS timer — avoids CDP hanging post-navigation
+  await new Promise(r => setTimeout(r, waitMs));
 }
 
 async function save(page, filename) {
@@ -158,7 +158,7 @@ async function waitForCardImages(page, timeoutMs = 15000, minImages = 4) {
         return count;
       }
     } catch {}
-    await page.waitForTimeout(600);
+    await new Promise(r => setTimeout(r, 600));
   }
   try {
     const final = await page.evaluate(() => {
@@ -192,7 +192,7 @@ async function waitForDiscographyCovers(page, timeoutMs = 18000, minCovers = 4) 
         return count;
       }
     } catch {}
-    await page.waitForTimeout(800);
+    await new Promise(r => setTimeout(r, 800));
   }
   try {
     const final = await page.evaluate(() => {
@@ -211,9 +211,15 @@ async function waitForDiscographyCovers(page, timeoutMs = 18000, minCovers = 4) 
 
 async function navigateToArtist(page, artistName) {
   await goto(page, `/search?q=${encodeURIComponent(artistName)}&mode=artist`, 6000);
-  const firstCard = page.locator('a.artist-card').first();
-  const href = await firstCard.getAttribute('href', { timeout: 8000 }).catch(() => null);
+  console.log(`  ↳ looking for artist card...`);
+  // Use evaluate() instead of locator.getAttribute() — locators can hang on CDP when
+  // the page JS context is unstable after many navigations.
+  const href = await Promise.race([
+    getPage().evaluate(() => document.querySelector('a.artist-card')?.getAttribute('href') ?? null),
+    new Promise((_, rej) => setTimeout(() => rej(new Error('artist card lookup timeout')), 8000)),
+  ]).catch(err => { console.error(`  ✗ artist card lookup failed: ${err.message}`); return null; });
   if (!href) { console.log(`  ✗ No results for "${artistName}"`); return null; }
+  console.log(`  ↳ found href: ${href}`);
   await goto(page, href, 8000);
   return href;
 }
@@ -232,7 +238,7 @@ async function scrollToDiscovery(page) {
   });
   if (scrolled > 0) {
     console.log(`  ↳ Scrolled to discovery section (y=${scrolled})`);
-    await page.waitForTimeout(400);
+    await new Promise(r => setTimeout(r, 400));
   }
 }
 
@@ -291,6 +297,8 @@ async function checkArtistPage(page, screenName) {
 let proc = null;
 let browser = null;
 let page = null;
+// Accessor so goto() can get the fresh page after a reconnect (avoids parameter shadowing)
+const getPage = () => page;
 
 async function launchTauri() {
   // Kill any existing mercury.exe
@@ -321,7 +329,7 @@ async function launchTauri() {
   if (!page) throw new Error('No page found via CDP');
 
   await page.waitForLoadState('domcontentloaded').catch(() => {});
-  await page.waitForTimeout(3000);
+  await new Promise(r => setTimeout(r, 3000));
   page.setDefaultTimeout(15000);
   console.log('Connected. App URL:', page.url());
 }
@@ -336,7 +344,19 @@ async function reconnectCDP() {
 
 async function ensureAlive() {
   try {
-    await page.evaluate(() => 1);
+    const result = await Promise.race([
+      page.evaluate(() => ({
+        h1: document.querySelector('h1')?.textContent?.trim() ?? '',
+      })),
+      new Promise((_, rej) => setTimeout(() => rej(new Error('evaluate timeout')), 12000)),
+    ]);
+    // If we're on a 500/error page, navigate home to clear the broken state
+    // so the next goto() doesn't hang due to WebView2 being in a bad state.
+    if (result.h1 === '500') {
+      console.log('  ⚡ Error page (500) detected — navigating home to reset state...');
+      await page.goto(`${APP_BASE}/`, { waitUntil: 'commit', timeout: 8000 }).catch(() => {});
+      await new Promise(r => setTimeout(r, 1500));
+    }
   } catch {
     console.log('  ⚡ CDP unresponsive — reconnecting...');
     await reconnectCDP();
@@ -463,7 +483,7 @@ async function run() {
       // Poll for dropdown — async DB query may take 300-800ms
       let dropdownVisible = false;
       for (let i = 0; i < 12; i++) {
-        await page.waitForTimeout(250);
+        await new Promise(r => setTimeout(r, 250));
         dropdownVisible = await page.evaluate(() => {
           const el = document.querySelector('[data-testid="autocomplete-dropdown"], .autocomplete-list');
           if (!el) return false;
@@ -484,7 +504,7 @@ async function run() {
         console.log(`  ↳ No dropdown for "${term}"`);
         // Clear input before next attempt
         await searchInput.fill('');
-        await page.waitForTimeout(200);
+        await new Promise(r => setTimeout(r, 200));
       }
     }
     if (!autocompleteDone) {
@@ -497,7 +517,7 @@ async function run() {
   }
   // Clear any text left in search input to prevent affecting subsequent navigation
   try { await searchInput.fill(''); } catch {}
-  await page.waitForTimeout(500);
+  await new Promise(r => setTimeout(r, 500));
   } // end screen 4
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -510,14 +530,14 @@ async function run() {
   if (slowdiveHref) {
     await page.evaluate(() => window.scrollTo(0, 0));
     await tryClick(page, '[data-testid="tab-discography"], button:has-text("Discography")');
-    await page.waitForTimeout(1000);
+    await new Promise(r => setTimeout(r, 1000));
     const scrollTo = await page.evaluate(() => {
       const grid = document.querySelector('.releases-grid, .discography-grid');
       return grid ? Math.max(0, grid.getBoundingClientRect().top + window.scrollY - 80) : 200;
     });
     await page.evaluate(y => window.scrollTo(0, y), scrollTo);
     await waitForDiscographyCovers(page, 15000, 4);
-    await page.waitForTimeout(600);
+    await new Promise(r => setTimeout(r, 600));
     await checkArtistPage(page, 'artist-slowdive');
   } else {
     bug('artist-slowdive', 'No search results for Slowdive');
@@ -529,47 +549,51 @@ async function run() {
   // 6. Artist page — The Cure
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 6. Artist: The Cure ---');
+  if (alreadyDone('artist-the-cure-discography.png')) { console.log('  ⊘ skip'); } else {
   await ensureAlive();
   const cureHref = await navigateToArtist(page, 'The Cure');
   if (cureHref) {
     await page.evaluate(() => window.scrollTo(0, 0));
     await tryClick(page, '[data-testid="tab-discography"], button:has-text("Discography")');
-    await page.waitForTimeout(1000);
+    await new Promise(r => setTimeout(r, 1000));
     const scrollTo = await page.evaluate(() => {
       const grid = document.querySelector('.releases-grid, .discography-grid');
       return grid ? Math.max(0, grid.getBoundingClientRect().top + window.scrollY - 80) : 200;
     });
     await page.evaluate(y => window.scrollTo(0, y), scrollTo);
     await waitForDiscographyCovers(page, 15000, 4);
-    await page.waitForTimeout(600);
+    await new Promise(r => setTimeout(r, 600));
     await checkArtistPage(page, 'artist-the-cure');
   } else {
     bug('artist-the-cure', 'No search results for The Cure');
   }
   await save(page, 'artist-the-cure-discography.png');
+  } // end screen 6
 
   // ═══════════════════════════════════════════════════════════════════════════
   // 7. Artist page — Nick Cave
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 7. Artist: Nick Cave ---');
+  if (alreadyDone('artist-nick-cave-discography.png')) { console.log('  ⊘ skip'); } else {
   await ensureAlive();
   const nickCaveHref = await navigateToArtist(page, 'Nick Cave and the Bad Seeds');
   if (nickCaveHref) {
     await page.evaluate(() => window.scrollTo(0, 0));
     await tryClick(page, '[data-testid="tab-discography"], button:has-text("Discography")');
-    await page.waitForTimeout(1000);
+    await new Promise(r => setTimeout(r, 1000));
     const scrollTo = await page.evaluate(() => {
       const grid = document.querySelector('.releases-grid, .discography-grid');
       return grid ? Math.max(0, grid.getBoundingClientRect().top + window.scrollY - 80) : 200;
     });
     await page.evaluate(y => window.scrollTo(0, y), scrollTo);
     await waitForDiscographyCovers(page, 15000, 4);
-    await page.waitForTimeout(600);
+    await new Promise(r => setTimeout(r, 600));
     await checkArtistPage(page, 'artist-nick-cave');
   } else {
     bug('artist-nick-cave', 'No search results for Nick Cave');
   }
   await save(page, 'artist-nick-cave-discography.png');
+  } // end screen 7
 
   // ═══════════════════════════════════════════════════════════════════════════
   // 8. Artist page — Overview tab
@@ -577,7 +601,8 @@ async function run() {
   // ═══════════════════════════════════════════════════════════════════════════
   console.log('\n--- 8. Artist overview tab ---');
   await ensureAlive();
-  const overviewCandidates = ['Slowdive', 'Godspeed You! Black Emperor', 'Grouper', 'The Cure', 'Nick Cave and the Bad Seeds'];
+  // The Cure excluded — artist page returns 500 (MB API issue), corrupts CDP session
+  const overviewCandidates = ['Slowdive', 'Godspeed You! Black Emperor', 'Grouper', 'Nick Cave and the Bad Seeds', 'Boris'];
   let overviewDone = false;
   for (const artist of overviewCandidates) {
     if (overviewDone) break;
@@ -588,7 +613,7 @@ async function run() {
                     await tryClick(page, '[data-testid="tab-btn-overview"]') ||
                     await tryClick(page, 'button:has-text("Overview")');
     if (!clicked) { console.log(`  ✗ No Overview tab for ${artist}`); continue; }
-    await page.waitForTimeout(2500);
+    await new Promise(r => setTimeout(r, 2500));
     const hasContent = await page.evaluate(() => {
       const el = document.querySelector('[data-testid="tab-content-overview"], .overview-tab, .artist-relationships');
       return !!el && (el.textContent?.trim().length ?? 0) > 50;
@@ -617,7 +642,7 @@ async function run() {
     if (releaseDone) break;
     const href = await navigateToArtist(page, artist);
     if (!href) continue;
-    await page.waitForTimeout(2000);
+    await new Promise(r => setTimeout(r, 2000));
     const firstRelease = page.locator('a[href*="/release/"]').first();
     const rHref = await firstRelease.getAttribute('href', { timeout: 5000 }).catch(() => null);
     if (!rHref) { console.log(`  ✗ No release links for ${artist}`); continue; }
@@ -632,7 +657,7 @@ async function run() {
     if (!info.hasPlayBtn && !info.hasQueueBtn) bug('release-page', `No play/queue album buttons for "${artist}"`);
     console.log(`  ↳ ${artist}: play=${info.hasPlayBtn}, queue=${info.hasQueueBtn}, tracks=${info.trackCount}, buyLinks=${info.hasBuyLinks}`);
     await page.evaluate(() => window.scrollTo(0, 150));
-    await page.waitForTimeout(500);
+    await new Promise(r => setTimeout(r, 500));
     await save(page, 'release-page-player.png');
     releaseDone = true;
   }
@@ -661,10 +686,10 @@ async function run() {
     const embedPill = page.locator('.platform-pill:not(.platform-pill--ext)').first();
     if (await embedPill.isVisible({ timeout: 2000 }).catch(() => false)) {
       await embedPill.click();
-      await page.waitForTimeout(3000);
+      await new Promise(r => setTimeout(r, 3000));
     }
     await page.evaluate(() => window.scrollTo(0, 0));
-    await page.waitForTimeout(500);
+    await new Promise(r => setTimeout(r, 500));
     const hasPlayerBar = await page.evaluate(() =>
       !!document.querySelector('.player-bar, [class*="player-bar"], .persistent-player')
     );
@@ -687,7 +712,7 @@ async function run() {
   await page.evaluate(() => {
     try { localStorage.removeItem('blacktape_queue'); } catch {}
   }).catch(() => {});
-  await page.waitForTimeout(300);
+  await new Promise(r => setTimeout(r, 300));
 
   const queueArtists = ['Slowdive', 'The Cure', 'Grouper'];
   let totalQueued = 0;
@@ -696,7 +721,7 @@ async function run() {
     if (totalQueued >= 5) break;
     const href = await navigateToArtist(page, artist);
     if (!href) continue;
-    await page.waitForTimeout(1500);
+    await new Promise(r => setTimeout(r, 1500));
     const rHref = await page.locator('a[href*="/release/"]').first().getAttribute('href', { timeout: 4000 }).catch(() => null);
     if (!rHref) continue;
     await goto(page, rHref, 4000);
@@ -707,7 +732,7 @@ async function run() {
       try {
         await queueBtns.nth(i).hover();
         await queueBtns.nth(i).click();
-        await page.waitForTimeout(300);
+        await new Promise(r => setTimeout(r, 300));
         totalQueued++;
       } catch {}
     }
@@ -717,7 +742,7 @@ async function run() {
   const qOpened = await tryClick(page, '[data-testid="queue-toggle"]') ||
                   await tryClick(page, '.queue-toggle');
   if (!qOpened) bug('queue-panel', 'Queue toggle button not found');
-  await page.waitForTimeout(1500);
+  await new Promise(r => setTimeout(r, 1500));
 
   const qItems = await page.evaluate(() =>
     document.querySelectorAll('.queue-item, [class*="queue-track"]').length
@@ -756,7 +781,7 @@ async function run() {
   const cInput = page.locator('#country-input, input[placeholder*="Country" i]').first();
   if (await cInput.isVisible({ timeout: 3000 }).catch(() => false)) {
     await cInput.fill('Iceland');
-    await page.waitForTimeout(2500);
+    await new Promise(r => setTimeout(r, 2500));
     const cnt = await page.evaluate(() => document.querySelectorAll('.artist-card').length);
     if (cnt === 0) bug('discover-ambient-iceland', 'No results for ambient + Iceland');
     else console.log(`  ↳ ${cnt} results`);
@@ -776,7 +801,7 @@ async function run() {
   const cInput2 = page.locator('#country-input, input[placeholder*="Country" i]').first();
   if (await cInput2.isVisible({ timeout: 3000 }).catch(() => false)) {
     await cInput2.fill('Japan');
-    await page.waitForTimeout(2500);
+    await new Promise(r => setTimeout(r, 2500));
     const cnt = await page.evaluate(() => document.querySelectorAll('.artist-card').length);
     if (cnt === 0) bug('discover-noise-rock-japan', 'No results for noise rock + Japan');
     else console.log(`  ↳ ${cnt} results`);
@@ -796,7 +821,7 @@ async function run() {
   const cInput3 = page.locator('#country-input, input[placeholder*="Country" i]').first();
   if (await cInput3.isVisible({ timeout: 3000 }).catch(() => false)) {
     await cInput3.fill('Finland');
-    await page.waitForTimeout(2500);
+    await new Promise(r => setTimeout(r, 2500));
     const cnt = await page.evaluate(() => document.querySelectorAll('.artist-card').length);
     if (cnt === 0) bug('discover-metal-finland', 'No results for metal + Finland');
     else console.log(`  ↳ ${cnt} results`);
@@ -817,15 +842,15 @@ async function run() {
   const tmFilter16 = page.locator('.tag-input, input[placeholder*="Filter by genre" i]').first();
   if (await tmFilter16.isVisible({ timeout: 3000 }).catch(() => false)) {
     await tmFilter16.fill('post-punk');
-    await page.waitForTimeout(2000);
+    await new Promise(r => setTimeout(r, 2000));
     const cnt16a = await page.evaluate(() => document.querySelectorAll('.artist-card').length);
     if (cnt16a === 0) {
       await tmFilter16.fill('synth-pop');
-      await page.waitForTimeout(2000);
+      await new Promise(r => setTimeout(r, 2000));
       const cnt16b = await page.evaluate(() => document.querySelectorAll('.artist-card').length);
       if (cnt16b === 0) {
         await tmFilter16.fill('');
-        await page.waitForTimeout(1500);
+        await new Promise(r => setTimeout(r, 1500));
         console.log('  ↳ All filters empty — cleared filter');
       } else console.log(`  ↳ synth-pop: ${cnt16b} artists`);
     } else console.log(`  ↳ post-punk: ${cnt16a} artists`);
@@ -847,17 +872,17 @@ async function run() {
   const tmFilter17 = page.locator('.tag-input, input[placeholder*="Filter by genre" i]').first();
   if (await tmFilter17.isVisible({ timeout: 3000 }).catch(() => false)) {
     await tmFilter17.fill('punk');
-    await page.waitForTimeout(2000);
+    await new Promise(r => setTimeout(r, 2000));
     const cnt17a = await page.evaluate(() => document.querySelectorAll('.artist-card').length);
     if (cnt17a === 0) {
       await tmFilter17.fill('disco');
-      await page.waitForTimeout(2000);
+      await new Promise(r => setTimeout(r, 2000));
       const cnt17b = await page.evaluate(() => document.querySelectorAll('.artist-card').length);
       if (cnt17b === 0) {
         await tmFilter17.fill('krautrock');
-        await page.waitForTimeout(2000);
+        await new Promise(r => setTimeout(r, 2000));
         const cnt17c = await page.evaluate(() => document.querySelectorAll('.artist-card').length);
-        if (cnt17c === 0) { await tmFilter17.fill(''); await page.waitForTimeout(1500); console.log('  ↳ All filters empty'); }
+        if (cnt17c === 0) { await tmFilter17.fill(''); await new Promise(r => setTimeout(r, 1500)); console.log('  ↳ All filters empty'); }
         else console.log(`  ↳ krautrock: ${cnt17c} artists`);
       } else console.log(`  ↳ disco: ${cnt17b} artists`);
     } else console.log(`  ↳ punk: ${cnt17a} artists`);
@@ -877,7 +902,7 @@ async function run() {
   await ensureAlive();
   await goto(page, '/style-map', 8000);
   await page.waitForSelector('[data-ready]', { timeout: 15000 }).catch(() => {});
-  await page.waitForTimeout(3000);
+  await new Promise(r => setTimeout(r, 3000));
   const smInfo = await page.evaluate(() => {
     const svgEl = document.querySelector('svg');
     const textEls = svgEl ? Array.from(svgEl.querySelectorAll('text')) : [];
@@ -902,7 +927,7 @@ async function run() {
   await ensureAlive();
   await goto(page, '/style-map', 8000);
   await page.waitForSelector('[data-ready]', { timeout: 15000 }).catch(() => {});
-  await page.waitForTimeout(3000);
+  await new Promise(r => setTimeout(r, 3000));
   const mapCenter = await page.evaluate(() => {
     const svg = document.querySelector('svg, .style-map-container, [class*="style-map"]');
     if (!svg) return { x: 600, y: 380 };
@@ -913,9 +938,9 @@ async function run() {
   console.log(`  ↳ Zooming at (${mapCenter.x}, ${mapCenter.y})`);
   for (let i = 0; i < 8; i++) {
     await page.mouse.wheel(0, -150);
-    await page.waitForTimeout(200);
+    await new Promise(r => setTimeout(r, 200));
   }
-  await page.waitForTimeout(1500);
+  await new Promise(r => setTimeout(r, 1500));
   const zoomedState = await page.evaluate(() => {
     const svgEl = document.querySelector('svg');
     const g = svgEl?.querySelector('g[transform]');
@@ -941,7 +966,7 @@ async function run() {
     if (kbDone) break;
     await goto(page, `/kb/genre/${genre}`, 5000);
     await tryClick(page, '.popup-close, .map-popup .close, [aria-label="Close"]', 1000);
-    await page.waitForTimeout(500);
+    await new Promise(r => setTimeout(r, 500));
     const kbChecks = await page.evaluate(() => {
       const h1 = document.querySelector('h1')?.textContent?.trim();
       const notFound = !h1 || /not found|404/i.test(document.body.innerText.slice(0, 200));
