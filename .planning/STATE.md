@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.6
 milestone_name: The Playback Milestone
-status: planning
-current_phase: 31
-last_updated: "2026-02-27T09:00:00.000Z"
+status: active
+current_phase: 32
+last_updated: "2026-02-27T09:38:13Z"
 progress:
   total_phases: 13
   completed_phases: 11
   total_plans: 42
-  completed_plans: 39
+  completed_plans: 40
 ---
 
 # Project State
@@ -19,16 +19,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-02-27)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** Phase 31 — v1 Prep
+**Current focus:** Phase 32 — Embedded Players
 
 ## Current Position
 
-Phase: 31 of 33 (v1 Prep)
-Plan: 0 of ? in current phase (Phase 31 not started)
-Status: Planning Phase 31 (v1 Prep — community feature UI removal, localhost text fix)
-Last activity: 2026-02-27 — 30-03 executed (Play on Spotify button + error handling on artist page)
+Phase: 32 of 33 (Embedded Players)
+Plan: 1 of 3 in current phase (32-01 complete)
+Status: Active — Phase 32, Plan 01 complete; Plans 32-02 and 32-03 pending
+Last activity: 2026-02-27 — 32-01 executed (EmbedPlayer foundation: autoLoad, Bandcamp spike, YouTube error detection)
 
-Progress: [█████████████████████] 21% of v1.6 (7 plans done across Phase 29+30)
+Progress: [██████████████████████] 24% of v1.6 (8 plans done across Phases 29+30+31+32-01)
 
 ## Performance Metrics
 
@@ -42,8 +42,8 @@ Progress: [█████████████████████] 21% 
 |-------|-------|--------|
 | 29. Streaming Foundation | 4 | Complete — 4/4 plans done |
 | 30. Spotify Integration | 3 | Complete — 3/3 plans done |
-| 31. v1 Prep | TBD | Not started |
-| 32. Embedded Players | TBD | Not started |
+| 31. v1 Prep | 1 | Complete — 1/1 plans done |
+| 32. Embedded Players | 3 | In progress — 1/3 plans done |
 | 33. Artist Claim Form | TBD | Not started |
 
 **v1.6 metrics so far:**
@@ -54,6 +54,8 @@ Progress: [█████████████████████] 21% 
 - 30-01: 3 min, 3 tasks, 4 files, 0 deviations
 - 30-02: 2 min, 2 tasks, 3 files, 0 deviations
 - 30-03: 2 min, 1 task, 2 files, 0 deviations
+- 31-01: (complete — v1 Prep)
+- 32-01: 7 min, 2 tasks, 4 files + 1 tool created, 0 deviations
 
 ## Accumulated Context
 
@@ -86,12 +88,15 @@ Progress: [█████████████████████] 21% 
 - [30-03]: Dynamic imports inside handlePlayOnSpotify for all Spotify modules — avoids circular deps, consistent with collections/QR pattern
 - [30-03]: spotifyPlayMessage resets to null on each play attempt — no stale error state across retries
 - [v1.6 Community]: Community features (Scenes, Rooms, Chat/DMs, Fediverse) removed from all UI in Phase 31 — code preserved, zero UI visibility, no "coming soon" banners
+- [32-01]: Bandcamp spike PASSES — url= parameter confirmed working in Tauri WebView2 145.0.3800.70; tested via CDP (tools/bandcamp-spike.mjs)
+- [32-01]: EmbedPlayer ordering switches from streamingPref/PLATFORM_PRIORITY to streamingState.serviceOrder (single source of truth)
+- [32-01]: scWidget stored in component-level $state so SC can be paused reactively when activeSource changes
+- [32-01]: onDestroy guard: only clear activeSource if this component's platform was the active one (avoids clobbering on {#key} remount)
 
 ### Blockers/Concerns
 
-- [Phase 32 gate]: Bandcamp spike required at Phase 32 start (30 min) — test `url=` param with iframe src `https://bandcamp.com/EmbeddedPlayer/url=https%3A%2F%2Fburial.bandcamp.com%2Falbum%2Funtrue/size=large/transparent=true/`. Renders = implement embed. Blank/error = external-link-only for v1.6.
 - [Phase 32 gate]: YouTube Error 153 fallback must be tested in a production .msi build — dev mode passes; production can fail. This is a hard completion gate for Phase 32.
-- [Phase 32 note]: SoundCloud Widget API re-binding after Svelte navigation remount is untested — verify in Phase 32 before marking SC-01 complete.
+- [Phase 32 note]: SoundCloud Widget API re-binding after Svelte navigation remount is untested — verify in Phase 32 Plan 02 before marking SC-01 complete.
 
 ### Pending Todos
 
@@ -100,5 +105,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-27
-Stopped at: Docs cleanup (pre-Phase 31) — ROADMAP/STATE/MILESTONES/REQUIREMENTS updated, phase dirs renamed
+Stopped at: Completed 32-01-PLAN.md (embed utilities + EmbedPlayer foundation + Bandcamp spike PASSES)
 Resume file: None

@@ -4,6 +4,27 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-02-27 — Phase 32-01: Embedded Players Foundation
+
+Two tasks, two commits. This plan builds the primitives that Plans 32-02 and 32-03 depend on.
+
+**Task 1 — embed utility extensions + EmbedPlayer refactor (44d011e):**
+- `youtube.ts`: Added `?enablejsapi=1` to embed URL — required for YouTube to send postMessage events (Error 153 detection was impossible without this).
+- `bandcamp.ts`: Added `bandcampEmbedUrl(url)` using `url=` parameter format (spike-gated, confirmed below).
+- `EmbedPlayer.svelte`: Full refactor. Removed `streamingPref`/`PLATFORM_PRIORITY` ordering — now uses `streamingState.serviceOrder` directly. Added `autoLoad` and `activeService` props so the artist page source switcher (Plan 32-02) can drive the component. Added `scWidget` state ref so SoundCloud can be paused when another source activates. Added `youtubeError` state + `detectYouTubeError()` for Error 153 fallback. Added Bandcamp iframe branch with 5-second load timeout. Fixed `onDestroy` guard to not clobber the source that an incoming embed just set.
+
+**Task 2 — Bandcamp spike (fd23405):**
+
+SPIKE RESULT: **PASSES** in Tauri WebView2 145.0.3800.70 on Windows.
+
+Ran `tools/bandcamp-spike.mjs` via CDP (Playwright connecting to mercury.exe debug binary with `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=9222`). Injected Burial's "Untrue" album iframe using the `url=` parameter format. The `onload` event fired within 12 seconds. Result recorded in `bandcamp.ts` docstring.
+
+This unblocks BC-01 (artist page Bandcamp embed) and BC-02 (release page Play Album with Bandcamp embed). The iframe branch in EmbedPlayer is kept active.
+
+**Tests:** 193 passing, 0 failing. `npm run check`: 0 errors, 8 pre-existing warnings.
+
+---
+
 ## Entry 2026-02-27 — Phase 31-01: v1 Prep (Community UI Removal)
 
 Pure subtraction. Scenes, Rooms, Chat, and Fediverse are gone from all navigation surfaces. The code lives on — `$lib/comms/` is untouched — but nothing calls it and nothing renders it. v1 ships clean.
@@ -8945,3 +8966,12 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit f9f50fc** (2026-02-27 10:25) — docs(32-embedded-players): create phase 32 execution plan
 > Files changed: 4
+
+> **Commit 7276437** (2026-02-27 10:27) — wip: auto-save
+> Files changed: 1
+
+> **Commit 44d011e** (2026-02-27 10:32) — feat(32-01): extend embed utilities and refactor EmbedPlayer with autoLoad, error detection, and Bandcamp iframe
+> Files changed: 3
+
+> **Commit fd23405** (2026-02-27 10:37) — feat(32-01): Bandcamp spike PASSES — url= parameter confirmed working in WebView2
+> Files changed: 2

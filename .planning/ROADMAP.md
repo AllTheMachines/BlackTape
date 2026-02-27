@@ -175,5 +175,5 @@ Plans:
 | 29. Streaming Foundation | v1.6 | 4/4 | Complete | 2026-02-27 |
 | 30. Spotify Integration | v1.6 | 3/3 | Complete | 2026-02-27 |
 | 31. v1 Prep | v1.6 | 0/1 | Not started | - |
-| 32. Embedded Players | v1.6 | 0/? | Not started | - |
+| 32. Embedded Players | 1/3 | In Progress|  | - |
 | 33. Artist Claim Form | v1.6 | 0/? | Not started | - |

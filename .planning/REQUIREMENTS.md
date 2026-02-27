@@ -25,16 +25,16 @@
 ### YouTube (YT)
 
 - [ ] **YT-01**: Artist page shows YouTube embed player when a YouTube link is available
-- [ ] **YT-02**: YouTube embed falls back gracefully to "Watch on YouTube" external button when embed is blocked (Error 153 — must be verified in production .msi build)
+- [x] **YT-02**: YouTube embed falls back gracefully to "Watch on YouTube" external button when embed is blocked (Error 153 — must be verified in production .msi build)
 
 ### SoundCloud (SC)
 
 - [ ] **SC-01**: Artist page shows SoundCloud embed player when a SoundCloud link is available
-- [ ] **SC-02**: SoundCloud embed pauses when a different streaming source becomes active
+- [x] **SC-02**: SoundCloud embed pauses when a different streaming source becomes active
 
 ### Bandcamp (BC)
 
-- [ ] **BC-01**: Artist page shows Bandcamp embed player when a Bandcamp link is available (gated on implementation spike validating the `url=` embed parameter — falls back to external link if spike fails)
+- [x] **BC-01**: Artist page shows Bandcamp embed player when a Bandcamp link is available (gated on implementation spike validating the `url=` embed parameter — falls back to external link if spike fails)
 - [ ] **BC-02**: Release page "Play Album" button activates the Bandcamp embed for that specific release URL when available, otherwise activates artist-level embed
 
 ### Player UX (PLAYER)
@@ -84,10 +84,10 @@
 | SPOT-04 | Phase 30 | Complete |
 | PREP-01 | Phase 31 | Pending |
 | YT-01 | Phase 32 | Pending |
-| YT-02 | Phase 32 | Pending |
+| YT-02 | Phase 32 | Complete |
 | SC-01 | Phase 32 | Pending |
-| SC-02 | Phase 32 | Pending |
-| BC-01 | Phase 32 | Pending |
+| SC-02 | Phase 32 | Complete |
+| BC-01 | Phase 32 | Complete |
 | BC-02 | Phase 32 | Pending |
 | PLAYER-01 | Phase 29 | Complete |
 | PLAYER-02 | Phase 32 | Pending |
