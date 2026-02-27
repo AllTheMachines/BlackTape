@@ -2,7 +2,6 @@
 	import type { PlatformLinks, PlatformType } from '$lib/embeds/types';
 	import { spotifyEmbedUrl } from '$lib/embeds/spotify';
 	import { youtubeEmbedUrl, isYoutubeChannel } from '$lib/embeds/youtube';
-	import { bandcampEmbedUrl } from '$lib/embeds/bandcamp';
 	import ExternalLink from './ExternalLink.svelte';
 	import { onDestroy } from 'svelte';
 	import { streamingState, setActiveSource, clearActiveSource, type StreamingSource } from '$lib/player/streaming.svelte';
@@ -44,10 +43,6 @@
 
 	/** SoundCloud widget ref — stored so we can call .pause() on source change. */
 	let scWidget = $state<{ pause: () => void; bind: (event: string, handler: (...args: unknown[]) => void) => void } | null>(null);
-
-	/** Bandcamp iframe load state for 5-second timeout. */
-	let bandcampLoaded = $state(false);
-	let bandcampTimeout = $state(false);
 
 	/** YouTube Error 153 (or 100/101/150) — video not embeddable. */
 	let youtubeError = $state(false);
@@ -223,18 +218,6 @@
 		}
 	});
 
-	// Bandcamp 5-second load timeout
-	$effect(() => {
-		if (activePlatform === 'bandcamp') {
-			bandcampLoaded = false;
-			bandcampTimeout = false;
-			const timer = setTimeout(() => {
-				if (!bandcampLoaded) bandcampTimeout = true;
-			}, 5000);
-			return () => clearTimeout(timer);
-		}
-	});
-
 	onDestroy(() => {
 		if (typeof window !== 'undefined') {
 			window.removeEventListener('message', handleEmbedMessage);
@@ -258,25 +241,7 @@
 			<div class="platform-section">
 				{#if platform === 'bandcamp'}
 					{#each urls as url}
-						{#if bandcampTimeout && !bandcampLoaded}
-							<!-- 5s timeout expired without load — show external link fallback -->
-							<ExternalLink {url} platform="bandcamp" label="Visit on Bandcamp" />
-						{:else if autoLoad && activePlatform === 'bandcamp'}
-							<div class="iframe-wrap bc-wrap">
-								<iframe
-									src={bandcampEmbedUrl(url)}
-									width="100%"
-									height="120"
-									frameborder="0"
-									allow="autoplay"
-									title="Bandcamp player"
-									onload={() => { bandcampLoaded = true; }}
-								></iframe>
-							</div>
-							<ExternalLink {url} platform="bandcamp" label="Visit on Bandcamp" />
-						{:else}
-							<ExternalLink {url} platform="bandcamp" />
-						{/if}
+						<ExternalLink {url} platform="bandcamp" label="Visit on Bandcamp" />
 					{/each}
 
 				{:else if platform === 'spotify'}
@@ -395,9 +360,6 @@
 		height: 100%;
 	}
 
-	.bc-wrap {
-		height: 120px;
-	}
 
 	/* SoundCloud oEmbed HTML sometimes includes its own iframe */
 	.soundcloud-embed :global(iframe) {

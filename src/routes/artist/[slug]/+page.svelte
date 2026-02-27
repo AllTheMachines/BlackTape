@@ -280,7 +280,7 @@
 		switch (svc) {
 			case 'spotify':   return urls.some(u => spotifyEmbedUrl(u) !== null);
 			case 'youtube':   return urls.some(u => youtubeEmbedUrl(u) !== null);
-			case 'bandcamp':  return urls.some(u => u.includes('/album/') || u.includes('/track/'));
+			case 'bandcamp':  return false; // Bandcamp has no reliable embed API — always use external link
 			case 'soundcloud': return true; // oEmbed fetched async; EmbedPlayer falls back gracefully
 		}
 	}
