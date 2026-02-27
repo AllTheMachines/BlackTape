@@ -9461,3 +9461,6 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit 1016c12** (2026-02-27 18:21) — wip: auto-save
 > Files changed: 1
+
+> **Commit 71cdfa3** (2026-02-27 18:22) — docs: screenshot QA v1.6 session entry
+> Files changed: 1
