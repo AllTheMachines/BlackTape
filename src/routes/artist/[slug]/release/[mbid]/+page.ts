@@ -48,6 +48,8 @@ export const load: PageLoad = async ({ params, fetch }) => {
 	let release: ReleaseDetail | null = null;
 	/** Raw credits without slug — populated inside the fetch block. */
 	let rawCredits: Omit<CreditEntry, 'slug'>[] = [];
+	/** Bandcamp URL for the release group (from MB url relations). Null if not found. */
+	let bandcampUrl: string | null = null;
 
 	try {
 		const mbUrl = `https://musicbrainz.org/ws/2/release?release-group=${mbid}&inc=recordings+artist-credits+media+artist-rels&limit=1&fmt=json`;
@@ -112,7 +114,6 @@ export const load: PageLoad = async ({ params, fetch }) => {
 					}
 				}
 
-				let bandcampUrl: string | null = null;
 				for (const r of rel.relations ?? []) {
 					if (r['target-type'] === 'url' && r.url?.resource) {
 						try {
@@ -181,5 +182,9 @@ export const load: PageLoad = async ({ params, fetch }) => {
 		}
 	}
 
-	return { release, slug, mbid, credits };
+	// bandcampUrl is fetched above from MB release-group URL relations.
+	// Exposed as streamingLinks for Play Album button in +page.svelte.
+	// Note: MB release relations only include Bandcamp (not YouTube/SoundCloud).
+	const streamingLinks = { bandcamp: bandcampUrl };
+	return { release, slug, mbid, credits, streamingLinks };
 };
