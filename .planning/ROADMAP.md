@@ -8,7 +8,7 @@
 - ✅ **v1.3 The Open Network** — Phases 16–22 (shipped 2026-02-24)
 - ✅ **v1.4 The Interface** — Phases 23–27 (shipped 2026-02-25)
 - ✅ **v1.5 UX Cleanup** — Phase 28 (shipped 2026-02-26)
-- 🚧 **v1.6 The Playback Milestone** — Phases 29–32 (in progress)
+- 🚧 **v1.6 The Playback Milestone** — Phases 29–33 (in progress) — completes v1 public release
 
 ---
 
