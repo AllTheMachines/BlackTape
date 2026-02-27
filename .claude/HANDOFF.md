@@ -1,56 +1,49 @@
 # Work Handoff - 2026-02-27
 
 ## Current Task
-Docs cleanup before executing Phase 31 (v1 Prep) — updating ROADMAP, STATE, MILESTONES, REQUIREMENTS to reflect the agreed path to ship v1.
+UI polish: squared corners everywhere + Style Map rectangle nodes
 
 ## Context
-Steve and I reviewed v1.5-PLAN.md against what was actually built and agreed on a clean path to ship v1: Phase 31 (community feature UI removal), Phase 32 (embedded players), Phase 33 (artist claim form). Planning docs are stale and need updating before running /gsd:plan-phase 31.
+Steve is doing visual polish on the BlackTape desktop app after completing and archiving v1.6 (The Playback Milestone). He doesn't like rounded buttons — wants everything squared. Also changed Style Map from circles to auto-sized rectangles.
 
 ## Progress
 
 ### Completed
-- Phase 30 (Spotify Integration) — 3/3 plans executed and verified
-- Agreed v1 ship plan: Phase 31 (v1 Prep), 32 (Embedded Players), 33 (Claim Form)
-- Confirmed Spotify Web Playback SDK is impossible (Widevine CDM not in Tauri WebView2 — SPOT-F02)
-- ROADMAP.md milestone summary line updated (Phases 29-33)
-- .planning/.continue-here.md written with full detail including exact line numbers
-- All committed at 613b72c
+- **v1.6 milestone archived** — all 5 phases (29–33), 13 plans, 193 tests passing, git tagged `v1.6` and pushed to remote
+- **Style Map: circles → rectangles** — `src/lib/components/StyleMap.svelte` rewritten to use `<rect>` nodes auto-sized to label text (6.5px/char + 10px padding each side, 22px height), always shows label, collision force updated
+- **Global border-radius zeroed** — `--r: 0px` in `src/lib/styles/theme.css` (was 2px)
+- **Hardcoded pill buttons fixed**:
+  - `border-radius: 999px` → `0` in `src/routes/artist/[slug]/+page.svelte` (big streaming buttons)
+  - `border-radius: var(--r, 6px)` → `0` in same file
+  - `border-radius: var(--card-radius)` → `0` in `src/lib/components/EmbedPlayer.svelte`
 
 ### In Progress
-- Docs cleanup (ROADMAP.md v1.6 section still needs rewriting)
+- Dev app is running — Steve opened it to review the changes visually
 
 ### Remaining
-1. ROADMAP.md — rewrite v1.6 section (use Write tool, not Edit — em-dash encoding issue)
-2. STATE.md — remove 3 duplicate YAML frontmatter blocks at top, update current phase to 31
-3. MILESTONES.md — remove Web Playback SDK / bundled client ID from v1.6 goals
-4. REQUIREMENTS.md — add PREP-01 (community cleanup) + CLAIM-01 (claim form), fix traceability
-5. Rename .planning/phases/31-embedded-players/ to 31-v1-prep/
-6. Rename .planning/phases/32-album-playback-polish/ to 32-embedded-players/
-7. Archive .planning/v1.5-PLAN.md to .planning/milestones/v1.5-PLAN.md
-8. Commit all docs changes
-9. Run /gsd:plan-phase 31
+- Review result in running app, check if anything still looks too rounded
+- Commit the style changes
+- Possibly more hardcoded radii in other components to zero out
 
 ## Key Decisions
-- Spotify stays as Connect API (Web Playback SDK blocked — Widevine unavailable in WebView2)
-- Community features: code stays, zero UI visibility, no "coming soon" banners
-- Phase 31 = v1 Prep | Phase 32 = Embedded Players | Phase 33 = Artist Claim Form
-- v1.5-PLAN.md is historical — archive it
+- `--r: 0px` globally (single source of truth, not per-component)
+- Avatar circles (`border-radius: 50%`) intentionally NOT touched — round avatars are fine
+- Style Map text-width estimation: 6.5px/char (can't use getBBox() at layout time)
 
 ## Relevant Files
-- `.planning/.continue-here.md` — full detail with exact line numbers for all Phase 31 edits
-- `.planning/ROADMAP.md` — v1.6 section needs rewrite
-- `.planning/STATE.md` — 3 duplicate frontmatter blocks to remove
-- `.planning/MILESTONES.md` — v1.6 goals to update
-- `.planning/REQUIREMENTS.md` — add PREP-01, CLAIM-01; fix traceability table
+- `src/lib/styles/theme.css` — `--r` token → `0px`
+- `src/lib/components/StyleMap.svelte` — circles → auto-width rectangles
+- `src/routes/artist/[slug]/+page.svelte` — 999px pill removed from streaming buttons
+- `src/lib/components/EmbedPlayer.svelte` — var(--card-radius) zeroed
 
 ## Git Status
-Clean except BUILD-LOG.md (3 lines from post-commit hook) — no planning changes uncommitted.
+Style changes NOT yet committed. BUILD-LOG.md has 3 uncommitted lines (post-commit hook wip — normal).
 
 ## Next Steps
-1. Read full .planning/ROADMAP.md then Write corrected version
-2. Fix STATE.md, MILESTONES.md, REQUIREMENTS.md
-3. Rename phase dirs, archive v1.5-PLAN.md, commit
-4. /gsd:plan-phase 31
+1. Steve reviews visually in running app
+2. If more rounding spotted: `grep -rn "border-radius" src/ | grep -v "var(--r)\|50%\|0px\|0;" | grep -v ".svelte:[0-9]*:.*border-radius: 0"`
+3. Commit: `git add src/lib/styles/theme.css src/lib/components/StyleMap.svelte "src/routes/artist/[slug]/+page.svelte" src/lib/components/EmbedPlayer.svelte && git commit -m "style: square all borders, style map circles to auto-width rectangles"`
+4. Update BUILD-LOG.md
 
 ## Resume Command
-After `/clear`, run `/resume` to continue.
+After running `/clear`, run `/resume` to continue.
