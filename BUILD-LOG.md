@@ -9404,3 +9404,6 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit 6a96781** (2026-02-27 16:16) — auto-save: 24 files @ 16:16
 > Files changed: 23
+
+> **Commit 1e35a63** (2026-02-27 16:20) — wip: screenshot QA session — script written, diagnosing Tauri CDP launch
+> Files changed: 2
