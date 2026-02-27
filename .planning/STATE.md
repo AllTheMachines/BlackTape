@@ -3,6 +3,19 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: — The Playback Milestone
 status: unknown
+last_updated: "2026-02-27T07:52:58.031Z"
+progress:
+  total_phases: 13
+  completed_phases: 10
+  total_plans: 39
+  completed_plans: 38
+---
+
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: — The Playback Milestone
+status: unknown
 last_updated: "2026-02-27T00:42:04.307Z"
 progress:
   total_phases: 10
@@ -23,11 +36,11 @@ See: .planning/PROJECT.md (updated 2026-02-27)
 ## Current Position
 
 Phase: 30 of 32 (Spotify Integration)
-Plan: 1 of TBD in current phase
-Status: Phase 30 in progress — 30-01 (core module) complete. Next: 30-02 (Settings wizard)
-Last activity: 2026-02-27 — 30-01 executed (Spotify core module: state + auth + Connect API)
+Plan: 2 of TBD in current phase
+Status: Phase 30 in progress — 30-02 (Settings wizard) complete. Next: 30-03 (Artist page Play on Spotify button)
+Last activity: 2026-02-27 — 30-02 executed (SpotifySettings wizard + settings page + boot hydration)
 
-Progress: [████████████████████] 15% of v1.6 (5 plans done across Phase 29+30)
+Progress: [████████████████████] 18% of v1.6 (6 plans done across Phase 29+30)
 
 ## Performance Metrics
 
@@ -40,7 +53,7 @@ Progress: [████████████████████] 15% of 
 | Phase | Plans | Status |
 |-------|-------|--------|
 | 29. Streaming Foundation | 4 | Complete — 4/4 plans done |
-| 30. Spotify Integration | TBD | In progress — 1/TBD plans done |
+| 30. Spotify Integration | TBD | In progress — 2/TBD plans done |
 | 31. Embedded Players | TBD | Not started |
 | 32. Album Playback + Polish | TBD | Not started |
 
@@ -50,6 +63,7 @@ Progress: [████████████████████] 15% of 
 - 29-03: 2 min, 1 task, 1 file, 1 auto-fix (Svelte 5 {@const} placement constraint)
 - 29-04: 2 min, 2 tasks, 2 files, 0 deviations
 - 30-01: 3 min, 3 tasks, 4 files, 0 deviations
+- 30-02: 2 min, 2 tasks, 3 files, 0 deviations
 
 ## Accumulated Context
 
@@ -76,6 +90,8 @@ Progress: [████████████████████] 15% of 
 - [30-01]: PlayResult discriminated union for Connect API — playTracksOnSpotify never throws, always returns ok/no_device/premium_required/token_expired
 - [30-01]: Proactive refresh at tokenExpiry - 60s to prevent mid-playback failures; keeps existing refreshToken if not rotated in response
 - [30-01]: All 5 Spotify tokens stored in ai_settings table — no new DB tables or Rust commands needed
+- [Phase 30]: SpotifySettings wizard: self-contained, no props, drives from spotifyState.connected derived
+- [Phase 30]: HTML/CSS mockup for Spotify dashboard in settings wizard — no binary assets, won't go stale
 
 ### Blockers/Concerns
 
@@ -91,5 +107,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-27
-Stopped at: Completed 30-spotify-integration/30-01-PLAN.md (Spotify core module)
+Stopped at: Completed 30-spotify-integration/30-02-PLAN.md (Spotify Settings wizard)
 Resume file: None
