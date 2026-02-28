@@ -9847,3 +9847,6 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit 3b01a0c** (2026-02-28 12:48) — chore: ignore press-screenshots directory
 > Files changed: 135
+
+> **Commit 0a40264** (2026-02-28 12:48) — wip: auto-save
+> Files changed: 4
