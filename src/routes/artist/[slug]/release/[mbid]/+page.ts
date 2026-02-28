@@ -48,11 +48,13 @@ export const load: PageLoad = async ({ params, fetch }) => {
 	let release: ReleaseDetail | null = null;
 	/** Raw credits without slug — populated inside the fetch block. */
 	let rawCredits: Omit<CreditEntry, 'slug'>[] = [];
-	/** Bandcamp URL for the release group (from MB url relations). Null if not found. */
-	let bandcampUrl: string | null = null;
+	/** Streaming URLs extracted from MB URL relations. */
+	const streamingUrls: { bandcamp: string | null; spotify: string | null; soundcloud: string | null; youtube: string | null } = {
+		bandcamp: null, spotify: null, soundcloud: null, youtube: null
+	};
 
 	try {
-		const mbUrl = `https://musicbrainz.org/ws/2/release?release-group=${mbid}&inc=recordings+artist-credits+media+artist-rels&limit=1&fmt=json`;
+		const mbUrl = `https://musicbrainz.org/ws/2/release?release-group=${mbid}&inc=recordings+artist-credits+media+artist-rels+url-rels&limit=1&fmt=json`;
 		const resp = await fetch(mbUrl, {
 			headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' }
 		});
@@ -117,10 +119,11 @@ export const load: PageLoad = async ({ params, fetch }) => {
 				for (const r of rel.relations ?? []) {
 					if (r['target-type'] === 'url' && r.url?.resource) {
 						try {
-							if (new URL(r.url.resource).hostname.includes('bandcamp.com')) {
-								bandcampUrl = r.url.resource;
-								break;
-							}
+							const hostname = new URL(r.url.resource).hostname;
+							if (!streamingUrls.bandcamp && hostname.includes('bandcamp.com')) streamingUrls.bandcamp = r.url.resource;
+							else if (!streamingUrls.spotify && hostname.includes('spotify.com')) streamingUrls.spotify = r.url.resource;
+							else if (!streamingUrls.soundcloud && hostname.includes('soundcloud.com')) streamingUrls.soundcloud = r.url.resource;
+							else if (!streamingUrls.youtube && (hostname.includes('youtube.com') || hostname.includes('youtu.be'))) streamingUrls.youtube = r.url.resource;
 						} catch { /* skip */ }
 					}
 				}
@@ -133,7 +136,7 @@ export const load: PageLoad = async ({ params, fetch }) => {
 				const year = rel.date ? parseInt(rel.date.substring(0, 4), 10) || null : null;
 
 				const { buildBuyLinks } = await import('$lib/affiliates/construct');
-				const buyLinks = buildBuyLinks(artistName, rel.title, bandcampUrl, {
+				const buyLinks = buildBuyLinks(artistName, rel.title, streamingUrls.bandcamp, {
 					amazonTag: null,
 					appleToken: null,
 					appleCampaign: null
@@ -182,9 +185,15 @@ export const load: PageLoad = async ({ params, fetch }) => {
 		}
 	}
 
-	// bandcampUrl is fetched above from MB release-group URL relations.
-	// Exposed as streamingLinks for Play Album button in +page.svelte.
-	// Note: MB release relations only include Bandcamp (not YouTube/SoundCloud).
-	const streamingLinks = { bandcamp: bandcampUrl };
-	return { release, slug, mbid, credits, streamingLinks };
+	// Build PlatformLinks arrays for EmbedPlayer (which expects string[]).
+	const platformLinks = {
+		bandcamp: streamingUrls.bandcamp ? [streamingUrls.bandcamp] : [],
+		spotify: streamingUrls.spotify ? [streamingUrls.spotify] : [],
+		soundcloud: streamingUrls.soundcloud ? [streamingUrls.soundcloud] : [],
+		youtube: streamingUrls.youtube ? [streamingUrls.youtube] : [],
+		wikipedia: [],
+		other: []
+	};
+	const hasAnyStream = Object.values(streamingUrls).some(Boolean);
+	return { release, slug, mbid, credits, platformLinks, hasAnyStream };
 };

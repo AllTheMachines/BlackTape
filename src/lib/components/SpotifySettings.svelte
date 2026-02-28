@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { spotifyState } from '$lib/spotify/state.svelte';
+	import { OAUTH_REDIRECT_URI } from '$lib/spotify/auth'; // http://127.0.0.1:7743/callback
 
 	type WizardStep = 'setup' | 'waiting' | 'success';
 	let step = $state<WizardStep>(spotifyState.connected ? 'success' : 'setup');
@@ -119,17 +120,16 @@
 			<ol class="steps-list">
 				<li>
 					Go to <a href="https://developer.spotify.com/dashboard" target="_blank" rel="noopener noreferrer">developer.spotify.com/dashboard</a>
-					and create an app (if you don't have one)
+					and create an app — check <strong>Web API</strong> when asked which APIs you'll use
 				</li>
 				<li>
-					Set the Redirect URI to: <code class="redirect-uri">http://127.0.0.1</code>
-					<span class="redirect-note">(exactly — no port, no path)</span>
+					In the app's settings, find <strong>Redirect URIs</strong>, add: <code class="redirect-uri">{OAUTH_REDIRECT_URI}</code> and click Save
 				</li>
 				<li>
-					Copy your Client ID from the app settings
+					Copy your <strong>Client ID</strong> from the top of the settings page and paste it below
 				</li>
 			</ol>
-
+			<p class="dev-mode-note">App Status will show "Development mode" — that's fine for personal use.</p>
 			</div>
 
 		<div class="import-card-fields">
@@ -196,7 +196,7 @@
 	}
 
 	.import-card-desc {
-		font-size: 0.78rem;
+		font-size: 0.875rem;
 		color: var(--t-3);
 		line-height: 1.5;
 		margin: 0;
@@ -224,9 +224,15 @@
 	}
 
 	.steps-list li {
-		font-size: 0.78rem;
+		font-size: 0.875rem;
 		color: var(--t-2);
 		line-height: 1.5;
+	}
+
+	.dev-mode-note {
+		font-size: 0.8rem;
+		color: var(--t-3);
+		margin: 4px 0 0;
 	}
 
 	.steps-list a {
@@ -246,88 +252,6 @@
 		color: var(--t-1);
 		font-family: monospace;
 		border: 1px solid var(--b-1);
-	}
-
-	.redirect-note {
-		font-size: 0.7rem;
-		color: var(--t-3);
-		margin-left: 4px;
-	}
-
-	/* ─── Spotify dashboard mockup ───────────────────────────────────────── */
-
-	.dashboard-mockup {
-		border: 1px solid var(--b-2);
-		border-radius: 0;
-		overflow: hidden;
-		font-size: 0.72rem;
-		max-width: 340px;
-		background: var(--bg-2);
-	}
-
-	.mockup-chrome {
-		display: flex;
-		align-items: center;
-		gap: 5px;
-		padding: 6px 10px;
-		background: var(--bg-3);
-		border-bottom: 1px solid var(--b-1);
-	}
-
-	.mockup-dot {
-		width: 8px;
-		height: 8px;
-		border-radius: 50%;
-		background: var(--b-2);
-		flex-shrink: 0;
-	}
-
-	.mockup-url {
-		font-size: 0.65rem;
-		color: var(--t-3);
-		margin-left: 4px;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
-	.mockup-body {
-		padding: 8px 10px;
-		display: flex;
-		flex-direction: column;
-		gap: 6px;
-	}
-
-	.mockup-field {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		padding: 4px 6px;
-		border-radius: 0;
-	}
-
-	.mockup-field.highlighted {
-		background: color-mix(in oklch, var(--acc) 10%, transparent);
-		border: 1px solid color-mix(in oklch, var(--acc) 30%, transparent);
-	}
-
-	.mockup-label {
-		color: var(--t-3);
-		min-width: 80px;
-		flex-shrink: 0;
-	}
-
-	.mockup-value {
-		color: var(--t-2);
-		font-family: monospace;
-		font-size: 0.7rem;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
-	.mockup-field.highlighted .mockup-value {
-		color: var(--t-1);
 	}
 
 	/* ─── Step 2: Waiting state ──────────────────────────────────────────── */

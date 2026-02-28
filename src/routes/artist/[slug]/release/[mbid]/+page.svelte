@@ -4,7 +4,7 @@
 	import BuyOnBar from '$lib/components/BuyOnBar.svelte';
 	import LinerNotes from '$lib/components/LinerNotes.svelte';
 	import { isTauri } from '$lib/platform';
-	import { bandcampEmbedUrl } from '$lib/embeds/bandcamp';
+	import EmbedPlayer from '$lib/components/EmbedPlayer.svelte';
 	import type { ReleaseDetail } from './+page';
 
 	let { data } = $props();
@@ -23,12 +23,6 @@
 	let coverError = $state(false);
 	let tauriMode = $state(false);
 	let creditsExpanded = $state(false);
-	/** Show inline Bandcamp embed after Play Album is clicked. */
-	let showInlineEmbed = $state(false);
-
-	function handlePlayAlbum() {
-		showInlineEmbed = true;
-	}
 	function handleQueueAlbum() {
 		// Stub: same constraint as handlePlayAlbum — deferred to local file matching phase.
 	}
@@ -161,28 +155,14 @@
 
 			{#if tauriMode}
 				<div class="album-actions" data-testid="album-actions">
-					<!-- Play Album: only shown when Bandcamp URL available AND in Tauri mode -->
-					{#if data.streamingLinks?.bandcamp}
-						<button class="btn-play-album" onclick={handlePlayAlbum} data-testid="play-album-btn">
-							Play Album
-						</button>
-					{/if}
 					<button class="btn-queue-album" onclick={handleQueueAlbum} data-testid="queue-album-btn">
 						+ Queue Album
 					</button>
 				</div>
 
-				<!-- Inline Bandcamp embed - shown after Play Album clicked -->
-				{#if showInlineEmbed && data.streamingLinks?.bandcamp}
-					<div class="release-embed-wrap">
-						<iframe
-							src={bandcampEmbedUrl(data.streamingLinks.bandcamp)}
-							width="100%"
-							height="120"
-							frameborder="0"
-							allow="autoplay"
-							title="Bandcamp album player"
-						></iframe>
+				{#if data.hasAnyStream}
+					<div class="release-embed-wrap" data-testid="release-embed play-album-btn">
+						<EmbedPlayer links={data.platformLinks} />
 					</div>
 				{/if}
 			{/if}
@@ -372,23 +352,6 @@
 		display: flex;
 		gap: 8px;
 		margin-top: 8px;
-	}
-
-	.btn-play-album {
-		background: var(--acc);
-		color: #000;
-		border: none;
-		padding: 6px 14px;
-		border-radius: 0;
-		font-size: 0.8rem;
-		font-weight: 600;
-		cursor: pointer;
-	}
-
-	.btn-play-album:hover {
-		background: var(--acc-bg-h);
-		color: var(--acc);
-		border: 1px solid var(--b-acc);
 	}
 
 	.btn-queue-album {

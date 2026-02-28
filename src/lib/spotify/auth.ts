@@ -53,6 +53,12 @@ const TOKEN_URL = 'https://accounts.spotify.com/api/token';
 const AUTHORIZE_URL = 'https://accounts.spotify.com/authorize';
 const AUTH_TIMEOUT_MS = 120_000;
 
+// Fixed port for the local OAuth callback server.
+// Spotify dashboard requires an exact URI — dynamic ports can't be pre-registered.
+// If 7743 is in use, auth will fail with a port-binding error.
+export const OAUTH_PORT = 7743;
+export const OAUTH_REDIRECT_URI = `http://127.0.0.1:${OAUTH_PORT}/callback`;
+
 /**
  * Start the Spotify PKCE OAuth flow.
  *
@@ -68,9 +74,8 @@ export async function startSpotifyAuth(clientId: string): Promise<SpotifyStoredS
 	const { verifier, challenge } = await generatePKCE();
 	const csrfState = generateRandomString(16);
 
-	const port = await start();
-	// MUST use 127.0.0.1 — Spotify blocked localhost redirects in November 2025.
-	const redirectUri = `http://127.0.0.1:${port}/callback`;
+	const port = await start({ ports: [OAUTH_PORT] });
+	const redirectUri = OAUTH_REDIRECT_URI;
 
 	const params = new URLSearchParams({
 		response_type: 'code',

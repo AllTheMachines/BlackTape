@@ -5,6 +5,7 @@
 	import ExternalLink from './ExternalLink.svelte';
 	import { onDestroy } from 'svelte';
 	import { streamingState, setActiveSource, clearActiveSource, type StreamingSource } from '$lib/player/streaming.svelte';
+	import { spotifyState } from '$lib/spotify/state.svelte';
 
 	let {
 		links,
@@ -22,6 +23,32 @@
 
 	/** Track which embeds the user has clicked to load. */
 	let loadedEmbeds = $state<Record<string, boolean>>({});
+
+	/** Spotify Connect state — one per URL key. */
+	let spotifyConnectState = $state<Record<string, 'idle' | 'loading' | 'playing' | 'error'>>({});
+	let spotifyConnectError = $state<Record<string, string>>({});
+
+	async function playOnSpotifyDesktop(url: string) {
+		const key = `spotify-${url}`;
+		spotifyConnectState[key] = 'loading';
+		spotifyConnectError[key] = '';
+		try {
+			const { extractSpotifyArtistId, getArtistTopTracks, playTracksOnSpotify } = await import('$lib/spotify/api');
+			const { getValidAccessToken } = await import('$lib/spotify/auth');
+			const artistId = extractSpotifyArtistId(url);
+			if (!artistId) { spotifyConnectState[key] = 'error'; spotifyConnectError[key] = 'Could not find artist on Spotify.'; return; }
+			const token = await getValidAccessToken();
+			const trackUris = await getArtistTopTracks(artistId, token);
+			const result = await playTracksOnSpotify(trackUris, token);
+			if (result === 'ok') { spotifyConnectState[key] = 'playing'; }
+			else if (result === 'no_device') { spotifyConnectState[key] = 'error'; spotifyConnectError[key] = 'Open Spotify Desktop and start playing anything, then try again.'; }
+			else if (result === 'premium_required') { spotifyConnectState[key] = 'error'; spotifyConnectError[key] = 'Spotify Premium is required.'; }
+			else if (result === 'token_expired') { spotifyConnectState[key] = 'error'; spotifyConnectError[key] = 'Spotify session expired — reconnect in Settings.'; }
+		} catch {
+			spotifyConnectState[key] = 'error';
+			spotifyConnectError[key] = 'Could not connect to Spotify.';
+		}
+	}
 
 	function revealEmbed(key: string) {
 		loadedEmbeds[key] = true;
@@ -246,29 +273,45 @@
 
 				{:else if platform === 'spotify'}
 					{#each urls as url}
-						{@const embed = spotifyEmbedUrl(url)}
-						{#if embed}
-							{@const key = `spotify-${url}`}
-							{#if autoLoad && activePlatform === 'spotify' || loadedEmbeds[key]}
-								<div class="iframe-wrap">
-									<iframe
-										src={embed}
-										width="100%"
-										height="352"
-										frameborder="0"
-										allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-										loading="lazy"
-										title="Spotify player"
-									></iframe>
-								</div>
-							{:else}
-								<button class="embed-trigger platform-spotify" onclick={() => revealEmbed(key)}>
-									Play on Spotify
-								</button>
+						{@const key = `spotify-${url}`}
+						{#if spotifyState.connected}
+							{@const cstate = spotifyConnectState[key] ?? 'idle'}
+							<button
+								class="embed-trigger platform-spotify"
+								class:playing={cstate === 'playing'}
+								onclick={() => playOnSpotifyDesktop(url)}
+								disabled={cstate === 'loading'}
+							>
+								{cstate === 'loading' ? 'Connecting…' : cstate === 'playing' ? '▶ Playing in Spotify' : '▶ Play in Spotify Desktop'}
+							</button>
+							{#if spotifyConnectError[key]}
+								<p class="spotify-connect-error">{spotifyConnectError[key]}</p>
 							{/if}
 							<ExternalLink {url} platform="spotify" label="Open in Spotify" />
 						{:else}
-							<ExternalLink {url} platform="spotify" />
+							{@const embed = spotifyEmbedUrl(url)}
+							{#if embed}
+								{#if autoLoad && activePlatform === 'spotify' || loadedEmbeds[key]}
+									<div class="iframe-wrap">
+										<iframe
+											src={embed}
+											width="100%"
+											height="352"
+											frameborder="0"
+											allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+											loading="lazy"
+											title="Spotify player"
+										></iframe>
+									</div>
+								{:else}
+									<button class="embed-trigger platform-spotify" onclick={() => revealEmbed(key)}>
+										Play on Spotify
+									</button>
+								{/if}
+								<ExternalLink {url} platform="spotify" label="Open in Spotify" />
+							{:else}
+								<ExternalLink {url} platform="spotify" />
+							{/if}
 						{/if}
 					{/each}
 
@@ -403,5 +446,16 @@
 	}
 	.embed-trigger.platform-youtube:hover {
 		border-color: var(--youtube-color);
+	}
+
+	.embed-trigger.playing {
+		opacity: 0.7;
+		cursor: default;
+	}
+
+	.spotify-connect-error {
+		font-size: 0.75rem;
+		color: #ef4444;
+		margin: 4px 0 0;
 	}
 </style>

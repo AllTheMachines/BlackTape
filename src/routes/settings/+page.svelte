@@ -9,7 +9,7 @@
 	import { onMount } from 'svelte';
 	import { themeState, applyPalette, clearPalette } from '$lib/theme/engine.svelte';
 	import { generatePalette, tasteTagsToHue } from '$lib/theme/palette';
-	import { saveThemePreference, saveStreamingPreference, saveLayoutPreference, saveUserTemplates, streamingPref, saveServiceOrder } from '$lib/theme/preferences.svelte';
+	import { saveThemePreference, saveLayoutPreference, saveUserTemplates, saveServiceOrder } from '$lib/theme/preferences.svelte';
 	import { streamingState } from '$lib/player/streaming.svelte';
 	import { TEMPLATE_LIST, createUserTemplateRecord, expandUserTemplate } from '$lib/theme/templates';
 	import type { LayoutTemplate } from '$lib/theme/templates';
@@ -19,9 +19,6 @@
 	let tauriMode = $state(false);
 	let newTemplateName = $state('');
 
-	// ─── Streaming service order drag state ──────────────────────────────────────
-	let dragSrcIdx = $state<number | null>(null);
-	let isDragTarget = $state<number | null>(null);
 
 	const SERVICE_LABELS: Record<string, string> = {
 		bandcamp: 'Bandcamp',
@@ -258,17 +255,14 @@
 
 	// ─── Streaming handler ───────────────────────────────────────────────────────
 
-	function handleStreamingChange(platform: string) {
-		streamingPref.platform = platform;
-		saveStreamingPreference(platform);
-	}
-
-	function reorderServices(fromIdx: number, toIdx: number): void {
+	function moveService(idx: number, direction: -1 | 1): void {
+		const newIdx = idx + direction;
+		if (newIdx < 0 || newIdx >= streamingState.serviceOrder.length) return;
 		const order = [...streamingState.serviceOrder];
-		const [moved] = order.splice(fromIdx, 1);
-		order.splice(toIdx, 0, moved);
+		const [moved] = order.splice(idx, 1);
+		order.splice(newIdx, 0, moved);
 		streamingState.serviceOrder = order;
-		saveServiceOrder(order); // fire-and-forget
+		saveServiceOrder(order);
 	}
 </script>
 
@@ -393,54 +387,22 @@
 
 		<!-- Streaming Preference -->
 		<div class="settings-section">
-			<h2>Streaming Preference</h2>
-			<p class="section-desc">
-				Choose your preferred platform. Embeds and "Listen on" links will show it first.
-			</p>
-
-			<div class="setting-row">
-				<label for="platform-select" class="setting-label">Preferred Platform</label>
-				<select
-					id="platform-select"
-					value={streamingPref.platform}
-					onchange={(e) => handleStreamingChange(e.currentTarget.value)}
-					class="platform-select">
-					<option value="">No preference (default order)</option>
-					<option value="bandcamp">Bandcamp</option>
-					<option value="spotify">Spotify</option>
-					<option value="soundcloud">SoundCloud</option>
-					<option value="youtube">YouTube</option>
-				</select>
-			</div>
-		</div>
-
-		<!-- Streaming Service Priority -->
-		<div class="settings-section">
 			<h2>Streaming</h2>
 			<p class="section-desc">
-				Drag to set your preferred service order. Used for future auto-resolution of streaming sources.
+				Use the arrows to set your preferred service order. The top service loads by default on artist and release pages.
 			</p>
 
 			<div class="service-order-list">
 				{#each streamingState.serviceOrder as service, i}
-					<div
-						class="service-row"
-						class:drag-over={isDragTarget === i}
-						draggable={true}
-						ondragstart={() => { dragSrcIdx = i; }}
-						ondragover={(e) => { e.preventDefault(); isDragTarget = i; }}
-						ondragleave={() => { isDragTarget = null; }}
-						ondrop={(e) => {
-							e.preventDefault();
-							if (dragSrcIdx !== null && dragSrcIdx !== i) reorderServices(dragSrcIdx, i);
-							dragSrcIdx = null;
-							isDragTarget = null;
-						}}
-						ondragend={() => { dragSrcIdx = null; isDragTarget = null; }}
-						role="listitem"
-					>
-						<span class="drag-grip">⠿</span>
-						<span class="service-name">{SERVICE_LABELS[service] ?? service}</span>
+					<div class="service-row" role="listitem">
+						<span class="service-name">
+							{#if i === 0}<span class="service-badge">default</span>{/if}
+							{SERVICE_LABELS[service] ?? service}
+						</span>
+						<div class="service-arrows">
+							<button class="arrow-btn" onclick={() => moveService(i, -1)} disabled={i === 0} aria-label="Move up">▲</button>
+							<button class="arrow-btn" onclick={() => moveService(i, 1)} disabled={i === streamingState.serviceOrder.length - 1} aria-label="Move down">▼</button>
+						</div>
 					</div>
 				{/each}
 			</div>
@@ -1171,33 +1133,61 @@
 	.service-row {
 		display: flex;
 		align-items: center;
-		gap: 10px;
+		justify-content: space-between;
 		padding: 8px 12px;
 		background: var(--bg-3);
 		border: 1px solid var(--b-1);
 		border-radius: 0;
-		cursor: grab;
-		user-select: none;
-	}
-
-	.service-row:active {
-		cursor: grabbing;
-	}
-
-	.service-row.drag-over {
-		border-color: var(--acc);
-		background: var(--bg-3);
-	}
-
-	.drag-grip {
-		color: var(--t-3);
-		font-size: 14px;
-		line-height: 1;
-		cursor: grab;
 	}
 
 	.service-name {
 		font-size: 13px;
 		color: var(--t-1);
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+
+	.service-badge {
+		font-size: 0.6rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		padding: 1px 5px;
+		background: color-mix(in oklch, var(--acc) 15%, transparent);
+		color: var(--acc);
+		border: 1px solid color-mix(in oklch, var(--acc) 40%, transparent);
+	}
+
+	.service-arrows {
+		display: flex;
+		gap: 2px;
+	}
+
+	.arrow-btn {
+		background: none;
+		border: 1px solid var(--b-1);
+		color: var(--t-2);
+		width: 24px;
+		height: 24px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		cursor: pointer;
+		font-size: 18px;
+		line-height: 1;
+		border-radius: 0;
+		transition: border-color 0.1s, color 0.1s;
+		overflow: hidden;
+	}
+
+	.arrow-btn:hover:not(:disabled) {
+		border-color: var(--b-3);
+		color: var(--t-1);
+	}
+
+	.arrow-btn:disabled {
+		opacity: 0.25;
+		cursor: not-allowed;
 	}
 </style>
