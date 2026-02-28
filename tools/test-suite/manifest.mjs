@@ -2858,6 +2858,61 @@ export const PHASE_31 = [
 ];
 
 // ---------------------------------------------------------------------------
+// PHASE_33 — Help system + About overhaul
+// ---------------------------------------------------------------------------
+
+export const PHASE_33 = [
+  {
+    id: 'P33-01', phase: 33, area: 'Help',
+    desc: '/help/[topic] route page exists',
+    method: 'code',
+    fn: () => fileExists('src/routes/help/[topic]/+page.svelte'),
+  },
+  {
+    id: 'P33-02', phase: 33, area: 'Help',
+    desc: 'HelpButton.svelte component exists',
+    method: 'code',
+    fn: () => fileExists('src/lib/components/HelpButton.svelte'),
+  },
+  {
+    id: 'P33-03', phase: 33, area: 'Help',
+    desc: 'help.ts has helpTopicForPath function',
+    method: 'code',
+    fn: () => fileContains('src/lib/help.ts', 'helpTopicForPath'),
+  },
+  {
+    id: 'P33-04', phase: 33, area: 'Help',
+    desc: 'help-content.ts has HELP_CONTENT with 15+ topics',
+    method: 'code',
+    fn: () => fileContains('src/lib/help-content.ts', 'listening-rooms'),
+  },
+  {
+    id: 'P33-05', phase: 33, area: 'Help',
+    desc: 'config.ts exports HELP_BASE_URL',
+    method: 'code',
+    fn: () => fileContains('src/lib/config.ts', 'HELP_BASE_URL'),
+  },
+  {
+    id: 'P33-06', phase: 33, area: 'About',
+    desc: 'About page has manifesto problem section',
+    method: 'code',
+    fn: () => fileContains('src/routes/about/+page.svelte', 'The problem'),
+  },
+  {
+    id: 'P33-07', phase: 33, area: 'About',
+    desc: 'About page has manifesto-list class (philosophy bullet points)',
+    method: 'code',
+    fn: () => fileContains('src/routes/about/+page.svelte', 'manifesto-list'),
+  },
+  {
+    id: 'P33-08', phase: 33, area: 'Help',
+    desc: 'LeftSidebar imports helpTopicForPath',
+    method: 'code',
+    fn: () => fileContains('src/lib/components/LeftSidebar.svelte', 'helpTopicForPath'),
+  },
+];
+
+// ---------------------------------------------------------------------------
 // Build check — always runs last
 // ---------------------------------------------------------------------------
 
@@ -2902,5 +2957,6 @@ export const ALL_TESTS = [
   ...PHASE_27,
   ...PHASE_28,
   ...PHASE_31,
+  ...PHASE_33,
   ...BUILD,
 ];

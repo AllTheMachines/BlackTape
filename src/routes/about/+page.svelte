@@ -62,40 +62,68 @@
 
 <div class="about-page">
 	<div class="about-header">
-		<h1>About {PROJECT_NAME}</h1>
+		<h1>{PROJECT_NAME}</h1>
 		<p class="tagline">{PROJECT_TAGLINE}</p>
 	</div>
 
-	<section class="about-section">
-		<h2>What {PROJECT_NAME} is</h2>
-		<p>A music search engine with taste. {PROJECT_NAME} indexes artists from open databases, embeds players from wherever music already lives, and lets you discover through atomic tags. The more niche you are, the more discoverable you become.</p>
+	<section class="about-section manifesto-section">
+		<h2>The problem</h2>
+		<p>Streaming has solved access and broken discovery. Every recording ever made is theoretically available — yet the same few thousand artists capture almost everything. The algorithms that decide what you hear next are built to maximise session length, not to help you find something you've never encountered. The underground isn't hidden because it doesn't exist. It's hidden because it doesn't perform.</p>
+		<p>Most music earns nothing. Not because it isn't good — because no algorithm ever pointed anyone toward it. The long tail is real. It just isn't being explored.</p>
+	</section>
+
+	<section class="about-section manifesto-section">
+		<h2>The solution</h2>
+		<p>{PROJECT_NAME} is a discovery engine, not a streaming platform. It doesn't host audio. It doesn't serve ads. It doesn't have a recommendation engine trying to keep you inside it. It indexes everything from open databases, embeds players from wherever music already lives, and gets out of the way.</p>
+		<p>The core inversion: niche artists surface first, not last. The less well-known you are, the more {PROJECT_NAME} rewards your discoverability. Search by tag combination and an underground artist with three matching tags ranks above a major act with fifty. That's the whole premise.</p>
+	</section>
+
+	<section class="about-section manifesto-section">
+		<h2>The philosophy</h2>
+		<ul class="manifesto-list">
+			<li><strong>No tracking.</strong> No behavioural data collected. No listening history uploaded. No account required.</li>
+			<li><strong>No ads.</strong> Discovery should be clean. Ads are a conflict of interest — what you're shown should reflect what you asked for, not what someone paid to show you.</li>
+			<li><strong>No algorithmic manipulation.</strong> Ranking is transparent: uniqueness score, tag match, country, era. No hidden signals. No engagement optimisation.</li>
+			<li><strong>No audio hosting.</strong> Music lives on the artist's infrastructure. {PROJECT_NAME} embeds it from there. If Bandcamp goes down, you lose the Bandcamp embed — not the artist's catalogue.</li>
+			<li><strong>Open source, public good, free forever.</strong> The community owns the direction. No acquisition path. No paywall.</li>
+		</ul>
 	</section>
 
 	<section class="about-section">
-		<h2>How it works</h2>
-		<p>Search by artist name or tag. Intersect tags to drill into specificity. Click into genres to explore scenes, movements, and their connections. Niche artists surface first — generic artists sink. Discovery rewards depth.</p>
+		<h2>The data</h2>
+		<p><a href="https://musicbrainz.org" target="_blank" rel="noopener">MusicBrainz</a> is the backbone: 2.6 million artists, 4.7 million releases, 35 million recordings, all CC0 public domain. Maintained by a global community of volunteers who believe music metadata should be a commons. <a href="https://www.discogs.com" target="_blank" rel="noopener">Discogs</a> fills in release details, especially for genres that MusicBrainz covers less thoroughly.</p>
+		<p>No proprietary data. No locked-in sources. If MusicBrainz or Discogs disappears, the methodology can be applied to any equivalent open dataset. The database is distributed — you download it, you own a copy of it.</p>
 	</section>
 
 	<section class="about-section">
-		<h2>Why it exists</h2>
-		<p>Streaming algorithms optimize for engagement, not discovery. The underground is invisible. {PROJECT_NAME} is built on the premise that the most interesting music is the least played, and a good discovery engine should surface it — not bury it.</p>
+		<h2>The technology</h2>
+		<p>The search index runs locally on your device — a SQLite database with full-text search. Searches are instant because there's no network round-trip. The index is a snapshot of the open databases, updated as new dumps are released.</p>
+		<p>Artist pages are assembled live from the <a href="https://musicbrainz.org/doc/MusicBrainz_API" target="_blank" rel="noopener">MusicBrainz API</a> — releases, relationships, credits, tags. Cover art from the <a href="https://coverartarchive.org" target="_blank" rel="noopener">Cover Art Archive</a>. Players embedded from Bandcamp, Spotify, SoundCloud, and YouTube — whichever the artist has made available.</p>
+		<p>The app runs as a native desktop application via <a href="https://tauri.app" target="_blank" rel="noopener">Tauri</a>. No Electron overhead. No browser tab. Your library and preferences stay on your machine.</p>
+	</section>
+
+	<section class="about-section manifesto-section">
+		<h2>What's coming</h2>
+		<p>This is version 1. The infrastructure is in place. The things being built next:</p>
+		<ul class="manifesto-list">
+			<li><strong>Taste fingerprint.</strong> A constellation of your listening — derived from your library and play history, never uploaded. Shows you where you've been and where the edges of your taste are.</li>
+			<li><strong>Scene maps.</strong> Geographic visualisation of scenes by origin city and decade. Watch how sounds spread, where they started, who carried them.</li>
+			<li><strong>Community writing.</strong> Open liner notes, artist bios, scene histories — written by listeners, not generated by machines.</li>
+			<li><strong>Artist claiming.</strong> Artists own their page. Verified artists can update their bio, add links, and flag incorrect data.</li>
+			<li><strong>Cross-platform sync.</strong> Encrypted, peer-to-peer. Your taste travels with you without going through any server.</li>
+		</ul>
 	</section>
 
 	<section class="about-section">
-		<h2>Mission</h2>
-		<p>No tracking. No ads. No algorithmic manipulation. No audio hosting. A pure discovery tool — open source, public good, free forever. The community decides what happens next.</p>
-	</section>
-
-	<section class="about-section">
-		<h2>Data sources</h2>
-		<p>Artist data comes from <a href="https://musicbrainz.org" target="_blank" rel="noopener">MusicBrainz</a> (2.6M+ artists, CC0 public domain) and genre/scene data from <a href="https://www.wikidata.org" target="_blank" rel="noopener">Wikidata</a>. Release data fetched live from the MusicBrainz API. No proprietary data, no locked-in sources.</p>
+		<h2>Credits</h2>
+		<p>Built on the shoulders of <a href="https://musicbrainz.org" target="_blank" rel="noopener">MusicBrainz</a>, <a href="https://www.discogs.com" target="_blank" rel="noopener">Discogs</a>, and <a href="https://coverartarchive.org" target="_blank" rel="noopener">Cover Art Archive</a>. Powered by <a href="https://tauri.app" target="_blank" rel="noopener">Tauri</a>, <a href="https://kit.svelte.dev" target="_blank" rel="noopener">SvelteKit</a>, and SQLite. Distributed via Cloudflare. Open source throughout.</p>
 	</section>
 
 	<section id="support" class="about-section about-support-section">
 		<h2>Support</h2>
-		<p>BlackTape runs on no ads, no tracking, no VC money — just people who care about music.</p>
+		<p>{PROJECT_NAME} runs on no ads, no tracking, no VC money — just people who care about music.</p>
 		<div class="support-links-row">
-			<!-- TODO: Replace placeholder URLs with real account URLs when Mercury's accounts are created -->
+			<!-- TODO: Replace placeholder URLs with real account URLs when accounts are created -->
 			<a href="https://ko-fi.com/mercury" target="_blank" rel="noopener noreferrer" class="support-link-item">Ko-fi</a>
 			<a href="https://github.com/sponsors/mercury" target="_blank" rel="noopener noreferrer" class="support-link-item">GitHub Sponsors</a>
 			<a href="https://opencollective.com/mercury" target="_blank" rel="noopener noreferrer" class="support-link-item">Open Collective</a>
@@ -154,6 +182,7 @@
 <style>
 	.about-page {
 		padding: 20px;
+		max-width: 720px;
 	}
 
 	.about-header {
@@ -165,6 +194,8 @@
 		font-weight: 600;
 		color: var(--t-1);
 		margin: 0 0 var(--space-xs, 0.25rem) 0;
+		letter-spacing: 0.15em;
+		text-transform: uppercase;
 	}
 
 	.tagline {
@@ -180,19 +211,23 @@
 	}
 
 	.about-section h2 {
-		font-size: 0.95rem;
+		font-size: 0.85rem;
 		font-weight: 600;
 		color: var(--t-2);
-		margin: 0 0 var(--space-sm, 0.5rem) 0;
+		margin: 0 0 var(--space-sm, 0.75rem) 0;
 		text-transform: uppercase;
-		letter-spacing: 0.05em;
+		letter-spacing: 0.08em;
 	}
 
 	.about-section p {
 		font-size: 0.9rem;
 		color: var(--t-3);
-		line-height: 1.7;
-		margin: 0;
+		line-height: 1.8;
+		margin: 0 0 0.75rem 0;
+	}
+
+	.about-section p:last-of-type {
+		margin-bottom: 0;
 	}
 
 	.about-section a {
@@ -202,6 +237,41 @@
 
 	.about-section a:hover {
 		text-decoration: underline;
+	}
+
+	/* Manifesto paragraphs — slightly larger, more breathing room */
+	.manifesto-section p {
+		font-size: 0.93rem;
+		line-height: 1.85;
+	}
+
+	.manifesto-list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+	}
+
+	.manifesto-list li {
+		font-size: 0.9rem;
+		color: var(--t-3);
+		line-height: 1.7;
+		padding-left: 1.1em;
+		position: relative;
+	}
+
+	.manifesto-list li::before {
+		content: '—';
+		position: absolute;
+		left: 0;
+		color: var(--acc);
+	}
+
+	.manifesto-list strong {
+		color: var(--t-2);
+		font-weight: 600;
 	}
 
 	.about-ctas {
