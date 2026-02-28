@@ -12,6 +12,16 @@
 	const ERA_OPTIONS = ['60s', '70s', '80s', '90s', '00s', '10s', '20s'];
 	const MAX_TAGS = 5;
 
+	let customTagInput = $state('');
+
+	function addCustomTag() {
+		const tag = customTagInput.trim().toLowerCase();
+		if (tag && !data.tags.includes(tag) && data.tags.length < MAX_TAGS) {
+			toggleTag(tag);
+		}
+		customTagInput = '';
+	}
+
 	// Country debounce timer
 	let countryTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -96,9 +106,32 @@
 				<button class="filter-toggle-btn" onclick={() => showFilters = !showFilters} title="Hide filters" aria-label="Hide filters">×</button>
 			</div>
 
-			<!-- Genre / Tag cloud -->
+			<!-- Custom tag input — primary filter mechanism -->
 			<div class="filter-section">
 				<span class="filter-label">Genre / Tag</span>
+				<form class="custom-tag-form" onsubmit={(e) => { e.preventDefault(); addCustomTag(); }}>
+					<input
+						type="text"
+						class="custom-tag-input"
+						placeholder="Type any genre…"
+						bind:value={customTagInput}
+						disabled={data.tags.length >= MAX_TAGS}
+						data-testid="discover-tag-input"
+					/>
+					<button
+						type="submit"
+						class="custom-tag-add"
+						disabled={!customTagInput.trim() || data.tags.length >= MAX_TAGS}
+					>+</button>
+				</form>
+				{#if data.tags.length >= MAX_TAGS}
+					<p class="tag-limit-note">Max {MAX_TAGS} tags</p>
+				{/if}
+			</div>
+
+			<!-- Popular tag suggestions -->
+			<div class="filter-section">
+				<span class="filter-label">Suggestions</span>
 				<div class="tag-cloud">
 					{#each data.popularTags.slice(0, 50) as { tag, artist_count }}
 						{@const isActive = data.tags.includes(tag)}
@@ -313,6 +346,60 @@
 	}
 
 	/* Tag cloud in filter panel */
+	.custom-tag-form {
+		display: flex;
+		gap: 0;
+		padding: 0 10px;
+	}
+
+	.custom-tag-input {
+		flex: 1;
+		background: var(--bg-2);
+		border: 1px solid var(--b-2);
+		border-right: none;
+		color: var(--t-1);
+		padding: 5px 8px;
+		font-size: 0.78rem;
+		outline: none;
+		border-radius: 0;
+	}
+
+	.custom-tag-input:focus {
+		border-color: var(--b-acc);
+	}
+
+	.custom-tag-input:disabled {
+		opacity: 0.5;
+	}
+
+	.custom-tag-add {
+		background: var(--bg-3);
+		border: 1px solid var(--b-2);
+		color: var(--t-1);
+		padding: 5px 10px;
+		font-size: 1rem;
+		cursor: pointer;
+		border-radius: 0;
+		line-height: 1;
+	}
+
+	.custom-tag-add:hover:not(:disabled) {
+		color: var(--acc);
+		border-color: var(--b-acc);
+	}
+
+	.custom-tag-add:disabled {
+		opacity: 0.4;
+		cursor: default;
+	}
+
+	.tag-limit-note {
+		padding: 2px 10px 0;
+		font-size: 0.7rem;
+		color: var(--t-3);
+		margin: 0;
+	}
+
 	.tag-cloud {
 		display: flex;
 		flex-wrap: wrap;

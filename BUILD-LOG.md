@@ -10818,3 +10818,16 @@ Issue #52 closed.
 
 > **Commit bbe09e9** (2026-02-28 23:39) — fix #52: style map multi-select + inline artist panel
 > Files changed: 4
+
+> **Commit 71dbe8c** (2026-02-28 23:39) — wip: auto-save
+> Files changed: 1
+
+---
+
+## Entry 2026-02-28 — Fix #51: Discover tag input at top of filter panel
+
+The custom "Add a tag" input didn't exist at all — the only way to add genre filters was clicking from a preset cloud of mainstream genres (jazz, rock, punk…). Most niche genres users care about weren't there.
+
+**Fix:** Added a text input + submit button at the top of the Genre/Tag filter section — the primary filter mechanism. The preset tag cloud moves below it, relabeled "Suggestions". Users can now type any genre directly and press Enter or click +. Both mechanisms call the same `toggleTag()` → URL update flow. Input clears after each add. Disabled at MAX_TAGS (5).
+
+Issue #51 closed.
