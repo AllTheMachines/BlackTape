@@ -21,6 +21,7 @@
 	import type { PlatformType } from '$lib/embeds/types';
 	import { spotifyEmbedUrl } from '$lib/embeds/spotify';
 	import { youtubeEmbedUrl } from '$lib/embeds/youtube';
+	import { spotifyState } from '$lib/spotify/state.svelte';
 
 	let { data } = $props();
 
@@ -297,6 +298,70 @@
 		}
 	}
 
+	/** Spotify Connect API playback state. */
+	type SpotifyPlayState = 'idle' | 'loading' | 'error';
+	let spotifyPlayState = $state<SpotifyPlayState>('idle');
+	let spotifyPlayMessage = $state<string | null>(null);
+
+	/** True when Spotify is connected and this artist has a Spotify URL. */
+	let showSpotifyButton = $derived(
+		tauriMode && spotifyState.connected && data.links.spotify.length > 0
+	);
+
+	async function handlePlayOnSpotify() {
+		spotifyPlayState = 'loading';
+		spotifyPlayMessage = null;
+		try {
+			const { getValidAccessToken } = await import('$lib/spotify/auth');
+			const { extractSpotifyArtistId, getArtistTopTracks, playTracksOnSpotify, SpotifyAuthError } = await import('$lib/spotify/api');
+
+			let token: string;
+			try {
+				token = await getValidAccessToken();
+			} catch {
+				spotifyPlayState = 'error';
+				spotifyPlayMessage = 'Spotify session expired — reconnect in Settings.';
+				return;
+			}
+
+			const spotifyArtistId = extractSpotifyArtistId(data.links.spotify[0]);
+			if (!spotifyArtistId) {
+				spotifyPlayState = 'error';
+				spotifyPlayMessage = "Couldn't load tracks for this artist on Spotify.";
+				return;
+			}
+
+			let trackUris: string[];
+			try {
+				trackUris = await getArtistTopTracks(spotifyArtistId, token);
+			} catch (e) {
+				spotifyPlayState = 'error';
+				spotifyPlayMessage = e instanceof SpotifyAuthError
+					? 'Spotify session expired — reconnect in Settings.'
+					: "Couldn't load tracks for this artist on Spotify.";
+				return;
+			}
+
+			const result = await playTracksOnSpotify(trackUris, token);
+			if (result === 'ok') {
+				setActiveSource('spotify');
+				spotifyPlayState = 'idle';
+			} else if (result === 'no_device') {
+				spotifyPlayState = 'error';
+				spotifyPlayMessage = 'Open Spotify Desktop and start playing anything, then try again.';
+			} else if (result === 'premium_required') {
+				spotifyPlayState = 'error';
+				spotifyPlayMessage = 'Spotify Premium is required to play tracks from BlackTape.';
+			} else if (result === 'token_expired') {
+				spotifyPlayState = 'error';
+				spotifyPlayMessage = 'Spotify session expired — reconnect in Settings.';
+			}
+		} catch {
+			spotifyPlayState = 'error';
+			spotifyPlayMessage = 'Something went wrong. Try again.';
+		}
+	}
+
 	/** Generate QR code on demand (client-side only, lazy import). */
 	async function handleQrClick() {
 		if (!showQr) {
@@ -416,13 +481,15 @@
 				{#each availableEmbedServices as svc (svc.key)}
 					{#if hasEmbedContent(svc.key)}
 						<!-- Has embeddable iframe: split pill — button toggles embed, ↗ opens externally -->
+						<!-- Spotify when connected: pill triggers Connect API (full tracks in Desktop) instead of embed -->
 						<div class="platform-pill-group">
 							<button
 								class="platform-pill platform-pill--{svc.key}"
 								class:active={activeEmbedService === svc.key}
-								onclick={() => toggleService(svc.key)}
+								onclick={() => svc.key === 'spotify' && showSpotifyButton ? handlePlayOnSpotify() : toggleService(svc.key)}
+								disabled={svc.key === 'spotify' && spotifyPlayState === 'loading'}
 								data-testid="platform-pill-{svc.key}"
-							>{svc.label}</button>
+							>{svc.key === 'spotify' && showSpotifyButton ? (spotifyPlayState === 'loading' ? '...' : '▶ Spotify') : svc.label}</button>
 							{#if data.links[svc.key][0]}
 								<a
 									href={data.links[svc.key][0]}
@@ -452,9 +519,13 @@
 						class="platform-pill platform-pill--ext {extPillClass(link.url)}"
 					>{link.label} ↗</a>
 				{/each}
-			</div>
+		</div>
 
-			<!-- {#key} guarantees old iframe unmounts before new one mounts (stops audio) -->
+		{#if spotifyPlayState === 'error' && spotifyPlayMessage}
+			<p class="spotify-play-error">{spotifyPlayMessage}</p>
+		{/if}
+
+		<!-- {#key} guarantees old iframe unmounts before new one mounts (stops audio) -->
 			{#if activeEmbedService !== null}
 				{#key activeEmbedService}
 					<EmbedPlayer
@@ -858,6 +929,13 @@
 		border-color: var(--spotify-color, #1db954);
 	}
 	.platform-pill--spotify.active { border-color: var(--spotify-color, #1db954); }
+	.platform-pill--spotify:disabled { opacity: 0.6; cursor: default; }
+
+	.spotify-play-error {
+		font-size: 0.8rem;
+		color: var(--t-3);
+		margin: 4px 0 0;
+	}
 
 	.platform-pill--soundcloud {
 		color: var(--soundcloud-color, #ff5500);
