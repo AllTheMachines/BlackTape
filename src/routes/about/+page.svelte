@@ -9,7 +9,7 @@
 	let feedbackEmail = $state('');
 	let feedbackSent = $state(false);
 
-	function sendFeedback() {
+	async function sendFeedback() {
 		if (!feedbackTitle.trim() || !feedbackBody.trim()) return;
 		const typeLabel = feedbackType === 'bug' ? 'Bug' : feedbackType === 'suggestion' ? 'Suggestion' : 'Feedback';
 		const subject = encodeURIComponent(`[${typeLabel}] ${feedbackTitle.trim()}`);
@@ -17,7 +17,8 @@
 			feedbackBody.trim() +
 			(feedbackEmail.trim() ? `\n\nReply to: ${feedbackEmail.trim()}` : '')
 		);
-		window.location.href = `mailto:${FEEDBACK_EMAIL}?subject=${subject}&body=${body}`;
+		const { open } = await import('@tauri-apps/plugin-shell');
+		await open(`mailto:${FEEDBACK_EMAIL}?subject=${subject}&body=${body}`);
 		feedbackSent = true;
 	}
 </script>

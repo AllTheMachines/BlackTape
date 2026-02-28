@@ -10349,3 +10349,6 @@ Extended the Spotify Connect integration from live player status display into a 
 
 > **Commit d44e782** (2026-02-28 18:32) — fix #59 #58: About page feedback form + hide backers link
 > Files changed: 1
+
+> **Commit 7944b3f** (2026-02-28 18:32) — wip: auto-save
+> Files changed: 1
