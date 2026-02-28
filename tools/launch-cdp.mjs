@@ -37,6 +37,7 @@ if (viteAlready) {
   const viteJs = path.join(ROOT, 'node_modules', 'vite', 'bin', 'vite.js');
   const vite = spawn(process.execPath, [viteJs, 'dev'], {
     cwd: ROOT,
+    env: { ...process.env, VITE_TAURI: '1' },
     stdio: 'ignore',
     detached: true,
   });
@@ -59,7 +60,7 @@ try {
 
 console.log('Launching mercury.exe with CDP on port', CDP_PORT, '...');
 const proc = spawn(BINARY, [], {
-  env: { ...process.env, WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: `--remote-debugging-port=${CDP_PORT}` },
+  env: { ...process.env, WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: `--remote-debugging-port=${CDP_PORT} --disable-shared-workers` },
   stdio: 'ignore',
   detached: true,
 });
