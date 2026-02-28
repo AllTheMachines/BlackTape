@@ -10916,3 +10916,9 @@ Issue #51 closed.
 
 > **Commit 3f066f6** (2026-03-01 00:36) — wip: auto-save
 > Files changed: 2
+
+> **Commit 67c73e0** (2026-03-01 00:36) — wip: auto-save
+> Files changed: 1
+
+> **Commit a7ac40f** (2026-03-01 00:39) — fix #30: guided feedback form — remove GitHub link, contextual prompts
+> Files changed: 1
