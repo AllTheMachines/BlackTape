@@ -9886,3 +9886,6 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit b5f1d13** (2026-02-28 13:02) — fix: intercept target=_blank links in Tauri to prevent WebView2 freeze (#45)
 > Files changed: 1
+
+> **Commit 8be3daf** (2026-02-28 13:02) — wip: auto-save
+> Files changed: 2
