@@ -10036,3 +10036,9 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit 3e9fbf3** (2026-02-28 14:53) — fix #48: remove Top Tracks section from artist page
 > Files changed: 2
+
+> **Commit 099a720** (2026-02-28 14:53) — wip: auto-save
+> Files changed: 1
+
+> **Commit a473365** (2026-02-28 14:55) — fix #60: settings Spotify double header + layout desc bleed
+> Files changed: 1
