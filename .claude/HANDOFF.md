@@ -1,54 +1,39 @@
 # Work Handoff - 2026-02-28
 
 ## Current Task
-Bug-bashing open v1.4 issues — working through the issue list one by one.
-
-## Key Discovery This Session: HMR Not Working
-**CRITICAL:** Vite HMR does NOT push updates to the running Tauri app when launched via `launch-cdp.mjs`. After every code change, run `node tools/reload.mjs` to force a hard reload. Without this, Steve sees stale UI. This is now in MEMORY.md.
+Bug-bashing open v1.4 Spotify issues — working through the dependency chain.
 
 ## Completed This Session
-- **#48** — Removed Top Tracks section from artist page (placeholder stub, dead code)
-- **#60 Bug 1** — Spotify section header doubled: removed redundant inner "Spotify" label from SpotifySettings.svelte setup/waiting steps
-- **#60 Bug 2** — Layout tab description text bleeding: added `overflow: hidden` to `.template-card`, only show desc on active card
-- **tools/reload.mjs** — New tool: hard-reloads running app via CDP (`node tools/reload.mjs`)
-- **tools/snap.mjs** — Rewrote to use raw CDP WebSocket instead of Playwright (avoids SharedWorker assertion)
-- **tools/launch-cdp.mjs** — Removed `--disable-shared-workers` flag (was breaking Svelte event delegation — tabs still broken though, different root cause)
+- **#62** — oauth:allow-start + oauth:allow-cancel added to capabilities, binary rebuilt. CLOSED.
+- **#63** — App freezes when clicking album cover. Filed (new issue, not yet fixed).
+- **Spotify full-track regression** — Restored `handlePlayOnSpotify` on artist page. When Spotify connected, "▶ Spotify" pill uses Connect API (plays in Spotify Desktop). When not connected, falls back to embed.
+- **#44** — Removed duplicate Spotify Client ID field from Import section. Import now reuses existing OAuth token via `fetchTopArtistsWithToken()`. CLOSED.
 
-## Open Issues (Priority Order)
-From `gh issue list`:
-- #62 — Import from Spotify fails: oauth.start not allowed (missing capability) — bug
-- #61 — Streaming preference settings don't apply — bug
-- #59 — About page: fix feedback email + in-app bug report
-- #58 — About page: hide 'View backers' when no backers exist
-- #57 — AI model download stuck on 'Pending'
-- #56 — Release page: add Play Album button
-- #55 — Library: no search/filter, hangs on load
-- #54 — Library/Crate Dig missing covers, no release type grouping
-- #53 — Knowledge Base: no cities, truncated names, genre map broken
-- #52 — Style Map non-interactive
-- #51 — Discover filter: custom tag buried
-- #50 — Discover page slow
-- #49 — Release page missing streaming links + play button on tracks
-- #44 — Settings: two Spotify Client ID fields, no way to clear credentials
-- #43 — No loading indicator
-
-## Still Open: Tab Switching Bug
-Artist page tabs (Overview/Stats/About) still broken — clicking does nothing. Root cause unknown. Removing `--disable-shared-workers` didn't fix it. Likely a Svelte 5 event delegation issue but unconfirmed. Leave open, investigate separately.
+## Spotify Issue Dependency Chain (DO THIS ORDER)
+1. ✅ **#44** — duplicate Client ID / no clear — CLOSED
+2. **Test #62** — Steve needs to go through OAuth in Settings > Spotify > Authorize. This is the next manual test step. Needs Spotify Desktop running.
+3. **#61** — Streaming preference settings don't apply (Preferred Platform dropdown + drag order disconnected from actual embed ordering)
+4. **#49** — Release page: no streaming links, no play buttons on tracks
 
 ## App State
-- App running: PID from last launch, CDP on port 9224
-- Vite running on port 5173
+- App NOT running (was not relaunched after #44 changes — needs reload)
+- To launch: `node tools/launch-cdp.mjs`
 - To reload after changes: `node tools/reload.mjs`
-- To relaunch: `node tools/launch-cdp.mjs`
-
-## Git Status
-- BUILD-LOG.md modified (needs session-end update)
-- All code changes committed
+- All code changes committed, 191/191 tests passing
 
 ## Next Steps
-1. Pick next issue — Steve will say "next issue"
-2. Run `node tools/reload.mjs` after every code change
-3. Update BUILD-LOG.md at session end
+1. `node tools/launch-cdp.mjs` — relaunch app
+2. Steve tests Spotify OAuth: Settings > Spotify > Authorize
+3. If OAuth works → verify "▶ Spotify" button appears on artist page
+4. Then fix #61 (streaming preference wiring)
+5. Then fix #49 (release page streaming links)
+
+## Key Files Changed This Session
+- `src-tauri/capabilities/default.json` — oauth:allow-start + oauth:allow-cancel
+- `src/routes/artist/[slug]/+page.svelte` — handlePlayOnSpotify restored
+- `src/lib/taste/import/spotify.ts` — fetchTopArtistsWithToken() added
+- `src/routes/settings/+page.svelte` — import card reuses OAuth token
+- `src/lib/spotify/state.svelte` — imported into settings page
 
 ## Resume Command
 Run `/resume` after `/clear`

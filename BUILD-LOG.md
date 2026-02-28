@@ -10134,3 +10134,9 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit 47122eb** (2026-02-28 15:34) — wip: auto-save
 > Files changed: 1
+
+> **Commit 1335188** (2026-02-28 15:35) — wip: auto-save
+> Files changed: 1
+
+> **Commit 1e257a2** (2026-02-28 15:41) — fix #44: remove duplicate Spotify Client ID field from import section
+> Files changed: 3
