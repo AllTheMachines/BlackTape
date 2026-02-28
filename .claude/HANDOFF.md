@@ -1,45 +1,45 @@
 # Work Handoff - 2026-02-28
 
 ## Current Task
-Fixed `tools/record-and-run.mjs` so ffmpeg captures the BlackTape app window instead of the full desktop.
+Getting the automated demo recorder (`tools/record-and-run.mjs`) to work properly for capturing a demo video of the BlackTape app.
 
 ## Context
-The demo recording tool (`record-and-run.mjs`) was capturing the full desktop with VS Code on top, because ffmpeg was using `gdigrab` with `-i desktop`. The fix was to switch to window-title capture (`-i title=BlackTape`) and ensure the app has focus before recording starts.
+Steve wants to record a demo video of the app. The tool `record-and-run.mjs` uses Playwright CDP + ffmpeg to automate a demo walkthrough and record it. Several bugs were found and fixed this session. Steve is now recording manually using OBS or similar — he was repeatedly restarting the app via `node tools/launch-cdp.mjs`.
 
 ## Progress
 ### Completed
-- Changed ffmpeg input from `-i desktop` to `-i title=BlackTape`
-- Removed `-video_size`, `-offset_x`, `-offset_y` flags (not applicable for window capture)
-- Added `await page.bringToFront()` after fullscreen call
-- Bumped default nav settle from 2500ms to 3500ms (helps with tab click timeouts)
+- **Window capture fix** — ffmpeg now captures the BlackTape window specifically (`-i title=BlackTape`) instead of the full desktop. Previous run was capturing VS Code.
+- **Vite auto-start** — `launch-cdp.mjs` now starts Vite dev server automatically if not running (debug binary connects to `localhost:5173`).
+- **IPv6 port detection fix** — `waitForPort` was checking `127.0.0.1` but Vite binds to `[::1]`; fixed to use `localhost`.
+- **Nav bug fixed** — `nav()` function was calling `safe(p => { window.location.href = p; })` where `p` was always `undefined` in the browser context (Playwright doesn't serialize closures). Fixed to `page.evaluate((url) => { window.location.href = url; }, path2)`.
+- **Enter after search** — `typeInSearch()` now presses Enter after typing each genre/term.
+- **App load wait** — `record-and-run.mjs` now waits 4s if it connects to a `chrome-error://` or `about:blank` URL before proceeding.
 
 ### In Progress
-- Nothing in progress — fix is done, hasn't been tested yet
+- Steve is manually recording the app using OBS (repeatedly restarting via `launch-cdp.mjs`).
 
 ### Remaining
-- Test the recording: `node tools/launch-cdp.mjs` then `node tools/record-and-run.mjs`
-- If window title doesn't match: check exact title with `ffmpeg -f gdigrab -list_devices true -i dummy` and update `title=BlackTape` accordingly
-- Delete the bad recording at `press-screenshots/demo-recording.mp4` after a good one is made
+- If Steve wants the automated demo recorder to work end-to-end, it needs a full test run. Several click interactions (play-all-btn, queue-btn, etc.) were timing out — the selectors may need updating for the current app version.
+- Commit `tools/launch-cdp.mjs` and `tools/record-and-run.mjs` with all fixes.
 
 ## Key Decisions
-- Window capture via `title=BlackTape` is cleaner than full-desktop — no need for `-video_size`/offsets
-- `page.bringToFront()` ensures the Playwright/CDP-connected page has OS focus before ffmpeg starts
+- `launch-cdp.mjs` is the one-command launcher: starts Vite if needed, kills old mercury.exe, launches fresh with CDP on port 9224.
+- The demo recorder is a separate concern from the manual OBS recording Steve is doing now.
 
 ## Relevant Files
-- `tools/record-and-run.mjs` — the demo recording script (modified)
-- `tools/launch-cdp.mjs` — launches app with CDP on port 9224 (run first)
-- `press-screenshots/demo-recording.mp4` — bad output from previous run (VS Code captured)
+- `tools/launch-cdp.mjs` — launches Vite + mercury.exe with CDP (modified this session)
+- `tools/record-and-run.mjs` — automated demo recorder (modified this session, multiple bug fixes)
+- `tools/record-demo.mjs` — older standalone demo script (not actively used)
 
 ## Git Status
 - `BUILD-LOG.md` — modified (uncommitted log entries)
 - `parachord-reference` — submodule modified content
-- `tools/record-and-run.mjs` and `tools/record-demo.mjs` are untracked (new files, not yet staged)
+- `tools/launch-cdp.mjs` and `tools/record-and-run.mjs` are untracked (not yet staged)
 
 ## Next Steps
-1. Run `node tools/launch-cdp.mjs` to start the app with CDP
-2. Run `node tools/record-and-run.mjs` to test the recording
-3. If ffmpeg errors on window title, run `ffmpeg -f gdigrab -list_devices true -i dummy 2>&1` to find exact title
-4. If recording works, commit `tools/record-and-run.mjs` and `tools/record-demo.mjs`
+1. Commit the two tool files: `tools/launch-cdp.mjs` and `tools/record-and-run.mjs`
+2. If Steve wants to run the automated recorder again: `node tools/launch-cdp.mjs` then `node tools/record-and-run.mjs`
+3. If click interactions still fail, audit selectors against current app markup
 
 ## Resume Command
 After running `/clear`, run `/resume` to continue.
