@@ -4,6 +4,34 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-02-28 — Fix #53: Genre Type Classification (No More City Maps for Genres)
+
+Finishing the #53 work from last session. "Industrial Metal" and every other music genre with a country of origin was incorrectly showing a Leaflet city map on its KB genre page.
+
+**Root cause (pipeline + queries):**
+
+The pipeline's SPARQL query fetches `wdt:P31 wd:Q188451` — items that are instances of "music genre" in Wikidata. Every result is a genre. But `build-genre-data.mjs` was then doing:
+
+```js
+const type = entry.originCity ? 'scene' : 'genre';
+```
+
+`originCity` is populated from Wikidata property P495 ("country of origin") — so "Industrial Metal" with `originCity = "Germany"` became `type = 'scene'`. The geocoding pass then looked up "Germany" via Nominatim, got coordinates, and the queries checked `CASE WHEN origin_lat IS NOT NULL THEN 'scene'` — so Industrial Metal showed a Leaflet city map.
+
+The fix has three parts:
+
+1. **`pipeline/build-genre-data.mjs`**: Changed `const type = entry.originCity ? 'scene' : 'genre'` to `const type = 'genre'`. All Q188451 items are music genres by definition. The `origin_city` column still stores the country of origin for display purposes — that data is useful. It just shouldn't determine the type.
+
+2. **`src/lib/db/queries.ts`**: Replaced all five `CASE WHEN origin_lat IS NOT NULL THEN 'scene' ELSE 'genre' END AS type` expressions with `COALESCE(type, 'genre') AS type`. The queries now use the actual DB type column instead of a geometry proxy. The affected functions: `getGenreSubgraph` (×2), `getGenreBySlug`, `getGenreStarterNodes`, `getAllGenreGraph`.
+
+3. **DB migration**: Ran `UPDATE genres SET type = 'genre' WHERE type = 'scene'` on all three DBs (pipeline dev DB + both app DBs). Fixed 1201 wrongly-classified rows in each.
+
+Result: no KB genre page will show a city map anymore. The `isScene` check in `+page.svelte` returns false for all current data. Scene map support can be re-enabled in a future pipeline pass that separately queries Wikidata for actual local music scenes (Q1640824 etc.).
+
+191/191 tests passing.
+
+---
+
 ## Entry 2026-02-28 — Fix #53 Genre Map + Fix #63 Release Freeze
 
 Two issue fixes from Steve's feedback on the last session.
@@ -10475,3 +10503,9 @@ Cannot reproduce. Tested by clicking "Download Models" — download starts immed
 
 > **Commit 6584ee7** (2026-02-28 19:59) — wip: auto-save
 > Files changed: 1
+
+> **Commit 6bdfe80** (2026-02-28 20:06) — wip: auto-save
+> Files changed: 2
+
+> **Commit 133c8b7** (2026-02-28 20:12) — fix: genre type classification — genres no longer show city map
+> Files changed: 2
