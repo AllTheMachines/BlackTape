@@ -41,7 +41,10 @@
 			if (albumId) {
 				// Release page: play the full album as context
 				const result = await playAlbumOnSpotify(albumId, token);
-				if (result === 'ok') { spotifyConnectState[key] = 'playing'; }
+				if (result === 'ok') {
+					spotifyConnectState[key] = 'playing';
+					setActiveSource('spotify', artistName ?? 'Spotify');
+				}
 				else if (result === 'no_device') { spotifyConnectState[key] = 'error'; spotifyConnectError[key] = 'Open Spotify Desktop and start playing anything, then try again.'; }
 				else if (result === 'premium_required') { spotifyConnectState[key] = 'error'; spotifyConnectError[key] = 'Spotify Premium is required.'; }
 				else if (result === 'token_expired') { spotifyConnectState[key] = 'error'; spotifyConnectError[key] = 'Spotify session expired — reconnect in Settings.'; }
@@ -53,7 +56,10 @@
 				// Artist page (via EmbedPlayer): play top tracks
 				const trackUris = await getArtistTopTracks(artistId, token);
 				const result = await playTracksOnSpotify(trackUris, token);
-				if (result === 'ok') { spotifyConnectState[key] = 'playing'; }
+				if (result === 'ok') {
+					spotifyConnectState[key] = 'playing';
+					setActiveSource('spotify', artistName ? `${artistName} — Top Tracks` : 'Spotify');
+				}
 				else if (result === 'no_device') { spotifyConnectState[key] = 'error'; spotifyConnectError[key] = 'Open Spotify Desktop and start playing anything, then try again.'; }
 				else if (result === 'premium_required') { spotifyConnectState[key] = 'error'; spotifyConnectError[key] = 'Spotify Premium is required.'; }
 				else if (result === 'token_expired') { spotifyConnectState[key] = 'error'; spotifyConnectError[key] = 'Spotify session expired — reconnect in Settings.'; }

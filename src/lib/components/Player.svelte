@@ -10,7 +10,7 @@
 	} from '$lib/player/queue.svelte';
 	import Queue from './Queue.svelte';
 	import NowPlayingDiscovery from './NowPlayingDiscovery.svelte';
-	import { streamingState } from '$lib/player/streaming.svelte';
+	import { streamingState, clearActiveSource } from '$lib/player/streaming.svelte';
 
 	let showQueue = $state(false);
 	let showExpanded = $state(false);
@@ -274,6 +274,28 @@
 	{#if showQueue}
 		<Queue onclose={() => (showQueue = false)} />
 	{/if}
+{:else if streamingState.activeSource === 'spotify'}
+	<!-- Spotify Connect is active but no local track loaded — show a slim streaming bar -->
+	<div class="player-bar streaming-bar">
+		<div class="streaming-info">
+			<span class="streaming-dot"></span>
+			<span class="streaming-label">
+				{#if streamingState.streamingLabel}
+					{streamingState.streamingLabel}
+				{:else}
+					Streaming via Spotify
+				{/if}
+			</span>
+			<span class="via-badge">via Spotify</span>
+		</div>
+		<div class="streaming-stop">
+			<button class="control-btn small" onclick={clearActiveSource} title="Dismiss">
+				<svg style="display:block" viewBox="0 0 24 24" fill="currentColor">
+					<path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+				</svg>
+			</button>
+		</div>
+	</div>
 {/if}
 
 <style>
@@ -315,6 +337,44 @@
 		padding: 0 14px;
 		gap: 12px;
 		z-index: 200;
+	}
+
+	/* Spotify Connect streaming bar — shown when no local track */
+	.streaming-bar {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 0 14px;
+	}
+
+	.streaming-info {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+	}
+
+	.streaming-dot {
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		background: #1db954;
+		animation: pulse-dot 2s ease-in-out infinite;
+		flex-shrink: 0;
+	}
+
+	@keyframes pulse-dot {
+		0%, 100% { opacity: 1; }
+		50% { opacity: 0.4; }
+	}
+
+	.streaming-label {
+		font-size: 0.9rem;
+		color: var(--t-1);
+	}
+
+	.streaming-stop {
+		display: flex;
+		align-items: center;
 	}
 
 	/* Track info — left section */

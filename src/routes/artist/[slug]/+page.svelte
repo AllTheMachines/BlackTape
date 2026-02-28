@@ -344,7 +344,7 @@
 
 			const result = await playTracksOnSpotify(trackUris, token);
 			if (result === 'ok') {
-				setActiveSource('spotify');
+				setActiveSource('spotify', `${data.artist.name} — Top Tracks`);
 				spotifyPlayState = 'idle';
 			} else if (result === 'no_device') {
 				spotifyPlayState = 'error';
@@ -485,11 +485,11 @@
 						<div class="platform-pill-group">
 							<button
 								class="platform-pill platform-pill--{svc.key}"
-								class:active={activeEmbedService === svc.key}
+								class:active={activeEmbedService === svc.key || (svc.key === 'spotify' && streamingState.activeSource === 'spotify')}
 								onclick={() => svc.key === 'spotify' && showSpotifyButton ? handlePlayOnSpotify() : toggleService(svc.key)}
 								disabled={svc.key === 'spotify' && spotifyPlayState === 'loading'}
 								data-testid="platform-pill-{svc.key}"
-							>{svc.key === 'spotify' && showSpotifyButton ? (spotifyPlayState === 'loading' ? '...' : '▶ Spotify') : svc.label}</button>
+							>{#if svc.key === 'spotify' && showSpotifyButton}{spotifyPlayState === 'loading' ? '...' : streamingState.activeSource === 'spotify' ? '▶ Playing' : '▶ Spotify'}{:else}{svc.label}{/if}</button>
 							{#if data.links[svc.key][0]}
 								<a
 									href={data.links[svc.key][0]}
