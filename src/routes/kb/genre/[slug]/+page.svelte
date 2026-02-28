@@ -2,8 +2,42 @@
 	import type { PageData } from './$types';
 	import { isTauri } from '$lib/platform';
 	import GenreGraph from '$lib/components/GenreGraph.svelte';
+	import type { GenreNode } from '$lib/db/queries';
 
 	let { data }: { data: PageData } = $props();
+
+	// Local graph state — supports in-place expansion when nodes are clicked
+	let graphNodes = $state([...data.subgraph.nodes]);
+	let graphEdges = $state([...data.subgraph.edges]);
+	let graphFocus = $state(data.genre?.slug ?? null);
+
+	async function handleGraphNodeClick(node: GenreNode) {
+		if (!isTauri()) return;
+		try {
+			const { getProvider } = await import('$lib/db/provider');
+			const { getGenreSubgraph } = await import('$lib/db/queries');
+			const db = await getProvider();
+			const sub = await getGenreSubgraph(db, node.slug);
+			// Merge new nodes (skip duplicates)
+			const seen = new Set(graphNodes.map((n) => n.id));
+			for (const n of sub.nodes) {
+				if (!seen.has(n.id)) {
+					graphNodes.push(n);
+					seen.add(n.id);
+				}
+			}
+			// Merge new edges (skip duplicates)
+			const seenEdges = new Set(graphEdges.map((e) => `${e.from_id}:${e.to_id}`));
+			for (const e of sub.edges) {
+				if (!seenEdges.has(`${e.from_id}:${e.to_id}`)) {
+					graphEdges.push(e);
+				}
+			}
+			graphFocus = node.slug;
+		} catch {
+			/* ignore — graceful degradation */
+		}
+	}
 
 	// AI genre summary (Layer 3) — Tauri only, lazy loaded
 	let aiSummary = $state<string | null>(null);
@@ -145,9 +179,10 @@
 	<section class="genre-section genre-map-section" data-testid="genre-map-section">
 		<h2>Genre Map</h2>
 		<GenreGraph
-			nodes={data.subgraph.nodes}
-			edges={data.subgraph.edges}
-			focusSlug={data.genre.slug}
+			nodes={graphNodes}
+			edges={graphEdges}
+			focusSlug={graphFocus}
+			onNodeClick={handleGraphNodeClick}
 		/>
 		{#if data.genre.mb_tag}
 			<a href="/style-map?tag={encodeURIComponent(data.genre.mb_tag)}" class="map-link" data-testid="genre-map-placeholder">

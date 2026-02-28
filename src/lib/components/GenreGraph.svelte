@@ -44,7 +44,16 @@
 		Array<{ x1: number; y1: number; x2: number; y2: number; rel_type: string }>
 	>([]);
 	let container: HTMLDivElement;
+	let svgEl = $state<SVGSVGElement | undefined>(undefined);
 	let hoveredId = $state<number | null>(null);
+
+	// Pan/zoom state
+	let panZoom = $state({ x: 0, y: 0, k: 1 });
+	let isPanning = $state(false);
+	let panStart = { mx: 0, my: 0, px: 0, py: 0 };
+
+	// Preserve node positions across re-simulations (supports in-place graph expansion)
+	const prevPositions = new Map<number, { x: number; y: number }>();
 
 	const FONT_SIZE = 11;
 	const CHAR_WIDTH = 6.5;
@@ -56,7 +65,6 @@
 		return Math.max(50, name.length * CHAR_WIDTH + PAD_X * 2);
 	}
 
-	// Colors per node type
 	function nodeColors(type: 'genre' | 'scene' | 'city', active: boolean) {
 		if (type === 'genre') return {
 			fill: active ? 'var(--acc)' : 'var(--bg-3)',
@@ -70,7 +78,6 @@
 			text: 'var(--bg-1)',
 			dasharray: undefined as string | undefined
 		};
-		// city: transparent fill, dashed border
 		return {
 			fill: 'transparent',
 			stroke: active ? 'var(--color-city-hover, #60c090)' : 'var(--color-city, #3a8060)',
@@ -82,12 +89,16 @@
 	async function runSimulation() {
 		if (!nodes || nodes.length === 0) return;
 
-		const simNodes: SimNode[] = nodes.map((n) => ({
-			id: n.id,
-			slug: n.slug,
-			name: n.name,
-			type: n.type
-		}));
+		// Seed positions from previous run — keeps existing nodes in place when expanding
+		const simNodes: SimNode[] = nodes.map((n) => {
+			const prev = prevPositions.get(n.id);
+			const node: SimNode = { id: n.id, slug: n.slug, name: n.name, type: n.type };
+			if (prev) {
+				(node as any).x = prev.x;
+				(node as any).y = prev.y;
+			}
+			return node;
+		});
 
 		const simLinks = edges.map((e) => ({
 			source: e.from_id,
@@ -110,7 +121,6 @@
 				forceCollide().radius((d: any) => labelWidth(d.name) / 2 + 6)
 			);
 
-		// Chunked async ticking — keeps UI thread free between chunks
 		const CHUNK = 30;
 		const TOTAL = 300;
 		let done = 0;
@@ -126,6 +136,11 @@
 
 		const settled = simulation.nodes() as LayoutNode[];
 		simulation.stop();
+
+		// Save positions so the next expansion keeps existing nodes stable
+		for (const n of settled) {
+			prevPositions.set(n.id, { x: n.x, y: n.y });
+		}
 
 		const nodeMap = new Map(settled.map((n) => [n.id, n]));
 
@@ -191,6 +206,57 @@
 		if (nodeId === hoveredId || isNeighbor(nodeId)) return 1;
 		return 0.25;
 	}
+
+	// ── Pan / zoom ──────────────────────────────────────────────────────────
+
+	function svgCoords(e: MouseEvent): { x: number; y: number } {
+		const rect = svgEl!.getBoundingClientRect();
+		return {
+			x: (e.clientX - rect.left) * (width / rect.width),
+			y: (e.clientY - rect.top) * (height / rect.height)
+		};
+	}
+
+	function handleWheel(e: WheelEvent) {
+		if (!svgEl) return;
+		e.preventDefault();
+		const { x: sx, y: sy } = svgCoords(e);
+		const factor = e.deltaY > 0 ? 0.85 : 1.15;
+		const newK = Math.max(0.2, Math.min(5, panZoom.k * factor));
+		const ratio = newK / panZoom.k;
+		panZoom = {
+			x: sx - (sx - panZoom.x) * ratio,
+			y: sy - (sy - panZoom.y) * ratio,
+			k: newK
+		};
+	}
+
+	function handleSvgMouseDown(e: MouseEvent) {
+		if ((e.target as Element).closest('.node')) return;
+		isPanning = true;
+		panStart = { mx: e.clientX, my: e.clientY, px: panZoom.x, py: panZoom.y };
+		e.preventDefault();
+	}
+
+	function handleSvgMouseMove(e: MouseEvent) {
+		if (!isPanning || !svgEl) return;
+		const rect = svgEl.getBoundingClientRect();
+		const scaleX = width / rect.width;
+		const scaleY = height / rect.height;
+		panZoom = {
+			...panZoom,
+			x: panStart.px + (e.clientX - panStart.mx) * scaleX,
+			y: panStart.py + (e.clientY - panStart.my) * scaleY
+		};
+	}
+
+	function stopPan() {
+		isPanning = false;
+	}
+
+	function resetView() {
+		panZoom = { x: 0, y: 0, k: 1 };
+	}
 </script>
 
 <div class="genre-graph-container" bind:this={container}
@@ -198,68 +264,84 @@
 	{#if layoutNodes.length === 0}
 		<div class="loading">Building genre graph...</div>
 	{:else}
-		<svg {width} {height} class="genre-graph-svg" viewBox="0 0 {width} {height}" preserveAspectRatio="xMidYMid meet">
-			<!-- Edges first (behind nodes) -->
-			<g class="edges">
-				{#each layoutEdges as edge}
-					<line
-						x1={edge.x1}
-						y1={edge.y1}
-						x2={edge.x2}
-						y2={edge.y2}
-						stroke={edge.rel_type === 'subgenre' ? 'var(--acc)' : 'var(--b-1)'}
-						stroke-width={edge.rel_type === 'subgenre' ? 1.5 : 0.75}
-						stroke-opacity={edge.rel_type === 'subgenre' ? 0.4 : 0.2}
-						stroke-dasharray={edge.rel_type === 'influenced_by' ? '4 3' : undefined}
-					/>
-				{/each}
-			</g>
-
-			<!-- Nodes -->
-			<g class="nodes">
-				{#each layoutNodes as node}
-					{@const w = labelWidth(node.name)}
-					{@const focused = isFocused(node)}
-					{@const hovered = hoveredId === node.id}
-					{@const active = hovered || focused}
-					{@const colors = nodeColors(node.type, active)}
-					{@const opacity = focused ? 1 : nodeOpacity(node.id)}
-					<!-- svelte-ignore a11y_interactive_supports_focus -->
-					<g
-						class="node"
-						transform="translate({node.x},{node.y})"
-						role="button"
-						tabindex="0"
-						aria-label={node.name}
-						style="opacity: {opacity}; cursor: pointer;"
-						onclick={() => handleNodeClick(node)}
-						onkeydown={(e) => e.key === 'Enter' && handleNodeClick(node)}
-						onmouseenter={() => (hoveredId = node.id)}
-						onmouseleave={() => (hoveredId = null)}
-					>
-						<rect
-							x={-w / 2}
-							y={-RECT_H / 2}
-							width={w}
-							height={RECT_H}
-							fill={colors.fill}
-							stroke={colors.stroke}
-							stroke-width={focused ? 2 : 1}
-							stroke-dasharray={colors.dasharray}
-							style="transition: fill 0.15s, stroke 0.15s;"
+		<div class="graph-toolbar">
+			<button class="reset-zoom-btn" onclick={resetView}>Reset View</button>
+			<span class="pan-hint">Scroll to zoom · Drag to pan</span>
+		</div>
+		<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+		<svg {width} {height} class="genre-graph-svg" class:panning={isPanning}
+			 viewBox="0 0 {width} {height}" preserveAspectRatio="xMidYMid meet"
+			 bind:this={svgEl}
+			 onwheel={handleWheel}
+			 onmousedown={handleSvgMouseDown}
+			 onmousemove={handleSvgMouseMove}
+			 onmouseup={stopPan}
+			 onmouseleave={stopPan}
+			 role="img"
+			 aria-label="Genre relationship graph">
+			<g class="pan-zoom-group" transform="translate({panZoom.x} {panZoom.y}) scale({panZoom.k})">
+				<!-- Edges first (behind nodes) -->
+				<g class="edges">
+					{#each layoutEdges as edge}
+						<line
+							x1={edge.x1}
+							y1={edge.y1}
+							x2={edge.x2}
+							y2={edge.y2}
+							stroke={edge.rel_type === 'subgenre' ? 'var(--acc)' : 'var(--b-1)'}
+							stroke-width={edge.rel_type === 'subgenre' ? 1.5 : 0.75}
+							stroke-opacity={edge.rel_type === 'subgenre' ? 0.4 : 0.2}
+							stroke-dasharray={edge.rel_type === 'influenced_by' ? '4 3' : undefined}
 						/>
-						<text
-							text-anchor="middle"
-							dy="0.35em"
-							font-size={FONT_SIZE}
-							fill={colors.text}
-							pointer-events="none"
-							style="transition: fill 0.15s; user-select: none;"
+					{/each}
+				</g>
+
+				<!-- Nodes -->
+				<g class="nodes">
+					{#each layoutNodes as node}
+						{@const w = labelWidth(node.name)}
+						{@const focused = isFocused(node)}
+						{@const hovered = hoveredId === node.id}
+						{@const active = hovered || focused}
+						{@const colors = nodeColors(node.type, active)}
+						{@const opacity = focused ? 1 : nodeOpacity(node.id)}
+						<!-- svelte-ignore a11y_interactive_supports_focus -->
+						<g
+							class="node"
+							transform="translate({node.x},{node.y})"
+							role="button"
+							tabindex="0"
+							aria-label={node.name}
+							style="opacity: {opacity}; cursor: pointer;"
+							onclick={() => handleNodeClick(node)}
+							onkeydown={(e) => e.key === 'Enter' && handleNodeClick(node)}
+							onmouseenter={() => (hoveredId = node.id)}
+							onmouseleave={() => (hoveredId = null)}
 						>
-							{node.name}
-						</text>
-					</g>
-				{/each}
+							<rect
+								x={-w / 2}
+								y={-RECT_H / 2}
+								width={w}
+								height={RECT_H}
+								fill={colors.fill}
+								stroke={colors.stroke}
+								stroke-width={focused ? 2 : 1}
+								stroke-dasharray={colors.dasharray}
+								style="transition: fill 0.15s, stroke 0.15s;"
+							/>
+							<text
+								text-anchor="middle"
+								dy="0.35em"
+								font-size={FONT_SIZE}
+								fill={colors.text}
+								pointer-events="none"
+								style="transition: fill 0.15s; user-select: none;"
+							>
+								{node.name}
+							</text>
+						</g>
+					{/each}
+				</g>
 			</g>
 		</svg>
 
@@ -299,6 +381,11 @@
 		display: block;
 		width: 100%;
 		height: auto;
+		cursor: grab;
+	}
+
+	.genre-graph-svg.panning {
+		cursor: grabbing;
 	}
 
 	.loading {
@@ -312,6 +399,38 @@
 
 	.node {
 		outline: none;
+	}
+
+	.graph-toolbar {
+		position: absolute;
+		top: 8px;
+		left: 8px;
+		z-index: 2;
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+
+	.reset-zoom-btn {
+		background: var(--bg-2);
+		border: 1px solid var(--b-1);
+		color: var(--t-3);
+		font-size: 0.7rem;
+		padding: 3px 8px;
+		cursor: pointer;
+		border-radius: 0;
+	}
+
+	.reset-zoom-btn:hover {
+		color: var(--t-1);
+		border-color: var(--b-2);
+	}
+
+	.pan-hint {
+		font-size: 0.65rem;
+		color: var(--t-3);
+		opacity: 0.7;
+		pointer-events: none;
 	}
 
 	.legend {

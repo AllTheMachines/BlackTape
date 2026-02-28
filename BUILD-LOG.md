@@ -4,6 +4,41 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-02-28 — Fix #53 Genre Map + Fix #63 Release Freeze
+
+Two issue fixes from Steve's feedback on the last session.
+
+**#53 — Genre Map: pan/zoom + in-place expansion**
+
+Steve reported three problems with the inline genre graph added in the previous session:
+1. Clicking a genre node navigated to that genre's page — if it had coordinates (scene type), WebView2 opened a Leaflet city map instead of staying in the graph
+2. No pan or zoom — couldn't explore the graph at all
+3. Only immediate neighbours visible — felt like a dead end
+
+Fixed in `GenreGraph.svelte`:
+- **Pan**: mousedown on SVG background + drag. Uses `panStart` to anchor position delta. Cursor changes to `grab`/`grabbing`.
+- **Zoom**: scroll wheel, zooms toward cursor position. Clamps to `0.2×–5×`. Formula keeps the cursor-point fixed as the scale changes: `new_x = sx - (sx - panZoom.x) * ratio`.
+- **Position seeding**: `prevPositions` Map stores settled coordinates after each simulation. When the parent pushes new nodes (in-place expansion), existing nodes seed from `prevPositions` — they stay put while new nodes appear nearby. No jarring re-layout.
+- **Reset View** button to return to default transform.
+- Hint text: "Scroll to zoom · Drag to pan".
+
+Fixed in `src/routes/kb/genre/[slug]/+page.svelte`:
+- Graph data is now local `$state` (`graphNodes`, `graphEdges`, `graphFocus`) instead of passed directly from `data.subgraph`.
+- `handleGraphNodeClick(node)` fetches that node's subgraph from SQLite via `getGenreSubgraph`, merges new nodes/edges into the local state (deduplicating by id), and updates `graphFocus`. No navigation happens.
+- `onNodeClick={handleGraphNodeClick}` passed to `GenreGraph` — overrides the default `goto()` behaviour.
+
+**#63 — Release page freeze on album cover click**
+
+The 10s AbortController timeout added last session wasn't enough — the freeze happened at the MusicBrainz JSON fetch level, not at the image load. Box-set release groups (e.g. Radiohead "5 Album Set") return very large payloads. The real fix: make navigation instant by moving the MB fetch out of `+page.ts` (which blocks SvelteKit route transition) and into `+page.svelte` onMount (non-blocking).
+
+Changes:
+- `+page.ts` load function now returns just `{ mbid, slug }` — navigation fires immediately.
+- `release`, `credits`, `platformLinks`, `hasAnyStream` are now local `$state` in the component.
+- `loadRelease()` async function (moved from the load fn) runs in `onMount` — page renders the loading skeleton immediately, data populates when the fetch completes.
+- The existing `{#if !release}` loading skeleton was already there — it now does real work.
+
+---
+
 ## Entry 2026-02-28 — Spotify Connect: Live Player Integration
 
 The player bar was completely disconnected from Spotify Connect. Clicking "▶ Spotify" would start playback in Spotify Desktop, but the player bar still showed whatever local track was last loaded — or nothing. Transport controls (play/pause, next, prev) had no effect on Spotify. Seek bar was frozen. The app felt broken even though audio was playing.
@@ -10421,4 +10456,7 @@ Cannot reproduce. Tested by clicking "Download Models" — download starts immed
 > Files changed: 2
 
 > **Commit 51b3038** (2026-02-28 19:32) — chore: update handoff with #53 genre map feedback + #63 notes
+> Files changed: 1
+
+> **Commit dea9315** (2026-02-28 19:32) — wip: auto-save
 > Files changed: 1

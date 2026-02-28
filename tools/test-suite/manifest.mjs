@@ -2224,9 +2224,9 @@ export const PHASE_24 = [
   },
   {
     id: 'P24-15', phase: 24, area: 'Artist Page',
-    desc: 'Release +page.ts fetches release credits with producer role',
+    desc: 'Release page fetches credits with producer role (moved to +page.svelte onMount)',
     method: 'code',
-    fn: () => fileContains('src/routes/artist/[slug]/release/[mbid]/+page.ts', 'producer')(),
+    fn: () => fileContains('src/routes/artist/[slug]/release/[mbid]/+page.svelte', 'producer')(),
   },
 ];
 
