@@ -8,10 +8,11 @@
 	let errorMessage = $state<string | null>(null);
 
 	let isConnected = $derived(spotifyState.connected);
+	let reauthorizing = $state(false);
 
 	// When spotifyState.connected becomes true externally (e.g. boot hydration), sync step.
 	$effect(() => {
-		if (spotifyState.connected && step !== 'success') {
+		if (spotifyState.connected && step !== 'success' && !reauthorizing) {
 			step = 'success';
 		}
 	});
@@ -26,8 +27,10 @@
 			const result = await startSpotifyAuth(clientIdInput.trim());
 			await saveSpotifyTokens(result);
 			setSpotifyConnected(result);
+			reauthorizing = false;
 			step = 'success';
 		} catch (e) {
+			reauthorizing = false;
 			step = 'setup';
 			errorMessage = e instanceof Error ? e.message : 'Authorization failed.';
 		}
@@ -54,6 +57,7 @@
 		await clearSpotifyTokens();
 		clearSpotifyState();
 		clientIdInput = '';
+		reauthorizing = false;
 		step = 'setup';
 	}
 </script>
@@ -70,8 +74,8 @@
 			Top tracks will play via Spotify Desktop.
 		</p>
 		<div class="import-card-actions">
-			<button class="import-btn" onclick={() => { step = 'setup'; }}>
-				Done
+			<button class="import-btn" onclick={() => { reauthorizing = true; step = 'setup'; }}>
+				Re-authorize
 			</button>
 			<button class="disconnect-btn" onclick={handleDisconnect}>
 				Disconnect
