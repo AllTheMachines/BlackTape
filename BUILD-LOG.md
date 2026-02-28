@@ -10925,3 +10925,9 @@ Issue #51 closed.
 
 > **Commit 872dffd** (2026-03-01 00:39) — wip: auto-save
 > Files changed: 1
+
+> **Commit 234170e** (2026-03-01 00:46) — auto-save: 8 files @ 00:46
+> Files changed: 7
+
+> **Commit 3fbeb49** (2026-03-01 00:49) — fix #33: help system + about page overhaul
+> Files changed: 2
