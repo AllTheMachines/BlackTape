@@ -4,6 +4,16 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-02-28 — Fix About Tab: MusicBrainz Rate Limiting
+
+The About tab on artist pages (members, influences, labels) was showing empty for all artists. Root cause: the artist page load function made **3 sequential requests** to MusicBrainz — links, releases, relationships. MusicBrainz enforces 1 req/sec; the 3rd request (relationships) was getting rate-limited, silently swallowed by try-catch, and the About tab showed "No relationship data available."
+
+Fix: combined the links fetch (`?inc=url-rels`) and relationships fetch (`?inc=artist-rels+label-rels`) into a single request: `?inc=url-rels+artist-rels+label-rels`. Now the page makes 2 MB API calls (artist metadata + releases) instead of 3. Relationships parsed inline from the same response.
+
+Also fixes load time — one fewer network round-trip per artist page.
+
+---
+
 ## Entry 2026-02-28 — Fix #45: Discover Page Freeze (SQL Performance)
 
 Root cause confirmed: `getDiscoveryArtists` unfiltered case ran 3 correlated subqueries **per artist row** in the ORDER BY clause, scanning all 2.6M artists. SQLite must evaluate ORDER BY for the full table before applying LIMIT, so the query took 10-30+ seconds.
@@ -9943,4 +9953,7 @@ This completes v1.0 — The Playback Milestone. All phases done.
 > Files changed: 1
 
 > **Commit 4896414** (2026-02-28 13:22) — wip: auto-save
+> Files changed: 2
+
+> **Commit 36dbf19** (2026-02-28 13:26) — wip: auto-save
 > Files changed: 2

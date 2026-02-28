@@ -50,9 +50,17 @@ export const load: PageLoad = async ({ params, fetch }) => {
 	let releases: ReleaseGroup[] = [];
 	let bio: string | null = null;
 
+	interface ArtistRelationships {
+		members: Array<{ name: string; mbid: string }>;
+		influencedBy: Array<{ name: string; mbid: string }>;
+		influenced: Array<{ name: string; mbid: string }>;
+		labels: string[];
+	}
+	let relationships: ArtistRelationships = { members: [], influencedBy: [], influenced: [], labels: [] };
+
 	try {
 		const mbLinksResponse = await fetch(
-			`https://musicbrainz.org/ws/2/artist/${artist.mbid}?inc=url-rels&fmt=json`,
+			`https://musicbrainz.org/ws/2/artist/${artist.mbid}?inc=url-rels+artist-rels+label-rels&fmt=json`,
 			{ headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' } }
 		);
 
@@ -61,7 +69,10 @@ export const load: PageLoad = async ({ params, fetch }) => {
 				relations?: Array<{
 					'target-type'?: string;
 					type?: string;
+					direction?: string;
 					url?: { resource?: string };
+					artist?: { name: string; id: string };
+					label?: { name: string; id: string };
 				}>;
 			};
 
@@ -121,6 +132,24 @@ export const load: PageLoad = async ({ params, fetch }) => {
 			// #27 fix: remove known-dead domain links
 			for (const category of Object.keys(categorizedLinks) as Array<keyof typeof categorizedLinks>) {
 				categorizedLinks[category] = filterDeadLinks(categorizedLinks[category]);
+			}
+
+			// Parse artist/label relationships from the same response (avoids a separate MB API call
+			// that risks hitting the 1 req/sec rate limit and leaving the About tab empty)
+			if (mbData.relations) {
+				for (const rel of mbData.relations) {
+					if (rel['target-type'] === 'artist' && rel.artist) {
+						if (rel.type === 'member of band' && rel.direction === 'backward') {
+							relationships.members.push({ name: rel.artist.name, mbid: rel.artist.id });
+						} else if (rel.type === 'influenced by' && rel.direction === 'forward') {
+							relationships.influencedBy.push({ name: rel.artist.name, mbid: rel.artist.id });
+						} else if (rel.type === 'influenced by' && rel.direction === 'backward') {
+							relationships.influenced.push({ name: rel.artist.name, mbid: rel.artist.id });
+						}
+					} else if (rel['target-type'] === 'label' && rel.label?.name) {
+						relationships.labels.push(rel.label.name);
+					}
+				}
 			}
 		}
 
@@ -210,53 +239,6 @@ export const load: PageLoad = async ({ params, fetch }) => {
 		}
 	} catch (err) {
 		console.error('Bio fetch error:', err);
-	}
-
-	// Fetch MusicBrainz artist relationships (members, influences, labels)
-	interface ArtistRelationships {
-		members: Array<{ name: string; mbid: string }>;
-		influencedBy: Array<{ name: string; mbid: string }>;
-		influenced: Array<{ name: string; mbid: string }>;
-		labels: string[];
-	}
-
-	let relationships: ArtistRelationships = { members: [], influencedBy: [], influenced: [], labels: [] };
-
-	try {
-		const mbRelsResponse = await fetch(
-			`https://musicbrainz.org/ws/2/artist/${artist.mbid}?inc=artist-rels+label-rels&fmt=json`,
-			{ headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' } }
-		);
-
-		if (mbRelsResponse.ok) {
-			const mbRelsData = (await mbRelsResponse.json()) as {
-				relations?: Array<{
-					'target-type'?: string;
-					type?: string;
-					direction?: string;
-					artist?: { name: string; id: string };
-					label?: { name: string; id: string };
-				}>;
-			};
-
-			if (mbRelsData.relations) {
-				for (const rel of mbRelsData.relations) {
-					if (rel['target-type'] === 'artist' && rel.artist) {
-						if (rel.type === 'member of band' && rel.direction === 'backward') {
-							relationships.members.push({ name: rel.artist.name, mbid: rel.artist.id });
-						} else if (rel.type === 'influenced by' && rel.direction === 'forward') {
-							relationships.influencedBy.push({ name: rel.artist.name, mbid: rel.artist.id });
-						} else if (rel.type === 'influenced by' && rel.direction === 'backward') {
-							relationships.influenced.push({ name: rel.artist.name, mbid: rel.artist.id });
-						}
-					} else if (rel['target-type'] === 'label' && rel.label?.name) {
-						relationships.labels.push(rel.label.name);
-					}
-				}
-			}
-		}
-	} catch (err) {
-		console.error('Relationships fetch error:', err);
 	}
 
 	// Load curator attribution from local DB
