@@ -21,8 +21,7 @@
 	}
 </script>
 
-<div class="titlebar">
-	<div class="drag-region" data-tauri-drag-region></div>
+<div class="titlebar" data-tauri-drag-region>
 	<span class="titlebar-logo">{PROJECT_NAME}</span>
 
 	{#if isTauri()}
@@ -48,15 +47,6 @@
 		-webkit-user-select: none;
 		position: relative;
 		z-index: 9999;
-	}
-
-	.drag-region {
-		position: absolute;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		z-index: 0;
 	}
 
 	.titlebar-logo {
