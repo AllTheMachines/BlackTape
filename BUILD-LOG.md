@@ -10410,3 +10410,6 @@ Cannot reproduce. Tested by clicking "Download Models" — download starts immed
 
 > **Commit f96b75d** (2026-02-28 19:17) — fix #63 + #53: MB fetch timeout, KB genre types, genre map inline graph
 > Files changed: 5
+
+> **Commit 2030372** (2026-02-28 19:24) — docs: session log for #53, #63, #57 fixes
+> Files changed: 2
