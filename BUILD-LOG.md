@@ -10815,3 +10815,6 @@ The Style Map was a dead-end — clicking any node immediately navigated to Disc
 The `getArtistsByTagIntersection` query was already in `queries.ts` from Phase 27 (intersection search). StyleMap now imports it dynamically on demand, no new DB code needed.
 
 Issue #52 closed.
+
+> **Commit bbe09e9** (2026-02-28 23:39) — fix #52: style map multi-select + inline artist panel
+> Files changed: 4
