@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { isTauri } from '$lib/platform';
+	import GenreGraph from '$lib/components/GenreGraph.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -61,9 +62,9 @@
 				{data.genre.type.charAt(0).toUpperCase() + data.genre.type.slice(1)}
 			</span>
 		</div>
-		{#if data.genre.inception_year}
+		{#if data.genre.inception_year || data.genre.origin_city}
 			<p class="genre-meta">
-				Est. {data.genre.inception_year}{data.genre.origin_city ? ` · ${data.genre.origin_city}` : ''}
+				{[data.genre.inception_year ? `Est. ${data.genre.inception_year}` : null, data.genre.origin_city].filter(Boolean).join(' · ')}
 			</p>
 		{/if}
 	</div>
@@ -139,15 +140,28 @@
 		</section>
 	{/if}
 
-	<!-- Genre Map — links to Style Map filtered for this genre -->
-	{#if data.genre.mb_tag}
+	<!-- Genre Map — inline subgraph if data available, fallback to Style Map link -->
+	{#if data.subgraph.nodes.length > 1}
+	<section class="genre-section genre-map-section" data-testid="genre-map-section">
+		<h2>Genre Map</h2>
+		<GenreGraph
+			nodes={data.subgraph.nodes}
+			edges={data.subgraph.edges}
+			focusSlug={data.genre.slug}
+		/>
+		{#if data.genre.mb_tag}
+			<a href="/style-map?tag={encodeURIComponent(data.genre.mb_tag)}" class="map-link" data-testid="genre-map-placeholder">
+				Explore {data.genre.name} in full Style Map →
+			</a>
+		{/if}
+	</section>
+	{:else if data.genre.mb_tag}
 	<section class="genre-section genre-map-section" data-testid="genre-map-section">
 		<h2>Genre Map</h2>
 		<div class="genre-map-placeholder" data-testid="genre-map-placeholder">
 			<a href="/style-map?tag={encodeURIComponent(data.genre.mb_tag)}" class="map-link">
 				Explore {data.genre.name} in Style Map →
 			</a>
-			<p class="placeholder-hint">See how {data.genre.name} connects to related genres visually.</p>
 		</div>
 	</section>
 	{/if}

@@ -2586,9 +2586,9 @@ export const PHASE_27 = [
   },
   {
     id: 'P27-20', phase: 27, area: 'KB',
-    desc: 'KB genre page does NOT import GenreGraph (replaced by placeholder)',
+    desc: 'KB genre page imports GenreGraph for inline genre map section',
     method: 'code',
-    fn: () => !fileContains('src/routes/kb/genre/[slug]/+page.svelte', "import GenreGraph")(),
+    fn: () => fileContains('src/routes/kb/genre/[slug]/+page.svelte', "import GenreGraph")(),
   },
   {
     id: 'P27-21', phase: 27, area: 'KB',

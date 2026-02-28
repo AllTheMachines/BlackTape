@@ -55,9 +55,17 @@ export const load: PageLoad = async ({ params, fetch }) => {
 
 	try {
 		const mbUrl = `https://musicbrainz.org/ws/2/release?release-group=${mbid}&inc=recordings+artist-credits+media+artist-rels+url-rels&limit=1&fmt=json`;
-		const resp = await fetch(mbUrl, {
-			headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' }
-		});
+		const controller = new AbortController();
+		const timeoutId = setTimeout(() => controller.abort(), 10_000);
+		let resp: Response;
+		try {
+			resp = await fetch(mbUrl, {
+				headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' },
+				signal: controller.signal
+			});
+		} finally {
+			clearTimeout(timeoutId);
+		}
 
 		if (resp.ok) {
 			const mbData = await resp.json() as {

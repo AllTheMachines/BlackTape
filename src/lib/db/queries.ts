@@ -760,7 +760,9 @@ export async function getGenreSubgraph(
 	genreSlug: string
 ): Promise<GenreGraph> {
 	const center = await db.get<GenreNode>(
-		`SELECT id, slug, name, type, inception_year, origin_city, origin_lat, origin_lng,
+		`SELECT id, slug, name,
+		        CASE WHEN origin_lat IS NOT NULL THEN 'scene' ELSE 'genre' END AS type,
+		        inception_year, origin_city, origin_lat, origin_lng,
 		        wikidata_id, wikipedia_title, mb_tag
 		 FROM genres WHERE slug = ?`,
 		genreSlug
@@ -768,8 +770,10 @@ export async function getGenreSubgraph(
 	if (!center) return { nodes: [], edges: [] };
 
 	const neighbors = await db.all<GenreNode>(
-		`SELECT DISTINCT g.id, g.slug, g.name, g.type, g.inception_year,
-		        g.origin_city, g.origin_lat, g.origin_lng, g.wikidata_id, g.wikipedia_title, g.mb_tag
+		`SELECT DISTINCT g.id, g.slug, g.name,
+		        CASE WHEN g.origin_lat IS NOT NULL THEN 'scene' ELSE 'genre' END AS type,
+		        g.inception_year, g.origin_city, g.origin_lat, g.origin_lng,
+		        g.wikidata_id, g.wikipedia_title, g.mb_tag
 		 FROM genre_relationships gr
 		 JOIN genres g ON g.id = gr.from_id OR g.id = gr.to_id
 		 WHERE (gr.from_id = ? OR gr.to_id = ?) AND g.id != ?
@@ -798,7 +802,9 @@ export async function getGenreBySlug(
 	slug: string
 ): Promise<GenreNode | null> {
 	return db.get<GenreNode>(
-		`SELECT id, slug, name, type, inception_year, origin_city, origin_lat, origin_lng,
+		`SELECT id, slug, name,
+		        CASE WHEN origin_lat IS NOT NULL THEN 'scene' ELSE 'genre' END AS type,
+		        inception_year, origin_city, origin_lat, origin_lng,
 		        wikidata_id, wikipedia_title, mb_tag
 		 FROM genres WHERE slug = ?`,
 		slug
@@ -907,8 +913,10 @@ export async function getStarterGenreGraph(
 	// Load the center genres + their immediate neighbors (LIMIT 50 total nodes)
 	const placeholders = centerIds.map(() => '?').join(', ');
 	const nodes = await db.all<GenreNode>(
-		`SELECT DISTINCT g.id, g.slug, g.name, g.type, g.inception_year,
-		        g.origin_city, g.origin_lat, g.origin_lng, g.wikidata_id, g.wikipedia_title, g.mb_tag
+		`SELECT DISTINCT g.id, g.slug, g.name,
+		        CASE WHEN g.origin_lat IS NOT NULL THEN 'scene' ELSE 'genre' END AS type,
+		        g.inception_year, g.origin_city, g.origin_lat, g.origin_lng,
+		        g.wikidata_id, g.wikipedia_title, g.mb_tag
 		 FROM genres g
 		 WHERE g.id IN (${placeholders})
 		    OR g.id IN (
@@ -945,8 +953,10 @@ export async function getStarterGenreGraph(
  */
 export async function getAllGenreGraph(db: DbProvider): Promise<GenreGraph> {
 	const nodes = await db.all<GenreNode>(
-		`SELECT id, slug, name, type, inception_year,
-		        origin_city, origin_lat, origin_lng, wikidata_id, wikipedia_title, mb_tag
+		`SELECT id, slug, name,
+		        CASE WHEN origin_lat IS NOT NULL THEN 'scene' ELSE 'genre' END AS type,
+		        inception_year, origin_city, origin_lat, origin_lng,
+		        wikidata_id, wikipedia_title, mb_tag
 		 FROM genres
 		 ORDER BY inception_year ASC NULLS LAST`
 	);

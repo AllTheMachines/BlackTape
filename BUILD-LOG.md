@@ -10372,5 +10372,8 @@ Extended the Spotify Connect integration from live player status display into a 
 > Files changed: 1
 
 <!-- status -->
-Working through issue backlog. Fixed #59 (About page feedback → Cloudflare Worker), #58 (backers link hidden), Spotify user-top-read scope. Investigating #63 (album cover freeze) — cannot reproduce in automated tests yet.
+Fixed #53 (KB page issues): 1) Genre type now computed from lat/lng — genres grey, geocoded scenes orange. 2) origin_city shows without inception_year. 3) Genre Map section now renders inline SubGraph instead of dead link. Also #63: MusicBrainz fetch has 10s timeout. Moving to next issue.
 <!-- /status -->
+
+> **Commit 78aaf2a** (2026-02-28 19:01) — wip: auto-save
+> Files changed: 2
