@@ -10300,3 +10300,28 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit 176dec5** (2026-02-28 17:52) — wip: auto-save
 > Files changed: 6
+
+> **Commit 55ca5ed** (2026-02-28 17:58) — wip: auto-save
+> Files changed: 2
+
+## 2026-02-28 — Spotify Connect: Full Control Suite
+
+Extended the Spotify Connect integration from live player status display into a full-featured remote control. The player bar now reflects and controls Spotify Desktop in real time — not just triggering playback but owning the whole transport.
+
+**What shipped:**
+
+- **Live polling** — `GET /v1/me/player` every 3 s via `pollSpotify()` loop in `streaming.svelte.ts`. `spotifyTrack` state holds title, artist, album, progress, isPlaying, shuffle_state, repeat_state, volume_percent, uri.
+- **Player bar integration** — Full transport controls (play/pause, prev/next, seek bar with rAF interpolation) render in the main player bar when Spotify is active, even with no local track loaded. Old slim "streaming bar" removed.
+- **Volume** — Slider 0–100 in player bar (Spotify mode only). Mute/unmute preserves pre-mute level.
+- **Shuffle** — Toggle button reflects live `shuffle_state` from polling; optimistic local update on click.
+- **Repeat** — Cycles off → context (album/playlist) → track → off. Badge shown for track mode. Matches Spotify's own UX order.
+- **Top tracks on artist page** — When Spotify is connected, loads automatically via `$effect` when `showSpotifyButton` becomes true. Numbered rows, click to play from that index, pulsing dot on active track.
+- **Queue view** — Queue button in player bar shows Spotify queue (via `GET /v1/me/player/queue`) when in Spotify mode. Clean reuse of existing queue panel affordance.
+- **Add to queue** — `+` button on each track row in artist top-tracks list (appears on hover), calls `POST /v1/me/player/queue`.
+
+**Key decisions:**
+
+- `SpotifyTopTrack` type replaces `string[]` return from `getArtistTopTracks` — all callers updated (artist page + EmbedPlayer).
+- `spotifyRepeat` state moved to `$derived` in script block; `{@const}` can't be used at script-level in Svelte 5 (must be immediate child of a block element).
+- Top tracks load automatically — no manual trigger. `$effect` watches `showSpotifyButton`.
+- Queue panel: same toggle, different data source when Spotify is active. No new UI added.
