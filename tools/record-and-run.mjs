@@ -30,6 +30,13 @@ if (!page) { console.error('No page found via CDP'); process.exit(1); }
 page.setDefaultTimeout(10000);
 console.log('Connected. URL:', page.url());
 
+// Wait for SvelteKit app to load (in case WebView2 is still initializing)
+if (page.url().includes('chrome-error') || page.url() === 'about:blank') {
+  console.log('Waiting for app to load...');
+  await new Promise(r => setTimeout(r, 4000));
+  console.log('URL now:', page.url());
+}
+
 // ─── Fullscreen via Tauri API ────────────────────────────────────────────────
 
 console.log('Setting fullscreen...');
