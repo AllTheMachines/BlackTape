@@ -1,69 +1,88 @@
 # Work Handoff - 2026-02-28
 
 ## Current Task
-Working through open GitHub issues (bugs first, then enhancements).
+Fix #53: genre type classification — genres with `origin_lat` incorrectly showing as "scene" with Leaflet city map.
 
-## Completed This Session
-- **#59** — About page feedback form → Cloudflare Worker (c70ffbd)
-- **#58** — Hid "View backers" link on About page
-- **Spotify scope fix** — Added `user-top-read` to OAuth scopes
-- **#63 partial** — Added 10s AbortController timeout to MusicBrainz fetch (f96b75d)
-- **#53 partial** — Genre type now lat/lng-based, origin_city shown, Genre Map shows inline graph (f96b75d)
-- **#57** — Cannot reproduce (download works). Closed.
+## Context
+Steve reported "Industrial Metal" opens a city map when navigating to its KB genre page. The SQL queries compute `type` as `CASE WHEN origin_lat IS NOT NULL THEN 'scene' ELSE 'genre' END` — but most genres have an origin city recorded in Wikidata, so they get `type='scene'` and the genre detail page renders the SceneMap (Leaflet) component. A scene (like "Seattle scene") is a location-based community; a genre (like "Industrial Metal") is a style that happens to have a city of origin.
 
-## Issues To Tackle Next (in order)
+## Progress
 
-### #53 — Genre Map still broken (Steve feedback after fix)
-Two new complaints from Steve after the inline GenreGraph was added:
+### Completed This Session
+- **#53 Genre Map — pan/zoom** — `GenreGraph.svelte`: scroll-wheel zoom toward cursor, mousedown drag panning, grab cursor, Reset View button, hint text (cbb77dc)
+- **#53 Genre Map — in-place expansion** — clicking a node in the inline graph on KB genre pages now merges that node's subgraph in-place instead of navigating away (cbb77dc)
+- **#53 Genre Map — rotation bug** — Fixed infinite re-simulation loop caused by `$effect` tracking `layoutNodes` as a reactive dependency; fixed with `untrack()` (9bd7b7c)
+- **#63 Release page freeze** — Moved MB fetch from `+page.ts` (blocks navigation) to `+page.svelte` onMount (non-blocking); navigation is now instant (cbb77dc)
 
-1. **Clicking a genre node opens a city map** — `handleNodeClick` in `GenreGraph.svelte` calls `goto('/kb/genre/' + node.slug)`. If that genre has `origin_lat` (scene type), the genre page shows `SceneMap` (the Leaflet city map). Steve lands on a "city map" when he expected to see another genre page.
-   - Fix options:
-     a. On the genre detail page, pass `onNodeClick` to `GenreGraph` that does an in-place subgraph expansion (re-query the clicked genre's neighbors and update the graph) instead of navigating
-     b. OR: scroll to top of the same page and load the new genre in-place without full navigation
+### In Progress
+- **#53 Genre type classification** — genres like "Industrial Metal" show a Leaflet city map because `origin_lat IS NOT NULL` incorrectly marks them as scenes.
 
-2. **No pan/zoom on the genre graph** — The SVG is fixed-size with no interaction beyond hover/click. Steve can't explore. The full Style Map has drag, but the inline genre map doesn't.
-   - Fix: add mouse drag panning + scroll wheel zoom to `GenreGraph.svelte` (same pattern as StyleMap.svelte which already has zoom)
+### Remaining (in order)
+1. **Fix #53 scene vs genre classification** — see Next Steps below
+2. **#54** — Library/Crate Dig missing covers + no release type grouping
+3. **#50** — Discover page too slow (pre-compute `uniqueness_score` in pipeline)
+4. **#23** — Scene page local library not reflected
 
-3. **"Just a part of the whole genre map"** — the inline graph only shows immediate neighbors (subgraph). Steve expected to be able to explore outward.
-   - Fix: when a node is clicked in the inline genre map, expand the graph to include THAT node's neighbors (in-place graph expansion) instead of navigating away
+## Key Decisions
+- Genre map nodes: clicking expands in-place (no navigation). `onNodeClick` prop passed from genre detail page calls `handleGraphNodeClick` which merges neighbor subgraph via `getGenreSubgraph`.
+- `prevPositions` Map in GenreGraph preserves D3 node positions across re-simulations so existing nodes don't jump when new ones are added.
+- `untrack(() => layoutNodes.length > 0)` in the `$effect` prevents the effect from re-running when `layoutNodes` is set by `runSimulation()` — breaking what was an infinite loop.
+- Release page: `+page.ts` returns only `{ mbid, slug }`. All MB fetch logic moved to `loadRelease()` in `+page.svelte` onMount.
 
-**Recommended approach for #53 Genre Map:**
-- On the genre detail page, pass `onNodeClick` handler to `GenreGraph` that:
-  1. Fetches the clicked genre's subgraph via `getGenreSubgraph(db, clickedSlug)`
-  2. Merges the new nodes/edges into the existing graph state
-  3. Re-runs the D3 simulation with the expanded data
-  4. Updates the `focusSlug` to the clicked genre
-  5. Does NOT navigate away
-- Add pan (mousedown+drag on SVG background) + scroll zoom to `GenreGraph.svelte`
-- Keep the "Explore in full Style Map →" link as the escape hatch to the full interactive map
+## The Bug to Fix Next
 
-### #63 — App freeze on album cover click (STILL REPRODUCIBLE)
-- Steve confirmed freeze on Radiohead page, specifically multi-release cards like "5 Album Set"
-- Timeout fix (10s) was added but not sufficient — freeze happens before timeout
-- Theory 1: coverartarchive.org redirect for certain release groups hangs WebView2 (image load)
-- Theory 2: MB query returns huge payload for box-set release groups (many releases/tracks/rels)
-- Next steps:
-  1. Find the MBID for Radiohead "5 Album Set" and test the MB API response size
-  2. Check if `<img src="https://coverartarchive.org/release-group/MBID/front-500">` hangs in WebView2 for box sets (CAA returns 404 for some release groups → WebView2 may hang on redirect chain)
-  3. Possible fix: move cover art to an `onMount` fetch with AbortController, show placeholder until resolved
+**Root cause:** In `src/lib/db/queries.ts`, four queries compute:
+```sql
+CASE WHEN origin_lat IS NOT NULL THEN 'scene' ELSE 'genre' END AS type
+```
+Lines: 764, 774, 806, 917, 957.
 
-### #54 — Library/Crate Dig missing covers + no release type grouping
-- Artist cards show only text initials (S, RP, CC) — no cover art loaded
-- Library has no Albums/EPs/Singles grouping
-- Some releases show no title
+This was introduced to fix a pipeline bug where the pipeline set `type='scene'` for ANY genre with `origin_city`. But the coordinate-based override is also wrong — genres like Industrial Metal have `origin_lat` because their Wikidata entry records a city of origin, but they're not geographic scenes.
 
-### #50 — Discover page too slow
-- Root cause: `getDiscoveryArtists` fast-path JOINs 2.6M artists × artist_tags × tag_stats, GROUP BY all artists, ORDER BY computed expression — no index can help
-- Fix plan: pre-compute `uniqueness_score` in `build-tag-stats.mjs`, store in `artists` table, query becomes trivial `ORDER BY uniqueness_score DESC LIMIT 50`
-- Needs: schema change + pipeline update + runtime `ALTER TABLE artists ADD COLUMN uniqueness_score REAL DEFAULT 0` migration
+**The genres table has an actual `type` column.** The pipeline sets it. Check what values it contains:
+```bash
+# Find pipeline script that populates genres:
+grep -rn "INSERT.*genres\|type.*scene\|genre.*type" /d/Projects/Mercury/tools/ --include="*.mjs" | grep -v node_modules
+```
 
-## Key Files
-- `src/lib/components/GenreGraph.svelte` — add pan/zoom + onNodeClick expansion logic
-- `src/routes/kb/genre/[slug]/+page.svelte` — pass onNodeClick to GenreGraph, handle in-place expansion
-- `src/routes/kb/genre/[slug]/+page.ts` — may need to expose a way to re-query subgraph
-- `src/lib/db/queries.ts` — `getGenreSubgraph` already exists, use it for expansion
-- `src/lib/components/StyleMap.svelte` — reference for zoom/pan pattern (D3 zoom)
-- `src/routes/artist/[slug]/release/[mbid]/+page.ts` — release page with MB fetch + cover art
+**Fix options (in order of preference):**
+
+1. **Use the actual DB `type` column** — if the pipeline sets correct values (`'genre'`, `'scene'`, `'city'`), just do:
+   ```sql
+   COALESCE(type, 'genre') AS type
+   ```
+   Replace all four `CASE WHEN origin_lat...` expressions with this.
+
+2. **Require explicit scene marker** — only treat as scene if `type = 'scene'` in the DB AND `origin_lat IS NOT NULL`:
+   ```sql
+   CASE WHEN type = 'scene' AND origin_lat IS NOT NULL THEN 'scene'
+        WHEN type = 'city' THEN 'city'
+        ELSE 'genre' END AS type
+   ```
+
+3. **Fix the isScene check in the page** — as a quick workaround, check the genre's name contains "scene" or a city name pattern. But this is fragile — don't prefer this.
+
+**Also check:** Does the `genres` table `type` column actually have `'scene'` values for real scenes (like "Seattle scene", "Madchester")? If not, the pipeline may need a fix too.
+
+## Relevant Files
+- `src/lib/db/queries.ts` — lines 764, 774, 806, 917, 957 — all four `CASE WHEN origin_lat` expressions need fixing
+- `src/routes/kb/genre/[slug]/+page.svelte` — `isScene` derived checks `data.genre.type === 'scene'` — this is correct once queries return right types
+- `src/lib/components/GenreGraph.svelte` — fully updated (pan/zoom, in-place expansion, rotation fix)
+- `src/routes/artist/[slug]/release/[mbid]/+page.ts` — simplified to return only `{ mbid, slug }`
+- `src/routes/artist/[slug]/release/[mbid]/+page.svelte` — `loadRelease()` in onMount
+
+## Git Status
+Only `BUILD-LOG.md` has uncommitted changes (auto-save noise). No code changes pending.
+
+## Next Steps
+1. Read `src/lib/db/queries.ts` around line 764 to confirm column name is `type`
+2. Search pipeline scripts for how `type` is set: `grep -rn "type.*scene\|'scene'" /d/Projects/Mercury/tools/ --include="*.mjs"`
+3. If pipeline sets correct values → change all four queries to `COALESCE(type, 'genre') AS type`
+4. If pipeline is wrong → fix pipeline AND queries
+5. Reload: `node tools/reload.mjs`
+6. Test: navigate to "Industrial Metal" KB page — should show NO city map, just genre info + related genres + inline graph
+7. Test: navigate to a real scene (like a city-named scene) — SHOULD show city map
+8. Run `npm run check` and commit
 
 ## Resume Command
 After running `/clear`, run `/resume` to continue.
