@@ -804,6 +804,7 @@
 		display: flex;
 		flex-direction: column;
 		gap: 4px;
+		overflow: hidden;
 		transition: border-color 0.15s, background 0.15s;
 	}
 
