@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page, navigating } from '$app/stores';
 	import { goto } from '$app/navigation';
+	import { helpTopicForPath } from '$lib/help';
 
 	const MAX_TAGS = 5;
 
@@ -150,7 +151,14 @@
 				<a href="/discover" class="discover-link">Go to Discover</a> to filter by tags.
 			</p>
 		</div>
-	{:else}
+	{/if}
+
+	<!-- Help link — always at the bottom -->
+	<div class="sidebar-help">
+		<a href="/help/{helpTopicForPath($page.url.pathname)}" class="help-link">? Help</a>
+	</div>
+
+	{#if isOnDiscover}
 		<div class="filter-section">
 			<span class="nav-lbl">Discovery Filters</span>
 
@@ -462,5 +470,22 @@
 	.clear-btn:hover {
 		color: var(--t-1);
 		border-color: var(--b-3);
+	}
+
+	.sidebar-help {
+		margin-top: auto;
+		padding: 8px 12px;
+		border-top: 1px solid var(--b-0);
+	}
+
+	.help-link {
+		font-size: 10px;
+		color: var(--t-3);
+		text-decoration: none;
+		transition: color 0.1s;
+	}
+
+	.help-link:hover {
+		color: var(--acc);
 	}
 </style>
