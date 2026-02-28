@@ -10230,3 +10230,6 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit fe19825** (2026-02-28 17:17) — wip: auto-save
 > Files changed: 1
+
+> **Commit 3fd8472** (2026-02-28 17:23) — feat: show Spotify Connect status in player bar
+> Files changed: 5

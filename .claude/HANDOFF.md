@@ -1,39 +1,42 @@
 # Work Handoff - 2026-02-28
 
-## Current Task
-Spotify Connect "Play in Spotify Desktop" button does nothing on the artist page.
+## What Was Just Shipped
 
-## Completed This Session
-- Spotify OAuth fixed: fixed port 7743, correct redirect URI in dashboard
-- SpotifySettings UI improved: bigger font, correct instructions, dev mode note
-- Streaming settings: removed dead dropdown, replaced broken HTML5 drag with ↑↓ buttons
-- Release page: now fetches Spotify/SoundCloud/YouTube/Bandcamp from MB url-rels, shows EmbedPlayer
-- EmbedPlayer: when Spotify connected, shows Connect API button instead of broken iframe
-- All 191 tests passing, committed
+Three commits this session fixing Spotify Connect end-to-end:
 
-## The Unresolved Bug
-"▶ Play in Spotify Desktop" button on artist page does nothing when clicked.
+1. **fix: Spotify Connect on release pages** — `extractSpotifyAlbumId()` + `playAlbumOnSpotify()` added. Release page Spotify URLs are album URLs; now plays full album via `context_uri`.
 
-### Debug findings so far
-- CDP check found `document.querySelector('.embed-player')` returns null on the artist page
-- This means EmbedPlayer isn't rendering on the Radiohead artist page at all, OR it's inside a tab that isn't active
-- The only Spotify-related button found was "▶ Spotify" — which is likely a tab button, not the play button
+2. **fix: activate idle Spotify Desktop** — `getFirstAvailableDeviceId()` added. Both play functions now pass `?device_id=` to the play endpoint, so Spotify Desktop open-but-idle now works. Previously got NO_ACTIVE_DEVICE error.
 
-### Likely causes to investigate
-1. The artist page renders EmbedPlayer inside a tab (e.g. "Overview" tab) — need to check if the tab is active
-2. `spotifyState.connected` may be false in EmbedPlayer context (state not loaded yet)
-3. The Spotify Connect flow itself may be failing silently — the `@const cstate` in the template is NOT reactive in Svelte 5 (it's a snapshot, not a binding) — this means button state never updates visually
+3. **feat: Spotify Connect status in player bar** — `streamingState` gains `streamingLabel`. Player.svelte shows a slim streaming bar (pulsing green dot + artist name + dismiss ✕) when Spotify Connect is active but no local track loaded. Artist page `▶ Spotify` pill updates to `▶ Playing` state.
 
-### Fix needed
-- In EmbedPlayer.svelte, replace `{@const cstate = spotifyConnectState[key] ?? 'idle'}` with inline reads
-- Add console.log or CDP debug to verify `spotifyState.connected` is true when EmbedPlayer renders
-- Check why `.embed-player` div isn't found by CDP on the artist page
+## Current State
+
+App just restarted. Spotify Connect should now fully work:
+- Click `▶ Spotify` on artist page → music plays in Spotify Desktop → player bar shows "Radiohead — Top Tracks via Spotify" with pulsing dot
+- On release page, "▶ Play in Spotify Desktop" button plays the album
+
+## What Needs Testing
+
+Steve should test the full flow with Spotify Desktop open:
+1. Go to any artist with Spotify links
+2. Click `▶ Spotify` pill
+3. Does Spotify Desktop start playing?
+4. Does the player bar at bottom show the streaming bar?
+5. Does the pill show `▶ Playing`?
+
+## Potential Follow-up
+
+- The `via Spotify` badge inside the regular player bar (line 102) shows when a local track is also playing — that's a separate "embed player is active" indicator, still correct
+- If Steve wants to actually pause Spotify from BlackTape, `PUT /v1/me/player/pause` could be wired to the streaming bar's dismiss button (currently just clears local state, doesn't send pause command to Spotify)
 
 ## Key Files
-- `src/lib/components/EmbedPlayer.svelte` — Spotify Connect button + `playOnSpotifyDesktop()`
-- `src/lib/spotify/api.ts` — `getArtistTopTracks()` + `playTracksOnSpotify()` (already complete)
-- `src/lib/spotify/auth.ts` — `getValidAccessToken()` (already complete)
-- `src/lib/spotify/state.svelte.ts` — `spotifyState.connected` reactive state
+
+- `src/lib/spotify/api.ts` — all Spotify API functions
+- `src/lib/player/streaming.svelte.ts` — streaming state + label
+- `src/lib/components/Player.svelte` — streaming bar at ~line 278
+- `src/lib/components/EmbedPlayer.svelte` — release page Connect button
+- `src/routes/artist/[slug]/+page.svelte` — artist page Connect button
 
 ## Resume Command
 Run `/resume` after `/clear`
