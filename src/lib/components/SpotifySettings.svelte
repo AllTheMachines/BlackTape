@@ -1,14 +1,20 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { spotifyState } from '$lib/spotify/state.svelte';
 
 	type WizardStep = 'setup' | 'waiting' | 'success';
 	let step = $state<WizardStep>(spotifyState.connected ? 'success' : 'setup');
-	let clientIdInput = $state(spotifyState.clientId ?? '');
+	let clientIdInput = $state('');
 	let cancelPort = $state<number | null>(null);
 	let errorMessage = $state<string | null>(null);
 
 	let isConnected = $derived(spotifyState.connected);
 	let reauthorizing = $state(false);
+
+	// Pre-populate Client ID from stored state (for re-auth convenience).
+	onMount(() => {
+		if (spotifyState.clientId) clientIdInput = spotifyState.clientId;
+	});
 
 	// When spotifyState.connected becomes true externally (e.g. boot hydration), sync step.
 	$effect(() => {
