@@ -10907,3 +10907,9 @@ Issue #51 closed.
 
 > **Commit 9b9cd9b** (2026-03-01 00:28) — fix #24: style map square nodes + mouse wheel zoom
 > Files changed: 1
+
+> **Commit c4b7558** (2026-03-01 00:28) — wip: auto-save
+> Files changed: 1
+
+> **Commit 3b0fbcd** (2026-03-01 00:35) — fix #29: AI provider UX redesign — merged flow
+> Files changed: 1

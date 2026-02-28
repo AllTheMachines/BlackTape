@@ -1,7 +1,7 @@
 # Work Handoff - 2026-03-01
 
 ## Current Task
-Working through open GitHub issues. This session closed #43, #32, #31, #25.
+Working through open GitHub issues. This session closed #56, #25, #31, #32, #43, #26, #27, #49, #51, #52, #55, #23, #24, #29.
 
 ## Context
 Steve's rule: work through open GitHub issues before starting new feature work. 197 tests passing, 0 failing.
@@ -9,30 +9,28 @@ Steve's rule: work through open GitHub issues before starting new feature work. 
 ## Progress
 
 ### Completed This Session
-- **#43** — Loading indicators. Sidebar nav pending state (`$navigating`), CSS `:active` on all interactive elements, progress bar 2px→3px.
-- **#32** — Share button brand colors. Mastodon (#6364FF), Bluesky (#0085FF), Twitter/X (--t-1) on hover.
-- **#31** — Discovery headers more prominent. h2 13→14px/t-2→t-1, description 11→12px/t-3→t-2 across all 6 discovery pages.
-- **#25** — Time Machine pagination + sort. Sort: alpha names first, then tag count desc (significance), special chars pushed to end. Pagination: page size 30, "Load more" button appends next batch.
+- **#56** — Play Album button (already done, closed)
+- **#25, #31, #32, #43, #26, #27, #49, #51, #52, #55, #23** — All already fixed in prior commits, closed on GitHub
+- **#24** — Style Map: square nodes (rx=0), mouse wheel zoom + drag-to-pan (scale 0.15–8×)
+- **#29** — AI provider UX redesign: merged Remote API + AI Summary Provider into single step flow (pick provider → API key appears below)
 
 ## Relevant Files
-- `src/lib/components/LeftSidebar.svelte` — pending nav state + :active CSS
-- `src/routes/+layout.svelte` — progress bar 3px + nav-link :active
-- `src/routes/artist/[slug]/+page.svelte` — platform pill :active + share btn brand colors
-- `src/routes/time-machine/+page.svelte` — pagination state + Load more button
-- `src/routes/time-machine/+page.ts` — limit 30, offset 0
-- `src/lib/db/queries.ts` — getArtistsByYear: sort fix + offset param
-- `src/routes/{crate,discover,explore,kb,style-map,time-machine}/+page.svelte` — discover-mode-desc text bumped
+- `src/lib/components/StyleMap.svelte` — square nodes, zoom/pan state
+- `src/lib/components/AiSettings.svelte` — merged remote config + provider cards
 
 ## Git Status
 - All changes committed, clean working tree
 - Test suite: 197 passing, 0 failing
 
 ## Open Issues (remaining, priority order)
-- **Bug:** #23 scene page doesn't reflect local library
-- **Enhancements:** #33 help/about overhaul, #30 about page feedback form, #29 AI provider UX, #24 style map zoom, #64 geographic scene map, #15 MB live update strategy
+- **#30** — About page: replace GitHub link with in-app guided feedback form
+- **#33** — Help system + About page overhaul
+- **#64** — Geographic scene map (complex feature)
+- **#42** — In-app bug reporting
+- **#15** — MusicBrainz live update strategy (research)
 
 ## Next Steps
-Pick next issue — suggest **#24** (Style Map zoom, likely CSS/D3 only) or **#33** (help/about overhaul).
+Pick next issue — suggest **#30** (About page feedback form, likely small) or **#33** (Help/About overhaul).
 
 ## Resume Command
 After `/clear`, run `/resume` to continue.
