@@ -10355,3 +10355,9 @@ Extended the Spotify Connect integration from live player status display into a 
 
 > **Commit f4abdc7** (2026-02-28 18:43) — wip: auto-save
 > Files changed: 2
+
+> **Commit d5bfdae** (2026-02-28 18:46) — auto-save: 2 files @ 18:46
+> Files changed: 1
+
+> **Commit c70ffbd** (2026-02-28 18:49) — fix #59: feedback form posts to worker, no email client needed
+> Files changed: 2
