@@ -42,3 +42,8 @@ pipeline/data/
 
 # Temporary icon source
 app-icon.png
+
+# Large media files
+*.mp4
+*.mov
+*.mkv
