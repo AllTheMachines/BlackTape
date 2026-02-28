@@ -10641,3 +10641,9 @@ Library load time: **9+ seconds → 500ms**. Cover thumbnails: **never appeared 
 
 > **Commit 11bbb48** (2026-02-28 21:45) — wip: auto-save
 > Files changed: 1
+
+> **Commit 7ea2cee** (2026-02-28 21:46) — auto-save: 2 files @ 21:46
+> Files changed: 1
+
+> **Commit a1176bb** (2026-02-28 21:50) — fix: release page stuck on loading — add error state + MB rate-limit retry
+> Files changed: 2

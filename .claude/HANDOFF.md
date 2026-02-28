@@ -1,73 +1,56 @@
 # Work Handoff - 2026-02-28
 
 ## Current Task
-Fix **#50 — Discover page takes too long to load**
+Release page stuck on "Loading release details…" for Radiohead — investigating / partially fixed.
 
 ## Context
-Steve: "Takes forever." No loading indicator while it hangs.
+Working through open GitHub issues. Fixed #50 (Discover speed) and #63 (album cover freeze) this session. After fixing #63, Steve reported the Radiohead release page still hangs on "Loading release details…". Root cause: MB rate-limiting — artist page now fires 2 parallel MB requests, and the release page immediately fires a 3rd, hitting MB's 1 req/sec limit. The fetch fails silently (no error state on page).
 
-## Root Cause (already identified)
+## Progress
 
-`getDiscoveryArtists` in `src/lib/db/queries.ts` (line 486):
+### Completed This Session
+- **#50 fixed & closed**: Discover page 11,000ms → 7ms via precomputed `uniqueness_score` column
+- **#63 fixed & closed**: Artist page +page.ts — 3 sequential MB fetches → 2 parallel + 1 sequential, all with timeouts (8s links/releases, 5s bio). LinerNotes timeout added. Release page timeout 10s → 5s.
+- **Release page error state** (a1176bb): Added `loadDone` state, error message shown when load fails, 429/503 retry with 1.2s delay.
 
-**No-filter path** (line 510–528): JOINs all 2.6M artists with `artist_tags` + `tag_stats`, then does a complex multi-factor ORDER BY expression computed per row — no index possible on a computed expression. This scans tens of millions of rows on every Discover page load.
+### In Progress
+- Steve is testing whether the Radiohead release now loads. The retry may or may not fix it depending on actual failure mode.
 
-**Filtered path** (line 559–579): Two correlated subqueries per artist row (for `tags` and `uniqueness_score`) — O(N) subquery calls.
+### Remaining / Uncertain
+- Verify Radiohead release actually loads now (app was reloaded with latest code)
+- If still broken, investigate further — could be empty `releases[]` from MB (e.g. MB returns the release group but the `release?release-group=` endpoint returns empty for some releases)
+- Next issue to tackle: **#56** (Play Album button on release page) or **#51** (Discover filter tag input)
 
-The comment at line 507 says "The old approach ran 3 correlated subqueries per artist row across 2.6M artists, holding the Rust Mutex for 10-30+ seconds." The current approach improved it but it's still slow.
-
-## The Fix
-
-**Option A (pipeline — best long-term):** Add `uniqueness_score` as a precomputed column on the `artists` table in the pipeline. Query becomes: `SELECT ... FROM artists ORDER BY uniqueness_score DESC LIMIT 50` — instant.
-
-**Option B (index — simpler, no pipeline change):** Add an index in the DB init or a migration. But since `uniqueness_score` is computed from other tables, can't index it directly without materializing it.
-
-**Option C (no-filter fast path improvement):** The current no-filter JOIN query could be sped up with a covering index on `artist_tags(artist_id, tag)` + `tag_stats(tag, artist_count)`. These indexes may already exist — check.
-
-**Recommended approach:**
-1. Check what indexes exist on `artist_tags` and `tag_stats`
-2. Run EXPLAIN QUERY PLAN on the no-filter query to see what it's actually doing
-3. If simple index fix works, do that
-4. If not, add `uniqueness_score REAL` to the `artists` table and populate it in the pipeline (`build-genre-data.mjs` or a separate step)
-
-## Steps to Implement
-
-```bash
-# 1. Check existing indexes
-cd /d/Projects/Mercury/pipeline && node -e "
-const Database = require('better-sqlite3');
-const db = new Database('C:/Users/User/AppData/Roaming/com.mercury.app/mercury.db', { readonly: true });
-const indexes = db.prepare(\"SELECT name, tbl_name, sql FROM sqlite_master WHERE type='index' ORDER BY tbl_name\").all();
-indexes.forEach(i => console.log(i.tbl_name, '-', i.name));
-db.close();
-"
-
-# 2. Time the current query
-cd /d/Projects/Mercury && node tools/time-cold-library.mjs  # (reuse similar approach)
-```
-
-2. Add precomputed `uniqueness_score` to `artists` table:
-   - `src-tauri/src/mercury_db.rs` — add column to CREATE TABLE and a migration
-   - Pipeline: compute score after importing artist_tags and save it
-   - Queries: replace computed ORDER BY with `ORDER BY uniqueness_score DESC`
-
-3. Also check issue #43 (missing loading indicator) — it's mentioned in #50 and may be a quick separate fix.
+## Key Decisions
+- Artist page parallel MB fetches: links + releases run via `Promise.all`, bio waits after (depends on links result for Wikipedia URL)
+- `fetchSafe()` helper added to `+page.ts` — returns `Response | null`, catches all errors/aborts
+- Release page retry: 429/503 → wait 1.2s → retry once. This is the most likely rate-limit fix.
+- `loadDone = true` set at end of `loadRelease()` regardless of outcome — prevents infinite spinner
 
 ## Relevant Files
-- `src/lib/db/queries.ts` lines 486–579 — `getDiscoveryArtists` — the slow query
-- `src/routes/discover/+page.ts` — calls `getDiscoveryArtists` in server load
-- `src-tauri/src/mercury_db.rs` — artists table DDL + indexes
-- `pipeline/import.js` — main pipeline import script
+- `src/routes/artist/[slug]/+page.ts` — parallel MB fetches + timeouts (main fix for #63)
+- `src/routes/artist/[slug]/release/[mbid]/+page.svelte` — loadDone state + retry on 429/503
+- `src/lib/components/LinerNotes.svelte` — 5s timeout added
+- `src/lib/db/queries.ts` — getDiscoveryArtists rewritten to use uniqueness_score column
+- `src-tauri/src/mercury_db.rs` — migrate_uniqueness_score() startup migration
+- `pipeline/build-tag-stats.mjs` — computes uniqueness_score at pipeline build time
+- `tools/compute-uniqueness.mjs` — one-time migration script for existing DBs
+- `tools/debug-release.mjs` — debug script for testing MB release fetch via CDP
 
 ## Git Status
-Clean. All changes from #54 committed (1110b29). 191 tests passing.
+Clean except BUILD-LOG.md (needs session entry) and parachord-reference submodule.
+
+## Debugging Context
+- DB path: `C:/Users/User/AppData/Roaming/com.blacktape.app/mercury.db` (NOT com.mercury.app)
+- uniqueness_score column already populated in both DBs (com.blacktape.app + com.mercury.app)
+- MB API tested directly: Radiohead release fetch returns 200 in 352ms when not rate-limited
+- The failure is likely: artist page fires 2 parallel MB requests → release page fires 3rd immediately → MB 429 → old code had no retry → `release` stays null → page hangs
 
 ## Next Steps
-1. `gh issue view 43` — check the loading indicator issue (may be quick)
-2. Time the actual Discover query via CDP
-3. Fix the query (index or precomputed column)
-4. Test: Discover should load in <500ms
-5. Close #50
+1. Confirm Radiohead release loads (Steve should test with app already reloaded)
+2. If still broken, check: does MB return `releases: []` for that specific release group? Try `tools/debug-release.mjs` again while on the release page
+3. Update BUILD-LOG.md with session summary
+4. Move to next issue: **#56** (Play Album button — likely quick, button stub already exists in release page)
 
 ## Resume Command
 After `/clear`, run `/resume` to continue.
