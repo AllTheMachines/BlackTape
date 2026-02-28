@@ -43,6 +43,7 @@ try {
     }
   });
   await new Promise(r => setTimeout(r, 1500));
+  await page.bringToFront();
   console.log('Fullscreen set.');
 } catch (e) {
   console.warn('Fullscreen via Tauri failed:', e.message, '— trying maximize');
@@ -72,10 +73,7 @@ const ffmpeg = spawn('ffmpeg', [
   '-y',                         // overwrite output
   '-f', 'gdigrab',              // Windows GDI screen capture
   '-framerate', '30',
-  '-video_size', `${width}x${height}`,
-  '-offset_x', '0',
-  '-offset_y', '0',
-  '-i', 'desktop',              // capture full desktop
+  '-i', 'title=BlackTape',      // capture only the BlackTape window
   '-c:v', 'libx264',
   '-preset', 'ultrafast',       // low CPU, good for live capture
   '-crf', '18',                 // high quality
@@ -126,7 +124,7 @@ async function safe(fn, timeout = 5000) {
   ]).catch(e => { console.warn('  safe():', e.message.slice(0, 50)); return null; });
 }
 
-async function nav(path2, settle = 2500) {
+async function nav(path2, settle = 3500) {
   console.log('  nav →', path2);
   await safe(p => { window.location.href = p; }, 3000);
   await wait(settle);
