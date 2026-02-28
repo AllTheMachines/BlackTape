@@ -9874,3 +9874,9 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit c730ad3** (2026-02-28 12:54) — wip: auto-save
 > Files changed: 1
+
+> **Commit 80d700c** (2026-02-28 12:56) — wip: auto-save
+> Files changed: 1
+
+> **Commit ce6dfaf** (2026-02-28 13:00) — fix: add core:window:allow-start-dragging capability (#46)
+> Files changed: 1
