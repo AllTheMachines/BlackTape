@@ -18,6 +18,7 @@
     "dialog:allow-open",
     "dialog:allow-save",
     "shell:default",
+    "oauth:allow-start",
     {
       "identifier": "shell:allow-spawn",
       "allow": [
