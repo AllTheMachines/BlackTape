@@ -10469,3 +10469,6 @@ Cannot reproduce. Tested by clicking "Download Models" — download starts immed
 
 > **Commit 9bd7b7c** (2026-02-28 19:55) — fix: genre graph infinite re-simulation (rotation bug)
 > Files changed: 1
+
+> **Commit 595e8cd** (2026-02-28 19:55) — wip: auto-save
+> Files changed: 1
