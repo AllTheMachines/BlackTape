@@ -133,7 +133,9 @@ async function safe(fn, timeout = 5000) {
 
 async function nav(path2, settle = 3500) {
   console.log('  nav →', path2);
-  await safe(p => { window.location.href = p; }, 3000);
+  await page.evaluate((url) => { window.location.href = url; }, path2).catch(e => {
+    console.warn('  nav eval:', e.message.slice(0, 50));
+  });
   await wait(settle);
   await drift(640, 400, settle > 2000 ? 30 : 10);
 }
@@ -206,6 +208,7 @@ async function typeInSearch(text) {
     for (const ch of text) {
       await input.type(ch, { delay: 75 });
     }
+    await input.press('Enter');
     await wait(2200);
   } catch (e) {
     console.warn('  typeInSearch:', e.message.slice(0, 50));
