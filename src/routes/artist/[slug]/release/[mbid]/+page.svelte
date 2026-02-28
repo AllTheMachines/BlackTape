@@ -65,28 +65,26 @@
 		try {
 			const mbUrl = `https://musicbrainz.org/ws/2/release?release-group=${mbid}&inc=recordings+artist-credits+media+artist-rels+url-rels&limit=1&fmt=json`;
 			const controller = new AbortController();
-			const timeoutId = setTimeout(() => controller.abort(), 5_000);
-			let resp: Response;
+			// Timeout covers headers AND body — resp.json() can stall if MB delays body transfer
+			const timeoutId = setTimeout(() => controller.abort(), 8_000);
 			try {
-				resp = await fetch(mbUrl, {
+				let resp = await fetch(mbUrl, {
 					headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' },
 					signal: controller.signal
 				});
-			} finally {
-				clearTimeout(timeoutId);
-			}
 
-			// MB rate-limit: wait 1s and retry once on 429/503
-		if (resp.status === 429 || resp.status === 503) {
-			await new Promise(r => setTimeout(r, 1200));
-			const controller2 = new AbortController();
-			const t2 = setTimeout(() => controller2.abort(), 5_000);
-			try {
-				resp = await fetch(mbUrl, { headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' }, signal: controller2.signal });
-			} finally { clearTimeout(t2); }
-		}
+				// MB rate-limit: cancel original timeout, wait, retry with fresh timeout
+				if (resp.status === 429 || resp.status === 503) {
+					clearTimeout(timeoutId);
+					await new Promise(r => setTimeout(r, 1200));
+					const controller2 = new AbortController();
+					const t2 = setTimeout(() => controller2.abort(), 8_000);
+					try {
+						resp = await fetch(mbUrl, { headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' }, signal: controller2.signal });
+					} finally { clearTimeout(t2); }
+				}
 
-		if (resp.ok) {
+				if (resp.ok) {
 				const mbData = await resp.json() as {
 					releases?: Array<{
 						id: string;
@@ -192,6 +190,9 @@
 					};
 					hasAnyStream = Object.values(streamingUrls).some(Boolean);
 				}
+			}
+			} finally {
+				clearTimeout(timeoutId);
 			}
 		} catch (err) {
 			console.error('Release fetch error:', err);
