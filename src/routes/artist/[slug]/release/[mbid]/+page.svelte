@@ -1,33 +1,21 @@
 <script lang="ts">
-	import { onMount, tick } from 'svelte';
+	import { onMount } from 'svelte';
 	import { PROJECT_NAME } from '$lib/config';
 	import BuyOnBar from '$lib/components/BuyOnBar.svelte';
 	import LinerNotes from '$lib/components/LinerNotes.svelte';
 	import { isTauri } from '$lib/platform';
 	import EmbedPlayer from '$lib/components/EmbedPlayer.svelte';
-	import type { ReleaseDetail, CreditEntry } from './+page';
-
-	const USER_AGENT = 'Mercury/0.1.0 (https://github.com/user/mercury)';
-	const CREDIT_ROLES = new Set([
-		'producer', 'engineer', 'mix', 'lyricist', 'composer',
-		'performer', 'instrument', 'vocal'
-	]);
+	import type { CreditEntry } from './+page';
 
 	let { data } = $props();
 
-	// Release data is loaded async in onMount — navigation is instant
-	let release = $state<ReleaseDetail | null>(null);
-	let loadDone = $state(false);
+	// Release data comes from the load function — derived so SPA navigation stays reactive
+	let release = $derived(data.release);
+	let platformLinks = $derived(data.platformLinks);
+	let hasAnyStream = $derived(data.hasAnyStream);
+
+	// Credits with DB-resolved slugs — loaded async in onMount (supplementary, Tauri-only)
 	let credits = $state<CreditEntry[]>([]);
-	let platformLinks = $state({
-		bandcamp: [] as string[],
-		spotify: [] as string[],
-		soundcloud: [] as string[],
-		youtube: [] as string[],
-		wikipedia: [] as string[],
-		other: [] as string[]
-	});
-	let hasAnyStream = $state(false);
 
 	/** Format milliseconds as M:SS */
 	function formatDuration(ms: number | null): string {
@@ -55,179 +43,33 @@
 		release ? `${release.title} — ${release.artistName} — ${PROJECT_NAME}` : PROJECT_NAME
 	);
 
-	async function loadRelease() {
-		const { mbid, slug } = data;
-		const streamingUrls: { bandcamp: string | null; spotify: string | null; soundcloud: string | null; youtube: string | null } = {
-			bandcamp: null, spotify: null, soundcloud: null, youtube: null
-		};
-		let rawCredits: Omit<CreditEntry, 'slug'>[] = [];
-
-		try {
-			const mbUrl = `https://musicbrainz.org/ws/2/release?release-group=${mbid}&inc=recordings+artist-credits+media+artist-rels+url-rels&limit=1&fmt=json`;
-			const controller = new AbortController();
-			// Timeout covers headers AND body — resp.json() can stall if MB delays body transfer
-			const timeoutId = setTimeout(() => controller.abort(), 8_000);
-			try {
-				let resp = await fetch(mbUrl, {
-					headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' },
-					signal: controller.signal
-				});
-
-				// MB rate-limit: cancel original timeout, wait, retry with fresh timeout
-				if (resp.status === 429 || resp.status === 503) {
-					clearTimeout(timeoutId);
-					await new Promise(r => setTimeout(r, 1200));
-					const controller2 = new AbortController();
-					const t2 = setTimeout(() => controller2.abort(), 8_000);
-					try {
-						resp = await fetch(mbUrl, { headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' }, signal: controller2.signal });
-					} finally { clearTimeout(t2); }
-				}
-
-				if (resp.ok) {
-				const mbData = await resp.json() as {
-					releases?: Array<{
-						id: string;
-						title: string;
-						date?: string;
-						'release-group'?: { 'primary-type'?: string };
-						'artist-credit'?: Array<{ name?: string; artist?: { name: string } }>;
-						media?: Array<{
-							tracks?: Array<{
-								position: number;
-								number: string;
-								title: string;
-								length?: number;
-							}>;
-						}>;
-						relations?: Array<{
-							'target-type'?: string;
-							type?: string;
-							artist?: { name: string; id: string };
-							url?: { resource?: string };
-						}>;
-					}>;
-				};
-				const rels = mbData.releases ?? [];
-				if (rels.length > 0) {
-					const rel = rels[0];
-
-					const tracks = [];
-					for (const medium of rel.media ?? []) {
-						for (const track of medium.tracks ?? []) {
-							tracks.push({
-								position: track.position,
-								number: track.number,
-								title: track.title,
-								length: track.length ?? null
-							});
-						}
-					}
-
-					const simpleCredits = [];
-					for (const r of rel.relations ?? []) {
-						if (r['target-type'] === 'artist' && r.artist?.name && r.type) {
-							simpleCredits.push({ name: r.artist.name, role: r.type });
-						}
-					}
-
-					for (const r of rel.relations ?? []) {
-						if (r['target-type'] === 'artist' && r.type && r.artist?.name && r.artist?.id) {
-							if (CREDIT_ROLES.has(r.type)) {
-								rawCredits.push({ role: r.type, name: r.artist.name, mbid: r.artist.id });
-							}
-						}
-					}
-
-					for (const r of rel.relations ?? []) {
-						if (r['target-type'] === 'url' && r.url?.resource) {
-							try {
-								const hostname = new URL(r.url.resource).hostname;
-								if (!streamingUrls.bandcamp && hostname.includes('bandcamp.com')) streamingUrls.bandcamp = r.url.resource;
-								else if (!streamingUrls.spotify && hostname.includes('spotify.com')) streamingUrls.spotify = r.url.resource;
-								else if (!streamingUrls.soundcloud && hostname.includes('soundcloud.com')) streamingUrls.soundcloud = r.url.resource;
-								else if (!streamingUrls.youtube && (hostname.includes('youtube.com') || hostname.includes('youtu.be'))) streamingUrls.youtube = r.url.resource;
-							} catch { /* skip */ }
-						}
-					}
-
-					const artistName =
-						rel['artist-credit']?.[0]?.artist?.name ??
-						rel['artist-credit']?.[0]?.name ??
-						'';
-
-					const year = rel.date ? parseInt(rel.date.substring(0, 4), 10) || null : null;
-
-					const { buildBuyLinks } = await import('$lib/affiliates/construct');
-					const buyLinks = buildBuyLinks(artistName, rel.title, streamingUrls.bandcamp, {
-						amazonTag: null,
-						appleToken: null,
-						appleCampaign: null
-					});
-
-					release = {
-						releaseGroupMbid: mbid,
-						title: rel.title,
-						year,
-						type: rel['release-group']?.['primary-type'] ?? 'Release',
-						coverArtUrl: `https://coverartarchive.org/release-group/${mbid}/front-500`,
-						artistName,
-						artistSlug: slug,
-						tracks,
-						credits: simpleCredits,
-						buyLinks
-					};
-
-					// Update streaming links
-					platformLinks = {
-						bandcamp: streamingUrls.bandcamp ? [streamingUrls.bandcamp] : [],
-						spotify: streamingUrls.spotify ? [streamingUrls.spotify] : [],
-						soundcloud: streamingUrls.soundcloud ? [streamingUrls.soundcloud] : [],
-						youtube: streamingUrls.youtube ? [streamingUrls.youtube] : [],
-						wikipedia: [],
-						other: []
-					};
-					hasAnyStream = Object.values(streamingUrls).some(Boolean);
-					await tick(); // force Svelte to flush $state changes to DOM
-				}
-			}
-			} finally {
-				clearTimeout(timeoutId);
-			}
-		} catch (err) {
-			console.error('Release fetch error:', err);
-		}
-		// Resolve credit slugs against local DB (graceful degradation if unavailable)
-		if (rawCredits.length > 0) {
-			try {
-			const { getProvider } = await import('$lib/db/provider');
-				const provider = await getProvider();
-				credits = await Promise.all(
-					rawCredits.map(async (c) => {
-						try {
-							const row = await provider.get<{ slug: string }>(
-								'SELECT slug FROM artists WHERE mbid = ?',
-								c.mbid
-							);
-							return { ...c, slug: row?.slug ?? null };
-						} catch {
-							return { ...c, slug: null };
-						}
-					})
-				);
-			} catch {
-				credits = rawCredits.map((c) => ({ ...c, slug: null }));
-			}
-		}
-		loadDone = true;
-		await tick();
-	}
-
 	onMount(() => {
 		tauriMode = isTauri();
 
-		// Load release data async — page renders immediately with loading skeleton
-		loadRelease();
+		// Resolve credit slugs against local DB (graceful degradation if unavailable)
+		if (data.rawCredits.length > 0) {
+			(async () => {
+				try {
+					const { getProvider } = await import('$lib/db/provider');
+					const provider = await getProvider();
+					credits = await Promise.all(
+						data.rawCredits.map(async (c) => {
+							try {
+								const row = await provider.get<{ slug: string }>(
+									'SELECT slug FROM artists WHERE mbid = ?',
+									c.mbid
+								);
+								return { ...c, slug: row?.slug ?? null };
+							} catch {
+								return { ...c, slug: null };
+							}
+						})
+					);
+				} catch {
+					credits = data.rawCredits.map((c) => ({ ...c, slug: null }));
+				}
+			})();
+		}
 
 		if (!tauriMode) return;
 
@@ -251,11 +93,7 @@
 
 	{#if !release}
 		<div class="release-loading">
-			{#if loadDone}
-				<p>Couldn't load release details. <a href="/artist/{data.slug}">← Back to artist</a></p>
-			{:else}
-				<p>Loading release details…</p>
-			{/if}
+			<p>Couldn't load release details. <a href="/artist/{data.slug}">← Back to artist</a></p>
 		</div>
 	{:else}
 
@@ -368,7 +206,7 @@
 			<section class="tracklist">
 				<h2 class="section-title">Tracklist</h2>
 				<ol class="tracks">
-					{#each release.tracks as track (track.position)}
+					{#each release.tracks as track (track.id)}
 						<li class="track">
 							<span class="track-num">{track.number}</span>
 							<span class="track-title">{track.title}</span>
