@@ -25,9 +25,25 @@ Player bar now shows the full transport controls when Spotify is active — even
 - `src/lib/player/streaming.svelte.ts` — polling loop, `SpotifyTrackInfo` state, control wrappers
 - `src/lib/components/Player.svelte` — Spotify mode display, unified transport controls, rAF seek interpolation
 
-<!-- status -->
-Full Spotify control suite shipped. Reloaded. Test: Spotify artist page → top tracks list loads automatically → click any row to play from that track → all player controls live.
-<!-- /status -->
+**Extended same session — Full Spotify control suite:**
+
+Steve asked for everything the Spotify API can control. The full list: volume, shuffle, repeat, top tracks list on artist page, Spotify queue view, and add-to-queue. All implemented.
+
+- **Volume** — Spotify volume slider (0–100) replaces local slider when in Spotify mode. Mute button remembers last level and restores on unmute.
+- **Shuffle** — button now works in Spotify mode, reflects live `shuffle_state` from polling.
+- **Repeat** — cycles off → context → track → off. `1` badge appears for track-repeat mode.
+- **Top tracks list** — loads automatically on artist page when Spotify is connected (no click needed). Numbered rows, track name, duration. Hover reveals ▶ play icon; click plays from that index to end. Currently playing row highlighted green with pulsing dot.
+- **Queue view** — queue button in player bar fetches and shows Spotify queue (upcoming tracks) when in Spotify mode, instead of local queue.
+- **Add to queue** — `+` button on each track row sends the track to the Spotify queue (appears on hover).
+
+`getArtistTopTracks()` return type changed from `string[]` to `SpotifyTopTrack[]` — callers updated (artist page + EmbedPlayer).
+
+**Files changed:**
+- `src/lib/spotify/api.ts` — `CurrentPlaybackState` extended with uri/shuffle/repeat/volume; `SpotifyTopTrack` interface; `getArtistTopTracks` returns `SpotifyTopTrack[]`; added `spotifySetVolume`, `spotifySetShuffle`, `spotifySetRepeat`, `getSpotifyQueue`, `addToSpotifyQueue`
+- `src/lib/player/streaming.svelte.ts` — added `spotifySetVolume`, `spotifyToggleMute`, `spotifyToggleShuffle`, `spotifyCycleRepeat`
+- `src/lib/components/Player.svelte` — shuffle/repeat wired for Spotify mode; Spotify volume controls; Spotify queue panel
+- `src/routes/artist/[slug]/+page.svelte` — auto-loading top tracks, `handlePlayTrack(index)`, `handleAddToQueue(uri)`, track list UI
+- `src/lib/components/EmbedPlayer.svelte` — updated to `.map(t => t.uri)` after return type change
 
 ---
 
@@ -10281,3 +10297,6 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit b99234c** (2026-02-28 17:46) — auto-save: 2 files @ 17:46
 > Files changed: 1
+
+> **Commit 176dec5** (2026-02-28 17:52) — wip: auto-save
+> Files changed: 6

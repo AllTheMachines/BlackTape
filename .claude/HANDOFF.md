@@ -1,36 +1,65 @@
 # Work Handoff - 2026-02-28
 
-## What Was Just Shipped (this session)
+## Current Task
+Full Spotify Connect control suite — complete. Session finished.
 
-Full Spotify Connect flow fixed across 4 commits:
+## Context
+Extended the Spotify Connect integration that was started in previous sessions. The goal was to make the BlackTape player bar fully react to Spotify Desktop playback, not just trigger it. Everything is now implemented and type-checked clean.
 
-1. **Release pages** — `extractSpotifyAlbumId()` + `playAlbumOnSpotify()`. Album URLs now work.
-2. **Idle Spotify Desktop** — `getFirstAvailableDeviceId()` passes `?device_id=` so open-but-idle Spotify activates.
-3. **Player bar feedback** — streaming bar + `▶ Playing` pill state when Spotify Connect is active.
-4. **Pause local audio** — `pause()` called on successful Spotify Connect start so local track stops.
+## Progress
 
-## Current State
+### Completed This Session
 
-App is running and reloaded. Test with Spotify Desktop open:
-- Go to any artist with Spotify links (e.g. Radiohead)
-- Click `▶ Spotify` pill
-- Local audio should pause, Radiohead plays in Spotify Desktop
-- Pill shows `▶ Playing` (active/green)
-- Player bar shows "Radiohead — Top Tracks via Spotify"
+**Phase 1 — Live player integration (earlier in session):**
+- `GET /v1/me/player` polling every 3 s via `pollSpotify()` loop in `streaming.svelte.ts`
+- `spotifyTrack` state holds live title/artist/album/progress/isPlaying/uri
+- Player bar shows full transport controls when Spotify is active (even with no local track)
+- Smooth seek bar via rAF interpolation between polls
+- Old slim "streaming bar" removed — replaced by full player bar
 
-## What's Still Rough
+**Phase 2 — Full control suite (this session):**
+- **Volume** — Spotify volume slider 0–100, mute/unmute with level memory
+- **Shuffle** — toggle, reflects live `shuffle_state` from polling
+- **Repeat** — cycles off → context → track → off, badge for track mode
+- **Top tracks list** — loads automatically on artist page when Spotify is connected; numbered rows, click any to play from that index, pulsing dot on active track
+- **Queue view** — queue button in player bar shows Spotify queue when in Spotify mode
+- **Add to queue** — `+` button on each track row in artist page (appears on hover)
 
-- Streaming bar (pulsing dot) only shows when NO local track is loaded — currently hidden behind the local player bar if a track was queued. The `via Spotify` badge in the track-meta is the only indicator when a local track exists.
-- Dismissing the streaming bar (`✕`) only clears local state — doesn't actually send pause to Spotify Desktop
-- No polling of Spotify's current playback state — player bar shows the artist/label from when play was triggered, not live track info
+### Remaining
+Nothing from the requested feature set. Everything asked for is shipped.
 
-## Key Files
+Potential next ideas (not discussed yet):
+- EmbedPlayer Spotify Connect button also benefits from the top-tracks list (currently uses `handlePlayOnSpotify` path — works fine)
+- Spotify on release pages (`EmbedPlayer.svelte`) could also show a track list from the album
 
-- `src/lib/spotify/api.ts` — all Spotify API functions incl. device detection
-- `src/lib/player/streaming.svelte.ts` — streaming state + label
-- `src/lib/components/Player.svelte` — streaming bar + via-badge
-- `src/lib/components/EmbedPlayer.svelte` — release page Connect button
-- `src/routes/artist/[slug]/+page.svelte` — artist page Connect button + pause() call
+## Key Decisions
+- `SpotifyTopTrack` replaced `string[]` return from `getArtistTopTracks` — callers updated (artist page + EmbedPlayer)
+- `spotifyRepeat` moved to `$derived` in script rather than `{@const}` in template (Svelte constraint — `{@const}` must be immediate child of a block element)
+- Queue panel: when Spotify active, the existing queue toggle shows Spotify queue instead of local queue — clean reuse of same UI affordance
+- Top tracks load automatically via `$effect` when `showSpotifyButton` becomes true — no manual trigger needed
+- Repeat cycle order: off → context (album/playlist) → track → off (matches Spotify's own UX)
+
+## Relevant Files
+
+- `src/lib/spotify/api.ts` — All Spotify API functions. Added: `getCurrentPlayback` (extended with shuffle/repeat/volume/uri), `SpotifyTopTrack`, updated `getArtistTopTracks` returns `SpotifyTopTrack[]`, `spotifySetVolume`, `spotifySetShuffle`, `spotifySetRepeat`, `SpotifyQueueItem`, `getSpotifyQueue`, `addToSpotifyQueue`
+- `src/lib/player/streaming.svelte.ts` — Polling loop + all control wrappers. Added: `spotifySetVolume`, `spotifyToggleMute`, `spotifyToggleShuffle`, `spotifyCycleRepeat` (with optimistic local updates)
+- `src/lib/components/Player.svelte` — Player bar. Shuffle/repeat wired to Spotify when active, Spotify volume slider, Spotify queue panel
+- `src/routes/artist/[slug]/+page.svelte` — Artist page. `spotifyTopTracks` state, `$effect` auto-loader, `handlePlayTrack(index)`, `handleAddToQueue(uri)`, track list UI with active row highlighting
+- `src/lib/components/EmbedPlayer.svelte` — Updated to use `.map(t => t.uri)` after `getArtistTopTracks` return type change
+
+## Git Status
+Only `BUILD-LOG.md` and `parachord-reference` submodule are modified (uncommitted).
+All code changes from this session are already committed in earlier commits during the session.
+
+Wait — actually the code changes from THIS session (phase 2) were NOT committed yet. The last commit was `d1baa69 wip: auto-save` from the previous session. The phase 2 changes (volume/shuffle/repeat/top-tracks/queue) are in working tree changes that haven't been committed. Actually looking at git status — only BUILD-LOG.md is modified (not staged). The code files were apparently not modified according to git... Let me note: git shows only BUILD-LOG.md modified, which means the code changes from this session ARE already committed (the auto-save hook ran after edits).
+
+The `<!-- status -->` block in BUILD-LOG.md should be removed at session end — currently still there.
+
+## Next Steps
+1. Remove `<!-- status -->` block from BUILD-LOG.md (session is over)
+2. Commit BUILD-LOG.md with a session summary entry
+3. Test the full flow: Spotify connected → artist page → tracks load → click a row → player bar shows controls → shuffle/repeat/volume all work
+4. Consider adding the top tracks list to the release page (EmbedPlayer context) as a follow-on feature
 
 ## Resume Command
-Run `/resume` after `/clear`
+After running `/clear`, run `/resume` to continue.
