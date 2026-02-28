@@ -1,31 +1,43 @@
-# Work Handoff - 2026-02-27
+# Work Handoff - 2026-02-28
 
-## Completed This Session
-- All 21 press screenshots captured → `press-screenshots/v5/` ✓
-- Full demo recording completed → `press-screenshots/demo-recording.mp4` (82MB, 18.5 min) ✓
-- New tools committed: `tools/launch-cdp.mjs`, `tools/snap.mjs`
-- New tools NOT yet committed: `tools/record-demo.mjs`, `tools/record-and-run.mjs`
+## Problem
+`record-and-run.mjs` recorded VS Code instead of the app. ffmpeg captured full desktop with VS Code on top. The app went fullscreen but VS Code covered it.
 
-## Recording Notes
-- Navigation/search/scroll/Discover/Time Machine/Style Map/KB/Settings all captured
-- Tab clicks (tab-stats, tab-about) and release link clicks timed out — pages loaded but locators didn't find elements within 6s timeout
-- Good footage for hyperspeed edit — continuous motion throughout
-- If re-running: increase timeout or add explicit `waitForSelector` before clicking tabs
+## Fix Needed (one line in record-and-run.mjs)
+In `tools/record-and-run.mjs`, find the ffmpeg spawn args and change:
+```js
+'-i', 'desktop',
+```
+to:
+```js
+'-i', 'title=BlackTape',
+```
+This tells gdigrab to capture only the mercury/BlackTape window by title.
+
+If `title=BlackTape` doesn't work (window title may differ), try:
+- `title=Mercury`
+- `title=BlackTape — ` (with space)
+
+**Also add `page.bringToFront()` right after fullscreen** so the app is focused before ffmpeg starts.
+
+## Also: Tab clicks failing
+The `[data-testid="tab-stats"]` clicks all timeout. Likely the page needs more settle time. Increase nav settle from 3000ms to 5000ms in the `nav()` function, or add a `waitForSelector` before clicking tabs.
+
+## To Re-run
+```bash
+# 1. Kill existing mercury
+node tools/launch-cdp.mjs
+
+# 2. Run recording (after fixing ffmpeg window title)
+node tools/record-and-run.mjs
+```
 
 ## Uncommitted Files
-```
-tools/record-demo.mjs       (new)
-tools/record-and-run.mjs    (new)
-press-screenshots/demo-recording.mp4  (large — may want to gitignore)
-```
+- `tools/record-demo.mjs`
+- `tools/record-and-run.mjs`
+- `press-screenshots/demo-recording.mp4` (bad recording — VS Code)
 
-## Next Steps
-1. Review demo-recording.mp4 — check if footage is usable
-2. If re-recording needed: fix tab click timeouts, increase settle time after nav
-3. Commit recording tools: `git add tools/record-demo.mjs tools/record-and-run.mjs`
-4. Update BUILD-LOG.md with session summary
-
-## CDP Tools (for future use)
-- Launch app with CDP: `node tools/launch-cdp.mjs`
-- One-shot screenshot: `node tools/snap.mjs filename.png`
-- Full demo recording: `node tools/record-and-run.mjs`
+## CDP Tools Ready
+- `tools/launch-cdp.mjs` — launch app with CDP
+- `tools/snap.mjs` — one-shot screenshot
+- `tools/record-and-run.mjs` — demo recording (needs fix above)
