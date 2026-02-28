@@ -10763,3 +10763,6 @@ The release page had `+ Queue Album` but no `▶ Play Album`. To start listening
 No Rust rebuild needed — uses the existing `search_local_tracks` command. The LIMIT 50 in the SQL search is sufficient for any real album (typical albums are 10–15 tracks, and the album name filter greatly narrows results before the limit applies).
 
 Issue #56 closed.
+
+> **Commit 408b567** (2026-02-28 23:29) — fix #56: add Play Album button to release page
+> Files changed: 3
