@@ -10831,3 +10831,6 @@ The custom "Add a tag" input didn't exist at all — the only way to add genre f
 **Fix:** Added a text input + submit button at the top of the Genre/Tag filter section — the primary filter mechanism. The preset tag cloud moves below it, relabeled "Suggestions". Users can now type any genre directly and press Enter or click +. Both mechanisms call the same `toggleTag()` → URL update flow. Input clears after each add. Disabled at MAX_TAGS (5).
 
 Issue #51 closed.
+
+> **Commit d128c29** (2026-02-28 23:43) — fix #51: promote custom tag input to top of discover filter panel
+> Files changed: 2
