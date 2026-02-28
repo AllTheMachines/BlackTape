@@ -1,88 +1,51 @@
 # Work Handoff - 2026-02-28
 
 ## Current Task
-Fix #53: genre type classification — genres with `origin_lat` incorrectly showing as "scene" with Leaflet city map.
+Working through open GitHub issues. Next up: **#50 — Discover page too slow** (pre-compute `uniqueness_score` in pipeline).
 
 ## Context
-Steve reported "Industrial Metal" opens a city map when navigating to its KB genre page. The SQL queries compute `type` as `CASE WHEN origin_lat IS NOT NULL THEN 'scene' ELSE 'genre' END` — but most genres have an origin city recorded in Wikidata, so they get `type='scene'` and the genre detail page renders the SceneMap (Leaflet) component. A scene (like "Seattle scene") is a location-based community; a genre (like "Industrial Metal") is a style that happens to have a city of origin.
+Steve's rule: fix open GitHub issues before starting new features. Working through the backlog in priority order.
 
 ## Progress
 
 ### Completed This Session
-- **#53 Genre Map — pan/zoom** — `GenreGraph.svelte`: scroll-wheel zoom toward cursor, mousedown drag panning, grab cursor, Reset View button, hint text (cbb77dc)
-- **#53 Genre Map — in-place expansion** — clicking a node in the inline graph on KB genre pages now merges that node's subgraph in-place instead of navigating away (cbb77dc)
-- **#53 Genre Map — rotation bug** — Fixed infinite re-simulation loop caused by `$effect` tracking `layoutNodes` as a reactive dependency; fixed with `untrack()` (9bd7b7c)
-- **#63 Release page freeze** — Moved MB fetch from `+page.ts` (blocks navigation) to `+page.svelte` onMount (non-blocking); navigation is now instant (cbb77dc)
-
-### In Progress
-- **#53 Genre type classification** — genres like "Industrial Metal" show a Leaflet city map because `origin_lat IS NOT NULL` incorrectly marks them as scenes.
+- **#53 Genre type classification** — genres like "Industrial Metal" no longer show city map. Queries use `COALESCE(type, 'genre')`, pipeline sets `type='genre'` for all Wikidata genres (133c8b7)
+- **#54 Library covers** — Fixed 237 MB bulk load crash. Now uses:
+  - `loadLibrary()` loads tracks+folders only (~500ms, was 9+ seconds)
+  - New Rust cmd `get_cover_for_album(album, artist)` for single-album cover
+  - `lazyLoadCover` Svelte action in LibraryBrowser uses IntersectionObserver
+  - Covers appear ~1s after render as albums scroll into view (1110b29)
+- **#54 Library release type grouping** — Albums/EPs/Singles groups (13a3844)
+- **#63 Release page freeze** — MB fetch moved to onMount (cbb77dc)
+- **#53 Genre map pan/zoom + in-place expansion + rotation bug** (cbb77dc, 9bd7b7c)
 
 ### Remaining (in order)
-1. **Fix #53 scene vs genre classification** — see Next Steps below
-2. **#54** — Library/Crate Dig missing covers + no release type grouping
-3. **#50** — Discover page too slow (pre-compute `uniqueness_score` in pipeline)
-4. **#23** — Scene page local library not reflected
+1. **#50** — Discover page slow load (pre-compute `uniqueness_score` in pipeline)
+2. **#23** — Scene page local library not reflected
+3. Then other open issues from the backlog
 
 ## Key Decisions
-- Genre map nodes: clicking expands in-place (no navigation). `onNodeClick` prop passed from genre detail page calls `handleGraphNodeClick` which merges neighbor subgraph via `getGenreSubgraph`.
-- `prevPositions` Map in GenreGraph preserves D3 node positions across re-simulations so existing nodes don't jump when new ones are added.
-- `untrack(() => layoutNodes.length > 0)` in the `$effect` prevents the effect from re-running when `layoutNodes` is set by `runSimulation()` — breaking what was an infinite loop.
-- Release page: `+page.ts` returns only `{ mbid, slug }`. All MB fetch logic moved to `loadRelease()` in `+page.svelte` onMount.
-
-## The Bug to Fix Next
-
-**Root cause:** In `src/lib/db/queries.ts`, four queries compute:
-```sql
-CASE WHEN origin_lat IS NOT NULL THEN 'scene' ELSE 'genre' END AS type
-```
-Lines: 764, 774, 806, 917, 957.
-
-This was introduced to fix a pipeline bug where the pipeline set `type='scene'` for ANY genre with `origin_city`. But the coordinate-based override is also wrong — genres like Industrial Metal have `origin_lat` because their Wikidata entry records a city of origin, but they're not geographic scenes.
-
-**The genres table has an actual `type` column.** The pipeline sets it. Check what values it contains:
-```bash
-# Find pipeline script that populates genres:
-grep -rn "INSERT.*genres\|type.*scene\|genre.*type" /d/Projects/Mercury/tools/ --include="*.mjs" | grep -v node_modules
-```
-
-**Fix options (in order of preference):**
-
-1. **Use the actual DB `type` column** — if the pipeline sets correct values (`'genre'`, `'scene'`, `'city'`), just do:
-   ```sql
-   COALESCE(type, 'genre') AS type
-   ```
-   Replace all four `CASE WHEN origin_lat...` expressions with this.
-
-2. **Require explicit scene marker** — only treat as scene if `type = 'scene'` in the DB AND `origin_lat IS NOT NULL`:
-   ```sql
-   CASE WHEN type = 'scene' AND origin_lat IS NOT NULL THEN 'scene'
-        WHEN type = 'city' THEN 'city'
-        ELSE 'genre' END AS type
-   ```
-
-3. **Fix the isScene check in the page** — as a quick workaround, check the genre's name contains "scene" or a city name pattern. But this is fragile — don't prefer this.
-
-**Also check:** Does the `genres` table `type` column actually have `'scene'` values for real scenes (like "Seattle scene", "Madchester")? If not, the pipeline may need a fix too.
+- Library covers: IntersectionObserver with rootMargin: '300px' — loads covers ~300px before scrolling into view
+- No more `getAlbumCovers()` bulk call on startup — too large (237 MB for Steve's library)
+- `lazyCovers` is `$state<Record<string, string>>({})` — property assignment is reactive in Svelte 5
 
 ## Relevant Files
-- `src/lib/db/queries.ts` — lines 764, 774, 806, 917, 957 — all four `CASE WHEN origin_lat` expressions need fixing
-- `src/routes/kb/genre/[slug]/+page.svelte` — `isScene` derived checks `data.genre.type === 'scene'` — this is correct once queries return right types
-- `src/lib/components/GenreGraph.svelte` — fully updated (pan/zoom, in-place expansion, rotation fix)
-- `src/routes/artist/[slug]/release/[mbid]/+page.ts` — simplified to return only `{ mbid, slug }`
-- `src/routes/artist/[slug]/release/[mbid]/+page.svelte` — `loadRelease()` in onMount
+- `src/lib/library/store.svelte.ts` — loadLibrary() now tracks/folders only; covers async comment
+- `src/lib/components/LibraryBrowser.svelte` — lazyLoadCover action, lazyCovers state, getLoadedCover()
+- `src/lib/library/scanner.ts` — getCoverForAlbum() TS wrapper
+- `src-tauri/src/library/db.rs` — get_cover_for_album() Rust fn
+- `src-tauri/src/scanner/mod.rs` — get_cover_for_album Tauri command
+- `src-tauri/src/lib.rs` — registered
 
 ## Git Status
-Only `BUILD-LOG.md` has uncommitted changes (auto-save noise). No code changes pending.
+Clean. All changes committed. 191 tests passing, 0 failing.
 
-## Next Steps
-1. Read `src/lib/db/queries.ts` around line 764 to confirm column name is `type`
-2. Search pipeline scripts for how `type` is set: `grep -rn "type.*scene\|'scene'" /d/Projects/Mercury/tools/ --include="*.mjs"`
-3. If pipeline sets correct values → change all four queries to `COALESCE(type, 'genre') AS type`
-4. If pipeline is wrong → fix pipeline AND queries
-5. Reload: `node tools/reload.mjs`
-6. Test: navigate to "Industrial Metal" KB page — should show NO city map, just genre info + related genres + inline graph
-7. Test: navigate to a real scene (like a city-named scene) — SHOULD show city map
-8. Run `npm run check` and commit
+## Next Steps for #50 (Discover slow load)
+1. `gh issue view 50` — read the full issue
+2. Check `getDiscoveryArtists` query in `src/lib/db/queries.ts` for N+1 or slow joins
+3. Check if `uniqueness_score` is pre-computed in the DB or computed on-the-fly
+4. If computed live: add it to the pipeline as a pre-computed column
+5. Profile with timing test via CDP if needed
 
 ## Resume Command
-After running `/clear`, run `/resume` to continue.
+After `/clear`, run `/resume` to continue.

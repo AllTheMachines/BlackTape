@@ -10557,5 +10557,30 @@ The TypeScript fix alone restores the library immediately (no rebuild needed). T
 > **Commit 807b67f** (2026-02-28 20:53) — fix: library empty on low-disk — PRAGMA temp_store=MEMORY + Promise.allSettled
 > Files changed: 2
 
+## Entry 2026-02-28 — Fix #54: Library Covers (Lazy Loading)
+
+The library was rendering but showing text initials instead of album art. Investigation with a timing script revealed the problem exactly:
+
+- `get_library_tracks()` — **67ms** (fast)
+- `get_music_folders()` — **5ms** (fast)
+- `get_album_covers()` — **9,103ms** (9 seconds, 237 MB of base64 data)
+
+`get_album_covers` was transferring 582 album covers × 313 KB average = **237 MB of base64 strings** in a single Tauri IPC call. `Promise.allSettled` waits for all three before showing the library — so users saw a loading spinner for 9+ seconds, and the background WebView2 process sometimes crashed from memory pressure.
+
+**Fix:**
+
+1. `loadLibrary()` now loads tracks + folders only. Library renders in **~500ms**. Comment explains why covers aren't fetched here.
+
+2. New Rust command `get_cover_for_album(album, artist)` returns one album's cover — a single 313 KB IPC call instead of 237 MB.
+
+3. `LibraryBrowser.svelte` got a `lazyLoadCover` Svelte action using `IntersectionObserver` (rootMargin: 300px). Each album button triggers its own cover fetch when it scrolls near the viewport. Covers appear ~1 second after first render for visible albums. Scrolling reveals more. No crashes.
+
+4. Custom cover upload (`handleCoverFile`) now updates `lazyCovers[key]` directly so the UI reflects the change instantly without waiting for `loadLibrary()` to reload.
+
+Library load time: **9+ seconds → 500ms**. Cover thumbnails: **never appeared → appear 1 second after render**.
+
 > **Commit 1110b29** (2026-02-28 21:16) — fix #54: library covers — lazy per-album loading replaces 237 MB bulk load
 > Files changed: 6
+
+> **Commit 23d15eb** (2026-02-28 21:16) — auto-save: 10 files @ 21:16
+> Files changed: 9
