@@ -10834,3 +10834,6 @@ Issue #51 closed.
 
 > **Commit d128c29** (2026-02-28 23:43) — fix #51: promote custom tag input to top of discover filter panel
 > Files changed: 2
+
+> **Commit 3405ff3** (2026-02-28 23:43) — wip: auto-save
+> Files changed: 2
