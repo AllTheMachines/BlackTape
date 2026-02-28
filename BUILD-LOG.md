@@ -10224,3 +10224,6 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit 52a2a41** (2026-02-28 17:16) — auto-save: 2 files @ 17:16
 > Files changed: 1
+
+> **Commit 9ecb7ca** (2026-02-28 17:17) — fix: activate idle Spotify Desktop by passing device_id to play endpoint
+> Files changed: 2
