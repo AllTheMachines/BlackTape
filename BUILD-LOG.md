@@ -10653,3 +10653,6 @@ Library load time: **9+ seconds → 500ms**. Cover thumbnails: **never appeared 
 
 > **Commit f1dbabf** (2026-02-28 21:53) — wip: auto-save
 > Files changed: 1
+
+> **Commit 7083d0f** (2026-02-28 22:05) — wip: auto-save
+> Files changed: 3
