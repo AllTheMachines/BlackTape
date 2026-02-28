@@ -45,6 +45,18 @@ Same ranking math, eliminates all correlated subqueries. The filtered case (tag/
 
 ---
 
+## Entry 2026-02-28 — Fix: Autonomous CDP Testing Broken (SSR + Vite 7 SharedWorker)
+
+Two separate root causes for why `window.location.href` navigation in CDP tests started returning 500s:
+
+**1. SSR enabled in dev server.** `src/routes/+layout.ts` had `export const ssr = import.meta.env.VITE_TAURI !== '1'`. When `launch-cdp.mjs` started Vite without `VITE_TAURI=1`, SSR stayed on. `window.location.href` triggers a full page reload → Vite's SSR engine tries to run `+page.ts` server-side (Node.js) → Tauri's SQLite API unavailable → 500. Fix: hardcode `export const ssr = false` in `+layout.ts` (this is a desktop-only app, no web version will ever need SSR) and add `VITE_TAURI: '1'` to the Vite spawn env in `launch-cdp.mjs`.
+
+**2. Vite 7 SharedWorker breaks Playwright CDP.** After restarting Vite, Playwright's `connectOverCDP()` threw an assertion error on a `shared_worker` target type (`blob:http://localhost:5173/...`). Vite 7.x creates a SharedWorker for HMR; Playwright 1.58.2 doesn't handle `shared_worker` CDP targets. Fix: add `--disable-shared-workers` to `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS` in `launch-cdp.mjs`.
+
+**Known Svelte 5 CDP limitation (documented):** Tab switching in artist page cannot be driven via CDP. Svelte 5 `$state` scheduler does not flush when `btn.__click()`, `dispatchEvent()`, or `page.click()` are called from outside Svelte's event delegation pipeline. The `$.set(signal, value)` call executes but the DOM update never renders. Verified the About tab fix works correctly via code inspection + direct MB API query instead (92 relations for Radiohead including 5 members, 3 labels).
+
+---
+
 ## Entry 2026-02-28 — UAT Review: All 20 Incidents Filed
 
 Processed the UAT recording from `F:\videorecordings\2026-02-28 11-27-15.mkv` (20:41). All 20 incidents identified from the transcript were reviewed with frame-by-frame evidence and filed as GitHub issues #43–#62.
@@ -9971,4 +9983,7 @@ This completes v1.0 — The Playback Milestone. All phases done.
 > Files changed: 3
 
 > **Commit ed4dc92** (2026-02-28 14:16) — wip: auto-save
+> Files changed: 1
+
+> **Commit 011856d** (2026-02-28 14:16) — auto-save: 2 files @ 14:16
 > Files changed: 1
