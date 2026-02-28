@@ -10553,3 +10553,9 @@ The TypeScript fix alone restores the library immediately (no rebuild needed). T
 
 > **Commit 938396b** (2026-02-28 20:46) — auto-save: 7 files @ 20:46
 > Files changed: 6
+
+> **Commit 807b67f** (2026-02-28 20:53) — fix: library empty on low-disk — PRAGMA temp_store=MEMORY + Promise.allSettled
+> Files changed: 2
+
+> **Commit 1110b29** (2026-02-28 21:16) — fix #54: library covers — lazy per-album loading replaces 237 MB bulk load
+> Files changed: 6
