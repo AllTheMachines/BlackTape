@@ -17,7 +17,7 @@ async function waitForPort(port, timeout = 30000) {
   const deadline = Date.now() + timeout;
   while (Date.now() < deadline) {
     const ok = await new Promise(resolve => {
-      const req = http.get(`http://127.0.0.1:${port}/`, res => resolve(true));
+      const req = http.get(`http://localhost:${port}/`, res => resolve(true));
       req.on('error', () => resolve(false));
       req.setTimeout(1000, () => { req.destroy(); resolve(false); });
     });
