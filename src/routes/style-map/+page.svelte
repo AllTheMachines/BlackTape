@@ -26,7 +26,8 @@
 </div>
 
 <style>
-	.style-map-page {		padding: 20px;
+	.style-map-page {
+		padding: 20px;
 	}
 
 	.page-header {
@@ -39,15 +40,15 @@
 		background: var(--bg-1);
 		margin: -20px -20px var(--space-lg);
 	}
-	.discover-mode-desc h2 {
-		font-size: 13px;
+		.discover-mode-desc h2 {
+		font-size: 14px;
 		font-weight: 600;
-		color: var(--t-2);
+		color: var(--t-1);
 		margin: 0 0 3px;
 	}
 	.discover-mode-desc p {
-		font-size: 11px;
-		color: var(--t-3);
+		font-size: 12px;
+		color: var(--t-2);
 		margin: 0;
 		line-height: 1.5;
 	}

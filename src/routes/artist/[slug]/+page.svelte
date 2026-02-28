@@ -1791,6 +1791,26 @@
 		text-decoration: none;
 	}
 
+	.share-btn:active {
+		opacity: 0.7;
+	}
+
+	/* Platform brand colors on hover */
+	.share-btn--mastodon:hover {
+		border-color: #6364ff;
+		color: #6364ff;
+	}
+
+	.share-btn--bsky:hover {
+		border-color: #0085ff;
+		color: #0085ff;
+	}
+
+	.share-btn--twitter:hover {
+		border-color: var(--t-1);
+		color: var(--t-1);
+	}
+
 	.share-icon {
 		line-height: 1;
 	}

@@ -4,6 +4,14 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-03-01 — Fix #32 + #31: Share button colors + Discovery headers
+
+**#32 — Per-platform share button colors:** The artist page already had distinct Mastodon, Bluesky, and Twitter/X share buttons from a previous phase. What was missing was brand color coding on hover. Added platform-specific hover states: Mastodon (#6364FF purple), Bluesky (#0085FF blue), Twitter/X (full `--t-1`). Also added `:active` state.
+
+**#31 — Discovery mode header prominence:** All 6 discovery pages (Discover, Crate Dig, Explore, Knowledge Base, Style Map, Time Machine) had a `discover-mode-desc` block with 13px/11px text in washed-out colors. Bumped h2 to 14px/`--t-1` and description to 12px/`--t-2`. Legible without dominating.
+
+---
+
 ## Entry 2026-02-28 — Fix #43: Loading indicators
 
 Steve's complaint: *"There must be some message like wait until it's finished or whatever, but clicking and nothing happening is not working."*
@@ -10862,3 +10870,6 @@ Issue #51 closed.
 
 > **Commit 59f031c** (2026-02-28 23:55) — fix #43: loading indicators — pending nav state + :active feedback
 > Files changed: 4
+
+> **Commit 46c250c** (2026-02-28 23:56) — wip: auto-save
+> Files changed: 1
