@@ -10873,3 +10873,6 @@ Issue #51 closed.
 
 > **Commit 46c250c** (2026-02-28 23:56) — wip: auto-save
 > Files changed: 1
+
+> **Commit b93bc12** (2026-03-01 00:03) — fix #32 + #31: share button brand colors + discovery header prominence
+> Files changed: 8
