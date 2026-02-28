@@ -9880,3 +9880,9 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit ce6dfaf** (2026-02-28 13:00) — fix: add core:window:allow-start-dragging capability (#46)
 > Files changed: 1
+
+> **Commit b1c6a79** (2026-02-28 13:00) — wip: auto-save
+> Files changed: 1
+
+> **Commit b5f1d13** (2026-02-28 13:02) — fix: intercept target=_blank links in Tauri to prevent WebView2 freeze (#45)
+> Files changed: 1
