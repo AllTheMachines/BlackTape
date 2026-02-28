@@ -10021,3 +10021,6 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit 272cf1f** (2026-02-28 14:34) — wip: auto-save
 > Files changed: 1
+
+> **Commit fbfdcff** (2026-02-28 14:42) — wip: auto-save
+> Files changed: 4
