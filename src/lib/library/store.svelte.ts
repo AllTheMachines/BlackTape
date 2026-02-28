@@ -41,18 +41,19 @@ function buildCoverMap(covers: AlbumCover[]): Map<string, string> {
 
 /**
  * Load the full library (tracks + folders) from the Tauri backend.
+ * Uses allSettled so a cover-art failure doesn't prevent tracks from loading.
  */
 export async function loadLibrary(): Promise<void> {
 	libraryState.isLoading = true;
 	try {
-		const [tracks, folders, covers] = await Promise.all([
+		const [tracksResult, foldersResult, coversResult] = await Promise.allSettled([
 			getLibraryTracks(),
 			getMusicFolders(),
 			getAlbumCovers()
 		]);
-		libraryState.tracks = tracks;
-		libraryState.folders = folders;
-		libraryState.coverMap = buildCoverMap(covers);
+		if (tracksResult.status === 'fulfilled') libraryState.tracks = tracksResult.value;
+		if (foldersResult.status === 'fulfilled') libraryState.folders = foldersResult.value;
+		if (coversResult.status === 'fulfilled') libraryState.coverMap = buildCoverMap(coversResult.value);
 		libraryState.isLoaded = true;
 	} finally {
 		libraryState.isLoading = false;
@@ -73,14 +74,14 @@ export async function scanFolder(path: string): Promise<void> {
 		});
 
 		// Reload everything after scan completes
-		const [tracks, folders, covers] = await Promise.all([
+		const [tracksResult, foldersResult, coversResult] = await Promise.allSettled([
 			getLibraryTracks(),
 			getMusicFolders(),
 			getAlbumCovers()
 		]);
-		libraryState.tracks = tracks;
-		libraryState.folders = folders;
-		libraryState.coverMap = buildCoverMap(covers);
+		if (tracksResult.status === 'fulfilled') libraryState.tracks = tracksResult.value;
+		if (foldersResult.status === 'fulfilled') libraryState.folders = foldersResult.value;
+		if (coversResult.status === 'fulfilled') libraryState.coverMap = buildCoverMap(coversResult.value);
 	} finally {
 		libraryState.isScanning = false;
 		libraryState.scanProgress = null;

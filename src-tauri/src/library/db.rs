@@ -228,7 +228,10 @@ pub fn search_tracks(conn: &Connection, query: &str) -> Result<Vec<LocalTrack>, 
 pub fn get_album_covers(conn: &Connection) -> Result<Vec<AlbumCover>, String> {
     let mut stmt = conn
         .prepare(
-            "SELECT album, COALESCE(album_artist, artist), MIN(cover_art_base64)
+            // Use bare cover_art_base64 in GROUP BY (SQLite returns an arbitrary value per group).
+            // Avoids MIN() which forces SQLite to compare all blob values and create large temp files,
+            // which fails with "disk full" on low-disk-space systems.
+            "SELECT album, COALESCE(album_artist, artist), cover_art_base64
              FROM local_tracks
              WHERE cover_art_base64 IS NOT NULL
              GROUP BY album, COALESCE(album_artist, artist)",

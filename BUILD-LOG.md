@@ -10524,3 +10524,32 @@ Cannot reproduce. Tested by clicking "Download Models" — download starts immed
 
 > **Commit fdd1f55** (2026-02-28 20:21) — wip: auto-save
 > Files changed: 1
+
+> **Commit c84e392** (2026-02-28 20:32) — wip: auto-save
+> Files changed: 1
+
+---
+
+## Entry 2026-02-28 — Fix: Library Empty After Scan
+
+Steve reported the library stopped working entirely — after selecting a music folder and scanning, the library page stayed empty.
+
+**Root cause:** Two issues, both stemming from C: drive having only ~235 MB free disk space.
+
+1. `get_album_covers` SQL query used `MIN(cover_art_base64)` on a GROUP BY. Since `cover_art_base64` stores large base64 image strings, SQLite tried to create a temp sort table on disk (C: temp dir) to compare all the blobs. With C: nearly full, this failed with "database or disk is full".
+
+2. `loadLibrary()` called `Promise.all([getLibraryTracks(), getMusicFolders(), getAlbumCovers()])`. When `getAlbumCovers()` threw, `Promise.all` rejected everything — tracks and folders were discarded too, leaving the page with empty state even though 2345 tracks were in the DB.
+
+**Fixes:**
+
+1. **`src-tauri/src/library/db.rs`**: Changed `MIN(cover_art_base64)` to bare `cover_art_base64` in the GROUP BY. SQLite returns an arbitrary value per group — no comparison needed, no temp disk space needed.
+
+2. **`src/lib/library/store.svelte.ts`**: Switched `Promise.all` → `Promise.allSettled` in both `loadLibrary()` and `scanFolder()`. Tracks and folders load successfully even if cover art fails. Defense in depth.
+
+The TypeScript fix alone restores the library immediately (no rebuild needed). The Rust fix prevents cover art from failing in the first place.
+
+**Remaining concern:** C: drive is critically low (~235 MB free). Clean it up before it causes other issues.
+
+<!-- status -->
+Rebuilding Rust binary with SQL fix — cargo build --release running
+<!-- /status -->
