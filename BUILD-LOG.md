@@ -10632,3 +10632,9 @@ Library load time: **9+ seconds → 500ms**. Cover thumbnails: **never appeared 
 
 > **Commit 24437e4** (2026-02-28 21:38) — wip: auto-save
 > Files changed: 1
+
+> **Commit 221ef7c** (2026-02-28 21:40) — wip: auto-save
+> Files changed: 1
+
+> **Commit 0fcee35** (2026-02-28 21:45) — fix #63: eliminate freeze on album cover click — timeout all MB fetches
+> Files changed: 3
