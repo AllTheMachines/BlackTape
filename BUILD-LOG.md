@@ -4,6 +4,24 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-02-28 — Fix: Release Page Stuck on Error State
+
+<!-- decision -->
+**Root cause (confirmed via CDP trace):** Svelte 5 `$state` mutations inside `async onMount` callbacks don't flush to the DOM after SvelteKit SPA navigation. CDP traces showed `release.title = "KID A MNESIA"` and `loadDone = true` both executing correctly, but `{#if !release}` stayed true — the DOM never updated. `await tick()` partially helped `loadDone` but not `release`.
+
+**Fix:** Move all MusicBrainz processing to `+page.ts` load function. Data arrives as props before the component renders, so no async state mutations needed. Component uses `$derived(data.release)` which stays reactive on subsequent SPA navigations.
+<!-- /decision -->
+
+**Second bug found in testing:** Multi-disc releases (KID A MNESIA is 3 discs) have tracks with duplicate `position` values — each disc resets to 1. The `{#each release.tracks as track (track.position)}` key caused a Svelte `each_key_duplicate` error that crashed rendering entirely. Fixed by adding a unique `id: number` field (global track index across all mediums) to the `Track` interface.
+
+**Investigation depth:** Spent one full session on CDP trace debugging — confirmed the state assignment ran, confirmed the DOM didn't update, ruled out fetch failures (MB returned 200 in 126ms). The architectural fix took ~15 minutes once root cause was confirmed.
+
+**Files changed:**
+- `src/routes/artist/[slug]/release/[mbid]/+page.ts` — full MB fetch + processing moved here; returns `release`, `platformLinks`, `hasAnyStream`, `rawCredits` as page data
+- `src/routes/artist/[slug]/release/[mbid]/+page.svelte` — removed `loadRelease()`, `onMount` fetch, all `tick()` calls; uses `$derived` from page data; credits DB lookup stays in `onMount`
+
+---
+
 ## Entry 2026-02-28 — Fix #50: Discover Page — 1,500× Speed Improvement
 
 **Issue:** Discover page took 10–30 seconds to load. Steve: "Takes forever."
@@ -10665,3 +10683,9 @@ Library load time: **9+ seconds → 500ms**. Cover thumbnails: **never appeared 
 
 > **Commit 648446b** (2026-02-28 22:25) — wip: auto-save
 > Files changed: 6
+
+> **Commit 02a858f** (2026-02-28 22:29) — wip: auto-save
+> Files changed: 2
+
+> **Commit 6fbccb7** (2026-02-28 22:44) — fix: release page — move MB fetch to load fn, fix Svelte 5 async state bug
+> Files changed: 9
