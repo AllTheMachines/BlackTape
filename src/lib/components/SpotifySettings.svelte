@@ -3,7 +3,7 @@
 
 	type WizardStep = 'setup' | 'waiting' | 'success';
 	let step = $state<WizardStep>(spotifyState.connected ? 'success' : 'setup');
-	let clientIdInput = $state('');
+	let clientIdInput = $state(spotifyState.clientId ?? '');
 	let cancelPort = $state<number | null>(null);
 	let errorMessage = $state<string | null>(null);
 
@@ -74,7 +74,7 @@
 			Top tracks will play via Spotify Desktop.
 		</p>
 		<div class="import-card-actions">
-			<button class="import-btn" onclick={() => { reauthorizing = true; step = 'setup'; }}>
+			<button class="import-btn" onclick={() => { reauthorizing = true; clientIdInput = spotifyState.clientId ?? ''; step = 'setup'; }}>
 				Re-authorize
 			</button>
 			<button class="disconnect-btn" onclick={handleDisconnect}>
