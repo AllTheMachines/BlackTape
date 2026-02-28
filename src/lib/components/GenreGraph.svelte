@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { startProgress, completeProgress } from '$lib/nav-progress.svelte';
 	import { isTauri } from '$lib/platform';
+	import { untrack } from 'svelte';
 	import {
 		forceSimulation,
 		forceLink,
@@ -173,7 +174,10 @@
 	$effect(() => {
 		const _n = nodes;
 		const _e = edges;
-		if (layoutNodes.length > 0) {
+		// Use untrack so reading layoutNodes.length doesn't make it a dependency.
+		// Without this, setting layoutNodes inside runSimulation() re-triggers this
+		// effect, causing an infinite re-simulation loop.
+		if (untrack(() => layoutNodes.length > 0)) {
 			runSimulation();
 		}
 	});
