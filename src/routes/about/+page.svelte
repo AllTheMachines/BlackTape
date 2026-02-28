@@ -1,25 +1,38 @@
 <script lang="ts">
 	import { PROJECT_NAME, PROJECT_TAGLINE } from '$lib/config';
 
-	const FEEDBACK_EMAIL = 'blacktape@all-the-machines.com';
+	const WORKER_URL = 'https://blacktape-signups.theaterofdelays.workers.dev/feedback';
 
 	let feedbackType = $state('bug');
 	let feedbackTitle = $state('');
 	let feedbackBody = $state('');
 	let feedbackEmail = $state('');
 	let feedbackSent = $state(false);
+	let feedbackError = $state('');
+	let feedbackSending = $state(false);
 
 	async function sendFeedback() {
 		if (!feedbackTitle.trim() || !feedbackBody.trim()) return;
-		const typeLabel = feedbackType === 'bug' ? 'Bug' : feedbackType === 'suggestion' ? 'Suggestion' : 'Feedback';
-		const subject = encodeURIComponent(`[${typeLabel}] ${feedbackTitle.trim()}`);
-		const body = encodeURIComponent(
-			feedbackBody.trim() +
-			(feedbackEmail.trim() ? `\n\nReply to: ${feedbackEmail.trim()}` : '')
-		);
-		const { open } = await import('@tauri-apps/plugin-shell');
-		await open(`mailto:${FEEDBACK_EMAIL}?subject=${subject}&body=${body}`);
-		feedbackSent = true;
+		feedbackSending = true;
+		feedbackError = '';
+		try {
+			const res = await fetch(WORKER_URL, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					type: feedbackType,
+					title: feedbackTitle.trim(),
+					body: feedbackBody.trim(),
+					replyTo: feedbackEmail.trim() || null,
+				}),
+			});
+			if (!res.ok) throw new Error(`Server error: ${res.status}`);
+			feedbackSent = true;
+		} catch (e) {
+			feedbackError = e instanceof Error ? e.message : 'Failed to send — try again.';
+		} finally {
+			feedbackSending = false;
+		}
 	}
 </script>
 
@@ -105,9 +118,10 @@
 				/>
 				<button
 					onclick={sendFeedback}
-					disabled={!feedbackTitle.trim() || !feedbackBody.trim()}
+					disabled={feedbackSending || !feedbackTitle.trim() || !feedbackBody.trim()}
 					class="feedback-submit"
-				>Send feedback</button>
+				>{feedbackSending ? 'Sending...' : 'Send feedback'}</button>
+				{#if feedbackError}<p class="feedback-error">{feedbackError}</p>{/if}
 			</div>
 		{/if}
 	</section>
@@ -316,5 +330,11 @@
 		margin-top: 8px;
 		font-size: 0.85rem;
 		color: var(--acc);
+	}
+
+	.feedback-error {
+		margin: 0;
+		font-size: 0.8rem;
+		color: #e05;
 	}
 </style>

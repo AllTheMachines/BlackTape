@@ -2696,9 +2696,9 @@ export const PHASE_28 = [
   // POLISH-30: About feedback form
   {
     id: 'P28-15', phase: 28, area: 'About',
-    desc: 'About page has feedback mailto link',
+    desc: 'About page posts feedback to worker endpoint',
     method: 'code',
-    fn: () => fileContains('src/routes/about/+page.svelte', 'mailto:')(),
+    fn: () => fileContains('src/routes/about/+page.svelte', 'blacktape-signups.theaterofdelays.workers.dev/feedback')(),
   },
   // POLISH-29: AI provider UX redesign
   {
