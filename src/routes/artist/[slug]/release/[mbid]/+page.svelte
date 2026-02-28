@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import { PROJECT_NAME } from '$lib/config';
 	import BuyOnBar from '$lib/components/BuyOnBar.svelte';
 	import LinerNotes from '$lib/components/LinerNotes.svelte';
@@ -56,7 +56,6 @@
 	);
 
 	async function loadRelease() {
-		console.log('[loadRelease] START mbid=', data.mbid);
 		const { mbid, slug } = data;
 		const streamingUrls: { bandcamp: string | null; spotify: string | null; soundcloud: string | null; youtube: string | null } = {
 			bandcamp: null, spotify: null, soundcloud: null, youtube: null
@@ -86,7 +85,6 @@
 				}
 
 				if (resp.ok) {
-				console.log('[LR] resp.ok status=', resp.status, 'mbid=', mbid);
 				const mbData = await resp.json() as {
 					releases?: Array<{
 						id: string;
@@ -110,8 +108,6 @@
 						}>;
 					}>;
 				};
-
-console.log('[LR] json parsed, releases=', mbData.releases?.length ?? 0);
 				const rels = mbData.releases ?? [];
 				if (rels.length > 0) {
 					const rel = rels[0];
@@ -192,7 +188,7 @@ console.log('[LR] json parsed, releases=', mbData.releases?.length ?? 0);
 						other: []
 					};
 					hasAnyStream = Object.values(streamingUrls).some(Boolean);
-					console.log('[LR] release assigned, hasAnyStream=', hasAnyStream);
+					await tick(); // force Svelte to flush $state changes to DOM
 				}
 			}
 			} finally {
@@ -201,11 +197,9 @@ console.log('[LR] json parsed, releases=', mbData.releases?.length ?? 0);
 		} catch (err) {
 			console.error('Release fetch error:', err);
 		}
-
 		// Resolve credit slugs against local DB (graceful degradation if unavailable)
 		if (rawCredits.length > 0) {
 			try {
-	console.log('[LR] rawCredits.length=', rawCredits.length, '— importing getProvider...');
 			const { getProvider } = await import('$lib/db/provider');
 				const provider = await getProvider();
 				credits = await Promise.all(
@@ -226,10 +220,10 @@ console.log('[LR] json parsed, releases=', mbData.releases?.length ?? 0);
 			}
 		}
 		loadDone = true;
+		await tick();
 	}
 
 	onMount(() => {
-		console.log('[MOUNT] onMount fired, mbid=', data.mbid);
 		tauriMode = isTauri();
 
 		// Load release data async — page renders immediately with loading skeleton
