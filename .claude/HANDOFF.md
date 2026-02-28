@@ -1,45 +1,57 @@
 # Work Handoff - 2026-02-28
 
 ## Current Task
-Getting the automated demo recorder (`tools/record-and-run.mjs`) to work properly for capturing a demo video of the BlackTape app.
+Processing UAT recording via `/uat-review`. Filing GitHub issues for all incidents found.
 
-## Context
-Steve wants to record a demo video of the app. The tool `record-and-run.mjs` uses Playwright CDP + ffmpeg to automate a demo walkthrough and record it. Several bugs were found and fixed this session. Steve is now recording manually using OBS or similar — he was repeatedly restarting the app via `node tools/launch-cdp.mjs`.
+## Video
+`F:\videorecordings\2026-02-28 11-27-15.mkv` (20:41)
+
+## Working Directory
+`/tmp/uat-review-20260228-120900/` — all frames extracted, all 20 incident folders present
 
 ## Progress
-### Completed
-- **Window capture fix** — ffmpeg now captures the BlackTape window specifically (`-i title=BlackTape`) instead of the full desktop. Previous run was capturing VS Code.
-- **Vite auto-start** — `launch-cdp.mjs` now starts Vite dev server automatically if not running (debug binary connects to `localhost:5173`).
-- **IPv6 port detection fix** — `waitForPort` was checking `127.0.0.1` but Vite binds to `[::1]`; fixed to use `localhost`.
-- **Nav bug fixed** — `nav()` function was calling `safe(p => { window.location.href = p; })` where `p` was always `undefined` in the browser context (Playwright doesn't serialize closures). Fixed to `page.evaluate((url) => { window.location.href = url; }, path2)`.
-- **Enter after search** — `typeInSearch()` now presses Enter after typing each genre/term.
-- **App load wait** — `record-and-run.mjs` now waits 4s if it connects to a `chrome-error://` or `about:blank` URL before proceeding.
+**13 of 20 incidents reviewed and posted.**
 
-### In Progress
-- Steve is manually recording the app using OBS (repeatedly restarting via `launch-cdp.mjs`).
+### Posted Issues
+| # | Timestamp | Issue |
+|---|-----------|-------|
+| 1 | 02:15 | #43 — No loading indicator when clicking |
+| 2 | 02:47 | #44 — Two Spotify Client ID fields, can't clear credentials |
+| 3 | 03:17 | #45 — App repeatedly stops responding mid-session |
+| 4 | 04:56 | #46 — Window cannot be dragged |
+| 5 | 05:15 | #47 — About tab doesn't load for some artists |
+| 6 | 05:51 | #48 — Remove Top Tracks section until implemented |
+| 7 | 06:08 | #49 — Release page missing streaming links and play button |
+| 8 | 07:24 | #50 — Discover page takes too long to load |
+| 9 | 07:49 | #51 — Discover filter: custom tag input buried below generic tag cloud |
+| 10 | 09:09 | #52 — Style Map non-interactive, nodes navigate away |
+| 11 | 09:55 | #53 — Knowledge Base: no cities, truncated names, no genre map |
+| 12 | 11:48 | #54 — Library/Crate Dig missing covers; no release type grouping |
+| 13 | 13:26 | #55 — Library has no search; previously hung on load |
 
-### Remaining
-- If Steve wants the automated demo recorder to work end-to-end, it needs a full test run. Several click interactions (play-all-btn, queue-btn, etc.) were timing out — the selectors may need updating for the current app version.
-- Commit `tools/launch-cdp.mjs` and `tools/record-and-run.mjs` with all fixes.
+### Remaining (7 incidents)
+| # | Timestamp | Type | Description |
+|---|-----------|------|-------------|
+| 14 | 14:11 | feature | No Play Album button on release page; "play from library" label confusing |
+| 15 | 15:06 | bug | AI model downloads stuck on "pending" indefinitely |
+| 16 | 16:23 | feature | Remove GitHub Sponsors/backers section when empty |
+| 17 | 16:40 | feature | Bug report form needed (email to blacktape@all-the-machines.com) |
+| 18 | 17:11 | ux | Settings page layout broken (text visible under elements) |
+| 19 | 17:38 | bug | Streaming preferences changes don't apply |
+| 20 | 19:54 | bug | LastFM import gives auth error ("not allowed permission") |
 
-## Key Decisions
-- `launch-cdp.mjs` is the one-command launcher: starts Vite if needed, kills old mercury.exe, launches fresh with CDP on port 9224.
-- The demo recorder is a separate concern from the manual OBS recording Steve is doing now.
+## How to Resume
+1. Run `/resume` to load this handoff
+2. Run `/uat-review` — but skip environment setup, audio extraction, transcription, and frame extraction (all done)
+3. Go straight to incident 14 review loop
+4. Frames for incidents 14-20 are at `/tmp/uat-review-20260228-120900/incident-N/`
+5. Repo: `AllTheMachines/Mercury`
 
-## Relevant Files
-- `tools/launch-cdp.mjs` — launches Vite + mercury.exe with CDP (modified this session)
-- `tools/record-and-run.mjs` — automated demo recorder (modified this session, multiple bug fixes)
-- `tools/record-demo.mjs` — older standalone demo script (not actively used)
-
-## Git Status
-- `BUILD-LOG.md` — modified (uncommitted log entries)
-- `parachord-reference` — submodule modified content
-- `tools/launch-cdp.mjs` and `tools/record-and-run.mjs` are untracked (not yet staged)
-
-## Next Steps
-1. Commit the two tool files: `tools/launch-cdp.mjs` and `tools/record-and-run.mjs`
-2. If Steve wants to run the automated recorder again: `node tools/launch-cdp.mjs` then `node tools/record-and-run.mjs`
-3. If click interactions still fail, audit selectors against current app markup
+## Key Context
+- Transcript already analyzed, all incidents identified
+- All 20 incident frame folders exist in working dir
+- Frame copying pattern: `cp /tmp/uat-review-20260228-120900/incident-N/frame-000X.png /d/Projects/Mercury/incN-fX.png` then Read from `/d/Projects/Mercury/incN-fX.png`
+- Note: `performance` label doesn't exist in repo (issue #50 was filed without it)
 
 ## Resume Command
 After running `/clear`, run `/resume` to continue.
