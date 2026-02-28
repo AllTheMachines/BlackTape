@@ -10931,3 +10931,9 @@ Issue #51 closed.
 
 > **Commit 3fbeb49** (2026-03-01 00:49) — fix #33: help system + about page overhaul
 > Files changed: 2
+
+> **Commit fdd9980** (2026-03-01 00:50) — wip: auto-save
+> Files changed: 1
+
+> **Commit 66e9b09** (2026-03-01 00:54) — fix #42: in-app bug reporting — feedback section in Settings
+> Files changed: 2
