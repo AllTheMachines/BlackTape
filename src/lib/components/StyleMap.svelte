@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { goto } from '$app/navigation';
 	import { startProgress, completeProgress } from '$lib/nav-progress.svelte';
 	import { isTauri } from '$lib/platform';
 	import {
@@ -10,9 +9,9 @@
 		forceCenter,
 		forceCollide,
 		type SimulationNodeDatum,
-		type SimulationLinkDatum
 	} from 'd3-force';
 	import type { StyleMapNode, StyleMapEdge } from '$lib/db/queries';
+	import type { ArtistResult } from '$lib/db/queries';
 
 	interface SimNode extends SimulationNodeDatum {
 		id: string;
@@ -36,6 +35,12 @@
 	let layoutEdges = $state<Array<{ x1: number; y1: number; x2: number; y2: number; strength: number }>>([]);
 	let container: HTMLDivElement;
 	let hoveredTag = $state<string | null>(null);
+
+	// Multi-select state
+	let selectedTags = $state<string[]>([]);
+	let panelArtists = $state<ArtistResult[]>([]);
+	let panelLoading = $state(false);
+	let panelSearched = $state(false);
 
 	// Estimate label rectangle width from tag string length
 	const FONT_SIZE = 11;
@@ -109,12 +114,53 @@
 			.filter(Boolean) as typeof layoutEdges;
 
 		layoutNodes = settled;
-		if (initialTag) hoveredTag = initialTag;
+		if (initialTag) {
+			hoveredTag = initialTag;
+			selectedTags = [initialTag];
+		}
 	}
 
 	function handleNodeClick(tag: string) {
-		goto(`/discover?tags=${encodeURIComponent(tag)}`);
+		if (selectedTags.includes(tag)) {
+			selectedTags = selectedTags.filter(t => t !== tag);
+		} else {
+			selectedTags = [...selectedTags, tag];
+		}
+		// Clear previous results when selection changes
+		panelArtists = [];
+		panelSearched = false;
 	}
+
+	function removeTag(tag: string) {
+		selectedTags = selectedTags.filter(t => t !== tag);
+		panelArtists = [];
+		panelSearched = false;
+	}
+
+	function clearSelection() {
+		selectedTags = [];
+		panelArtists = [];
+		panelSearched = false;
+	}
+
+	async function handleFindArtists() {
+		if (selectedTags.length === 0) return;
+		panelLoading = true;
+		panelSearched = false;
+		try {
+			const { getProvider } = await import('$lib/db/provider');
+			const { getArtistsByTagIntersection } = await import('$lib/db/queries');
+			const db = await getProvider();
+			panelArtists = await getArtistsByTagIntersection(db, selectedTags, 30);
+			panelSearched = true;
+		} finally {
+			panelLoading = false;
+		}
+	}
+
+	let discoverUrl = $derived(
+		'/discover?tags=' + selectedTags.map(encodeURIComponent).join(',')
+	);
 </script>
 
 <div class="style-map-container" bind:this={container}
@@ -140,34 +186,52 @@
 			<g class="nodes">
 				{#each layoutNodes as node}
 					{@const w = labelWidth(node.id)}
+					{@const isSelected = selectedTags.includes(node.id)}
 					{@const isHovered = hoveredTag === node.id}
+					{@const isActive = isSelected || isHovered}
 					<g
 						class="node"
 						transform="translate({node.x},{node.y})"
 						role="button"
 						tabindex="0"
-						aria-label={node.id}
+						aria-label="{node.id}{isSelected ? ' (selected)' : ''}"
+						aria-pressed={isSelected}
 						onclick={() => handleNodeClick(node.id)}
 						onkeydown={(e) => e.key === 'Enter' && handleNodeClick(node.id)}
 						onmouseenter={() => hoveredTag = node.id}
 						onmouseleave={() => hoveredTag = null}
 					>
+						{#if isSelected}
+							<!-- Glow ring for selected nodes -->
+							<rect
+								x={-w / 2 - 3}
+								y={-RECT_H / 2 - 3}
+								width={w + 6}
+								height={RECT_H + 6}
+								rx="4"
+								fill="none"
+								stroke="var(--acc)"
+								stroke-width="1.5"
+								stroke-opacity="0.5"
+								pointer-events="none"
+							/>
+						{/if}
 						<rect
 							x={-w / 2}
 							y={-RECT_H / 2}
 							width={w}
 							height={RECT_H}
 							rx="2"
-							fill={isHovered ? 'var(--acc)' : 'var(--bg-3)'}
-							stroke={isHovered ? 'var(--acc)' : 'var(--b-1)'}
-							stroke-width="1"
+							fill={isActive ? 'var(--acc)' : 'var(--bg-3)'}
+							stroke={isActive ? 'var(--acc)' : 'var(--b-1)'}
+							stroke-width={isSelected ? 1.5 : 1}
 							style="cursor: pointer; transition: fill 0.15s, stroke 0.15s;"
 						/>
 						<text
 							text-anchor="middle"
 							dy="0.35em"
 							font-size={FONT_SIZE}
-							fill={isHovered ? 'var(--bg-1)' : 'var(--t-2)'}
+							fill={isActive ? 'var(--bg-1)' : 'var(--t-2)'}
 							pointer-events="none"
 							style="transition: fill 0.15s; user-select: none;"
 						>
@@ -177,6 +241,50 @@
 				{/each}
 			</g>
 		</svg>
+
+		<!-- Selection panel — slides in when tags are selected -->
+		{#if selectedTags.length > 0}
+			<div class="tag-panel" data-testid="style-map-panel">
+				<div class="tag-panel-header">
+					<div class="tag-chips">
+						{#each selectedTags as tag (tag)}
+							<button class="tag-chip-sel" onclick={() => removeTag(tag)} title="Remove {tag}">
+								{tag} ×
+							</button>
+						{/each}
+					</div>
+					<div class="tag-panel-actions">
+						<button
+							class="btn-find-artists"
+							onclick={handleFindArtists}
+							disabled={panelLoading}
+							data-testid="style-map-find-artists"
+						>
+							{panelLoading ? '…' : 'Find Artists'}
+						</button>
+						<button class="btn-clear-sel" onclick={clearSelection} title="Clear selection">×</button>
+					</div>
+				</div>
+
+				{#if panelLoading}
+					<div class="panel-loading">Searching…</div>
+				{:else if panelSearched && panelArtists.length === 0}
+					<div class="panel-empty">No artists match all selected tags.</div>
+				{:else if panelArtists.length > 0}
+					<div class="panel-results">
+						<div class="panel-artist-list">
+							{#each panelArtists as artist (artist.id)}
+								<a href="/artist/{artist.slug}" class="panel-artist">
+									<span class="panel-artist-name">{artist.name}</span>
+									{#if artist.country}<span class="panel-artist-country">{artist.country}</span>{/if}
+								</a>
+							{/each}
+						</div>
+						<a href={discoverUrl} class="view-all-link">View all in Discover →</a>
+					</div>
+				{/if}
+			</div>
+		{/if}
 	{/if}
 </div>
 
@@ -206,5 +314,130 @@
 
 	.node {
 		outline: none;
+	}
+
+	/* Selection panel */
+	.tag-panel {
+		border-top: 1px solid var(--b-1);
+		background: var(--bg-1);
+	}
+
+	.tag-panel-header {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		padding: 8px 12px;
+		flex-wrap: wrap;
+	}
+
+	.tag-chips {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px;
+		flex: 1;
+	}
+
+	.tag-chip-sel {
+		background: var(--acc);
+		color: var(--bg-1);
+		border: none;
+		padding: 3px 8px;
+		font-size: 0.75rem;
+		cursor: pointer;
+		border-radius: 0;
+	}
+
+	.tag-chip-sel:hover {
+		filter: brightness(1.15);
+	}
+
+	.tag-panel-actions {
+		display: flex;
+		gap: 6px;
+		align-items: center;
+		flex-shrink: 0;
+	}
+
+	.btn-find-artists {
+		background: var(--bg-3);
+		color: var(--t-1);
+		border: 1px solid var(--b-2);
+		padding: 4px 12px;
+		font-size: 0.78rem;
+		cursor: pointer;
+		border-radius: 0;
+	}
+
+	.btn-find-artists:hover:not(:disabled) {
+		border-color: var(--b-acc);
+		color: var(--acc);
+	}
+
+	.btn-find-artists:disabled {
+		opacity: 0.5;
+		cursor: default;
+	}
+
+	.btn-clear-sel {
+		background: transparent;
+		color: var(--t-3);
+		border: none;
+		font-size: 1rem;
+		cursor: pointer;
+		padding: 2px 6px;
+		line-height: 1;
+	}
+
+	.btn-clear-sel:hover {
+		color: var(--t-1);
+	}
+
+	.panel-loading,
+	.panel-empty {
+		padding: 10px 12px;
+		font-size: 0.78rem;
+		color: var(--t-3);
+	}
+
+	.panel-results {
+		padding: 0 12px 12px;
+	}
+
+	.panel-artist-list {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 4px 16px;
+		margin-bottom: 10px;
+	}
+
+	.panel-artist {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		text-decoration: none;
+		color: var(--t-1);
+		font-size: 0.8rem;
+		padding: 2px 0;
+	}
+
+	.panel-artist:hover .panel-artist-name {
+		color: var(--acc);
+	}
+
+	.panel-artist-country {
+		font-size: 0.7rem;
+		color: var(--t-3);
+	}
+
+	.view-all-link {
+		display: inline-block;
+		font-size: 0.75rem;
+		color: var(--acc);
+		text-decoration: none;
+		margin-top: 2px;
+	}
+
+	.view-all-link:hover {
+		text-decoration: underline;
 	}
 </style>

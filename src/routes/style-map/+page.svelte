@@ -14,7 +14,7 @@
 	<div class="page-header discover-mode-desc">
 		<h2>Style Map</h2>
 		<p>
-			How genres connect. Node size = how many artists. Edge weight = how often they appear together. Click a node to discover artists.
+			How genres connect. Node size = how many artists. Edge weight = how often they appear together. Click nodes to select genres, then find artists that match all of them.
 		</p>
 	</div>
 

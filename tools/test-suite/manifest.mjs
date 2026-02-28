@@ -2353,6 +2353,30 @@ export const PHASE_25 = [
     fn: () => fileContains('src/lib/components/LibraryBrowser.svelte', 'track-pane-column-headers')(),
   },
   {
+    id: 'P52-01', phase: 52, area: 'Style Map',
+    desc: 'StyleMap.svelte has selectedTags state (multi-select)',
+    method: 'code',
+    fn: () => fileContains('src/lib/components/StyleMap.svelte', 'selectedTags')(),
+  },
+  {
+    id: 'P52-02', phase: 52, area: 'Style Map',
+    desc: 'StyleMap.svelte has style-map-panel testid (artist panel)',
+    method: 'code',
+    fn: () => fileContains('src/lib/components/StyleMap.svelte', 'style-map-panel')(),
+  },
+  {
+    id: 'P52-03', phase: 52, area: 'Style Map',
+    desc: 'StyleMap.svelte has style-map-find-artists testid',
+    method: 'code',
+    fn: () => fileContains('src/lib/components/StyleMap.svelte', 'style-map-find-artists')(),
+  },
+  {
+    id: 'P52-04', phase: 52, area: 'Style Map',
+    desc: 'StyleMap.svelte does NOT navigate away on click (no goto import)',
+    method: 'code',
+    fn: () => !fileContains('src/lib/components/StyleMap.svelte', "from '$app/navigation'")(),
+  },
+  {
     id: 'P55-01', phase: 55, area: 'Library Search',
     desc: 'LibraryBrowser.svelte has library-search-input testid',
     method: 'code',

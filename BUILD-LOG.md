@@ -10792,3 +10792,26 @@ Issue #55 closed.
 
 > **Commit bc0549f** (2026-02-28 23:33) — fix #55: add search/filter to library browser
 > Files changed: 3
+
+> **Commit 1034e0d** (2026-02-28 23:33) — wip: auto-save
+> Files changed: 1
+
+---
+
+## Entry 2026-02-28 — Fix #52: Style Map Multi-Select + Artist Panel
+
+The Style Map was a dead-end — clicking any node immediately navigated to Discover, abandoning the map. Steve's request was exactly right: you should be able to click multiple nodes and then say "show me artists of these genres."
+
+**What changed:**
+
+- **Click = select, not navigate.** Clicking a node toggles it into/out of `selectedTags[]`. No more `goto()` call.
+- **Visual selection state.** Selected nodes get accent fill + an outer glow ring (slightly larger rect, 50% opacity accent stroke) so it's clear which tags are active.
+- **Selection panel.** Appears at the bottom of the map when ≥1 tag is selected. Shows selected tags as removable chips (click × to deselect individual tags).
+- **"Find Artists" button.** Calls `getArtistsByTagIntersection()` — the existing query that does an N-way JOIN, returning artists that have ALL selected tags. Shows results inline as a compact artist grid.
+- **"View all in Discover →"** is available once results load — opt-in navigation, not mandatory.
+- **initialTag** (from `?tag=` param) now pre-selects the node instead of just hovering it.
+- Removed `goto` import entirely — the map never navigates on its own.
+
+The `getArtistsByTagIntersection` query was already in `queries.ts` from Phase 27 (intersection search). StyleMap now imports it dynamically on demand, no new DB code needed.
+
+Issue #52 closed.
