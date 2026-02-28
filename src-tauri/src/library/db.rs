@@ -1,4 +1,4 @@
-use rusqlite::{params, Connection};
+use rusqlite::{params, Connection, OptionalExtension};
 use serde::Serialize;
 use std::path::Path;
 
@@ -255,6 +255,24 @@ pub fn get_album_covers(conn: &Connection) -> Result<Vec<AlbumCover>, String> {
         .collect::<Result<Vec<_>, _>>()
         .map_err(|e| e.to_string())?;
 
+    Ok(result)
+}
+
+/// Get cover art for a single album — used by the library browser for lazy per-album loading.
+/// Returns None if the album has no cover art stored.
+pub fn get_cover_for_album(conn: &Connection, album: &str, artist: &str) -> Result<Option<String>, String> {
+    let result = conn
+        .query_row(
+            "SELECT cover_art_base64 FROM local_tracks
+             WHERE album = ?1
+               AND (album_artist = ?2 OR (album_artist IS NULL AND artist = ?2))
+               AND cover_art_base64 IS NOT NULL
+             LIMIT 1",
+            params![album, artist],
+            |row| row.get(0),
+        )
+        .optional()
+        .map_err(|e| e.to_string())?;
     Ok(result)
 }
 

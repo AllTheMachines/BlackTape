@@ -122,6 +122,17 @@ pub async fn get_album_covers(
     db::get_album_covers(&conn)
 }
 
+/// Get cover art for a single album — used by the library browser for lazy per-album loading.
+#[tauri::command]
+pub async fn get_cover_for_album(
+    album: String,
+    artist: String,
+    state: tauri::State<'_, LibraryState>,
+) -> Result<Option<String>, String> {
+    let conn = state.0.lock().map_err(|e| format!("Lock error: {}", e))?;
+    db::get_cover_for_album(&conn, &album, &artist)
+}
+
 /// Set a custom cover for all tracks in an album (matched by album name + artist).
 #[tauri::command]
 pub async fn set_album_cover(

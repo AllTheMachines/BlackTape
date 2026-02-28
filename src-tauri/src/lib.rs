@@ -109,6 +109,7 @@ pub fn run() {
             scanner::scan_folder,
             scanner::search_local_tracks,
             scanner::get_album_covers,
+            scanner::get_cover_for_album,
             scanner::set_album_cover,
             scanner::refresh_covers,
             scanner::get_library_tracks,

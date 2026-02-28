@@ -84,6 +84,16 @@ export async function getAlbumCovers(): Promise<Array<{ album: string; album_art
 }
 
 /**
+ * Get cover art for a single album by name + artist.
+ * Returns a base64 data URL string, or null if no cover is stored.
+ * Use this for lazy per-album loading instead of getAlbumCovers() bulk load.
+ */
+export async function getCoverForAlbum(album: string, artist: string): Promise<string | null> {
+	const invoke = await getInvoke();
+	return await invoke<string | null>('get_cover_for_album', { album, artist });
+}
+
+/**
  * Set a custom cover image for all tracks in an album.
  * coverArtBase64 should be a data URL (data:image/...;base64,...).
  * Returns the number of tracks updated.

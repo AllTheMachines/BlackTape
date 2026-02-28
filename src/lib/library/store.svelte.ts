@@ -41,23 +41,25 @@ function buildCoverMap(covers: AlbumCover[]): Map<string, string> {
 
 /**
  * Load the full library (tracks + folders) from the Tauri backend.
- * Uses allSettled so a cover-art failure doesn't prevent tracks from loading.
+ * Tracks and folders load first so the library renders immediately.
+ * Cover art (237 MB of base64) loads in the background — thumbnails
+ * appear a few seconds later without blocking the initial render.
  */
 export async function loadLibrary(): Promise<void> {
 	libraryState.isLoading = true;
 	try {
-		const [tracksResult, foldersResult, coversResult] = await Promise.allSettled([
+		const [tracksResult, foldersResult] = await Promise.allSettled([
 			getLibraryTracks(),
-			getMusicFolders(),
-			getAlbumCovers()
+			getMusicFolders()
 		]);
 		if (tracksResult.status === 'fulfilled') libraryState.tracks = tracksResult.value;
 		if (foldersResult.status === 'fulfilled') libraryState.folders = foldersResult.value;
-		if (coversResult.status === 'fulfilled') libraryState.coverMap = buildCoverMap(coversResult.value);
 		libraryState.isLoaded = true;
 	} finally {
 		libraryState.isLoading = false;
 	}
+	// Covers are loaded lazily per-album via IntersectionObserver in LibraryBrowser.
+	// The bulk getAlbumCovers() call (237 MB base64) is not used on startup.
 }
 
 /**

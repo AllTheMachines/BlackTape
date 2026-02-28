@@ -3,8 +3,9 @@
 	import type { PlayerTrack } from '$lib/player/state.svelte';
 	import TrackRow from './TrackRow.svelte';
 	import { setQueue, addToQueue } from '$lib/player/queue.svelte';
-	import { setAlbumCover } from '$lib/library/scanner';
+	import { setAlbumCover, getCoverForAlbum } from '$lib/library/scanner';
 	import { loadLibrary } from '$lib/library/store.svelte';
+	import { isTauri } from '$lib/platform';
 
 	let { albums }: { albums: LibraryAlbum[] } = $props();
 
@@ -12,8 +13,40 @@
 	let lightboxSrc = $state<string | null>(null);
 	let coverFileInput = $state<HTMLInputElement | null>(null);
 
+	/** Lazily fetched covers: "artist|||album" → base64 data URL */
+	let lazyCovers = $state<Record<string, string>>({});
+
 	function albumKey(album: LibraryAlbum): string {
 		return `${album.artist}|||${album.name}`;
+	}
+
+	/** Get cover for an album — lazy cache first, then null (triggers initials). */
+	function getLoadedCover(album: LibraryAlbum): string | null {
+		return lazyCovers[albumKey(album)] ?? null;
+	}
+
+	/**
+	 * Svelte action: observe element; fetch cover when it enters viewport.
+	 * Replaces the 237 MB bulk get_album_covers() with per-album loads on demand.
+	 */
+	function lazyLoadCover(node: HTMLElement, album: LibraryAlbum) {
+		if (!isTauri()) return;
+		const key = albumKey(album);
+		if (lazyCovers[key]) return; // already cached
+
+		const observer = new IntersectionObserver(
+			(entries) => {
+				if (entries[0].isIntersecting) {
+					observer.disconnect();
+					getCoverForAlbum(album.name, album.artist).then((cover) => {
+						if (cover) lazyCovers[key] = cover;
+					});
+				}
+			},
+			{ rootMargin: '300px' }
+		);
+		observer.observe(node);
+		return { destroy() { observer.disconnect(); } };
 	}
 
 	let selectedAlbum = $derived(albums.find(a => albumKey(a) === selectedAlbumKey) ?? null);
@@ -87,6 +120,8 @@
 			const dataUrl = e.target?.result as string;
 			if (!dataUrl) return;
 			await setAlbumCover(album.name, album.artist, dataUrl);
+			// Update lazy cache immediately so the UI reflects the new cover
+			lazyCovers[albumKey(album)] = dataUrl;
 			await loadLibrary();
 		};
 		reader.readAsDataURL(file);
@@ -122,9 +157,10 @@
 					class:selected={selectedAlbumKey === albumKey(album)}
 					onclick={() => selectAlbum(album)}
 					data-testid="album-list-item"
+					use:lazyLoadCover={album}
 				>
-					{#if album.coverArtBase64}
-						<img class="album-thumb album-thumb-img" src={album.coverArtBase64} alt={album.name} />
+					{#if getLoadedCover(album)}
+						<img class="album-thumb album-thumb-img" src={getLoadedCover(album)!} alt={album.name} />
 					{:else}
 						<div class="album-thumb">{getInitials(album.name)}</div>
 					{/if}
@@ -141,9 +177,9 @@
 	<div class="track-pane" data-testid="track-pane">
 		{#if selectedAlbum}
 			<div class="track-pane-header">
-				{#if selectedAlbum.coverArtBase64}
-					<button class="cover-btn" onclick={() => openLightbox(selectedAlbum!.coverArtBase64!)} title="View cover">
-						<img class="release-cover release-cover-img" src={selectedAlbum.coverArtBase64} alt={selectedAlbum.name} />
+				{#if getLoadedCover(selectedAlbum)}
+					<button class="cover-btn" onclick={() => openLightbox(getLoadedCover(selectedAlbum!)!)} title="View cover">
+						<img class="release-cover release-cover-img" src={getLoadedCover(selectedAlbum)!} alt={selectedAlbum.name} />
 						<div class="cover-hint">
 							<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
 						</div>
