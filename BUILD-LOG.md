@@ -9993,3 +9993,6 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit a357830** (2026-02-28 14:26) — wip: session wrap-up — handoff + build log
 > Files changed: 2
+
+> **Commit 613e1ac** (2026-02-28 14:26) — wip: auto-save
+> Files changed: 1
