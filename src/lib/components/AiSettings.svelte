@@ -311,104 +311,69 @@
 					{/if}
 				</div>
 			{:else}
-				<!-- Remote API configuration -->
+				<!-- Step 2 + 3: provider picker then API key (#29 fix) -->
 				<div class="remote-config">
-					<div class="form-field">
-						<label for="api-base-url">API Base URL</label>
-						<input
-							id="api-base-url"
-							type="text"
-							bind:value={remoteBaseUrl}
-							placeholder="https://api.openai.com"
-						/>
-					</div>
-					<div class="form-field">
-						<label for="api-key">API Key</label>
-						<div class="key-input-row">
-							<input
-								id="api-key"
-								type={showApiKey ? 'text' : 'password'}
-								bind:value={remoteApiKey}
-								placeholder="sk-..."
-							/>
+					<p class="remote-step-label">Choose a provider</p>
+					<div class="provider-grid">
+						{#each AI_PROVIDERS as provider (provider.id)}
+							{@const isSelected = aiState.selectedProviderName === provider.id}
 							<button
-								class="btn btn-secondary btn-small"
-								onclick={() => { showApiKey = !showApiKey; }}
+								class="provider-card"
+								class:provider-card--selected={isSelected}
+								onclick={() => handleProviderSelect(provider.id)}
+								type="button"
 							>
-								{showApiKey ? 'Hide' : 'Show'}
+								<div class="provider-card-header">
+									<span class="provider-card-name">{provider.label}</span>
+									{#if provider.badge}<span class="provider-card-badge">{provider.badge}</span>{/if}
+									{#if isSelected}<span class="provider-card-check">✓</span>{/if}
+								</div>
+								<p class="provider-card-hint">{provider.instructions}</p>
+								{#if provider.affiliateUrl}
+									{@const affUrl = provider.affiliateUrl}
+									<span class="provider-card-key-btn" role="link" tabindex="0"
+										onclick={(e) => { e.stopPropagation(); openAffiliateUrl(affUrl); }}
+										onkeydown={(e) => { if (e.key === "Enter") { e.stopPropagation(); openAffiliateUrl(affUrl); } }}
+									>Get API key ↗</span>
+								{/if}
 							</button>
+						{/each}
+					</div>
+
+					{#if selectedProvider}
+						<div class="api-key-section">
+							<div class="form-field">
+								<label for="api-key">API Key</label>
+								<div class="key-input-row">
+									<input id="api-key" type={showApiKey ? "text" : "password"}
+										bind:value={remoteApiKey} placeholder="sk-..." />
+									<button class="btn btn-secondary btn-small"
+										onclick={() => { showApiKey = !showApiKey; }}>
+										{showApiKey ? "Hide" : "Show"}
+									</button>
+								</div>
+							</div>
+							<div class="form-field">
+								<label for="api-model">Model</label>
+								<input id="api-model" type="text" bind:value={remoteModel}
+									placeholder={selectedProvider.defaultModel} />
+							</div>
+							<div class="form-actions">
+								<button class="btn btn-primary" onclick={handleSaveRemote}>
+									{remoteSaved ? "Saved ✓" : "Save"}
+								</button>
+								{#if aiState.status === "ready"}
+									<span class="inline-status ready">Connected</span>
+								{:else if aiState.status === "error"}
+									<span class="inline-status error">{aiState.error}</span>
+								{/if}
+							</div>
 						</div>
-					</div>
-					<div class="form-field">
-						<label for="api-model">Model Name</label>
-						<input
-							id="api-model"
-							type="text"
-							bind:value={remoteModel}
-							placeholder="gpt-4o-mini"
-						/>
-					</div>
-					<div class="form-actions">
-						<button class="btn btn-primary" onclick={handleSaveRemote}>
-							{remoteSaved ? 'Saved' : 'Save'}
-						</button>
-						{#if aiState.status === 'ready'}
-							<span class="inline-status ready">Connected</span>
-						{:else if aiState.status === 'error'}
-							<span class="inline-status error">{aiState.error}</span>
-						{/if}
-					</div>
+					{/if}
 				</div>
 			{/if}
 		</div>
 	{/if}
-
-	<!-- AI Summary Provider — redesigned for clarity (#29) -->
-	<div class="settings-section">
-		<h3 class="settings-section-title">AI Summary Provider</h3>
-		<p class="settings-hint">
-			Select the AI service that generates artist summaries. Each provider requires an API key.
-			Local AI (above) generates embeddings and recommendations — this provider is for text summaries only.
-		</p>
-
-		<div class="provider-grid">
-			{#each AI_PROVIDERS as provider (provider.id)}
-				{@const isSelected = aiState.selectedProviderName === provider.id}
-				<button
-					class="provider-card"
-					class:provider-card--selected={isSelected}
-					onclick={() => handleProviderSelect(provider.id)}
-					type="button"
-				>
-					<div class="provider-card-header">
-						<span class="provider-card-name">{provider.label}</span>
-						{#if provider.badge}
-							<span class="provider-card-badge">{provider.badge}</span>
-						{/if}
-						{#if isSelected}
-							<span class="provider-card-check">✓</span>
-						{/if}
-					</div>
-					<p class="provider-card-hint">{provider.instructions}</p>
-					{#if provider.affiliateUrl && isSelected}
-						<span
-							class="provider-card-key-btn"
-							role="link"
-							tabindex="0"
-							onclick={(e) => { e.stopPropagation(); openAffiliateUrl(provider.affiliateUrl!); }}
-							onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); openAffiliateUrl(provider.affiliateUrl!); } }}
-						>
-							Get API key ↗
-						</span>
-					{/if}
-				</button>
-			{/each}
-		</div>
-
-		{#if aiState.selectedProviderName && aiState.status === 'ready'}
-			<p class="provider-status-ready">✓ Connected and ready</p>
-		{/if}
-	</div>
 
 	<!-- AI Auto-News: Auto-generate toggle -->
 	<div class="settings-section">
