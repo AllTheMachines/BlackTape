@@ -9823,3 +9823,6 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit f0f85f6** (2026-02-28 12:33) — wip: auto-save
 > Files changed: 2
+
+> **Commit 08760da** (2026-02-28 12:43) — wip: auto-save
+> Files changed: 46
