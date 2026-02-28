@@ -10626,3 +10626,6 @@ Library load time: **9+ seconds → 500ms**. Cover thumbnails: **never appeared 
 
 > **Commit ea15102** (2026-02-28 21:23) — wip: auto-save
 > Files changed: 2
+
+> **Commit b78c2ac** (2026-02-28 21:38) — fix #50: Discover page — 11,000ms → 7ms (1,500× speedup)
+> Files changed: 5
