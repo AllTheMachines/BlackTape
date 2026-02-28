@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { spotifyState } from '$lib/spotify/state.svelte';
 
 	type WizardStep = 'setup' | 'waiting' | 'success';
@@ -10,11 +9,22 @@
 
 	let isConnected = $derived(spotifyState.connected);
 	let reauthorizing = $state(false);
+	let clientIdInitialized = $state(false);
 
-	// Pre-populate Client ID from stored state (for re-auth convenience).
-	onMount(() => {
-		if (spotifyState.clientId) clientIdInput = spotifyState.clientId;
+	// Pre-populate Client ID once it's available from DB hydration (reactive — handles race condition).
+	$effect(() => {
+		if (!clientIdInitialized && spotifyState.clientId) {
+			clientIdInput = spotifyState.clientId;
+			clientIdInitialized = true;
+		}
 	});
+
+	async function focusWindow() {
+		try {
+			const { getCurrentWindow } = await import('@tauri-apps/api/window');
+			await getCurrentWindow().setFocus();
+		} catch { /* not in Tauri */ }
+	}
 
 	// When spotifyState.connected becomes true externally (e.g. boot hydration), sync step.
 	$effect(() => {
@@ -151,6 +161,7 @@
 				class="text-input"
 				bind:value={clientIdInput}
 				placeholder="Spotify Client ID"
+				onmousedown={focusWindow}
 			/>
 		</div>
 
