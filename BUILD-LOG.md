@@ -4,6 +4,38 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-02-28 — UAT Review: All 20 Incidents Filed
+
+Processed the UAT recording from `F:\videorecordings\2026-02-28 11-27-15.mkv` (20:41). All 20 incidents identified from the transcript were reviewed with frame-by-frame evidence and filed as GitHub issues #43–#62.
+
+**Session was split across two context windows** — #43–#55 were filed in the first half, #56–#62 in the second. The handoff file tracked progress across the break.
+
+### Issues filed this session (#56–#62)
+
+| # | Incident | Type |
+|---|----------|------|
+| #56 | Release page: add Play Album button alongside Queue Album | enhancement |
+| #57 | AI model download stuck on 'Pending' — download never starts | bug |
+| #58 | About page: hide 'View backers' link when no backers exist | enhancement |
+| #59 | About page: fix feedback email, add in-app bug report form | enhancement |
+| #60 | Settings: Spotify section header doubled; layout tab descriptions bleed | bug |
+| #61 | Streaming preference settings don't apply | bug |
+| #62 | Import from Spotify fails: oauth.start not allowed (missing capability) | bug |
+
+### Notable findings from review
+
+**#57 (AI model download):** Button does nothing — Tauri command handler likely not wired up or fails silently. Blocks all local AI features.
+
+**#60 (Settings layout):** Spotify auth section renders its own title inside the parent section card, creating a doubled header. Separate from the duplicate Client ID field bug (#44) filed earlier — these are distinct issues.
+
+**#61 + #41 (Streaming preference):** Two separate issues filed for the same broken feature (settings don't apply) — #41 from a previous session and #61 from this UAT. Consider consolidating.
+
+**#62 (Spotify OAuth):** Clear root cause — `oauth.allow-start` Tauri capability missing from `default.json`. Should be a quick fix. The handoff notes described this as a "LastFM auth error" but frames confirm it's the Spotify OAuth flow failing; Last.fm uses username+API key and may work fine.
+
+Full issue backlog is now at 30 open issues. Next step: triage and prioritize for v1.4 milestone.
+
+---
+
 ## Entry 2026-02-27 — v1.7 Press Screenshots Complete (21/21)
 
 Manual screenshot session — all 21 press screenshots captured into `press-screenshots/v5/`. Root cause of earlier 500 errors was identified in the previous session: `page.goto()` (hard browser navigation) tears down the WebView2/Tauri bridge; `window.location.href` (SPA navigation) keeps it alive. Script fixed in v1.7.
@@ -9788,3 +9820,6 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit 28a1672** (2026-02-28 12:30) — wip: auto-save
 > Files changed: 5
+
+> **Commit f0f85f6** (2026-02-28 12:33) — wip: auto-save
+> Files changed: 2
