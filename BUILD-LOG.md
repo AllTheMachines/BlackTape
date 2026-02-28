@@ -10371,9 +10371,42 @@ Extended the Spotify Connect integration from live player status display into a 
 > **Commit 0e78634** (2026-02-28 18:55) — wip: auto-save
 > Files changed: 1
 
-<!-- status -->
-Fixed #53 (KB page issues): 1) Genre type now computed from lat/lng — genres grey, geocoded scenes orange. 2) origin_city shows without inception_year. 3) Genre Map section now renders inline SubGraph instead of dead link. Also #63: MusicBrainz fetch has 10s timeout. Moving to next issue.
-<!-- /status -->
+## Entry 2026-02-28 — Issue Backlog: #63, #53, #57
+
+Three issues closed this session.
+
+**#63 — App freeze on album cover click (partial fix)**
+
+The MusicBrainz fetch in `src/routes/artist/[slug]/release/[mbid]/+page.ts:58` had no timeout. If MB API was slow/unresponsive, `await fetch(...)` hung forever, freezing the release page load. Added `AbortController` with 10s timeout using try/finally to ensure the timer is always cleared. Could not reproduce the exact UI freeze in automated tests — likely because the dev environment has good network latency to MB. Issue left open for further monitoring.
+
+**#53 — Knowledge Base page: all nodes orange, no cities, genre map dead link**
+
+Three separate bugs, one root cause:
+
+The pipeline's `build-genre-data.mjs` marks a genre as `type='scene'` whenever it has an `origin_city` value. But `origin_city` comes from Wikidata P495 (country of origin), so every genre with ANY country origin — "jazz", "hip-hop", "post-punk" — got tagged as `type='scene'`. This made the entire KB graph orange. Only genres without any country of origin stayed grey.
+
+Fix: changed all four DB query functions (`getStarterGenreGraph`, `getGenreSubgraph`, `getGenreBySlug`, `getAllGenreGraph`) to compute type dynamically:
+```sql
+CASE WHEN origin_lat IS NOT NULL THEN 'scene' ELSE 'genre' END AS type
+```
+Now only genres that were actually geocoded (lat/lng in the DB) show as orange scenes. Country-name-only origins show as grey genres. KB graph now shows the intended mix.
+
+Secondary fix: genre detail page showed `origin_city` only inside `{#if inception_year}` block. If a scene had no inception year, the city was hidden. Changed condition to `{#if inception_year || origin_city}` with a filter-join pattern.
+
+Third fix: Genre Map section on each genre page was just a redirect link ("Explore in Style Map →"). Now renders the actual `GenreGraph` component using `data.subgraph` with `focusSlug` set to the current genre. The focal node highlights with a border, related genres radiate outward. Falls back to link-only if subgraph has ≤1 node.
+
+**#57 — AI model download stuck on Pending**
+
+Cannot reproduce. Tested by clicking "Download Models" — download starts immediately, shows progress "Downloading Qwen2.5 3B (Generation)... 18.1 MB / 1.96 GB — 1%". The Rust reqwest streaming download and Tauri Channel IPC are both working correctly. Closed as cannot reproduce.
+
+**Files changed:**
+- `src/routes/artist/[slug]/release/[mbid]/+page.ts` — AbortController timeout on MB fetch
+- `src/lib/db/queries.ts` — dynamic type computation in all genre queries
+- `src/routes/kb/genre/[slug]/+page.svelte` — inline GenreGraph, fix origin_city visibility
+- `tools/test-suite/manifest.mjs` — update P27-20 test to match new GenreGraph usage
 
 > **Commit 78aaf2a** (2026-02-28 19:01) — wip: auto-save
 > Files changed: 2
+
+> **Commit f96b75d** (2026-02-28 19:17) — fix #63 + #53: MB fetch timeout, KB genre types, genre map inline graph
+> Files changed: 5
