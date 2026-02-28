@@ -10463,3 +10463,9 @@ Cannot reproduce. Tested by clicking "Download Models" — download starts immed
 
 > **Commit cbb77dc** (2026-02-28 19:48) — fix #53: genre map pan/zoom + in-place node expansion fix #63: release page navigation unblocked (MB fetch moved to onMount)
 > Files changed: 6
+
+> **Commit 48e3b32** (2026-02-28 19:49) — wip: auto-save
+> Files changed: 1
+
+> **Commit 9bd7b7c** (2026-02-28 19:55) — fix: genre graph infinite re-simulation (rotation bug)
+> Files changed: 1
