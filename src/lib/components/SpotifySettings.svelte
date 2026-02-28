@@ -79,9 +79,6 @@
 		</div>
 	{:else if step === 'waiting'}
 		<!-- Step 2: Waiting for OAuth callback -->
-		<div class="import-card-header">
-			<span class="import-platform">Spotify</span>
-		</div>
 		<div class="waiting-row">
 			<span class="spinner" aria-hidden="true">⟳</span>
 			<span class="waiting-text">Waiting for Spotify authorization...</span>
@@ -94,9 +91,6 @@
 		</div>
 	{:else}
 		<!-- Step 1: Setup — get Client ID -->
-		<div class="import-card-header">
-			<span class="import-platform">Spotify</span>
-		</div>
 		<p class="import-card-desc">
 			Connect your Spotify account to play artist top tracks in Spotify Desktop.
 		</p>
