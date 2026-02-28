@@ -4,6 +4,16 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-03-01 — Fix #25: Time Machine pagination + sort
+
+Steve's complaint: *"Is there no next button or something to go to the next page?... They start with dots and stars and slashes. Maybe there should be shown more bands that are first like something that is based on your taste or the most known."*
+
+**Sort order** — was `ORDER BY a.name` (special chars first). Now: alpha/numeric names first, then by tag count desc (significance proxy), then alphabetical.
+
+**Pagination** — hard 50-cap removed. Page size 30, `LIMIT ? OFFSET ?`. "Load more" button appends next batch. Year/decade/tag changes reset to offset 0.
+
+---
+
 ## Entry 2026-03-01 — Fix #32 + #31: Share button colors + Discovery headers
 
 **#32 — Per-platform share button colors:** The artist page already had distinct Mastodon, Bluesky, and Twitter/X share buttons from a previous phase. What was missing was brand color coding on hover. Added platform-specific hover states: Mastodon (#6364FF purple), Bluesky (#0085FF blue), Twitter/X (full `--t-1`). Also added `:active` state.
@@ -10876,3 +10886,6 @@ Issue #51 closed.
 
 > **Commit b93bc12** (2026-03-01 00:03) — fix #32 + #31: share button brand colors + discovery header prominence
 > Files changed: 8
+
+> **Commit c5cffa6** (2026-03-01 00:03) — wip: auto-save
+> Files changed: 1

@@ -822,14 +822,23 @@ export async function getGenreKeyArtists(
 
 /**
  * Get artists active in a given year, optionally filtered by tag.
+ * Sorted by significance (tag count desc), with special-char names pushed to end.
  * Used by: Time Machine page.
  */
 export async function getArtistsByYear(
 	db: DbProvider,
 	year: number,
 	tag?: string,
-	limit = 50
+	limit = 30,
+	offset = 0
 ): Promise<ArtistResult[]> {
+	// Sort: alpha names first, then by tag count desc (significance proxy), then alpha
+	const ORDER = `
+		CASE WHEN UPPER(SUBSTR(a.name, 1, 1)) BETWEEN 'A' AND 'Z'
+		          OR SUBSTR(a.name, 1, 1) BETWEEN '0' AND '9' THEN 0 ELSE 1 END,
+		(SELECT COUNT(*) FROM artist_tags t2 WHERE t2.artist_id = a.id) DESC,
+		a.name`;
+
 	if (tag) {
 		return db.all<ArtistResult>(
 			`SELECT a.id, a.mbid, a.name, a.slug, a.country,
@@ -838,11 +847,12 @@ export async function getArtistsByYear(
 			 WHERE a.begin_year = ?
 			   AND a.begin_year <= strftime('%Y', 'now')
 			   AND EXISTS (SELECT 1 FROM artist_tags WHERE artist_id = a.id AND tag = ?)
-			 ORDER BY a.name
-			 LIMIT ?`,
+			 ORDER BY ${ORDER}
+			 LIMIT ? OFFSET ?`,
 			year,
 			tag,
-			limit
+			limit,
+			offset
 		);
 	}
 	return db.all<ArtistResult>(
@@ -851,10 +861,11 @@ export async function getArtistsByYear(
 		 FROM artists a
 		 WHERE a.begin_year = ?
 		   AND a.begin_year <= strftime('%Y', 'now')
-		 ORDER BY a.name
-		 LIMIT ?`,
+		 ORDER BY ${ORDER}
+		 LIMIT ? OFFSET ?`,
 		year,
-		limit
+		limit,
+		offset
 	);
 }
 

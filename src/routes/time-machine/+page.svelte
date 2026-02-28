@@ -13,6 +13,11 @@
 	let tagFilter = $state('');
 	let artists = $state(data.artists);
 	let loading = $state(false);
+	let loadingMore = $state(false);
+	let offset = $state(0);
+	let hasMore = $state(data.artists.length === 30);
+
+	const PAGE_SIZE = 30;
 
 	// Genre graph data — loaded once on mount (all genres, filtered client-side by year)
 	let allGenreNodes = $state<GenreNode[]>([]);
@@ -36,30 +41,44 @@
 	// CRITICAL: Tauri has no server — fetch() to /api/time-machine would silently fail.
 	// Tauri path: dynamic import provider + direct DB query (mirror crate/+page.svelte pattern).
 	// Web path: fetch /api/time-machine.
-	async function loadYear(year: number, tag?: string) {
-		loading = true;
+	async function loadYear(year: number, tag?: string, nextOffset = 0) {
+		const isAppending = nextOffset > 0;
+		if (isAppending) loadingMore = true;
+		else loading = true;
 		try {
+			let batch: typeof artists = [];
 			if (isTauri()) {
-				// Tauri: direct DB query — no fetch (adapter-static has no server)
 				const { getProvider } = await import('$lib/db/provider');
 				const { getArtistsByYear } = await import('$lib/db/queries');
 				const db = await getProvider();
-				artists = await getArtistsByYear(db, year, tag, 50);
+				batch = await getArtistsByYear(db, year, tag, PAGE_SIZE, nextOffset);
 				currentYear = year;
 			} else {
-				// Web: API fetch
-				const params = new URLSearchParams({ year: String(year) });
+				const params = new URLSearchParams({ year: String(year), limit: String(PAGE_SIZE), offset: String(nextOffset) });
 				if (tag) params.set('tag', tag);
 				const resp = await fetch(`/api/time-machine?${params}`);
 				if (resp.ok) {
 					const result = await resp.json() as { artists: typeof artists; year: number };
-					artists = result.artists;
+					batch = result.artists;
 					currentYear = year;
 				}
 			}
+			if (isAppending) {
+				artists = [...artists, ...batch];
+			} else {
+				artists = batch;
+				offset = 0;
+			}
+			hasMore = batch.length === PAGE_SIZE;
+			if (batch.length > 0) offset = nextOffset + batch.length;
 		} catch { /* best-effort */ } finally {
 			loading = false;
+			loadingMore = false;
 		}
+	}
+
+	async function loadMore() {
+		await loadYear(currentYear, tagFilter || undefined, offset);
 	}
 
 	function selectDecade(decade: typeof DECADES[0]) {
@@ -189,6 +208,13 @@
 				<ArtistCard {artist} />
 			{/each}
 		</div>
+		{#if hasMore}
+			<div class="load-more-row">
+				<button class="load-more-btn" onclick={loadMore} disabled={loadingMore}>
+					{loadingMore ? 'Loading…' : 'Load more'}
+				</button>
+			</div>
+		{/if}
 	{:else if !loading}
 		<div class="no-results">
 			<p>No artists found for {currentYear}{tagFilter ? ` · "${tagFilter}"` : ''}.</p>
@@ -254,6 +280,35 @@
 	.tm-cross-link:hover { color: var(--acc); }
 
 	.artist-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.75rem; }
+
+	.load-more-row {
+		display: flex;
+		justify-content: center;
+		padding: 1.5rem 0;
+	}
+
+	.load-more-btn {
+		padding: 0.5rem 2rem;
+		background: var(--bg-3);
+		border: 1px solid var(--b-2);
+		border-radius: 0;
+		color: var(--t-2);
+		font-size: 0.85rem;
+		font-family: inherit;
+		cursor: pointer;
+		transition: border-color 0.15s, color 0.15s;
+	}
+
+	.load-more-btn:hover:not(:disabled) {
+		border-color: var(--b-3);
+		color: var(--t-1);
+	}
+
+	.load-more-btn:disabled {
+		opacity: 0.5;
+		cursor: default;
+	}
+
 	.no-results { text-align: center; padding: 3rem; color: var(--t-3); }
 	.no-results-hint { font-size: 0.85rem; margin-top: 0.5rem; }
 </style>

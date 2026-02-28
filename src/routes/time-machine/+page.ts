@@ -9,7 +9,7 @@ export const load: PageLoad = async ({ url }) => {
 		const { getProvider } = await import('$lib/db/provider');
 		const { getArtistsByYear } = await import('$lib/db/queries');
 		const db = await getProvider();
-		const artists = await getArtistsByYear(db, year, undefined, 50);
+		const artists = await getArtistsByYear(db, year, undefined, 30, 0);
 		return { artists, year };
 	} catch {
 		return { artists: [], year };
