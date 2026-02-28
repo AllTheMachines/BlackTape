@@ -17,6 +17,7 @@
 
 	// Release data is loaded async in onMount — navigation is instant
 	let release = $state<ReleaseDetail | null>(null);
+	let loadDone = $state(false);
 	let credits = $state<CreditEntry[]>([]);
 	let platformLinks = $state({
 		bandcamp: [] as string[],
@@ -75,7 +76,17 @@
 				clearTimeout(timeoutId);
 			}
 
-			if (resp.ok) {
+			// MB rate-limit: wait 1s and retry once on 429/503
+		if (resp.status === 429 || resp.status === 503) {
+			await new Promise(r => setTimeout(r, 1200));
+			const controller2 = new AbortController();
+			const t2 = setTimeout(() => controller2.abort(), 5_000);
+			try {
+				resp = await fetch(mbUrl, { headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' }, signal: controller2.signal });
+			} finally { clearTimeout(t2); }
+		}
+
+		if (resp.ok) {
 				const mbData = await resp.json() as {
 					releases?: Array<{
 						id: string;
@@ -208,6 +219,7 @@
 				credits = rawCredits.map((c) => ({ ...c, slug: null }));
 			}
 		}
+		loadDone = true;
 	}
 
 	onMount(() => {
@@ -238,7 +250,11 @@
 
 	{#if !release}
 		<div class="release-loading">
-			<p>Loading release details…</p>
+			{#if loadDone}
+				<p>Couldn't load release details. <a href="/artist/{data.slug}">← Back to artist</a></p>
+			{:else}
+				<p>Loading release details…</p>
+			{/if}
 		</div>
 	{:else}
 
