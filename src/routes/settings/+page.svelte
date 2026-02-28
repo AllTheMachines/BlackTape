@@ -3,6 +3,7 @@
 	import TasteEditor from '$lib/components/TasteEditor.svelte';
 	import ListeningHistory from '$lib/components/ListeningHistory.svelte';
 	import SpotifySettings from '$lib/components/SpotifySettings.svelte';
+	import { spotifyState } from '$lib/spotify/state.svelte';
 	import { aiState } from '$lib/ai/state.svelte';
 	import { isTauri } from '$lib/platform';
 	import { onMount } from 'svelte';
@@ -90,10 +91,12 @@
 	}
 
 	async function handleSpotifyImport() {
-		spotifyStatus = 'Connecting to Spotify...';
+		spotifyStatus = 'Fetching your top artists...';
 		try {
-			const { importFromSpotify } = await import('$lib/taste/import/spotify');
-			const artists = await importFromSpotify(spotifyClientId.trim());
+			const { getValidAccessToken } = await import('$lib/spotify/auth');
+			const { fetchTopArtistsWithToken } = await import('$lib/taste/import/spotify');
+			const token = await getValidAccessToken();
+			const artists = await fetchTopArtistsWithToken(token);
 			spotifyStatus = 'Matching artists...';
 			spotifyStatus = await matchAndImport('Spotify', artists.map((a) => a.name));
 		} catch (e: unknown) {
@@ -503,26 +506,23 @@
 			<div class="import-card">
 				<div class="import-card-header">
 					<span class="import-platform">Spotify</span>
-				</div>
-				<p class="import-card-desc">Requires a Spotify Client ID from <a href="https://developer.spotify.com" target="_blank" rel="noopener noreferrer">developer.spotify.com</a>. You must add <code>http://127.0.0.1</code> as a redirect URI in your app settings.</p>
-				<div class="import-card-fields">
-					<input
-						type="text"
-						class="text-input"
-						bind:value={spotifyClientId}
-						placeholder="Client ID"
-					/>
-				</div>
-				<div class="import-card-actions">
-					<button
-						class="import-btn"
-						onclick={handleSpotifyImport}
-						disabled={!spotifyClientId.trim()}
-					>Import from Spotify</button>
-					{#if spotifyStatus}
-						<span class="import-status">{spotifyStatus}</span>
+					{#if spotifyState.connected}
+						<span class="connected-badge">Connected</span>
 					{/if}
 				</div>
+				{#if spotifyState.connected}
+					<p class="import-card-desc">Import your top 50 artists from your Spotify listening history into a shelf.</p>
+					<div class="import-card-actions">
+						<button class="import-btn" onclick={handleSpotifyImport}>
+							Import from Spotify
+						</button>
+						{#if spotifyStatus}
+							<span class="import-status">{spotifyStatus}</span>
+						{/if}
+					</div>
+				{:else}
+					<p class="import-card-desc">Connect your Spotify account in the <strong>Spotify</strong> section above, then come back here to import your listening history.</p>
+				{/if}
 			</div>
 
 			<!-- Last.fm -->

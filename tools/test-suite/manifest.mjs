@@ -2805,7 +2805,7 @@ export const PHASE_31 = [
     id: 'P31-10', phase: 31, area: 'Settings',
     desc: 'settings page Spotify text uses 127.0.0.1 (not localhost)',
     method: 'code',
-    fn: () => fileContains('src/routes/settings/+page.svelte', 'http://127.0.0.1')(),
+    fn: () => fileContains('src/lib/components/SpotifySettings.svelte', 'http://127.0.0.1')(),
   },
   {
     id: 'P31-11', phase: 31, area: 'Settings',

@@ -34,6 +34,22 @@ export interface SpotifyArtist {
 }
 
 /**
+ * Fetch top 50 artists using an existing access token (no OAuth dance).
+ * Use this when the user is already connected via SpotifySettings.
+ */
+export async function fetchTopArtistsWithToken(accessToken: string): Promise<SpotifyArtist[]> {
+	const res = await fetch(
+		'https://api.spotify.com/v1/me/top/artists?limit=50&time_range=medium_term',
+		{ headers: { Authorization: `Bearer ${accessToken}` } }
+	);
+	if (!res.ok) throw new Error(`Failed to fetch top artists: ${res.status}`);
+	const data = (await res.json()) as {
+		items: Array<{ name: string; id: string; popularity: number }>;
+	};
+	return data.items.map((a) => ({ name: a.name, spotifyId: a.id, popularity: a.popularity }));
+}
+
+/**
  * Start Spotify PKCE OAuth flow and return top artists.
  * @param clientId — user's Spotify Developer app Client ID
  */
