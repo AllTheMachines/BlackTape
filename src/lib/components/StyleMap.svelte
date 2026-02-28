@@ -36,6 +36,53 @@
 	let container: HTMLDivElement;
 	let hoveredTag = $state<string | null>(null);
 
+	// Zoom + pan state
+	let scale = $state(1);
+	let offsetX = $state(0);
+	let offsetY = $state(0);
+	let svgEl = $state<SVGSVGElement | undefined>(undefined);
+	let isPanning = $state(false);
+	let panOrigin = { x: 0, y: 0, ox: 0, oy: 0 };
+	let panMoved = false;
+
+	function handleWheel(e: WheelEvent) {
+		e.preventDefault();
+		if (!svgEl) return;
+		const rect = svgEl.getBoundingClientRect();
+		const factor = e.deltaY < 0 ? 1.12 : 1 / 1.12;
+		const oldScale = scale;
+		const newScale = Math.min(Math.max(oldScale * factor, 0.15), 8);
+		const svgX = e.clientX - rect.left;
+		const svgY = e.clientY - rect.top;
+		// Keep world-point under cursor fixed
+		const worldX = (svgX - offsetX) / oldScale;
+		const worldY = (svgY - offsetY) / oldScale;
+		offsetX = svgX - worldX * newScale;
+		offsetY = svgY - worldY * newScale;
+		scale = newScale;
+	}
+
+	function handlePanStart(e: MouseEvent) {
+		// Only start pan on left-click on background (target = svg or edges group)
+		if ((e.target as SVGElement).closest('.node')) return;
+		isPanning = true;
+		panMoved = false;
+		panOrigin = { x: e.clientX, y: e.clientY, ox: offsetX, oy: offsetY };
+	}
+
+	function handlePanMove(e: MouseEvent) {
+		if (!isPanning) return;
+		const dx = e.clientX - panOrigin.x;
+		const dy = e.clientY - panOrigin.y;
+		if (Math.abs(dx) > 3 || Math.abs(dy) > 3) panMoved = true;
+		offsetX = panOrigin.ox + dx;
+		offsetY = panOrigin.oy + dy;
+	}
+
+	function handlePanEnd() {
+		isPanning = false;
+	}
+
 	// Multi-select state
 	let selectedTags = $state<string[]>([]);
 	let panelArtists = $state<ArtistResult[]>([]);
@@ -168,77 +215,92 @@
 	{#if layoutNodes.length === 0}
 		<div class="loading">Building style map...</div>
 	{:else}
-		<svg {width} {height} class="style-map-svg">
-			<!-- Edges first (rendered behind nodes) -->
-			<g class="edges">
-				{#each layoutEdges as edge}
-					<line
-						x1={edge.x1} y1={edge.y1}
-						x2={edge.x2} y2={edge.y2}
-						stroke="var(--b-1)"
-						stroke-width={Math.max(0.5, edge.strength * 3)}
-						stroke-opacity={0.3 + edge.strength * 0.4}
-					/>
-				{/each}
-			</g>
-
-			<!-- Nodes -->
-			<g class="nodes">
-				{#each layoutNodes as node}
-					{@const w = labelWidth(node.id)}
-					{@const isSelected = selectedTags.includes(node.id)}
-					{@const isHovered = hoveredTag === node.id}
-					{@const isActive = isSelected || isHovered}
-					<g
-						class="node"
-						transform="translate({node.x},{node.y})"
-						role="button"
-						tabindex="0"
-						aria-label="{node.id}{isSelected ? ' (selected)' : ''}"
-						aria-pressed={isSelected}
-						onclick={() => handleNodeClick(node.id)}
-						onkeydown={(e) => e.key === 'Enter' && handleNodeClick(node.id)}
-						onmouseenter={() => hoveredTag = node.id}
-						onmouseleave={() => hoveredTag = null}
-					>
-						{#if isSelected}
-							<!-- Glow ring for selected nodes -->
-							<rect
-								x={-w / 2 - 3}
-								y={-RECT_H / 2 - 3}
-								width={w + 6}
-								height={RECT_H + 6}
-								rx="4"
-								fill="none"
-								stroke="var(--acc)"
-								stroke-width="1.5"
-								stroke-opacity="0.5"
-								pointer-events="none"
-							/>
-						{/if}
-						<rect
-							x={-w / 2}
-							y={-RECT_H / 2}
-							width={w}
-							height={RECT_H}
-							rx="2"
-							fill={isActive ? 'var(--acc)' : 'var(--bg-3)'}
-							stroke={isActive ? 'var(--acc)' : 'var(--b-1)'}
-							stroke-width={isSelected ? 1.5 : 1}
-							style="cursor: pointer; transition: fill 0.15s, stroke 0.15s;"
+		<svg
+			{width} {height}
+			class="style-map-svg"
+			class:panning={isPanning}
+			role="application"
+			aria-label="Style map — interactive genre graph"
+			bind:this={svgEl}
+			onwheel={handleWheel}
+			onmousedown={handlePanStart}
+			onmousemove={handlePanMove}
+			onmouseup={handlePanEnd}
+			onmouseleave={handlePanEnd}
+		>
+			<!-- Viewport group — receives zoom + pan transform -->
+			<g transform="translate({offsetX},{offsetY}) scale({scale})">
+				<!-- Edges first (rendered behind nodes) -->
+				<g class="edges">
+					{#each layoutEdges as edge}
+						<line
+							x1={edge.x1} y1={edge.y1}
+							x2={edge.x2} y2={edge.y2}
+							stroke="var(--b-1)"
+							stroke-width={Math.max(0.5, edge.strength * 3)}
+							stroke-opacity={0.3 + edge.strength * 0.4}
 						/>
-						<text
-							text-anchor="middle"
-							dy="0.35em"
-							font-size={FONT_SIZE}
-							fill={isActive ? 'var(--bg-1)' : 'var(--t-2)'}
-							pointer-events="none"
-							style="transition: fill 0.15s; user-select: none;"
+					{/each}
+				</g>
+
+				<!-- Nodes -->
+				<g class="nodes">
+					{#each layoutNodes as node}
+						{@const w = labelWidth(node.id)}
+						{@const isSelected = selectedTags.includes(node.id)}
+						{@const isHovered = hoveredTag === node.id}
+						{@const isActive = isSelected || isHovered}
+						<g
+							class="node"
+							transform="translate({node.x},{node.y})"
+							role="button"
+							tabindex="0"
+							aria-label="{node.id}{isSelected ? ' (selected)' : ''}"
+							aria-pressed={isSelected}
+							onclick={() => { if (!panMoved) handleNodeClick(node.id); }}
+							onkeydown={(e) => e.key === 'Enter' && handleNodeClick(node.id)}
+							onmouseenter={() => hoveredTag = node.id}
+							onmouseleave={() => hoveredTag = null}
 						>
-							{node.id}
-						</text>
-					</g>
-				{/each}
+							{#if isSelected}
+								<!-- Selection ring for selected nodes -->
+								<rect
+									x={-w / 2 - 3}
+									y={-RECT_H / 2 - 3}
+									width={w + 6}
+									height={RECT_H + 6}
+									rx="0"
+									fill="none"
+									stroke="var(--acc)"
+									stroke-width="1.5"
+									stroke-opacity="0.5"
+									pointer-events="none"
+								/>
+							{/if}
+							<rect
+								x={-w / 2}
+								y={-RECT_H / 2}
+								width={w}
+								height={RECT_H}
+								rx="0"
+								fill={isActive ? 'var(--acc)' : 'var(--bg-3)'}
+								stroke={isActive ? 'var(--acc)' : 'var(--b-1)'}
+								stroke-width={isSelected ? 1.5 : 1}
+								style="cursor: pointer; transition: fill 0.15s, stroke 0.15s;"
+							/>
+							<text
+								text-anchor="middle"
+								dy="0.35em"
+								font-size={FONT_SIZE}
+								fill={isActive ? 'var(--bg-1)' : 'var(--t-2)'}
+								pointer-events="none"
+								style="transition: fill 0.15s; user-select: none;"
+							>
+								{node.id}
+							</text>
+						</g>
+					{/each}
+				</g>
 			</g>
 		</svg>
 
@@ -301,6 +363,12 @@
 		display: block;
 		width: 100%;
 		height: auto;
+		cursor: grab;
+		user-select: none;
+	}
+
+	.style-map-svg.panning {
+		cursor: grabbing;
 	}
 
 	.loading {
