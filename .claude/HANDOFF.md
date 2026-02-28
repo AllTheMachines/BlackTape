@@ -1,39 +1,33 @@
 # Work Handoff - 2026-02-28
 
 ## Current Task
-Bug-bashing open v1.4 Spotify issues — working through the dependency chain.
+Bug-bashing open v1.4 Spotify issues — fixed keyboard input and UI confusion.
 
 ## Completed This Session
-- **#62** — oauth:allow-start + oauth:allow-cancel added to capabilities, binary rebuilt. CLOSED.
-- **#63** — App freezes when clicking album cover. Filed (new issue, not yet fixed).
-- **Spotify full-track regression** — Restored `handlePlayOnSpotify` on artist page. When Spotify connected, "▶ Spotify" pill uses Connect API (plays in Spotify Desktop). When not connected, falls back to embed.
-- **#44** — Removed duplicate Spotify Client ID field from Import section. Import now reuses existing OAuth token via `fetchTopArtistsWithToken()`. CLOSED.
-
-## Spotify Issue Dependency Chain (DO THIS ORDER)
-1. ✅ **#44** — duplicate Client ID / no clear — CLOSED
-2. **Test #62** — Steve needs to go through OAuth in Settings > Spotify > Authorize. This is the next manual test step. Needs Spotify Desktop running.
-3. **#61** — Streaming preference settings don't apply (Preferred Platform dropdown + drag order disconnected from actual embed ordering)
-4. **#49** — Release page: no streaming links, no play buttons on tracks
+- **Input keyboard fix** — `main-pane` scroll container was stealing keyboard events from inputs (WebView2 + scrollable div implicit focus bug). Fixed by adding `tabindex="-1"` to `.main-pane` in `PanelLayout.svelte`.
+- **SpotifySettings improvements:**
+  - Added "Re-authorize" button (replaces useless "Done" button in connected state)
+  - Fixed `$state(reactiveValue)` read-only bug — changed to `$effect` with initialized flag
+  - Added `focusWindow()` on input mousedown (Tauri Win32 focus safety)
+  - Removed confusing dashboard mockup — users thought it was real input fields
+  - Fixed race condition: `$effect` instead of `onMount` for clientId pre-fill
 
 ## App State
-- App NOT running (was not relaunched after #44 changes — needs reload)
-- To launch: `node tools/launch-cdp.mjs`
-- To reload after changes: `node tools/reload.mjs`
-- All code changes committed, 191/191 tests passing
+- App running via `node tools/launch-cdp.mjs` (CDP on port 9224)
+- All changes reloaded, visible in app
+- No Spotify client ID stored in DB (user needs to enter fresh)
 
-## Next Steps
-1. `node tools/launch-cdp.mjs` — relaunch app
-2. Steve tests Spotify OAuth: Settings > Spotify > Authorize
-3. If OAuth works → verify "▶ Spotify" button appears on artist page
-4. Then fix #61 (streaming preference wiring)
-5. Then fix #49 (release page streaming links)
+## Next Steps (Spotify Issue Dependency Chain)
+1. **Steve tests Spotify OAuth**: Settings > Spotify > enter Client ID > Authorize
+   - Needs Spotify Desktop running + Spotify Developer app with redirect URI `http://127.0.0.1`
+2. **#61** — Streaming preference settings don't apply (dropdown + drag order disconnected from embed ordering)
+3. **#49** — Release page: no streaming links, no play buttons on tracks
 
 ## Key Files Changed This Session
-- `src-tauri/capabilities/default.json` — oauth:allow-start + oauth:allow-cancel
-- `src/routes/artist/[slug]/+page.svelte` — handlePlayOnSpotify restored
-- `src/lib/taste/import/spotify.ts` — fetchTopArtistsWithToken() added
-- `src/routes/settings/+page.svelte` — import card reuses OAuth token
-- `src/lib/spotify/state.svelte` — imported into settings page
+- `src/lib/components/SpotifySettings.svelte` — Re-authorize button, $effect init, focusWindow, mockup removed
+- `src/lib/components/PanelLayout.svelte` — tabindex="-1" on main-pane (keyboard fix)
+- `CLAUDE.md` — added "never ask Steve to run the app" rule
+- `memory/MEMORY.md` — same rule added
 
 ## Resume Command
 Run `/resume` after `/clear`

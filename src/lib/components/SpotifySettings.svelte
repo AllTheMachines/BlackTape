@@ -130,30 +130,7 @@
 				</li>
 			</ol>
 
-			<!-- Spotify dashboard mockup — HTML/CSS, no binary assets -->
-			<div class="dashboard-mockup" aria-hidden="true">
-				<div class="mockup-chrome">
-					<span class="mockup-dot"></span>
-					<span class="mockup-dot"></span>
-					<span class="mockup-dot"></span>
-					<span class="mockup-url">developer.spotify.com/dashboard</span>
-				</div>
-				<div class="mockup-body">
-					<div class="mockup-field highlighted">
-						<span class="mockup-label">Client ID</span>
-						<span class="mockup-value">a1b2c3d4e5f6...</span>
-					</div>
-					<div class="mockup-field">
-						<span class="mockup-label">Client Secret</span>
-						<span class="mockup-value">••••••••••••</span>
-					</div>
-					<div class="mockup-field">
-						<span class="mockup-label">Redirect URIs</span>
-						<span class="mockup-value">http://127.0.0.1</span>
-					</div>
-				</div>
 			</div>
-		</div>
 
 		<div class="import-card-fields">
 			<input
