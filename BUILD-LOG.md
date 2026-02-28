@@ -4,6 +4,16 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-02-28 — Fix #49: STREAM ON Row on Release Page
+
+Added a "STREAM ON" section alongside "BUY ON" on every release page. Steve's complaint: *"There's no Spotify showing up here. It's just buy on. It should be also like the streaming links — buy on, stream on maybe."*
+
+Always shows Spotify and YouTube. Direct MB URL-relation links used when available (with full EmbedPlayer for in-page playback). Falls back to search URLs when MusicBrainz has no streaming data — indicated with a `?` badge so the user knows it's a search, not a direct link. Bandcamp and SoundCloud appear only when MB provides direct URLs.
+
+Section intentionally placed outside the `tauriMode` gate — streaming links are useful in any context.
+
+---
+
 ## Entry 2026-02-28 — Fix: Release Page Stuck on Error State
 
 <!-- decision -->
@@ -10706,4 +10716,7 @@ Library load time: **9+ seconds → 500ms**. Cover thumbnails: **never appeared 
 > Files changed: 1
 
 > **Commit 3c9c479** (2026-02-28 22:59) — fix #49: add STREAM ON row to release page
+> Files changed: 2
+
+> **Commit c31fcc6** (2026-02-28 23:00) — wip: auto-save
 > Files changed: 2
