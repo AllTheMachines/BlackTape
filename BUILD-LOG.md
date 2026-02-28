@@ -10325,3 +10325,6 @@ Extended the Spotify Connect integration from live player status display into a 
 - `spotifyRepeat` state moved to `$derived` in script block; `{@const}` can't be used at script-level in Svelte 5 (must be immediate child of a block element).
 - Top tracks load automatically — no manual trigger. `$effect` watches `showSpotifyButton`.
 - Queue panel: same toggle, different data source when Spotify is active. No new UI added.
+
+> **Commit 1840cb0** (2026-02-28 17:59) — docs: 2026-02-28 session — Spotify Connect full control suite
+> Files changed: 1
