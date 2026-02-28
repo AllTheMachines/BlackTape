@@ -4,6 +4,20 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-02-28 — Bug Bash: #62 Spotify OAuth capability
+
+**#62 closed** — "Import from Spotify fails: oauth.start not allowed"
+
+The Tauri OAuth plugin requires `oauth:allow-start` and `oauth:allow-cancel` declared in `src-tauri/capabilities/default.json`. Both were missing initially; `oauth:allow-start` was added in a prior session (commit `1b7dbf2`), `oauth:allow-cancel` was added shortly after. Binary rebuilt — capabilities are compiled in by `tauri_build::build()` at cargo build time, so the rebuild was required. Confirmed both are in current HEAD and binary timestamp is newer than both commits.
+
+Issue closed.
+
+<!-- status -->
+Bug bash in progress — #62 done. Moving to next issue.
+<!-- /status -->
+
+---
+
 ## Entry 2026-02-28 — Fix Tab Switching: --disable-shared-workers Was Breaking Svelte Event Delegation
 
 Artist page tabs (Overview / Stats / About) were unresponsive in the manually-launched app. Root cause: the `--disable-shared-workers` Chromium flag added to `launch-cdp.mjs` (to silence a Playwright assertion about shared_worker CDP targets) was disabling Vite 7's HMR SharedWorker. When that SharedWorker fails to initialize, Vite's module graph partially fails to load, and Svelte 5's event delegation root listener (registered via `delegate()` at module init time) never gets attached to the document — so all `onclick` handlers silently do nothing.
@@ -10078,3 +10092,6 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit 25d59c7** (2026-02-28 15:11) — wip: auto-save
 > Files changed: 1
+
+> **Commit 7d72c02** (2026-02-28 15:16) — auto-save: 3 files @ 15:16
+> Files changed: 2
