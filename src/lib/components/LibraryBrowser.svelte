@@ -51,12 +51,24 @@
 
 	let selectedAlbum = $derived(albums.find(a => albumKey(a) === selectedAlbumKey) ?? null);
 
+	let searchQuery = $state('');
+
 	const TYPE_ORDER = ['album', 'ep', 'single'] as const;
 	const TYPE_LABEL: Record<string, string> = { album: 'Albums', ep: 'EPs', single: 'Singles' };
 
+	let filteredAlbums = $derived.by(() => {
+		const q = searchQuery.trim().toLowerCase();
+		if (!q) return albums;
+		return albums.filter(a =>
+			a.name.toLowerCase().includes(q) ||
+			a.artist.toLowerCase().includes(q) ||
+			a.tracks.some(t => t.title?.toLowerCase().includes(q))
+		);
+	});
+
 	let groupedAlbums = $derived(
 		TYPE_ORDER
-			.map(type => ({ type, items: albums.filter(a => a.releaseType === type) }))
+			.map(type => ({ type, items: filteredAlbums.filter(a => a.releaseType === type) }))
 			.filter(g => g.items.length > 0)
 	);
 	let selectedAlbumPlayerTracks = $derived(selectedAlbum?.tracks.map(toPlayerTrack) ?? []);
@@ -65,6 +77,14 @@
 	$effect(() => {
 		if (albums.length > 0 && !selectedAlbumKey) {
 			selectedAlbumKey = albumKey(albums[0]);
+		}
+	});
+
+	// When search narrows the list, keep selection valid
+	$effect(() => {
+		if (filteredAlbums.length > 0) {
+			const stillVisible = filteredAlbums.some(a => albumKey(a) === selectedAlbumKey);
+			if (!stillVisible) selectedAlbumKey = albumKey(filteredAlbums[0]);
 		}
 	});
 
@@ -149,6 +169,19 @@
 <div class="library-panes">
 	<!-- Left pane: albums grouped by type (Albums / EPs / Singles) -->
 	<div class="album-list-pane" data-testid="album-list-pane">
+		<div class="library-search-bar">
+			<input
+				type="search"
+				placeholder="Search albums, artists, tracks…"
+				bind:value={searchQuery}
+				class="library-search-input"
+				data-testid="library-search-input"
+			/>
+		</div>
+		<div class="album-list-scroll">
+		{#if filteredAlbums.length === 0 && searchQuery.trim()}
+			<div class="library-no-results">No results for “{searchQuery.trim()}”</div>
+		{:else}
 		{#each groupedAlbums as group (group.type)}
 			<div class="album-type-header">{TYPE_LABEL[group.type]}</div>
 			{#each group.items as album (albumKey(album))}
@@ -171,6 +204,8 @@
 				</button>
 			{/each}
 		{/each}
+		{/if}
+		</div>
 	</div>
 
 	<!-- Right pane: tracklist for selected album -->
@@ -237,8 +272,44 @@
 
 	.album-list-pane {
 		border-right: 1px solid var(--b-1);
-		overflow-y: auto;
 		background: var(--bg-1);
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+	}
+
+	.library-search-bar {
+		padding: 7px 8px;
+		border-bottom: 1px solid var(--b-1);
+		flex-shrink: 0;
+	}
+
+	.library-search-input {
+		width: 100%;
+		background: var(--bg-2);
+		border: 1px solid var(--b-2);
+		color: var(--t-1);
+		padding: 5px 8px;
+		font-size: 0.78rem;
+		border-radius: 0;
+		box-sizing: border-box;
+		outline: none;
+	}
+
+	.library-search-input:focus {
+		border-color: var(--b-acc);
+	}
+
+	.album-list-scroll {
+		flex: 1;
+		overflow-y: auto;
+	}
+
+	.library-no-results {
+		padding: 24px 12px;
+		font-size: 0.8rem;
+		color: var(--t-3);
+		text-align: center;
 	}
 
 	.album-type-header {

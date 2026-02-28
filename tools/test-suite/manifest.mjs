@@ -2352,6 +2352,18 @@ export const PHASE_25 = [
     method: 'code',
     fn: () => fileContains('src/lib/components/LibraryBrowser.svelte', 'track-pane-column-headers')(),
   },
+  {
+    id: 'P55-01', phase: 55, area: 'Library Search',
+    desc: 'LibraryBrowser.svelte has library-search-input testid',
+    method: 'code',
+    fn: () => fileContains('src/lib/components/LibraryBrowser.svelte', 'library-search-input')(),
+  },
+  {
+    id: 'P55-02', phase: 55, area: 'Library Search',
+    desc: 'LibraryBrowser.svelte has filteredAlbums derived state',
+    method: 'code',
+    fn: () => fileContains('src/lib/components/LibraryBrowser.svelte', 'filteredAlbums')(),
+  },
 ];
 
 // ---------------------------------------------------------------------------

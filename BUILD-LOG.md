@@ -10766,3 +10766,26 @@ Issue #56 closed.
 
 > **Commit 408b567** (2026-02-28 23:29) — fix #56: add Play Album button to release page
 > Files changed: 3
+
+> **Commit cd5f9d7** (2026-02-28 23:29) — wip: auto-save
+> Files changed: 1
+
+---
+
+## Entry 2026-02-28 — Fix #55: Library Search
+
+The library had no way to find anything without scrolling. With 2345 tracks across hundreds of albums, this was a real usability problem.
+
+**Implementation:**
+
+Added a sticky search bar at the top of the album list pane in `LibraryBrowser.svelte`. The search is fully client-side — no backend calls needed since all track data is already in memory after load.
+
+- `filteredAlbums` — `$derived.by()` that filters by album name, artist name, or any track title (case-insensitive substring match)
+- `groupedAlbums` updated to derive from `filteredAlbums` instead of `albums`
+- `$effect` keeps the selection valid: when search narrows the list and the selected album is no longer visible, auto-selects the first match
+- "No results" message when search returns empty
+- Restructured `.album-list-pane` to `flex + overflow: hidden` with a nested `.album-list-scroll` div — keeps the search bar pinned at top while the album list scrolls independently, and lets section headers (Albums/EPs/Singles) keep `position: sticky; top: 0` relative to the scroll container
+
+The hanging issue mentioned in the bug is already resolved from the previous session's lazy cover loading fix (load time: 9s → 500ms). No virtualization needed at this scale.
+
+Issue #55 closed.
