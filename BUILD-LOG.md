@@ -10701,3 +10701,9 @@ Library load time: **9+ seconds → 500ms**. Cover thumbnails: **never appeared 
 
 > **Commit b3302a5** (2026-02-28 22:50) — wip: auto-save
 > Files changed: 1
+
+> **Commit 3972964** (2026-02-28 22:54) — wip: auto-save
+> Files changed: 1
+
+> **Commit 3c9c479** (2026-02-28 22:59) — fix #49: add STREAM ON row to release page
+> Files changed: 2
