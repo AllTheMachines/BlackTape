@@ -10236,3 +10236,6 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit 38620ee** (2026-02-28 17:24) — wip: auto-save
 > Files changed: 2
+
+> **Commit 8a863b9** (2026-02-28 17:29) — fix: pause local audio when Spotify Connect starts playing
+> Files changed: 3
