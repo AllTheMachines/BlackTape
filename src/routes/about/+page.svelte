@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { PROJECT_NAME, PROJECT_TAGLINE } from '$lib/config';
+	import { page } from '$app/stores';
 
 	const WORKER_URL = 'https://blacktape-signups.theaterofdelays.workers.dev/feedback';
 
@@ -10,6 +11,24 @@
 	let feedbackSent = $state(false);
 	let feedbackError = $state('');
 	let feedbackSending = $state(false);
+
+	const PLACEHOLDERS: Record<string, { title: string; body: string }> = {
+		bug: {
+			title: 'e.g. Search returns no results for certain tag names',
+			body: 'Steps to reproduce:\n1. \n2. \n\nExpected:\n\nActual:\n',
+		},
+		suggestion: {
+			title: 'e.g. Add keyboard shortcut to open search',
+			body: 'Describe your idea and why it would help...',
+		},
+		other: {
+			title: 'Short summary',
+			body: 'What\'s on your mind?',
+		},
+	};
+
+	let titlePlaceholder = $derived(PLACEHOLDERS[feedbackType]?.title ?? '');
+	let bodyPlaceholder = $derived(PLACEHOLDERS[feedbackType]?.body ?? '');
 
 	async function sendFeedback() {
 		if (!feedbackTitle.trim() || !feedbackBody.trim()) return;
@@ -24,6 +43,7 @@
 					title: feedbackTitle.trim(),
 					body: feedbackBody.trim(),
 					replyTo: feedbackEmail.trim() || null,
+					context: { page: $page.url.pathname },
 				}),
 			});
 			if (!res.ok) throw new Error(`Server error: ${res.status}`);
@@ -87,7 +107,7 @@
 		<h2>Feedback</h2>
 		<p>Found a bug? Have a suggestion? All feedback is read and appreciated.</p>
 		{#if feedbackSent}
-			<p class="feedback-thanks">Thanks — your email client should have opened. Send whenever you're ready.</p>
+			<p class="feedback-thanks">Received — thanks for taking the time.</p>
 		{:else}
 			<div class="feedback-form">
 				<div class="feedback-row">
@@ -99,16 +119,16 @@
 				</div>
 				<input
 					type="text"
-					placeholder="Title"
+					placeholder={titlePlaceholder}
 					bind:value={feedbackTitle}
 					class="feedback-input"
 					maxlength="120"
 				/>
 				<textarea
-					placeholder="Describe the issue or idea..."
+					placeholder={bodyPlaceholder}
 					bind:value={feedbackBody}
 					class="feedback-textarea"
-					rows="4"
+					rows="5"
 				></textarea>
 				<input
 					type="email"
@@ -128,7 +148,6 @@
 
 	<div class="about-ctas">
 		<a href="/" class="cta-primary">Start discovering &rarr;</a>
-		<a href="https://github.com/AllTheMachines/Mercury" target="_blank" rel="noopener" class="cta-secondary">GitHub</a>
 	</div>
 </div>
 
@@ -209,21 +228,6 @@
 		color: var(--bg-base, #0a0a0a);
 	}
 
-	.cta-secondary {
-		font-size: 0.85rem;
-		color: var(--t-3);
-		text-decoration: none;
-		padding: var(--space-sm, 0.5rem) var(--space-md, 1rem);
-		border: 1px solid var(--b-1);
-		border-radius: 0;
-		transition: color 0.15s, border-color 0.15s;
-	}
-
-	.cta-secondary:hover {
-		color: var(--t-2);
-		border-color: var(--t-3);
-	}
-
 	.support-links-row {
 		display: flex;
 		flex-wrap: wrap;
@@ -244,19 +248,6 @@
 
 	.support-link-item:hover {
 		background: color-mix(in srgb, var(--acc) 15%, transparent);
-	}
-
-	.view-backers-link {
-		font-size: 0.85rem;
-		color: var(--t-3);
-		text-decoration: none;
-		display: inline-block;
-		margin-top: var(--space-xs, 0.25rem);
-	}
-
-	.view-backers-link:hover {
-		color: var(--t-2);
-		text-decoration: underline;
 	}
 
 	.feedback-form {
