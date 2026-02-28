@@ -10859,3 +10859,6 @@ Issue #51 closed.
 
 > **Commit d4b3a41** (2026-02-28 23:49) — wip: auto-save
 > Files changed: 1
+
+> **Commit 59f031c** (2026-02-28 23:55) — fix #43: loading indicators — pending nav state + :active feedback
+> Files changed: 4
