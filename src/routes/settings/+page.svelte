@@ -350,7 +350,9 @@
 						class:active={layoutState.template === tmpl.id}
 						onclick={() => handleLayoutChange(tmpl.id)}>
 						<span class="template-name">{tmpl.label}</span>
-						<span class="template-desc">{tmpl.description}</span>
+						{#if layoutState.template === tmpl.id}
+							<span class="template-desc">{tmpl.description}</span>
+						{/if}
 					</button>
 				{/each}
 			</div>
@@ -445,9 +447,6 @@
 		{#if tauriMode}
 			<div class="settings-section">
 				<h2>Spotify</h2>
-				<p class="section-desc">
-					Connect your Spotify account to play artist top tracks in Spotify Desktop.
-				</p>
 				<SpotifySettings />
 			</div>
 		{/if}
