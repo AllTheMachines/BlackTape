@@ -1,5 +1,25 @@
 <script lang="ts">
 	import { PROJECT_NAME, PROJECT_TAGLINE } from '$lib/config';
+
+	const FEEDBACK_EMAIL = 'blacktape@all-the-machines.com';
+
+	let feedbackType = $state('bug');
+	let feedbackTitle = $state('');
+	let feedbackBody = $state('');
+	let feedbackEmail = $state('');
+	let feedbackSent = $state(false);
+
+	function sendFeedback() {
+		if (!feedbackTitle.trim() || !feedbackBody.trim()) return;
+		const typeLabel = feedbackType === 'bug' ? 'Bug' : feedbackType === 'suggestion' ? 'Suggestion' : 'Feedback';
+		const subject = encodeURIComponent(`[${typeLabel}] ${feedbackTitle.trim()}`);
+		const body = encodeURIComponent(
+			feedbackBody.trim() +
+			(feedbackEmail.trim() ? `\n\nReply to: ${feedbackEmail.trim()}` : '')
+		);
+		window.location.href = `mailto:${FEEDBACK_EMAIL}?subject=${subject}&body=${body}`;
+		feedbackSent = true;
+	}
 </script>
 
 <svelte:head>
@@ -46,20 +66,54 @@
 			<a href="https://github.com/sponsors/mercury" target="_blank" rel="noopener noreferrer" class="support-link-item">GitHub Sponsors</a>
 			<a href="https://opencollective.com/mercury" target="_blank" rel="noopener noreferrer" class="support-link-item">Open Collective</a>
 		</div>
-		<a href="/backers" class="view-backers-link">View backers →</a>
+		<!-- backers link hidden until Nostr backer feed is active in v2 -->
 	</section>
 
 	<section class="about-section">
 		<h2>Feedback</h2>
 		<p>Found a bug? Have a suggestion? All feedback is read and appreciated.</p>
-		<a href="https://blacktape.app/bugs" target="_blank" rel="noopener" class="feedback-link">Report a bug →</a>
-		<a href="mailto:feedback@blacktape.app?subject=BlackTape%20Feedback" class="feedback-link secondary">or email feedback@blacktape.app</a>
+		{#if feedbackSent}
+			<p class="feedback-thanks">Thanks — your email client should have opened. Send whenever you're ready.</p>
+		{:else}
+			<div class="feedback-form">
+				<div class="feedback-row">
+					<select bind:value={feedbackType} class="feedback-select">
+						<option value="bug">Bug report</option>
+						<option value="suggestion">Suggestion</option>
+						<option value="other">Other</option>
+					</select>
+				</div>
+				<input
+					type="text"
+					placeholder="Title"
+					bind:value={feedbackTitle}
+					class="feedback-input"
+					maxlength="120"
+				/>
+				<textarea
+					placeholder="Describe the issue or idea..."
+					bind:value={feedbackBody}
+					class="feedback-textarea"
+					rows="4"
+				></textarea>
+				<input
+					type="email"
+					placeholder="Your email (optional — for replies)"
+					bind:value={feedbackEmail}
+					class="feedback-input"
+				/>
+				<button
+					onclick={sendFeedback}
+					disabled={!feedbackTitle.trim() || !feedbackBody.trim()}
+					class="feedback-submit"
+				>Send feedback</button>
+			</div>
+		{/if}
 	</section>
 
 	<div class="about-ctas">
 		<a href="/" class="cta-primary">Start discovering &rarr;</a>
 		<a href="https://github.com/AllTheMachines/Mercury" target="_blank" rel="noopener" class="cta-secondary">GitHub</a>
-		<a href="https://blacktape.app/bugs" target="_blank" rel="noopener" class="cta-secondary">Report a bug</a>
 	</div>
 </div>
 
@@ -190,21 +244,76 @@
 		text-decoration: underline;
 	}
 
-	.feedback-link {
-		display: inline-block;
-		margin-top: 6px;
-		color: var(--acc);
-		font-size: 13px;
-		text-decoration: none;
-	}
-	.feedback-link:hover {
-		text-decoration: underline;
+	.feedback-form {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		margin-top: 12px;
+		max-width: 480px;
 	}
 
-	.feedback-link.secondary {
-		display: block;
-		margin-top: 4px;
-		font-size: 11px;
-		color: var(--t-3);
+	.feedback-row {
+		display: flex;
+		gap: 8px;
+	}
+
+	.feedback-select,
+	.feedback-input,
+	.feedback-textarea {
+		background: var(--bg-3);
+		border: 1px solid var(--b-1);
+		color: var(--t-1);
+		font-size: 0.85rem;
+		font-family: inherit;
+		padding: 6px 8px;
+		border-radius: 0;
+		width: 100%;
+		box-sizing: border-box;
+	}
+
+	.feedback-select {
+		width: auto;
+		cursor: pointer;
+	}
+
+	.feedback-select:focus,
+	.feedback-input:focus,
+	.feedback-textarea:focus {
+		outline: none;
+		border-color: var(--acc);
+	}
+
+	.feedback-textarea {
+		resize: vertical;
+		min-height: 80px;
+	}
+
+	.feedback-submit {
+		align-self: flex-start;
+		background: transparent;
+		border: 1px solid var(--acc);
+		color: var(--acc);
+		font-size: 0.85rem;
+		font-family: inherit;
+		padding: 6px 16px;
+		cursor: pointer;
+		border-radius: 0;
+		transition: background 0.15s, color 0.15s;
+	}
+
+	.feedback-submit:hover:not(:disabled) {
+		background: var(--acc);
+		color: var(--bg-base, #0a0a0a);
+	}
+
+	.feedback-submit:disabled {
+		opacity: 0.4;
+		cursor: not-allowed;
+	}
+
+	.feedback-thanks {
+		margin-top: 8px;
+		font-size: 0.85rem;
+		color: var(--acc);
 	}
 </style>
