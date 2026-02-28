@@ -67,14 +67,21 @@ export function extractSpotifyAlbumId(spotifyUrl: string): string | null {
 }
 
 /**
- * Trigger playback of a Spotify album on the user's active device.
+ * Trigger playback of a Spotify album on the user's Spotify Desktop.
  *
  * Uses context_uri so Spotify queues the full album in order.
+ * Fetches available devices first — passing device_id activates Spotify
+ * Desktop even if it's idle (open but not currently playing).
  * Returns a discriminated PlayResult — never throws.
  */
 export async function playAlbumOnSpotify(albumId: string, accessToken: string): Promise<PlayResult> {
 	try {
-		const res = await fetch('https://api.spotify.com/v1/me/player/play', {
+		const deviceId = await getFirstAvailableDeviceId(accessToken);
+		const url = deviceId
+			? `https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`
+			: 'https://api.spotify.com/v1/me/player/play';
+
+		const res = await fetch(url, {
 			method: 'PUT',
 			headers: {
 				Authorization: `Bearer ${accessToken}`,
@@ -111,6 +118,45 @@ interface SpotifyErrorResponse {
 	};
 }
 
+interface SpotifyDevice {
+	id: string;
+	is_active: boolean;
+	is_restricted: boolean;
+	type: string; // 'Computer', 'Smartphone', etc.
+}
+
+interface DevicesResponse {
+	devices: SpotifyDevice[];
+}
+
+// ─── Device helpers ───────────────────────────────────────────────────────────
+
+/**
+ * Fetch available Spotify devices and return the best one to target.
+ *
+ * Preference order: active non-restricted → any non-restricted → null.
+ * Passing a device_id to the play endpoint activates an idle Spotify Desktop,
+ * which fixes "open but not playing" returning NO_ACTIVE_DEVICE.
+ *
+ * Returns null on any error — callers fall back to deviceless play.
+ */
+export async function getFirstAvailableDeviceId(accessToken: string): Promise<string | null> {
+	try {
+		const res = await fetch('https://api.spotify.com/v1/me/player/devices', {
+			headers: { Authorization: `Bearer ${accessToken}` }
+		});
+		if (!res.ok) return null;
+		const data = (await res.json()) as DevicesResponse;
+		const devices = data.devices ?? [];
+		const active = devices.find((d) => d.is_active && !d.is_restricted);
+		if (active) return active.id;
+		const any = devices.find((d) => !d.is_restricted);
+		return any?.id ?? null;
+	} catch {
+		return null;
+	}
+}
+
 // ─── API functions ────────────────────────────────────────────────────────────
 
 /**
@@ -142,22 +188,24 @@ export async function getArtistTopTracks(
 }
 
 /**
- * Trigger playback of track URIs on the user's active Spotify device.
+ * Trigger playback of track URIs on the user's Spotify Desktop.
  *
  * Sends at most 10 URIs (Spotify Connect limit).
+ * Fetches available devices first — passing device_id activates Spotify
+ * Desktop even if it's idle (open but not currently playing).
  * Returns a discriminated PlayResult — never throws.
- *
- * Callers should present user-facing messages based on the result:
- * - 'no_device':        "Open Spotify Desktop and start playing anything, then try again."
- * - 'premium_required': "Spotify Premium is required to play tracks from BlackTape."
- * - 'token_expired':    "Spotify session expired — reconnect in Settings."
  */
 export async function playTracksOnSpotify(
 	trackUris: string[],
 	accessToken: string
 ): Promise<PlayResult> {
 	try {
-		const res = await fetch('https://api.spotify.com/v1/me/player/play', {
+		const deviceId = await getFirstAvailableDeviceId(accessToken);
+		const url = deviceId
+			? `https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`
+			: 'https://api.spotify.com/v1/me/player/play';
+
+		const res = await fetch(url, {
 			method: 'PUT',
 			headers: {
 				Authorization: `Bearer ${accessToken}`,
@@ -169,20 +217,10 @@ export async function playTracksOnSpotify(
 		if (res.status === 204) return 'ok';
 		if (res.status === 401) return 'token_expired';
 		if (res.status === 403) return 'premium_required';
+		if (res.status === 404) return 'no_device';
 
-		if (res.status === 404) {
-			// Confirm the 404 is NO_ACTIVE_DEVICE (not a routing error).
-			const body = (await res.json().catch(() => ({}))) as SpotifyErrorResponse;
-			const reason = body?.error?.reason ?? '';
-			if (reason === 'NO_ACTIVE_DEVICE' || reason === '') return 'no_device';
-			// Any other 404 reason is still treated as no_device (no actionable alternative).
-			return 'no_device';
-		}
-
-		// Unexpected status — treat as no_device so the caller can surface a message.
 		return 'no_device';
 	} catch {
-		// Network error, timeout, or parse failure — treat as no_device.
 		return 'no_device';
 	}
 }
