@@ -9835,3 +9835,9 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit d742314** (2026-02-28 12:46) — wip: auto-save
 > Files changed: 1
+
+> **Commit 4e29e57** (2026-02-28 12:46) — auto-save: 2 files @ 12:46
+> Files changed: 1
+
+> **Commit cbf1f08** (2026-02-28 12:47) — chore: ignore large video files (*.mp4, *.mov, *.mkv)
+> Files changed: 2
