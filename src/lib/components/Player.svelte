@@ -10,10 +10,58 @@
 	} from '$lib/player/queue.svelte';
 	import Queue from './Queue.svelte';
 	import NowPlayingDiscovery from './NowPlayingDiscovery.svelte';
-	import { streamingState, clearActiveSource } from '$lib/player/streaming.svelte';
+	import {
+		streamingState,
+		clearActiveSource,
+		spotifyTogglePlayPause,
+		spotifySkipNext,
+		spotifySkipPrevious,
+		spotifySeek
+	} from '$lib/player/streaming.svelte';
 
 	let showQueue = $state(false);
 	let showExpanded = $state(false);
+
+	// True when Spotify Connect is the active audio source.
+	const isSpotifyMode = $derived(streamingState.activeSource === 'spotify');
+
+	// Unified play state — Spotify or local.
+	const isPlaying = $derived(
+		isSpotifyMode
+			? (streamingState.spotifyTrack?.isPlaying ?? false)
+			: playerState.isPlaying
+	);
+
+	// Smooth Spotify seek bar: interpolate progress locally between polls.
+	let spotifyProgress = $state(0);
+
+	$effect(() => {
+		const track = streamingState.spotifyTrack;
+		const playing = track?.isPlaying;
+
+		if (!track || !isSpotifyMode) {
+			spotifyProgress = 0;
+			return;
+		}
+
+		// Sync immediately from the latest poll result.
+		spotifyProgress = playing
+			? Math.min(track.progressMs + (Date.now() - track.lastPollTime), track.durationMs)
+			: track.progressMs;
+
+		if (!playing) return;
+
+		// Advance progress every animation frame while playing.
+		let rafId: number;
+		function tick() {
+			const t = streamingState.spotifyTrack;
+			if (!t?.isPlaying) return;
+			spotifyProgress = Math.min(t.progressMs + (Date.now() - t.lastPollTime), t.durationMs);
+			rafId = requestAnimationFrame(tick);
+		}
+		rafId = requestAnimationFrame(tick);
+		return () => cancelAnimationFrame(rafId);
+	});
 
 	function toggleExpanded() {
 		showExpanded = !showExpanded;
@@ -32,9 +80,38 @@
 		return `${minutes}:${String(seconds).padStart(2, '0')}`;
 	}
 
+	function handlePlayPause() {
+		if (isSpotifyMode) {
+			spotifyTogglePlayPause();
+		} else {
+			togglePlayPause();
+		}
+	}
+
+	function handleNext() {
+		if (isSpotifyMode) {
+			spotifySkipNext();
+		} else {
+			playNext();
+		}
+	}
+
+	function handlePrevious() {
+		if (isSpotifyMode) {
+			spotifySkipPrevious();
+		} else {
+			playPrevious();
+		}
+	}
+
 	function handleSeek(e: Event) {
 		const target = e.target as HTMLInputElement;
 		seek(Number(target.value));
+	}
+
+	function handleSpotifySeek(e: Event) {
+		const target = e.target as HTMLInputElement;
+		spotifySeek(Number(target.value));
 	}
 
 	function handleVolume(e: Event) {
@@ -50,29 +127,23 @@
 		if (mode === 'one') return '1';
 		return '';
 	}
-
-	function sourceLabel(source: string): string {
-		const labels: Record<string, string> = {
-			spotify: 'Spotify',
-			soundcloud: 'SoundCloud',
-			youtube: 'YouTube',
-			bandcamp: 'Bandcamp'
-		};
-		return labels[source] ?? source;
-	}
 </script>
 
-{#if playerState.currentTrack}
+{#if playerState.currentTrack || isSpotifyMode}
 	{#if showExpanded}
 		<div class="expanded-panel">
-			<NowPlayingDiscovery artistName={playerState.currentTrack.artist} />
+			<NowPlayingDiscovery
+				artistName={isSpotifyMode
+					? (streamingState.spotifyTrack?.artist ?? '')
+					: (playerState.currentTrack?.artist ?? '')}
+			/>
 		</div>
 	{/if}
 
 	<div class="player-bar">
 		<!-- Track info -->
 		<div class="track-info">
-			<div class="cassette-reels" class:playing={playerState.isPlaying}>
+			<div class="cassette-reels" class:playing={isPlaying}>
 				<svg class="reel" viewBox="0 0 20 20" width="36" height="36">
 					<circle cx="10" cy="10" r="8.5" fill="currentColor" fill-opacity="0.18" stroke="currentColor" stroke-width="1.2"/>
 					<circle cx="10" cy="4.5" r="1.8" fill="var(--bg-3)" stroke="currentColor" stroke-width="0.5" stroke-opacity="0.5"/>
@@ -91,42 +162,55 @@
 				</svg>
 			</div>
 			<div class="track-text">
-				<div class="track-title">{playerState.currentTrack.title}</div>
-				<div class="track-meta">
-					<span class="track-artist">{playerState.currentTrack.artist}</span>
-					{#if playerState.currentTrack.album}
-						<span class="meta-sep">&mdash;</span>
-						<span class="track-album">{playerState.currentTrack.album}</span>
-					{/if}
-					{#if streamingState.activeSource}
-						<span class="via-badge">via {sourceLabel(streamingState.activeSource)}</span>
-					{/if}
-				</div>
+				{#if isSpotifyMode && streamingState.spotifyTrack}
+					<div class="track-title">{streamingState.spotifyTrack.title}</div>
+					<div class="track-meta">
+						<span class="track-artist">{streamingState.spotifyTrack.artist}</span>
+						{#if streamingState.spotifyTrack.album}
+							<span class="meta-sep">&mdash;</span>
+							<span class="track-album">{streamingState.spotifyTrack.album}</span>
+						{/if}
+						<span class="via-badge">via Spotify</span>
+					</div>
+				{:else if isSpotifyMode}
+					<div class="track-title connecting">Connecting to Spotify…</div>
+				{:else if playerState.currentTrack}
+					<div class="track-title">{playerState.currentTrack.title}</div>
+					<div class="track-meta">
+						<span class="track-artist">{playerState.currentTrack.artist}</span>
+						{#if playerState.currentTrack.album}
+							<span class="meta-sep">&mdash;</span>
+							<span class="track-album">{playerState.currentTrack.album}</span>
+						{/if}
+					</div>
+				{/if}
 			</div>
 		</div>
 
 		<!-- Center: controls + seek -->
 		<div class="controls-center">
 			<div class="transport">
-				<button
-					class="control-btn small"
-					class:active={queueState.shuffled}
-					onclick={toggleShuffle}
-					title="Shuffle"
-					aria-label="Toggle shuffle"
-				>
-					<svg style="display:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-						<polyline points="16 3 21 3 21 8" />
-						<line x1="4" y1="20" x2="21" y2="3" />
-						<polyline points="21 16 21 21 16 21" />
-						<line x1="15" y1="15" x2="21" y2="21" />
-						<line x1="4" y1="4" x2="9" y2="9" />
-					</svg>
-				</button>
+				{#if !isSpotifyMode}
+					<button
+						class="control-btn small"
+						class:active={queueState.shuffled}
+						onclick={toggleShuffle}
+						title="Shuffle"
+						aria-label="Toggle shuffle"
+					>
+						<svg style="display:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+							<polyline points="16 3 21 3 21 8" />
+							<line x1="4" y1="20" x2="21" y2="3" />
+							<polyline points="21 16 21 21 16 21" />
+							<line x1="15" y1="15" x2="21" y2="21" />
+							<line x1="4" y1="4" x2="9" y2="9" />
+						</svg>
+					</button>
+				{/if}
 
 				<button
 					class="control-btn"
-					onclick={playPrevious}
+					onclick={handlePrevious}
 					title="Previous"
 					aria-label="Previous track"
 				>
@@ -137,13 +221,13 @@
 
 				<button
 					class="control-btn play-btn"
-					onclick={togglePlayPause}
-					title={playerState.isPlaying ? 'Pause' : 'Play'}
-					aria-label={playerState.isPlaying ? 'Pause' : 'Play'}
+					onclick={handlePlayPause}
+					title={isPlaying ? 'Pause' : 'Play'}
+					aria-label={isPlaying ? 'Pause' : 'Play'}
 				>
-					{#if playerState.isLoading}
+					{#if !isSpotifyMode && playerState.isLoading}
 						<div class="spinner"></div>
-					{:else if playerState.isPlaying}
+					{:else if isPlaying}
 						<svg style="display:block" viewBox="0 0 24 24" fill="currentColor">
 							<path d="M6 4h4v16H6zm8 0h4v16h-4z" />
 						</svg>
@@ -156,7 +240,7 @@
 
 				<button
 					class="control-btn"
-					onclick={playNext}
+					onclick={handleNext}
 					title="Next"
 					aria-label="Next track"
 				>
@@ -165,39 +249,58 @@
 					</svg>
 				</button>
 
-				<button
-					class="control-btn small"
-					class:active={queueState.repeatMode !== 'none'}
-					onclick={toggleRepeat}
-					title="Repeat: {queueState.repeatMode}"
-					aria-label="Toggle repeat"
-				>
-					<svg style="display:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-						<polyline points="17 1 21 5 17 9" />
-						<path d="M3 11V9a4 4 0 0 1 4-4h14" />
-						<polyline points="7 23 3 19 7 15" />
-						<path d="M21 13v2a4 4 0 0 1-4 4H3" />
-					</svg>
-					{#if queueState.repeatMode === 'one'}
-						<span class="repeat-one-badge">{repeatIcon('one')}</span>
-					{/if}
-				</button>
+				{#if !isSpotifyMode}
+					<button
+						class="control-btn small"
+						class:active={queueState.repeatMode !== 'none'}
+						onclick={toggleRepeat}
+						title="Repeat: {queueState.repeatMode}"
+						aria-label="Toggle repeat"
+					>
+						<svg style="display:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+							<polyline points="17 1 21 5 17 9" />
+							<path d="M3 11V9a4 4 0 0 1 4-4h14" />
+							<polyline points="7 23 3 19 7 15" />
+							<path d="M21 13v2a4 4 0 0 1-4 4H3" />
+						</svg>
+						{#if queueState.repeatMode === 'one'}
+							<span class="repeat-one-badge">{repeatIcon('one')}</span>
+						{/if}
+					</button>
+				{/if}
 			</div>
 
-			<div class="seek-row">
-				<span class="time-display">{formatTime(playerState.currentTime)}</span>
-				<input
-					type="range"
-					class="seek-bar"
-					min="0"
-					max={playerState.duration || 0}
-					step="0.1"
-					value={playerState.currentTime}
-					oninput={handleSeek}
-					aria-label="Seek"
-				/>
-				<span class="time-display">{formatTime(playerState.duration)}</span>
-			</div>
+			{#if isSpotifyMode && streamingState.spotifyTrack}
+				<div class="seek-row">
+					<span class="time-display">{formatTime(spotifyProgress / 1000)}</span>
+					<input
+						type="range"
+						class="seek-bar"
+						min="0"
+						max={streamingState.spotifyTrack.durationMs}
+						step="1000"
+						value={spotifyProgress}
+						oninput={handleSpotifySeek}
+						aria-label="Seek"
+					/>
+					<span class="time-display">{formatTime(streamingState.spotifyTrack.durationMs / 1000)}</span>
+				</div>
+			{:else if !isSpotifyMode}
+				<div class="seek-row">
+					<span class="time-display">{formatTime(playerState.currentTime)}</span>
+					<input
+						type="range"
+						class="seek-bar"
+						min="0"
+						max={playerState.duration || 0}
+						step="0.1"
+						value={playerState.currentTime}
+						oninput={handleSeek}
+						aria-label="Seek"
+					/>
+					<span class="time-display">{formatTime(playerState.duration)}</span>
+				</div>
+			{/if}
 		</div>
 
 		<!-- Right: volume + queue toggle -->
@@ -274,28 +377,6 @@
 	{#if showQueue}
 		<Queue onclose={() => (showQueue = false)} />
 	{/if}
-{:else if streamingState.activeSource === 'spotify'}
-	<!-- Spotify Connect is active but no local track loaded — show a slim streaming bar -->
-	<div class="player-bar streaming-bar">
-		<div class="streaming-info">
-			<span class="streaming-dot"></span>
-			<span class="streaming-label">
-				{#if streamingState.streamingLabel}
-					{streamingState.streamingLabel}
-				{:else}
-					Streaming via Spotify
-				{/if}
-			</span>
-			<span class="via-badge">via Spotify</span>
-		</div>
-		<div class="streaming-stop">
-			<button class="control-btn small" onclick={clearActiveSource} title="Dismiss">
-				<svg style="display:block" viewBox="0 0 24 24" fill="currentColor">
-					<path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-				</svg>
-			</button>
-		</div>
-	</div>
 {/if}
 
 <style>
@@ -337,44 +418,6 @@
 		padding: 0 14px;
 		gap: 12px;
 		z-index: 200;
-	}
-
-	/* Spotify Connect streaming bar — shown when no local track */
-	.streaming-bar {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		padding: 0 14px;
-	}
-
-	.streaming-info {
-		display: flex;
-		align-items: center;
-		gap: 10px;
-	}
-
-	.streaming-dot {
-		width: 8px;
-		height: 8px;
-		border-radius: 50%;
-		background: #1db954;
-		animation: pulse-dot 2s ease-in-out infinite;
-		flex-shrink: 0;
-	}
-
-	@keyframes pulse-dot {
-		0%, 100% { opacity: 1; }
-		50% { opacity: 0.4; }
-	}
-
-	.streaming-label {
-		font-size: 0.9rem;
-		color: var(--t-1);
-	}
-
-	.streaming-stop {
-		display: flex;
-		align-items: center;
 	}
 
 	/* Track info — left section */
@@ -420,6 +463,11 @@
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
+	}
+
+	.track-title.connecting {
+		color: var(--t-3);
+		font-style: italic;
 	}
 
 	.track-meta {

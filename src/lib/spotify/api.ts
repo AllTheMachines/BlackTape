@@ -187,6 +187,106 @@ export async function getArtistTopTracks(
 	return data.tracks.map((t) => t.uri);
 }
 
+// ─── Current playback state ───────────────────────────────────────────────────
+
+export interface CurrentPlaybackState {
+	isPlaying: boolean;
+	title: string;
+	artist: string;
+	album: string;
+	durationMs: number;
+	progressMs: number;
+}
+
+/**
+ * Fetch the user's current Spotify playback state.
+ *
+ * Returns null if nothing is playing (HTTP 204) or on any error.
+ * Used by the polling loop in streaming.svelte.ts to keep the player bar live.
+ */
+export async function getCurrentPlayback(
+	accessToken: string
+): Promise<CurrentPlaybackState | null> {
+	try {
+		const res = await fetch('https://api.spotify.com/v1/me/player', {
+			headers: { Authorization: `Bearer ${accessToken}` }
+		});
+		if (res.status === 204 || !res.ok) return null;
+
+		interface PlaybackResponse {
+			is_playing: boolean;
+			progress_ms: number;
+			item: {
+				name: string;
+				duration_ms: number;
+				artists: { name: string }[];
+				album: { name: string };
+			} | null;
+		}
+
+		const data = (await res.json()) as PlaybackResponse;
+		if (!data.item) return null;
+
+		return {
+			isPlaying: data.is_playing,
+			title: data.item.name,
+			artist: data.item.artists.map((a) => a.name).join(', '),
+			album: data.item.album.name,
+			durationMs: data.item.duration_ms,
+			progressMs: data.progress_ms ?? 0
+		};
+	} catch {
+		return null;
+	}
+}
+
+// ─── Playback controls ────────────────────────────────────────────────────────
+
+/** Pause Spotify playback. Fire-and-forget — never throws. */
+export async function spotifyPause(accessToken: string): Promise<void> {
+	await fetch('https://api.spotify.com/v1/me/player/pause', {
+		method: 'PUT',
+		headers: { Authorization: `Bearer ${accessToken}` }
+	}).catch(() => undefined);
+}
+
+/** Resume Spotify playback. Fire-and-forget — never throws. */
+export async function spotifyResume(accessToken: string): Promise<void> {
+	await fetch('https://api.spotify.com/v1/me/player/play', {
+		method: 'PUT',
+		headers: { Authorization: `Bearer ${accessToken}` }
+	}).catch(() => undefined);
+}
+
+/** Skip to next track. Fire-and-forget — never throws. */
+export async function spotifyNext(accessToken: string): Promise<void> {
+	await fetch('https://api.spotify.com/v1/me/player/next', {
+		method: 'POST',
+		headers: { Authorization: `Bearer ${accessToken}` }
+	}).catch(() => undefined);
+}
+
+/** Skip to previous track. Fire-and-forget — never throws. */
+export async function spotifyPrevious(accessToken: string): Promise<void> {
+	await fetch('https://api.spotify.com/v1/me/player/previous', {
+		method: 'POST',
+		headers: { Authorization: `Bearer ${accessToken}` }
+	}).catch(() => undefined);
+}
+
+/** Seek to a position in the current track. Fire-and-forget — never throws. */
+export async function spotifySeek(positionMs: number, accessToken: string): Promise<void> {
+	await fetch(
+		`https://api.spotify.com/v1/me/player/seek?position_ms=${Math.round(positionMs)}`,
+		{
+			method: 'PUT',
+			headers: { Authorization: `Bearer ${accessToken}` }
+		}
+	).catch(() => undefined);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 /**
  * Trigger playback of track URIs on the user's Spotify Desktop.
  *

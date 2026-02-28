@@ -4,6 +4,33 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-02-28 — Spotify Connect: Live Player Integration
+
+The player bar was completely disconnected from Spotify Connect. Clicking "▶ Spotify" would start playback in Spotify Desktop, but the player bar still showed whatever local track was last loaded — or nothing. Transport controls (play/pause, next, prev) had no effect on Spotify. Seek bar was frozen. The app felt broken even though audio was playing.
+
+**What was built:**
+
+`GET /v1/me/player` polling every 3 seconds via a new `pollSpotify()` loop in `streaming.svelte.ts`. When Spotify is activated (`setActiveSource('spotify')`), polling starts immediately so the track name appears within a second. When deactivated, polling stops and state is cleared.
+
+`spotifyTrack` state holds the live result: title, artist, album, durationMs, progressMs, isPlaying, and `lastPollTime` (timestamp of last successful poll). `lastPollTime` is the key for interpolation.
+
+Smooth seek bar via `requestAnimationFrame` loop in `Player.svelte`. Since polling is every 3 seconds but the seek bar needs to move continuously, a `$effect` watches `spotifyTrack` and runs a rAF tick that computes `progressMs + (Date.now() - lastPollTime)`. Cleanup cancels the rAF when track changes or playback pauses.
+
+Control wrappers (`spotifyTogglePlayPause`, `spotifySkipNext`, `spotifySkipPrevious`, `spotifySeek`) call the Spotify REST API and optimistically update local state before the next poll confirms. Skip (next/prev) fires an extra poll 400 ms later so the new track name appears immediately.
+
+Player bar now shows the full transport controls when Spotify is active — even if there's no local track loaded. The old slim "streaming bar" (pulsing dot + label only) is removed. The outer condition changed from `{#if playerState.currentTrack}` to `{#if playerState.currentTrack || isSpotifyMode}`.
+
+**Files changed:**
+- `src/lib/spotify/api.ts` — added `getCurrentPlayback`, `spotifyPause`, `spotifyResume`, `spotifyNext`, `spotifyPrevious`, `spotifySeek`
+- `src/lib/player/streaming.svelte.ts` — polling loop, `SpotifyTrackInfo` state, control wrappers
+- `src/lib/components/Player.svelte` — Spotify mode display, unified transport controls, rAF seek interpolation
+
+<!-- status -->
+Done — app reloaded. Test: click ▶ Spotify on any artist → player bar shows track name → play/pause/next/prev all work.
+<!-- /status -->
+
+---
+
 ## Entry 2026-02-28 — Bug Bash: #62 Spotify OAuth capability
 
 **#62 closed** — "Import from Spotify fails: oauth.start not allowed"
@@ -10242,3 +10269,6 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit d1baa69** (2026-02-28 17:29) — wip: auto-save
 > Files changed: 2
+
+> **Commit f4fd975** (2026-02-28 17:32) — wip: auto-save
+> Files changed: 1
