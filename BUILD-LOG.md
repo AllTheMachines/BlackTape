@@ -10054,3 +10054,9 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit 10b8e99** (2026-02-28 15:00) — fix #60: remove redundant Spotify label from SpotifySettings inner steps
 > Files changed: 1
+
+> **Commit b947fca** (2026-02-28 15:00) — wip: auto-save
+> Files changed: 1
+
+> **Commit 9f43b5d** (2026-02-28 15:06) — add tools/reload.mjs — force page reload in running Tauri app via CDP
+> Files changed: 1
