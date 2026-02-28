@@ -45,6 +45,19 @@
 		tauriMode = isTauri();
 
 		if (isTauri()) {
+			// Intercept target="_blank" clicks — WebView2 cannot open new windows.
+			// Without this, external link clicks silently hang and freeze the app.
+			const { open } = await import('@tauri-apps/plugin-shell');
+			document.addEventListener('click', (e) => {
+				const anchor = (e.target as HTMLElement)?.closest('a');
+				if (!anchor) return;
+				const href = anchor.getAttribute('href');
+				if (!href || !href.startsWith('http')) return;
+				if (anchor.target !== '_blank') return;
+				e.preventDefault();
+				open(href).catch(() => {});
+			});
+
 			await loadAiSettings();
 			loadTasteProfile();    // fire-and-forget — populates tasteProfile state async
 			loadPlaybackSettings(); // fire-and-forget — loads private mode + play count
