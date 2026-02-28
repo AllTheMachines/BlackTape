@@ -56,6 +56,7 @@
 	);
 
 	async function loadRelease() {
+		console.log('[loadRelease] START mbid=', data.mbid);
 		const { mbid, slug } = data;
 		const streamingUrls: { bandcamp: string | null; spotify: string | null; soundcloud: string | null; youtube: string | null } = {
 			bandcamp: null, spotify: null, soundcloud: null, youtube: null
@@ -85,6 +86,7 @@
 				}
 
 				if (resp.ok) {
+				console.log('[LR] resp.ok status=', resp.status, 'mbid=', mbid);
 				const mbData = await resp.json() as {
 					releases?: Array<{
 						id: string;
@@ -109,6 +111,7 @@
 					}>;
 				};
 
+console.log('[LR] json parsed, releases=', mbData.releases?.length ?? 0);
 				const rels = mbData.releases ?? [];
 				if (rels.length > 0) {
 					const rel = rels[0];
@@ -189,6 +192,7 @@
 						other: []
 					};
 					hasAnyStream = Object.values(streamingUrls).some(Boolean);
+					console.log('[LR] release assigned, hasAnyStream=', hasAnyStream);
 				}
 			}
 			} finally {
@@ -201,7 +205,8 @@
 		// Resolve credit slugs against local DB (graceful degradation if unavailable)
 		if (rawCredits.length > 0) {
 			try {
-				const { getProvider } = await import('$lib/db/provider');
+	console.log('[LR] rawCredits.length=', rawCredits.length, '— importing getProvider...');
+			const { getProvider } = await import('$lib/db/provider');
 				const provider = await getProvider();
 				credits = await Promise.all(
 					rawCredits.map(async (c) => {
@@ -224,6 +229,7 @@
 	}
 
 	onMount(() => {
+		console.log('[MOUNT] onMount fired, mbid=', data.mbid);
 		tauriMode = isTauri();
 
 		// Load release data async — page renders immediately with loading skeleton
