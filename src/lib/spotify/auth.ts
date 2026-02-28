@@ -48,7 +48,7 @@ async function getInvoke(): Promise<typeof import('@tauri-apps/api/core').invoke
 
 // ─── OAuth flow ───────────────────────────────────────────────────────────────
 
-const SCOPES = 'user-read-private user-read-playback-state user-modify-playback-state';
+const SCOPES = 'user-read-private user-read-playback-state user-modify-playback-state user-top-read';
 const TOKEN_URL = 'https://accounts.spotify.com/api/token';
 const AUTHORIZE_URL = 'https://accounts.spotify.com/authorize';
 const AUTH_TIMEOUT_MS = 120_000;
