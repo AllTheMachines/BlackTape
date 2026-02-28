@@ -1,56 +1,103 @@
 # Work Handoff - 2026-02-28
 
 ## Current Task
-Release page stuck on "Loading release details…" for Radiohead — investigating / partially fixed.
+Release page stuck on "Couldn't load release details" — need to move MB fetch from `onMount` to `+page.ts` to fix Svelte 5 async state rendering bug.
 
 ## Context
-Working through open GitHub issues. Fixed #50 (Discover speed) and #63 (album cover freeze) this session. After fixing #63, Steve reported the Radiohead release page still hangs on "Loading release details…". Root cause: MB rate-limiting — artist page now fires 2 parallel MB requests, and the release page immediately fires a 3rd, hitting MB's 1 req/sec limit. The fetch fails silently (no error state on page).
+Working through open GitHub issues. The release page loads MB data in `onMount` and sets `$state` variables async. After SvelteKit SPA navigation (link click), Svelte 5 does not flush `release = {...}` to the DOM even though the assignment executes correctly. This is a Svelte 5 + SvelteKit SPA navigation reactivity bug. Moving the fetch to `+page.ts` (where data arrives as props before render) is the correct architectural fix.
 
 ## Progress
 
 ### Completed This Session
-- **#50 fixed & closed**: Discover page 11,000ms → 7ms via precomputed `uniqueness_score` column
-- **#63 fixed & closed**: Artist page +page.ts — 3 sequential MB fetches → 2 parallel + 1 sequential, all with timeouts (8s links/releases, 5s bio). LinerNotes timeout added. Release page timeout 10s → 5s.
-- **Release page error state** (a1176bb): Added `loadDone` state, error message shown when load fails, 429/503 retry with 1.2s delay.
+- **Identified root cause**: `resp.json()` could hang if MB sends headers but stalls body → added 8s timeout covering full fetch+body pipeline
+- **Fixed timeout scope**: timeout now wraps both `fetch()` AND `resp.json()` via `try { ... } finally { clearTimeout }`
+- **Added `await tick()`**: after `release = {...}` and `loadDone = true` — this fixed the "loading forever" hang but revealed the real bug
+- **Extensive debugging**: confirmed via CDP trace logs that `release.title = "KID A MNESIA"` and `loadDone = true` both execute, but DOM still shows error state
+- **Root cause confirmed**: Svelte 5 does not flush `$state` mutations to DOM when set inside async `onMount` callbacks after SvelteKit SPA navigation. `tick()` helps `loadDone` but not `release`.
 
-### In Progress
-- Steve is testing whether the Radiohead release now loads. The retry may or may not fix it depending on actual failure mode.
+### Current State
+- App is running with latest changes (reloaded)
+- Release page now shows "Couldn't load release details ← Back to artist" instead of hanging forever (progress)
+- The `release` state variable IS set correctly in JS but Svelte 5 doesn't render it
 
-### Remaining / Uncertain
-- Verify Radiohead release actually loads now (app was reloaded with latest code)
-- If still broken, investigate further — could be empty `releases[]` from MB (e.g. MB returns the release group but the `release?release-group=` endpoint returns empty for some releases)
-- Next issue to tackle: **#56** (Play Album button on release page) or **#51** (Discover filter tag input)
+### Remaining — THE FIX TO IMPLEMENT
+**Move MB fetch from `onMount` to `+page.ts` load function.**
+
+The `+page.ts` currently just returns `{ mbid, slug }`. It needs to:
+1. Fetch MB release data (same URL, same timeout/retry logic)
+2. Return `mbData` as part of page data
+3. Component processes `data.mbData` synchronously (not in async onMount)
+
+This bypasses the Svelte 5 async reactivity issue entirely because data arrives as props before the component renders.
 
 ## Key Decisions
-- Artist page parallel MB fetches: links + releases run via `Promise.all`, bio waits after (depends on links result for Wikipedia URL)
-- `fetchSafe()` helper added to `+page.ts` — returns `Response | null`, catches all errors/aborts
-- Release page retry: 429/503 → wait 1.2s → retry once. This is the most likely rate-limit fix.
-- `loadDone = true` set at end of `loadRelease()` regardless of outcome — prevents infinite spinner
+- **Root cause**: Svelte 5 `$state` mutations inside async `onMount` don't flush to DOM after SvelteKit SPA navigation. CDP confirmed: all code runs, state is set, but `{#if !release}` stays true.
+- **`await tick()`**: Partial fix — helps `loadDone` render but not `release`. Don't add more ticks, they cause cascading issues.
+- **Correct fix**: Move fetch to `+page.ts`. Navigation will briefly show SvelteKit's loading state between pages (acceptable tradeoff vs broken page).
+- **KID A MNESIA MBID**: `6f25f9fb-e9e3-4c0d-8904-ecb8b46cd8aa`
+- **Artist page double-mount via CDP**: When using `window.location.href` (full reload), `onMount` fires TWICE due to SvelteKit internals. With real SPA link click, it fires once. Don't chase this — it's a CDP artifact.
 
 ## Relevant Files
-- `src/routes/artist/[slug]/+page.ts` — parallel MB fetches + timeouts (main fix for #63)
-- `src/routes/artist/[slug]/release/[mbid]/+page.svelte` — loadDone state + retry on 429/503
-- `src/lib/components/LinerNotes.svelte` — 5s timeout added
-- `src/lib/db/queries.ts` — getDiscoveryArtists rewritten to use uniqueness_score column
-- `src-tauri/src/mercury_db.rs` — migrate_uniqueness_score() startup migration
-- `pipeline/build-tag-stats.mjs` — computes uniqueness_score at pipeline build time
-- `tools/compute-uniqueness.mjs` — one-time migration script for existing DBs
-- `tools/debug-release.mjs` — debug script for testing MB release fetch via CDP
+- `src/routes/artist/[slug]/release/[mbid]/+page.svelte` — has `loadRelease()` in `onMount`, has `tick()` added, needs to be simplified to just render `data.mbData`
+- `src/routes/artist/[slug]/release/[mbid]/+page.ts` — needs MB fetch added here
+- `tools/debug-release-trace.mjs` — debug script (keep for reference)
+- `tools/debug-kid-a-mnesia.mjs` — confirmed MB returns 200 in 126ms for KID A MNESIA
+- `tools/debug-real-click.mjs` — confirmed state is set but DOM doesn't update after real SPA click
+- `tools/fix-release-timeout.mjs` — one-time fix script (can delete)
+- `tools/add-trace-logs.mjs`, `tools/add-trace-logs2.mjs`, `tools/add-tick.mjs` — one-time scripts (can delete)
 
 ## Git Status
 Clean except BUILD-LOG.md (needs session entry) and parachord-reference submodule.
+The release page changes (timeout fix + tick) are NOT committed yet — all in working tree.
 
-## Debugging Context
-- DB path: `C:/Users/User/AppData/Roaming/com.blacktape.app/mercury.db` (NOT com.mercury.app)
-- uniqueness_score column already populated in both DBs (com.blacktape.app + com.mercury.app)
-- MB API tested directly: Radiohead release fetch returns 200 in 352ms when not rate-limited
-- The failure is likely: artist page fires 2 parallel MB requests → release page fires 3rd immediately → MB 429 → old code had no retry → `release` stays null → page hangs
+## Implementation Plan for Next Session
+
+### Step 1: Update `+page.ts`
+```typescript
+export const load: PageLoad = async ({ params, fetch }) => {
+  const { mbid, slug } = params;
+  const USER_AGENT = 'Mercury/0.1.0 (https://github.com/user/mercury)';
+  const mbUrl = `https://musicbrainz.org/ws/2/release?release-group=${mbid}&inc=recordings+artist-credits+media+artist-rels+url-rels&limit=1&fmt=json`;
+
+  let mbData = null;
+  const controller = new AbortController();
+  const t = setTimeout(() => controller.abort(), 8_000);
+  try {
+    let resp = await fetch(mbUrl, { headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' }, signal: controller.signal });
+    if (resp.status === 429 || resp.status === 503) {
+      clearTimeout(t);
+      await new Promise(r => setTimeout(r, 1200));
+      const c2 = new AbortController();
+      const t2 = setTimeout(() => c2.abort(), 8_000);
+      try { resp = await fetch(mbUrl, { headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' }, signal: c2.signal }); }
+      finally { clearTimeout(t2); }
+    }
+    if (resp.ok) mbData = await resp.json();
+  } catch { /* graceful degradation */ }
+  finally { clearTimeout(t); }
+
+  return { mbid, slug, mbData };
+};
+```
+
+### Step 2: Simplify `+page.svelte`
+- Remove `loadRelease()` function entirely
+- Remove `onMount` fetch logic (keep only Tauri shelf loading in onMount)
+- Process `data.mbData` synchronously in the component script (no async)
+- `release`, `platformLinks`, `hasAnyStream` set from `data.mbData` directly
+- `buildBuyLinks` import needs to move to `+page.ts` or be handled via a sync import
+- Credits (DB lookup) can stay in onMount since they're supplementary
+
+### Step 3: Commit
+- Commit as "fix: release page — move MB fetch to load fn, fix Svelte 5 async state bug"
 
 ## Next Steps
-1. Confirm Radiohead release loads (Steve should test with app already reloaded)
-2. If still broken, check: does MB return `releases: []` for that specific release group? Try `tools/debug-release.mjs` again while on the release page
-3. Update BUILD-LOG.md with session summary
-4. Move to next issue: **#56** (Play Album button — likely quick, button stub already exists in release page)
+1. Implement `+page.ts` MB fetch (Step 1 above)
+2. Refactor `+page.svelte` to use `data.mbData` synchronously
+3. Test: `npm run check` + reload + click KID A MNESIA
+4. Commit
+5. Update BUILD-LOG.md with session summary
+6. Move to next issue (#56 play album button or #51 discover filter)
 
 ## Resume Command
 After `/clear`, run `/resume` to continue.
