@@ -10689,3 +10689,6 @@ Library load time: **9+ seconds → 500ms**. Cover thumbnails: **never appeared 
 
 > **Commit 6fbccb7** (2026-02-28 22:44) — fix: release page — move MB fetch to load fn, fix Svelte 5 async state bug
 > Files changed: 9
+
+> **Commit 5d12968** (2026-02-28 22:45) — docs: build log — release page fix session entry
+> Files changed: 1
