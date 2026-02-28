@@ -73,7 +73,7 @@
 
 			<!-- Main Content Pane -->
 			<Pane defaultSize={config.mainDefault} minSize={config.mainMin}>
-				<div class="main-pane">
+				<div class="main-pane" tabindex="-1">
 					{@render children()}
 				</div>
 			</Pane>
@@ -122,7 +122,7 @@
 		<PaneGroup direction="horizontal" autoSaveId={config.autoSaveId} class="pane-group">
 			<!-- Main Content Pane -->
 			<Pane defaultSize={config.mainDefault} minSize={config.mainMin}>
-				<div class="main-pane">
+				<div class="main-pane" tabindex="-1">
 					{@render children()}
 				</div>
 			</Pane>
@@ -193,6 +193,7 @@
 		height: 100%;
 		overflow-y: auto;
 		background: var(--bg-2);
+		outline: none;
 	}
 
 	.minimal-main {
