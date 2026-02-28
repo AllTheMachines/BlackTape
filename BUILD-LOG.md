@@ -10515,3 +10515,9 @@ Cannot reproduce. Tested by clicking "Download Models" — download starts immed
 
 > **Commit 0d8389c** (2026-02-28 20:13) — wip: auto-save
 > Files changed: 1
+
+> **Commit 7c2b234** (2026-02-28 20:16) — auto-save: 2 files @ 20:16
+> Files changed: 1
+
+> **Commit 13a3844** (2026-02-28 20:20) — fix: library release type grouping (Albums / EPs / Singles)
+> Files changed: 3
