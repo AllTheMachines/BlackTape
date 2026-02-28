@@ -4,6 +4,39 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-02-28 — Fix #50: Discover Page — 1,500× Speed Improvement
+
+**Issue:** Discover page took 10–30 seconds to load. Steve: "Takes forever."
+
+<!-- decision -->
+**Root cause:** `getDiscoveryArtists` no-filter path was doing a full-table scan of 2.8M artists joined with 672K artist_tags rows, computing a multi-factor ORDER BY expression per row (no index possible on computed expressions). Even after the prior fix that moved from correlated subqueries to a JOIN, the query still took ~2 seconds for the DB call alone — plus Rust mutex lock time made the app appear frozen.
+<!-- /decision -->
+
+**Fix — precomputed `uniqueness_score` column:**
+
+The insight: ORDER BY a computed expression across 2.8M rows can never use an index. The only way to get an indexed sort is to store the score.
+
+Added `uniqueness_score REAL DEFAULT 0` to the `artists` table. Score = `AVG(1.0 / tag_artist_count) * 1000` — artists whose tags are shared by fewer artists score higher. Index `idx_artists_uniqueness ON artists(uniqueness_score DESC)` means the top-50 query does a 50-row index scan and stops.
+
+```
+Before: SCAN artists (2.8M rows) → JOIN → B-TREE SORT → LIMIT 50
+After:  SEARCH artists USING INDEX idx_artists_uniqueness → STOP at 50
+```
+
+**Query time: ~11,000ms → 7ms via Tauri IPC. 1,500× speedup.**
+
+**Files changed:**
+- `tools/compute-uniqueness.mjs` — one-time migration script; run after downloading a fresh DB
+- `pipeline/build-tag-stats.mjs` — now computes uniqueness_score at pipeline build time
+- `src-tauri/src/mercury_db.rs` — `migrate_uniqueness_score()` runs at startup; adds column if missing (for users upgrading from old DBs)
+- `src/lib/db/queries.ts` — `getDiscoveryArtists` rewritten; both paths use `a.uniqueness_score` directly
+
+The filtered path also benefits: replaced the per-row `(SELECT AVG(...) as uniqueness_score)` correlated subquery with a direct column read.
+
+Closed #50.
+
+---
+
 ## Entry 2026-02-28 — Fix #53: Genre Type Classification (No More City Maps for Genres)
 
 Finishing the #53 work from last session. "Industrial Metal" and every other music genre with a country of origin was incorrectly showing a Leaflet city map on its KB genre page.
@@ -10590,3 +10623,6 @@ Library load time: **9+ seconds → 500ms**. Cover thumbnails: **never appeared 
 
 > **Commit c6b80e3** (2026-02-28 21:22) — wip: auto-save
 > Files changed: 1
+
+> **Commit ea15102** (2026-02-28 21:23) — wip: auto-save
+> Files changed: 2

@@ -20,7 +20,54 @@ pub fn init_mercury_db(app_data: &std::path::Path) -> Result<Connection, String>
     if !db_path.exists() {
         return Err(format!("mercury.db not found at {}", db_path.display()));
     }
-    Connection::open(&db_path).map_err(|e| format!("Failed to open mercury.db: {}", e))
+    let conn = Connection::open(&db_path).map_err(|e| format!("Failed to open mercury.db: {}", e))?;
+    migrate_uniqueness_score(&conn);
+    Ok(conn)
+}
+
+/// One-time migration: add precomputed uniqueness_score to artists table.
+/// Safe to call on every startup — no-ops if column already exists.
+/// Runs synchronously but only processes ~672K rows so finishes in ~5s.
+fn migrate_uniqueness_score(conn: &Connection) {
+    // Check if column exists
+    let has_col: bool = conn
+        .query_row(
+            "SELECT COUNT(*) FROM pragma_table_info('artists') WHERE name='uniqueness_score'",
+            [],
+            |row| row.get::<_, i64>(0),
+        )
+        .unwrap_or(0) > 0;
+
+    if !has_col {
+        // Add column
+        if let Err(e) = conn.execute_batch(
+            "ALTER TABLE artists ADD COLUMN uniqueness_score REAL DEFAULT 0;
+             CREATE INDEX IF NOT EXISTS idx_artists_uniqueness ON artists(uniqueness_score DESC);",
+        ) {
+            eprintln!("[mercury_db] Failed to add uniqueness_score column: {}", e);
+            return;
+        }
+
+        // Populate from artist_tags + tag_stats using a temp table for speed
+        let sql = "
+            CREATE TEMP TABLE _tmp_scores AS
+              SELECT at.artist_id,
+                     ROUND(COALESCE(AVG(1.0 / NULLIF(ts.artist_count, 0)) * 1000, 0), 4) AS score
+              FROM artist_tags at
+              LEFT JOIN tag_stats ts ON ts.tag = at.tag
+              GROUP BY at.artist_id;
+            CREATE INDEX _tmp_scores_idx ON _tmp_scores(artist_id);
+            UPDATE artists
+              SET uniqueness_score = (
+                SELECT score FROM _tmp_scores WHERE artist_id = artists.id
+              )
+              WHERE id IN (SELECT artist_id FROM _tmp_scores);
+            DROP TABLE _tmp_scores;
+        ";
+        if let Err(e) = conn.execute_batch(sql) {
+            eprintln!("[mercury_db] Failed to populate uniqueness_score: {}", e);
+        }
+    }
 }
 
 // ---------------------------------------------------------------------------

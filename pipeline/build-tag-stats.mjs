@@ -59,5 +59,32 @@ db.exec(`
 const coocCount = db.prepare('SELECT COUNT(*) as n FROM tag_cooccurrence').get();
 console.log(`  tag_cooccurrence: ${coocCount.n} edges computed`);
 
+// uniqueness_score — precomputed per-artist score for Discover page
+// Score = avg(1 / tag_artist_count) * 1000 — artists with rare tags score high.
+// Allows Discover to use an index scan instead of a full 2.6M-row scan.
+console.log('Computing artist uniqueness scores...');
+const hasUniqueness = db.prepare("SELECT COUNT(*) as n FROM pragma_table_info('artists') WHERE name='uniqueness_score'").get().n > 0;
+if (!hasUniqueness) {
+  db.exec("ALTER TABLE artists ADD COLUMN uniqueness_score REAL DEFAULT 0;");
+}
+db.exec("CREATE INDEX IF NOT EXISTS idx_artists_uniqueness ON artists(uniqueness_score DESC);");
+db.exec(`
+  CREATE TEMP TABLE _tmp_scores AS
+    SELECT at.artist_id,
+           ROUND(COALESCE(AVG(1.0 / NULLIF(ts.artist_count, 0)) * 1000, 0), 4) AS score
+    FROM artist_tags at
+    LEFT JOIN tag_stats ts ON ts.tag = at.tag
+    GROUP BY at.artist_id;
+  CREATE INDEX _tmp_scores_idx ON _tmp_scores(artist_id);
+  UPDATE artists
+    SET uniqueness_score = (
+      SELECT score FROM _tmp_scores WHERE artist_id = artists.id
+    )
+    WHERE id IN (SELECT artist_id FROM _tmp_scores);
+  DROP TABLE _tmp_scores;
+`);
+const scored = db.prepare('SELECT COUNT(*) as n FROM artists WHERE uniqueness_score > 0').get();
+console.log(`  uniqueness_score: ${scored.n} artists scored`);
+
 db.close();
 console.log('Done.');

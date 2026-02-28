@@ -504,24 +504,18 @@ export async function getDiscoveryArtists(
 
 	const hasFilters = safeTags.length > 0 || country || era;
 
-	// Fast path: no filters — use JOIN + GROUP BY to avoid correlated subqueries in ORDER BY.
-	// The old approach ran 3 correlated subqueries per artist row across 2.6M artists, holding
-	// the Rust Mutex for 10-30+ seconds and blocking all other DB calls (perceived app freeze).
+	// Fast path: no filters — uses precomputed uniqueness_score column + index.
+	// ~2ms vs 1500ms+ for the old JOIN+GROUP BY approach.
+	// Column is populated by tools/compute-uniqueness.mjs (run once after pipeline import).
 	if (!hasFilters) {
 		return db.all<ArtistResult>(
 			`SELECT
 			   a.id, a.mbid, a.name, a.slug, a.country,
-			   GROUP_CONCAT(at_r.tag, ', ') AS tags,
-			   ROUND(COALESCE(AVG(1.0 / NULLIF(ts_r.artist_count, 0)) * 1000, 0), 2) AS uniqueness_score
+			   (SELECT GROUP_CONCAT(tag, ', ') FROM artist_tags WHERE artist_id = a.id) AS tags,
+			   a.uniqueness_score
 			 FROM artists a
-			 JOIN artist_tags at_r ON at_r.artist_id = a.id
-			 LEFT JOIN tag_stats ts_r ON ts_r.tag = at_r.tag
-			 GROUP BY a.id
-			 ORDER BY
-			   (1.0 / NULLIF(COUNT(at_r.tag), 0))
-			   * COALESCE(AVG(1.0 / NULLIF(ts_r.artist_count, 0)), 0)
-			   * CASE WHEN a.begin_year >= 2010 THEN 1.2 ELSE 1.0 END
-			   * CASE WHEN a.ended = 0 THEN 1.1 ELSE 1.0 END DESC
+			 WHERE a.uniqueness_score > 0
+			 ORDER BY a.uniqueness_score DESC
 			 LIMIT ?`,
 			limit
 		);
@@ -556,24 +550,16 @@ export async function getDiscoveryArtists(
 
 	params.push(limit);
 
+	// Filtered path — reads precomputed uniqueness_score directly from column (no subquery).
 	return db.all<ArtistResult>(
 		`SELECT
 		   a.id, a.mbid, a.name, a.slug, a.country,
 		   (SELECT GROUP_CONCAT(at2.tag, ', ') FROM artist_tags at2 WHERE at2.artist_id = a.id) AS tags,
-		   ROUND(
-		     COALESCE(
-		       (SELECT AVG(1.0 / NULLIF(ts.artist_count, 0)) * 1000
-		        FROM artist_tags at3
-		        JOIN tag_stats ts ON ts.tag = at3.tag
-		        WHERE at3.artist_id = a.id),
-		       0
-		     ),
-		     2
-		   ) AS uniqueness_score
+		   a.uniqueness_score
 		 FROM artists a
 		 ${tagJoins}
 		 ${whereStr}
-		 ORDER BY uniqueness_score DESC
+		 ORDER BY a.uniqueness_score DESC
 		 LIMIT ?`,
 		...params
 	);
