@@ -607,6 +607,13 @@
 			<ListeningHistory />
 		</div>
 
+		<div class="section-separator"></div>
+		<div class="settings-section" data-testid="settings-feedback-section">
+			<h2>Feedback</h2>
+			<p class="section-desc">Found a bug or have a suggestion? All reports go directly to the developer.</p>
+			<a href="/about#feedback" class="feedback-link">Leave feedback →</a>
+		</div>
+
 	</div>
 {/if}
 
@@ -1189,5 +1196,17 @@
 	.arrow-btn:disabled {
 		opacity: 0.25;
 		cursor: not-allowed;
+	}
+
+	.feedback-link {
+		display: inline-block;
+		margin-top: 8px;
+		font-size: 0.85rem;
+		color: var(--acc);
+		text-decoration: none;
+	}
+
+	.feedback-link:hover {
+		text-decoration: underline;
 	}
 </style>

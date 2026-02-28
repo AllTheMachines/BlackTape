@@ -131,7 +131,7 @@
 		<!-- backers link hidden until Nostr backer feed is active in v2 -->
 	</section>
 
-	<section class="about-section">
+	<section id="feedback" class="about-section">
 		<h2>Feedback</h2>
 		<p>Found a bug? Have a suggestion? All feedback is read and appreciated.</p>
 		{#if feedbackSent}
