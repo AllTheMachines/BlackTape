@@ -4,6 +4,22 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-02-28 — Fix Tab Switching: --disable-shared-workers Was Breaking Svelte Event Delegation
+
+Artist page tabs (Overview / Stats / About) were unresponsive in the manually-launched app. Root cause: the `--disable-shared-workers` Chromium flag added to `launch-cdp.mjs` (to silence a Playwright assertion about shared_worker CDP targets) was disabling Vite 7's HMR SharedWorker. When that SharedWorker fails to initialize, Vite's module graph partially fails to load, and Svelte 5's event delegation root listener (registered via `delegate()` at module init time) never gets attached to the document — so all `onclick` handlers silently do nothing.
+
+**Fix:**
+- Removed `--disable-shared-workers` from `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS` in `tools/launch-cdp.mjs`. Tabs work again.
+- Rewrote `tools/snap.mjs` to use raw CDP WebSocket instead of Playwright's `connectOverCDP`. The raw approach gets `/json/list`, finds only page-type targets, and connects directly via WebSocket — never encounters shared_worker targets, so no Playwright assertion failure.
+
+The test suite runner (`tools/test-suite/runners/tauri.mjs`) was already unaffected — it launches the binary at a separate port without Vite running, so no SharedWorker is created.
+
+Other screenshot tools that use `chromium.connectOverCDP` at port 9224 (`take-screenshots-v1.7.mjs`, etc.) may fail if run while Vite is active — they'd need the same raw CDP WebSocket treatment. Left as-is for now since they're used infrequently and the tab fix is the priority.
+
+193/193 code checks still passing.
+
+---
+
 ## Entry 2026-02-28 — Fix About Tab: MusicBrainz Rate Limiting
 
 The About tab on artist pages (members, influences, labels) was showing empty for all artists. Root cause: the artist page load function made **3 sequential requests** to MusicBrainz — links, releases, relationships. MusicBrainz enforces 1 req/sec; the 3rd request (relationships) was getting rate-limited, silently swallowed by try-catch, and the About tab showed "No relationship data available."
@@ -10001,4 +10017,7 @@ This completes v1.0 — The Playback Milestone. All phases done.
 > Files changed: 1
 
 > **Commit c04a920** (2026-02-28 14:34) — wip: auto-save
+> Files changed: 1
+
+> **Commit 272cf1f** (2026-02-28 14:34) — wip: auto-save
 > Files changed: 1

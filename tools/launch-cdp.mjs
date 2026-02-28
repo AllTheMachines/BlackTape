@@ -60,7 +60,7 @@ try {
 
 console.log('Launching mercury.exe with CDP on port', CDP_PORT, '...');
 const proc = spawn(BINARY, [], {
-  env: { ...process.env, WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: `--remote-debugging-port=${CDP_PORT} --disable-shared-workers` },
+  env: { ...process.env, WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: `--remote-debugging-port=${CDP_PORT}` },
   stdio: 'ignore',
   detached: true,
 });
