@@ -244,6 +244,16 @@ export function clearQueue(): void {
 }
 
 /**
+ * Append multiple tracks to the end of the queue in one operation.
+ * More efficient than calling addToQueue() per track (single storage write).
+ */
+export function addAllToQueue(tracks: PlayerTrack[]): void {
+	if (tracks.length === 0) return;
+	queueState.tracks = [...queueState.tracks, ...tracks];
+	saveQueueToStorage();
+}
+
+/**
  * Toggle shuffle mode.
  */
 export function toggleShuffle(): void {

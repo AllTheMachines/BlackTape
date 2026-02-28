@@ -10732,3 +10732,34 @@ Library load time: **9+ seconds → 500ms**. Cover thumbnails: **never appeared 
 
 > **Commit d88f8bb** (2026-02-28 23:07) — wip: auto-save
 > Files changed: 1
+
+> **Commit cd90855** (2026-02-28 23:16) — auto-save: 2 files @ 23:16
+> Files changed: 1
+
+---
+
+## Entry 2026-02-28 — Fix #56: Play Album Button on Release Page
+
+The release page had `+ Queue Album` but no `▶ Play Album`. To start listening to an album you had to queue it, open the queue panel, then click play — three steps for the most common action.
+
+**Root cause:** `handleQueueAlbum` and `handlePlayAlbum` were both stubs — deferred pending the "local file matching" phase. The implementation just needed to be wired up.
+
+**Implementation:**
+
+1. **`src/lib/player/queue.svelte.ts`**: Added `addAllToQueue(tracks)` — bulk-appends multiple tracks in a single operation (one localStorage write instead of N).
+
+2. **`getMatchedLocalTracks()`** — async helper on the release page:
+   - Calls `searchLocalTracks(release.title)` (existing Rust command, searches album/artist/title fields)
+   - Client-side filter: exact album title match (case-insensitive) + artist contains check (handles album_artist fallback)
+   - Sorts by disc number, then track number
+   - Converts `LocalTrack[]` → `PlayerTrack[]`
+
+3. **`handlePlayAlbum()`** — calls `setQueue(tracks, 0)` to replace queue and start playing immediately.
+
+4. **`handleQueueAlbum()`** — calls `addAllToQueue(tracks)` to append without interrupting current playback.
+
+5. **Template**: `▶ Play Album` (accent-colored, primary action) + `+ Queue Album` (ghost border, secondary) side by side. Both disabled while loading. "Not in your library" message if no local tracks matched.
+
+No Rust rebuild needed — uses the existing `search_local_tracks` command. The LIMIT 50 in the SQL search is sufficient for any real album (typical albums are 10–15 tracks, and the album name filter greatly narrows results before the limit applies).
+
+Issue #56 closed.

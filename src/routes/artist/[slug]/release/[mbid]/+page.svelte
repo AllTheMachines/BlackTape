@@ -6,6 +6,7 @@
 	import { isTauri } from '$lib/platform';
 	import EmbedPlayer from '$lib/components/EmbedPlayer.svelte';
 	import type { CreditEntry } from './+page';
+	import type { PlayerTrack } from '$lib/player/state.svelte';
 
 	let { data } = $props();
 
@@ -29,8 +30,65 @@
 	let coverError = $state(false);
 	let tauriMode = $state(false);
 	let creditsExpanded = $state(false);
-	function handleQueueAlbum() {
-		// Stub: same constraint as handlePlayAlbum — deferred to local file matching phase.
+	let albumActionState = $state<'idle' | 'loading' | 'not-found'>('idle');
+
+	/**
+	 * Search local library for tracks matching this release, then convert to PlayerTrack[].
+	 * Matches on album title (exact, case-insensitive) and artist name (contains).
+	 */
+	async function getMatchedLocalTracks(): Promise<PlayerTrack[]> {
+		if (!release) return [];
+		const { searchLocalTracks } = await import('$lib/library/scanner');
+		const results = await searchLocalTracks(release.title);
+		const albumLower = release.title.toLowerCase();
+		const artistLower = release.artistName.toLowerCase();
+		return results
+			.filter((t) => {
+				if (t.album?.toLowerCase() !== albumLower) return false;
+				const localArtist = (t.album_artist ?? t.artist ?? '').toLowerCase();
+				return localArtist.includes(artistLower) || artistLower.includes(localArtist);
+			})
+			.sort((a, b) => {
+				const dA = a.disc_number ?? 1, dB = b.disc_number ?? 1;
+				if (dA !== dB) return dA - dB;
+				return (a.track_number ?? 999) - (b.track_number ?? 999);
+			})
+			.map((t): PlayerTrack => ({
+				path: t.path,
+				title: t.title ?? release!.title,
+				artist: t.artist ?? release!.artistName,
+				album: t.album ?? release!.title,
+				albumArtist: t.album_artist ?? undefined,
+				trackNumber: t.track_number ?? undefined,
+				discNumber: t.disc_number ?? undefined,
+				genre: t.genre ?? undefined,
+				year: t.year ?? undefined,
+				durationSecs: t.duration_secs
+			}));
+	}
+
+	async function handlePlayAlbum() {
+		albumActionState = 'loading';
+		const { setQueue } = await import('$lib/player/queue.svelte');
+		const tracks = await getMatchedLocalTracks();
+		if (tracks.length === 0) {
+			albumActionState = 'not-found';
+			return;
+		}
+		setQueue(tracks, 0);
+		albumActionState = 'idle';
+	}
+
+	async function handleQueueAlbum() {
+		albumActionState = 'loading';
+		const { addAllToQueue } = await import('$lib/player/queue.svelte');
+		const tracks = await getMatchedLocalTracks();
+		if (tracks.length === 0) {
+			albumActionState = 'not-found';
+			return;
+		}
+		addAllToQueue(tracks);
+		albumActionState = 'idle';
 	}
 
 	/** Save to Shelf state (Tauri-only) */
@@ -206,13 +264,29 @@
 
 			{#if tauriMode}
 				<div class="album-actions" data-testid="album-actions">
-					<button class="btn-queue-album" onclick={handleQueueAlbum} data-testid="queue-album-btn">
+					<button
+						class="btn-play-album"
+						onclick={handlePlayAlbum}
+						disabled={albumActionState === 'loading'}
+						data-testid="play-album-btn"
+					>
+						{albumActionState === 'loading' ? '…' : '▶ Play Album'}
+					</button>
+					<button
+						class="btn-queue-album"
+						onclick={handleQueueAlbum}
+						disabled={albumActionState === 'loading'}
+						data-testid="queue-album-btn"
+					>
 						+ Queue Album
 					</button>
 				</div>
+				{#if albumActionState === 'not-found'}
+					<p class="album-not-in-library">Not in your library — add the folder in Settings.</p>
+				{/if}
 
 				{#if hasAnyStream}
-					<div class="release-embed-wrap" data-testid="release-embed play-album-btn">
+					<div class="release-embed-wrap" data-testid="release-embed">
 						<EmbedPlayer links={platformLinks} />
 					</div>
 				{/if}
@@ -405,6 +479,26 @@
 		margin-top: 8px;
 	}
 
+	.btn-play-album {
+		background: var(--acc);
+		color: var(--bg-0);
+		border: 1px solid var(--acc);
+		padding: 6px 14px;
+		border-radius: 0;
+		font-size: 0.8rem;
+		cursor: pointer;
+	}
+
+	.btn-play-album:hover {
+		filter: brightness(1.1);
+	}
+
+	.btn-play-album:disabled,
+	.btn-queue-album:disabled {
+		opacity: 0.5;
+		cursor: default;
+	}
+
 	.btn-queue-album {
 		background: transparent;
 		color: var(--t-1);
@@ -417,6 +511,12 @@
 
 	.btn-queue-album:hover {
 		border-color: var(--b-3);
+	}
+
+	.album-not-in-library {
+		font-size: 0.75rem;
+		color: var(--t-3);
+		margin: 4px 0 0;
 	}
 
 	.release-embed-wrap {
