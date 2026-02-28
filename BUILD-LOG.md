@@ -10550,6 +10550,6 @@ The TypeScript fix alone restores the library immediately (no rebuild needed). T
 
 **Remaining concern:** C: drive is critically low (~235 MB free). Clean it up before it causes other issues.
 
-<!-- status -->
-Rebuilding Rust binary with SQL fix — cargo build --release running
-<!-- /status -->
+
+> **Commit 938396b** (2026-02-28 20:46) — auto-save: 7 files @ 20:46
+> Files changed: 6

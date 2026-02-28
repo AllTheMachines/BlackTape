@@ -41,6 +41,11 @@ pub fn init_library_db(app_data_dir: &Path) -> Result<Connection, String> {
     let db_path = app_data_dir.join("library.db");
     let conn = Connection::open(&db_path).map_err(|e| format!("Failed to open library.db: {}", e))?;
 
+    // Keep all temp tables in RAM — avoids disk-full errors when the system drive is low.
+    // GROUP BY on cover_art_base64 (large blobs) would otherwise spill to C:\Temp.
+    conn.execute_batch("PRAGMA temp_store = MEMORY;")
+        .map_err(|e| format!("Failed to set temp_store: {}", e))?;
+
     conn.execute_batch(
         "
         CREATE TABLE IF NOT EXISTS local_tracks (
