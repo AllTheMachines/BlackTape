@@ -191,5 +191,12 @@ export const load: PageLoad = async ({ params, fetch }) => {
 	} catch { /* graceful degradation — release stays null */ }
 	finally { clearTimeout(t); }
 
-	return { mbid, slug, release, platformLinks, hasAnyStream, rawCredits };
+	// Search fallbacks — always usable even when MB has no streaming URLs for the release
+	const artistTitle = release ? `${release.artistName} ${release.title}` : mbid;
+	const streamSearchLinks = {
+		spotify: `https://open.spotify.com/search/${encodeURIComponent(artistTitle)}`,
+		youtube: `https://www.youtube.com/results?search_query=${encodeURIComponent(artistTitle)}`
+	};
+
+	return { mbid, slug, release, platformLinks, hasAnyStream, rawCredits, streamSearchLinks };
 };

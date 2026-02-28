@@ -132,6 +132,25 @@
 				<!-- Buy On row — always shown -->
 				<div class="action-rows">
 					<BuyOnBar links={release.buyLinks} />
+
+					<!-- Stream On row — always shown, uses MB direct URLs when available, search fallbacks otherwise -->
+					<section class="stream-on">
+						<span class="stream-label">Stream on</span>
+						<div class="stream-links">
+							{#if platformLinks.bandcamp.length}
+								<a href={platformLinks.bandcamp[0]} target="_blank" rel="noopener noreferrer" class="stream-link platform-bandcamp">Bandcamp</a>
+							{/if}
+							<a href={platformLinks.spotify[0] ?? data.streamSearchLinks.spotify} target="_blank" rel="noopener noreferrer" class="stream-link platform-spotify">
+								Spotify{#if !platformLinks.spotify.length}<span class="search-indicator" title="Opens Spotify search — no direct link found in MusicBrainz">?</span>{/if}
+							</a>
+							{#if platformLinks.soundcloud.length}
+								<a href={platformLinks.soundcloud[0]} target="_blank" rel="noopener noreferrer" class="stream-link platform-soundcloud">SoundCloud</a>
+							{/if}
+							<a href={platformLinks.youtube[0] ?? data.streamSearchLinks.youtube} target="_blank" rel="noopener noreferrer" class="stream-link platform-youtube">
+								YouTube{#if !platformLinks.youtube.length}<span class="search-indicator" title="Opens YouTube search — no direct link found in MusicBrainz">?</span>{/if}
+							</a>
+						</div>
+					</section>
 					{#if tauriMode}
 						<div class="save-shelf-wrapper" style="position:relative; margin-top: 8px;">
 							<button
@@ -607,6 +626,67 @@
 
 	.credit-artist-text {
 		color: var(--t-2);
+	}
+
+	/* ── Stream On ─────────────────────────────────────── */
+	.stream-on {
+		display: flex;
+		align-items: center;
+		gap: var(--space-md);
+		padding: var(--space-sm) 0;
+		border-top: 1px solid var(--b-1);
+	}
+
+	.stream-label {
+		font-size: 0.75rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--t-3);
+		white-space: nowrap;
+		min-width: 4rem;
+	}
+
+	.stream-links {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-xs);
+	}
+
+	.stream-link {
+		font-size: 0.8rem;
+		font-weight: 500;
+		padding: 4px 10px;
+		text-decoration: none;
+		background: var(--bg-3);
+		border: 1px solid var(--b-1);
+		color: var(--t-2);
+		transition: border-color 0.15s, color 0.15s;
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+	}
+
+	.stream-link:hover { color: var(--t-1); }
+	.stream-link.platform-spotify:hover  { border-color: var(--spotify-color);   color: var(--spotify-color); }
+	.stream-link.platform-youtube:hover  { border-color: var(--youtube-color);   color: var(--youtube-color); }
+	.stream-link.platform-bandcamp:hover { border-color: var(--bandcamp-color);  color: var(--bandcamp-color); }
+	.stream-link.platform-soundcloud:hover { border-color: var(--soundcloud-color); color: var(--soundcloud-color); }
+
+	.search-indicator {
+		font-size: 0.65rem;
+		font-weight: 700;
+		color: var(--t-3);
+		background: var(--bg-2);
+		border: 1px solid var(--b-1);
+		border-radius: 50%;
+		width: 14px;
+		height: 14px;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+		cursor: help;
 	}
 
 	/* Mobile */
