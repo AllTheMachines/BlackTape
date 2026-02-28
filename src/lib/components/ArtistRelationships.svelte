@@ -19,6 +19,10 @@
 	let visibleInfluenced = $derived(showAllInfluenced ? relationships.influenced : relationships.influenced.slice(0, 20));
 </script>
 
+{#if relationships.members.length === 0 && relationships.influencedBy.length === 0 && relationships.influenced.length === 0 && relationships.labels.length === 0}
+	<p class="empty-state">No relationship data available for this artist.</p>
+{/if}
+
 {#if relationships.members.length > 0}
 	<section class="rel-section">
 		<h3>Members</h3>
@@ -136,6 +140,12 @@
 	.labels-text {
 		font-size: 0.85rem;
 		color: var(--t-2);
+		margin: 0;
+	}
+
+	.empty-state {
+		font-size: 0.85rem;
+		color: var(--t-3);
 		margin: 0;
 	}
 </style>

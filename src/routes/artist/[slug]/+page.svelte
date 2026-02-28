@@ -544,14 +544,12 @@
 			onclick={() => activeTab = 'stats'}
 			data-testid="tab-stats"
 		>Stats</button>
-		{#if hasRelationships}
-			<button
-				class="artist-tab"
-				class:active={activeTab === 'about'}
-				onclick={() => activeTab = 'about'}
-				data-testid="tab-about"
-			>About</button>
-		{/if}
+		<button
+			class="artist-tab"
+			class:active={activeTab === 'about'}
+			onclick={() => activeTab = 'about'}
+			data-testid="tab-about"
+		>About</button>
 	</div>
 
 	<!-- Tab content -->
