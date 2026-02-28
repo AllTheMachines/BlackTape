@@ -308,12 +308,47 @@
 		tauriMode && spotifyState.connected && data.links.spotify.length > 0
 	);
 
-	async function handlePlayOnSpotify() {
+	/** Top tracks loaded from Spotify for this artist. */
+	import type { SpotifyTopTrack } from '$lib/spotify/api';
+	let spotifyTopTracks = $state<SpotifyTopTrack[]>([]);
+	let spotifyTracksLoading = $state(false);
+
+	// Load top tracks automatically when Spotify is connected and artist has a Spotify link.
+	$effect(() => {
+		if (!showSpotifyButton) {
+			spotifyTopTracks = [];
+			return;
+		}
+		if (spotifyTracksLoading || spotifyTopTracks.length > 0) return;
+		loadSpotifyTopTracks();
+	});
+
+	async function loadSpotifyTopTracks() {
+		spotifyTracksLoading = true;
+		try {
+			const { getValidAccessToken } = await import('$lib/spotify/auth');
+			const { extractSpotifyArtistId, getArtistTopTracks } = await import('$lib/spotify/api');
+			const token = await getValidAccessToken();
+			const artistId = extractSpotifyArtistId(data.links.spotify[0]);
+			if (!artistId) return;
+			spotifyTopTracks = await getArtistTopTracks(artistId, token);
+		} catch {
+			/* silent — tracks simply won't show */
+		} finally {
+			spotifyTracksLoading = false;
+		}
+	}
+
+	/**
+	 * Play Spotify top tracks starting from a given index.
+	 * Index 0 = "Play All" button; clicking a row passes that row's index.
+	 */
+	async function handlePlayTrack(index: number) {
 		spotifyPlayState = 'loading';
 		spotifyPlayMessage = null;
 		try {
 			const { getValidAccessToken } = await import('$lib/spotify/auth');
-			const { extractSpotifyArtistId, getArtistTopTracks, playTracksOnSpotify, SpotifyAuthError } = await import('$lib/spotify/api');
+			const { playTracksOnSpotify } = await import('$lib/spotify/api');
 
 			let token: string;
 			try {
@@ -324,25 +359,32 @@
 				return;
 			}
 
-			const spotifyArtistId = extractSpotifyArtistId(data.links.spotify[0]);
-			if (!spotifyArtistId) {
-				spotifyPlayState = 'error';
-				spotifyPlayMessage = "Couldn't load tracks for this artist on Spotify.";
-				return;
+			// If tracks aren't loaded yet, fall back to fetching fresh
+			let tracks = spotifyTopTracks;
+			if (!tracks.length) {
+				const { extractSpotifyArtistId, getArtistTopTracks, SpotifyAuthError } = await import('$lib/spotify/api');
+				const artistId = extractSpotifyArtistId(data.links.spotify[0]);
+				if (!artistId) {
+					spotifyPlayState = 'error';
+					spotifyPlayMessage = "Couldn't load tracks for this artist on Spotify.";
+					return;
+				}
+				try {
+					tracks = await getArtistTopTracks(artistId, token);
+					spotifyTopTracks = tracks;
+				} catch (e) {
+					const { SpotifyAuthError: SAE } = await import('$lib/spotify/api');
+					spotifyPlayState = 'error';
+					spotifyPlayMessage = e instanceof SAE
+						? 'Spotify session expired — reconnect in Settings.'
+						: "Couldn't load tracks for this artist on Spotify.";
+					return;
+				}
 			}
 
-			let trackUris: string[];
-			try {
-				trackUris = await getArtistTopTracks(spotifyArtistId, token);
-			} catch (e) {
-				spotifyPlayState = 'error';
-				spotifyPlayMessage = e instanceof SpotifyAuthError
-					? 'Spotify session expired — reconnect in Settings.'
-					: "Couldn't load tracks for this artist on Spotify.";
-				return;
-			}
+			const uris = tracks.slice(index).map((t) => t.uri);
+			const result = await playTracksOnSpotify(uris, token);
 
-			const result = await playTracksOnSpotify(trackUris, token);
 			if (result === 'ok') {
 				const { pause } = await import('$lib/player/audio.svelte');
 				pause();
@@ -354,7 +396,7 @@
 			} else if (result === 'premium_required') {
 				spotifyPlayState = 'error';
 				spotifyPlayMessage = 'Spotify Premium is required to play tracks from BlackTape.';
-			} else if (result === 'token_expired') {
+			} else {
 				spotifyPlayState = 'error';
 				spotifyPlayMessage = 'Spotify session expired — reconnect in Settings.';
 			}
@@ -362,6 +404,27 @@
 			spotifyPlayState = 'error';
 			spotifyPlayMessage = 'Something went wrong. Try again.';
 		}
+	}
+
+	function handlePlayOnSpotify() {
+		return handlePlayTrack(0);
+	}
+
+	/** Add a single track to the Spotify queue. */
+	async function handleAddToQueue(uri: string) {
+		try {
+			const { getValidAccessToken } = await import('$lib/spotify/auth');
+			const { addToSpotifyQueue } = await import('$lib/spotify/api');
+			const token = await getValidAccessToken();
+			await addToSpotifyQueue(uri, token);
+		} catch {
+			/* silent */
+		}
+	}
+
+	function formatTrackDuration(ms: number): string {
+		const s = Math.floor(ms / 1000);
+		return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 	}
 
 	/** Generate QR code on demand (client-side only, lazy import). */
@@ -525,6 +588,43 @@
 
 		{#if spotifyPlayState === 'error' && spotifyPlayMessage}
 			<p class="spotify-play-error">{spotifyPlayMessage}</p>
+		{/if}
+
+		{#if showSpotifyButton}
+			<div class="spotify-tracks">
+				{#if spotifyTracksLoading}
+					<div class="spotify-tracks-loading">Loading top tracks…</div>
+				{:else if spotifyTopTracks.length > 0}
+					{#each spotifyTopTracks as track, i}
+						{@const isActive = streamingState.activeSource === 'spotify' && streamingState.spotifyTrack?.uri === track.uri}
+						<div class="spotify-track-row" class:active={isActive}>
+							<button
+								class="spotify-track-play"
+								onclick={() => handlePlayTrack(i)}
+								title="Play {track.name}"
+								aria-label="Play {track.name}"
+							>
+								{#if isActive}
+									<span class="spotify-track-playing-dot"></span>
+								{:else}
+									<span class="spotify-track-num">{i + 1}</span>
+									<svg class="spotify-track-play-icon" viewBox="0 0 24 24" fill="currentColor">
+										<path d="M8 5v14l11-7z"/>
+									</svg>
+								{/if}
+							</button>
+							<span class="spotify-track-name">{track.name}</span>
+							<span class="spotify-track-dur">{formatTrackDuration(track.durationMs)}</span>
+							<button
+								class="spotify-track-queue"
+								onclick={() => handleAddToQueue(track.uri)}
+								title="Add to queue"
+								aria-label="Add {track.name} to Spotify queue"
+							>+</button>
+						</div>
+					{/each}
+				{/if}
+			</div>
 		{/if}
 
 		<!-- {#key} guarantees old iframe unmounts before new one mounts (stops audio) -->
@@ -937,6 +1037,133 @@
 		font-size: 0.8rem;
 		color: var(--t-3);
 		margin: 4px 0 0;
+	}
+
+	/* Spotify top tracks list */
+	.spotify-tracks {
+		margin-top: 8px;
+		border-top: 1px solid var(--b-1);
+	}
+
+	.spotify-tracks-loading {
+		font-size: 11px;
+		color: var(--t-3);
+		padding: 8px 0;
+	}
+
+	.spotify-track-row {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: 4px 0;
+		border-radius: var(--r);
+		transition: background 0.1s;
+	}
+
+	.spotify-track-row:hover {
+		background: var(--bg-4);
+	}
+
+	.spotify-track-row.active {
+		background: var(--acc-bg);
+	}
+
+	.spotify-track-play {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 28px;
+		height: 28px;
+		background: none;
+		border: none;
+		cursor: pointer;
+		color: var(--t-3);
+		flex-shrink: 0;
+		border-radius: var(--r);
+		position: relative;
+	}
+
+	.spotify-track-num {
+		font-size: 11px;
+		color: var(--t-3);
+		font-variant-numeric: tabular-nums;
+	}
+
+	.spotify-track-play-icon {
+		display: none;
+		width: 12px;
+		height: 12px;
+		color: var(--spotify-color, #1db954);
+		position: absolute;
+	}
+
+	.spotify-track-row:hover .spotify-track-num {
+		display: none;
+	}
+
+	.spotify-track-row:hover .spotify-track-play-icon {
+		display: block;
+	}
+
+	.spotify-track-playing-dot {
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		background: var(--spotify-color, #1db954);
+		animation: pulse-dot 2s ease-in-out infinite;
+		flex-shrink: 0;
+	}
+
+	@keyframes pulse-dot {
+		0%, 100% { opacity: 1; }
+		50% { opacity: 0.4; }
+	}
+
+	.spotify-track-name {
+		flex: 1;
+		font-size: 12px;
+		color: var(--t-1);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.spotify-track-row.active .spotify-track-name {
+		color: var(--acc);
+	}
+
+	.spotify-track-dur {
+		font-size: 10px;
+		color: var(--t-3);
+		font-variant-numeric: tabular-nums;
+		flex-shrink: 0;
+	}
+
+	.spotify-track-queue {
+		background: none;
+		border: 1px solid var(--b-2);
+		border-radius: var(--r);
+		color: var(--t-3);
+		font-size: 14px;
+		width: 22px;
+		height: 22px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		cursor: pointer;
+		flex-shrink: 0;
+		opacity: 0;
+		transition: opacity 0.1s, color 0.1s;
+		line-height: 1;
+	}
+
+	.spotify-track-row:hover .spotify-track-queue {
+		opacity: 1;
+	}
+
+	.spotify-track-queue:hover {
+		color: var(--t-1);
+		border-color: var(--b-3);
 	}
 
 	.platform-pill--soundcloud {

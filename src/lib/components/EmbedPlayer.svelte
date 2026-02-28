@@ -54,8 +54,8 @@
 			const artistId = extractSpotifyArtistId(url);
 			if (artistId) {
 				// Artist page (via EmbedPlayer): play top tracks
-				const trackUris = await getArtistTopTracks(artistId, token);
-				const result = await playTracksOnSpotify(trackUris, token);
+				const tracks = await getArtistTopTracks(artistId, token);
+				const result = await playTracksOnSpotify(tracks.map((t) => t.uri), token);
 				if (result === 'ok') {
 					spotifyConnectState[key] = 'playing';
 					setActiveSource('spotify', artistName ? `${artistName} — Top Tracks` : 'Spotify');

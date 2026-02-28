@@ -21,6 +21,9 @@ import {
 	spotifyNext as apiNext,
 	spotifyPrevious as apiPrevious,
 	spotifySeek as apiSeek,
+	spotifySetVolume as apiSetVolume,
+	spotifySetShuffle as apiSetShuffle,
+	spotifySetRepeat as apiSetRepeat,
 	type CurrentPlaybackState
 } from '$lib/spotify/api';
 import { getValidAccessToken } from '$lib/spotify/auth';
@@ -154,6 +157,71 @@ export async function spotifySeek(positionMs: number): Promise<void> {
 	try {
 		const token = await getValidAccessToken();
 		await apiSeek(positionMs, token);
+	} catch {
+		/* ignore */
+	}
+}
+
+/**
+ * Set Spotify volume (0–100).
+ * Optimistically updates local state so the slider feels instant.
+ */
+export async function spotifySetVolume(volumePercent: number): Promise<void> {
+	if (streamingState.spotifyTrack) {
+		streamingState.spotifyTrack.volumePercent = volumePercent;
+	}
+	try {
+		const token = await getValidAccessToken();
+		await apiSetVolume(volumePercent, token);
+	} catch {
+		/* ignore */
+	}
+}
+
+/** Volume level saved before muting, to restore on unmute. */
+let _preMuteVolume = 50;
+
+/**
+ * Toggle Spotify mute by setting volume to 0 or restoring previous level.
+ */
+export async function spotifyToggleMute(): Promise<void> {
+	const track = streamingState.spotifyTrack;
+	if (!track) return;
+	if (track.volumePercent > 0) {
+		_preMuteVolume = track.volumePercent;
+		await spotifySetVolume(0);
+	} else {
+		await spotifySetVolume(_preMuteVolume || 50);
+	}
+}
+
+/**
+ * Toggle Spotify shuffle on/off.
+ * Optimistically flips the local state so the button responds instantly.
+ */
+export async function spotifyToggleShuffle(): Promise<void> {
+	const track = streamingState.spotifyTrack;
+	if (!track) return;
+	const next = !track.shuffleState;
+	streamingState.spotifyTrack!.shuffleState = next;
+	try {
+		const token = await getValidAccessToken();
+		await apiSetShuffle(next, token);
+	} catch {
+		/* ignore */
+	}
+}
+
+/** Cycle Spotify repeat: off → context → track → off */
+export async function spotifyCycleRepeat(): Promise<void> {
+	const track = streamingState.spotifyTrack;
+	if (!track) return;
+	const order: Array<'off' | 'context' | 'track'> = ['off', 'context', 'track'];
+	const next = order[(order.indexOf(track.repeatState) + 1) % order.length];
+	streamingState.spotifyTrack!.repeatState = next;
+	try {
+		const token = await getValidAccessToken();
+		await apiSetRepeat(next, token);
 	} catch {
 		/* ignore */
 	}

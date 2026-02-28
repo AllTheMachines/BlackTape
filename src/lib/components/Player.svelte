@@ -16,7 +16,11 @@
 		spotifyTogglePlayPause,
 		spotifySkipNext,
 		spotifySkipPrevious,
-		spotifySeek
+		spotifySeek,
+		spotifySetVolume,
+		spotifyToggleMute,
+		spotifyToggleShuffle,
+		spotifyCycleRepeat
 	} from '$lib/player/streaming.svelte';
 
 	let showQueue = $state(false);
@@ -24,6 +28,7 @@
 
 	// True when Spotify Connect is the active audio source.
 	const isSpotifyMode = $derived(streamingState.activeSource === 'spotify');
+	const spotifyRepeat = $derived(streamingState.spotifyTrack?.repeatState ?? 'off');
 
 	// Unified play state — Spotify or local.
 	const isPlaying = $derived(
@@ -119,8 +124,38 @@
 		setVolume(Number(target.value));
 	}
 
+	function handleSpotifyVolume(e: Event) {
+		const target = e.target as HTMLInputElement;
+		spotifySetVolume(Number(target.value));
+	}
+
+	// ─── Spotify queue ──────────────────────────────────────────────────────────
+
+	import type { SpotifyQueueItem } from '$lib/spotify/api';
+
+	let spotifyQueue = $state<SpotifyQueueItem[] | null>(null);
+	let spotifyQueueLoading = $state(false);
+
+	async function loadSpotifyQueue() {
+		spotifyQueueLoading = true;
+		try {
+			const { getValidAccessToken } = await import('$lib/spotify/auth');
+			const { getSpotifyQueue } = await import('$lib/spotify/api');
+			const token = await getValidAccessToken();
+			spotifyQueue = await getSpotifyQueue(token);
+		} catch {
+			spotifyQueue = [];
+		} finally {
+			spotifyQueueLoading = false;
+		}
+	}
+
 	function toggleQueuePanel() {
 		showQueue = !showQueue;
+		if (showQueue && isSpotifyMode) {
+			spotifyQueue = null;
+			loadSpotifyQueue();
+		}
 	}
 
 	function repeatIcon(mode: string): string {
@@ -190,23 +225,21 @@
 		<!-- Center: controls + seek -->
 		<div class="controls-center">
 			<div class="transport">
-				{#if !isSpotifyMode}
-					<button
-						class="control-btn small"
-						class:active={queueState.shuffled}
-						onclick={toggleShuffle}
-						title="Shuffle"
-						aria-label="Toggle shuffle"
-					>
-						<svg style="display:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-							<polyline points="16 3 21 3 21 8" />
-							<line x1="4" y1="20" x2="21" y2="3" />
-							<polyline points="21 16 21 21 16 21" />
-							<line x1="15" y1="15" x2="21" y2="21" />
-							<line x1="4" y1="4" x2="9" y2="9" />
-						</svg>
-					</button>
-				{/if}
+				<button
+					class="control-btn small"
+					class:active={isSpotifyMode ? streamingState.spotifyTrack?.shuffleState : queueState.shuffled}
+					onclick={isSpotifyMode ? spotifyToggleShuffle : toggleShuffle}
+					title="Shuffle"
+					aria-label="Toggle shuffle"
+				>
+					<svg style="display:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+						<polyline points="16 3 21 3 21 8" />
+						<line x1="4" y1="20" x2="21" y2="3" />
+						<polyline points="21 16 21 21 16 21" />
+						<line x1="15" y1="15" x2="21" y2="21" />
+						<line x1="4" y1="4" x2="9" y2="9" />
+					</svg>
+				</button>
 
 				<button
 					class="control-btn"
@@ -249,25 +282,25 @@
 					</svg>
 				</button>
 
-				{#if !isSpotifyMode}
-					<button
-						class="control-btn small"
-						class:active={queueState.repeatMode !== 'none'}
-						onclick={toggleRepeat}
-						title="Repeat: {queueState.repeatMode}"
-						aria-label="Toggle repeat"
-					>
-						<svg style="display:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-							<polyline points="17 1 21 5 17 9" />
-							<path d="M3 11V9a4 4 0 0 1 4-4h14" />
-							<polyline points="7 23 3 19 7 15" />
-							<path d="M21 13v2a4 4 0 0 1-4 4H3" />
-						</svg>
-						{#if queueState.repeatMode === 'one'}
-							<span class="repeat-one-badge">{repeatIcon('one')}</span>
-						{/if}
-					</button>
-				{/if}
+				<button
+					class="control-btn small"
+					class:active={isSpotifyMode ? spotifyRepeat !== 'off' : queueState.repeatMode !== 'none'}
+					onclick={isSpotifyMode ? spotifyCycleRepeat : toggleRepeat}
+					title={isSpotifyMode ? `Repeat: ${spotifyRepeat}` : `Repeat: ${queueState.repeatMode}`}
+					aria-label="Toggle repeat"
+				>
+					<svg style="display:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+						<polyline points="17 1 21 5 17 9" />
+						<path d="M3 11V9a4 4 0 0 1 4-4h14" />
+						<polyline points="7 23 3 19 7 15" />
+						<path d="M21 13v2a4 4 0 0 1-4 4H3" />
+					</svg>
+					{#if isSpotifyMode && spotifyRepeat === 'track'}
+						<span class="repeat-one-badge">1</span>
+					{:else if !isSpotifyMode && queueState.repeatMode === 'one'}
+						<span class="repeat-one-badge">{repeatIcon('one')}</span>
+					{/if}
+				</button>
 			</div>
 
 			{#if isSpotifyMode && streamingState.spotifyTrack}
@@ -305,37 +338,70 @@
 
 		<!-- Right: volume + queue toggle -->
 		<div class="controls-right">
-			<button
-				class="control-btn small"
-				onclick={toggleMute}
-				title={playerState.isMuted ? 'Unmute' : 'Mute'}
-				aria-label={playerState.isMuted ? 'Unmute' : 'Mute'}
-			>
-				{#if playerState.isMuted || playerState.volume === 0}
-					<svg style="display:block" viewBox="0 0 24 24" fill="currentColor">
-						<path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51A8.796 8.796 0 0 0 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06a8.99 8.99 0 0 0 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" />
-					</svg>
-				{:else if playerState.volume < 0.5}
-					<svg style="display:block" viewBox="0 0 24 24" fill="currentColor">
-						<path d="M18.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM5 9v6h4l5 5V4L9 9H5z" />
-					</svg>
-				{:else}
-					<svg style="display:block" viewBox="0 0 24 24" fill="currentColor">
-						<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
-					</svg>
-				{/if}
-			</button>
-
-			<input
-				type="range"
-				class="volume-bar"
-				min="0"
-				max="1"
-				step="0.01"
-				value={playerState.volume}
-				oninput={handleVolume}
-				aria-label="Volume"
-			/>
+			{#if isSpotifyMode}
+				{@const svol = streamingState.spotifyTrack?.volumePercent ?? 100}
+				<button
+					class="control-btn small"
+					onclick={spotifyToggleMute}
+					title={svol === 0 ? 'Unmute' : 'Mute'}
+					aria-label={svol === 0 ? 'Unmute' : 'Mute'}
+				>
+					{#if svol === 0}
+						<svg style="display:block" viewBox="0 0 24 24" fill="currentColor">
+							<path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51A8.796 8.796 0 0 0 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06a8.99 8.99 0 0 0 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" />
+						</svg>
+					{:else if svol < 50}
+						<svg style="display:block" viewBox="0 0 24 24" fill="currentColor">
+							<path d="M18.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM5 9v6h4l5 5V4L9 9H5z" />
+						</svg>
+					{:else}
+						<svg style="display:block" viewBox="0 0 24 24" fill="currentColor">
+							<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+						</svg>
+					{/if}
+				</button>
+				<input
+					type="range"
+					class="volume-bar"
+					min="0"
+					max="100"
+					step="1"
+					value={svol}
+					oninput={handleSpotifyVolume}
+					aria-label="Volume"
+				/>
+			{:else}
+				<button
+					class="control-btn small"
+					onclick={toggleMute}
+					title={playerState.isMuted ? 'Unmute' : 'Mute'}
+					aria-label={playerState.isMuted ? 'Unmute' : 'Mute'}
+				>
+					{#if playerState.isMuted || playerState.volume === 0}
+						<svg style="display:block" viewBox="0 0 24 24" fill="currentColor">
+							<path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51A8.796 8.796 0 0 0 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06a8.99 8.99 0 0 0 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" />
+						</svg>
+					{:else if playerState.volume < 0.5}
+						<svg style="display:block" viewBox="0 0 24 24" fill="currentColor">
+							<path d="M18.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM5 9v6h4l5 5V4L9 9H5z" />
+						</svg>
+					{:else}
+						<svg style="display:block" viewBox="0 0 24 24" fill="currentColor">
+							<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+						</svg>
+					{/if}
+				</button>
+				<input
+					type="range"
+					class="volume-bar"
+					min="0"
+					max="1"
+					step="0.01"
+					value={playerState.volume}
+					oninput={handleVolume}
+					aria-label="Volume"
+				/>
+			{/if}
 
 			<button
 				class="discover-btn"
@@ -375,7 +441,34 @@
 	</div>
 
 	{#if showQueue}
-		<Queue onclose={() => (showQueue = false)} />
+		{#if isSpotifyMode}
+			<div class="queue-panel">
+				<div class="queue-header">
+					<span class="queue-title">Spotify Queue</span>
+					<button class="queue-close" onclick={() => (showQueue = false)} aria-label="Close queue">✕</button>
+				</div>
+				{#if spotifyQueueLoading}
+					<div class="queue-empty">Loading…</div>
+				{:else if !spotifyQueue || spotifyQueue.length === 0}
+					<div class="queue-empty">Queue is empty</div>
+				{:else}
+					<div class="queue-list">
+						{#each spotifyQueue as item, i}
+							<div class="queue-item">
+								<span class="queue-num">{i + 1}</span>
+								<div class="queue-track">
+									<span class="queue-track-name">{item.name}</span>
+									<span class="queue-track-artist">{item.artists}</span>
+								</div>
+								<span class="queue-duration">{formatTime(item.durationMs / 1000)}</span>
+							</div>
+						{/each}
+					</div>
+				{/if}
+			</div>
+		{:else}
+			<Queue onclose={() => (showQueue = false)} />
+		{/if}
 	{/if}
 {/if}
 
@@ -700,6 +793,116 @@
 		background: var(--t-2);
 		cursor: pointer;
 		border: none;
+	}
+
+	/* Spotify queue panel */
+	.queue-panel {
+		position: fixed;
+		bottom: var(--player);
+		right: 14px;
+		width: 300px;
+		max-height: 360px;
+		background: var(--bg-3);
+		border: 1px solid var(--b-2);
+		border-radius: var(--r);
+		z-index: 201;
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+	}
+
+	.queue-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 8px 12px;
+		border-bottom: 1px solid var(--b-2);
+		flex-shrink: 0;
+	}
+
+	.queue-title {
+		font-size: 11px;
+		font-weight: 600;
+		color: var(--t-2);
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+	}
+
+	.queue-close {
+		background: none;
+		border: none;
+		color: var(--t-3);
+		cursor: pointer;
+		font-size: 12px;
+		padding: 2px 4px;
+		line-height: 1;
+	}
+
+	.queue-close:hover {
+		color: var(--t-1);
+	}
+
+	.queue-list {
+		overflow-y: auto;
+		flex: 1;
+	}
+
+	.queue-item {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: 6px 12px;
+		border-bottom: 1px solid var(--b-1);
+	}
+
+	.queue-item:last-child {
+		border-bottom: none;
+	}
+
+	.queue-num {
+		font-size: 10px;
+		color: var(--t-3);
+		min-width: 16px;
+		text-align: right;
+		flex-shrink: 0;
+	}
+
+	.queue-track {
+		flex: 1;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 1px;
+	}
+
+	.queue-track-name {
+		font-size: 11px;
+		color: var(--t-1);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.queue-track-artist {
+		font-size: 10px;
+		color: var(--t-3);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.queue-duration {
+		font-size: 10px;
+		color: var(--t-3);
+		flex-shrink: 0;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.queue-empty {
+		padding: 20px 12px;
+		font-size: 11px;
+		color: var(--t-3);
+		text-align: center;
 	}
 
 	/* Loading spinner */

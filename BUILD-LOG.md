@@ -26,7 +26,7 @@ Player bar now shows the full transport controls when Spotify is active — even
 - `src/lib/components/Player.svelte` — Spotify mode display, unified transport controls, rAF seek interpolation
 
 <!-- status -->
-Done — app reloaded. Test: click ▶ Spotify on any artist → player bar shows track name → play/pause/next/prev all work.
+Full Spotify control suite shipped. Reloaded. Test: Spotify artist page → top tracks list loads automatically → click any row to play from that track → all player controls live.
 <!-- /status -->
 
 ---
@@ -10277,4 +10277,7 @@ This completes v1.0 — The Playback Milestone. All phases done.
 > Files changed: 4
 
 > **Commit 46a781f** (2026-02-28 17:43) — wip: auto-save
+> Files changed: 1
+
+> **Commit b99234c** (2026-02-28 17:46) — auto-save: 2 files @ 17:46
 > Files changed: 1

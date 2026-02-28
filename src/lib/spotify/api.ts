@@ -103,12 +103,30 @@ export async function playAlbumOnSpotify(albumId: string, accessToken: string): 
 
 // ─── Spotify API response interfaces ─────────────────────────────────────────
 
-interface SpotifyTrack {
+/** A single track from the top-tracks endpoint, with display info. */
+export interface SpotifyTopTrack {
 	uri: string;
+	name: string;
+	durationMs: number;
+}
+
+interface SpotifyRawTrack {
+	uri: string;
+	name: string;
+	duration_ms: number;
+	artists: { name: string }[];
 }
 
 interface TopTracksResponse {
-	tracks: SpotifyTrack[];
+	tracks: SpotifyRawTrack[];
+}
+
+/** An item in the Spotify playback queue. */
+export interface SpotifyQueueItem {
+	uri: string;
+	name: string;
+	artists: string;
+	durationMs: number;
 }
 
 interface SpotifyErrorResponse {
@@ -160,7 +178,7 @@ export async function getFirstAvailableDeviceId(accessToken: string): Promise<st
 // ─── API functions ────────────────────────────────────────────────────────────
 
 /**
- * Get the top track URIs for a Spotify artist (up to 10).
+ * Get the top tracks for a Spotify artist (up to 10), with name and duration.
  *
  * Uses market=from_token so the result matches the user's region without
  * requiring the caller to know the user's country code.
@@ -172,7 +190,7 @@ export async function getFirstAvailableDeviceId(accessToken: string): Promise<st
 export async function getArtistTopTracks(
 	spotifyArtistId: string,
 	accessToken: string
-): Promise<string[]> {
+): Promise<SpotifyTopTrack[]> {
 	const url = `https://api.spotify.com/v1/artists/${spotifyArtistId}/top-tracks?market=from_token`;
 
 	const res = await fetch(url, {
@@ -184,18 +202,26 @@ export async function getArtistTopTracks(
 	if (!res.ok) throw new Error(`Spotify top-tracks request failed: ${res.status}`);
 
 	const data = (await res.json()) as TopTracksResponse;
-	return data.tracks.map((t) => t.uri);
+	return data.tracks.map((t) => ({
+		uri: t.uri,
+		name: t.name,
+		durationMs: t.duration_ms
+	}));
 }
 
 // ─── Current playback state ───────────────────────────────────────────────────
 
 export interface CurrentPlaybackState {
 	isPlaying: boolean;
+	uri: string;
 	title: string;
 	artist: string;
 	album: string;
 	durationMs: number;
 	progressMs: number;
+	shuffleState: boolean;
+	repeatState: 'off' | 'track' | 'context';
+	volumePercent: number;
 }
 
 /**
@@ -216,7 +242,11 @@ export async function getCurrentPlayback(
 		interface PlaybackResponse {
 			is_playing: boolean;
 			progress_ms: number;
+			shuffle_state: boolean;
+			repeat_state: 'off' | 'track' | 'context';
+			device: { volume_percent: number } | null;
 			item: {
+				uri: string;
 				name: string;
 				duration_ms: number;
 				artists: { name: string }[];
@@ -229,11 +259,15 @@ export async function getCurrentPlayback(
 
 		return {
 			isPlaying: data.is_playing,
+			uri: data.item.uri,
 			title: data.item.name,
 			artist: data.item.artists.map((a) => a.name).join(', '),
 			album: data.item.album.name,
 			durationMs: data.item.duration_ms,
-			progressMs: data.progress_ms ?? 0
+			progressMs: data.progress_ms ?? 0,
+			shuffleState: data.shuffle_state ?? false,
+			repeatState: data.repeat_state ?? 'off',
+			volumePercent: data.device?.volume_percent ?? 100
 		};
 	} catch {
 		return null;
@@ -280,6 +314,72 @@ export async function spotifySeek(positionMs: number, accessToken: string): Prom
 		`https://api.spotify.com/v1/me/player/seek?position_ms=${Math.round(positionMs)}`,
 		{
 			method: 'PUT',
+			headers: { Authorization: `Bearer ${accessToken}` }
+		}
+	).catch(() => undefined);
+}
+
+/** Set Spotify volume (0–100). Fire-and-forget — never throws. */
+export async function spotifySetVolume(volumePercent: number, accessToken: string): Promise<void> {
+	const v = Math.max(0, Math.min(100, Math.round(volumePercent)));
+	await fetch(`https://api.spotify.com/v1/me/player/volume?volume_percent=${v}`, {
+		method: 'PUT',
+		headers: { Authorization: `Bearer ${accessToken}` }
+	}).catch(() => undefined);
+}
+
+/** Set Spotify shuffle on or off. Fire-and-forget — never throws. */
+export async function spotifySetShuffle(state: boolean, accessToken: string): Promise<void> {
+	await fetch(`https://api.spotify.com/v1/me/player/shuffle?state=${state}`, {
+		method: 'PUT',
+		headers: { Authorization: `Bearer ${accessToken}` }
+	}).catch(() => undefined);
+}
+
+/** Set Spotify repeat mode. Fire-and-forget — never throws. */
+export async function spotifySetRepeat(
+	state: 'off' | 'track' | 'context',
+	accessToken: string
+): Promise<void> {
+	await fetch(`https://api.spotify.com/v1/me/player/repeat?state=${state}`, {
+		method: 'PUT',
+		headers: { Authorization: `Bearer ${accessToken}` }
+	}).catch(() => undefined);
+}
+
+/**
+ * Fetch the user's Spotify playback queue (upcoming tracks).
+ * Returns an empty array on any error.
+ */
+export async function getSpotifyQueue(accessToken: string): Promise<SpotifyQueueItem[]> {
+	try {
+		const res = await fetch('https://api.spotify.com/v1/me/player/queue', {
+			headers: { Authorization: `Bearer ${accessToken}` }
+		});
+		if (!res.ok) return [];
+
+		interface QueueResponse {
+			queue: { uri: string; name: string; artists: { name: string }[]; duration_ms: number }[];
+		}
+
+		const data = (await res.json()) as QueueResponse;
+		return (data.queue ?? []).map((t) => ({
+			uri: t.uri,
+			name: t.name,
+			artists: t.artists.map((a) => a.name).join(', '),
+			durationMs: t.duration_ms
+		}));
+	} catch {
+		return [];
+	}
+}
+
+/** Add a track URI to the Spotify playback queue. Fire-and-forget — never throws. */
+export async function addToSpotifyQueue(uri: string, accessToken: string): Promise<void> {
+	await fetch(
+		`https://api.spotify.com/v1/me/player/queue?uri=${encodeURIComponent(uri)}`,
+		{
+			method: 'POST',
 			headers: { Authorization: `Bearer ${accessToken}` }
 		}
 	).catch(() => undefined);
