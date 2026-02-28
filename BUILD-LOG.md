@@ -10723,3 +10723,6 @@ Library load time: **9+ seconds → 500ms**. Cover thumbnails: **never appeared 
 
 > **Commit 3e559d6** (2026-02-28 23:03) — docs: build log — fix #49 session entry
 > Files changed: 1
+
+> **Commit 47da78a** (2026-02-28 23:03) — wip: auto-save
+> Files changed: 2
