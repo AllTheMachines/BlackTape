@@ -10889,3 +10889,6 @@ Issue #51 closed.
 
 > **Commit c5cffa6** (2026-03-01 00:03) — wip: auto-save
 > Files changed: 1
+
+> **Commit 1f7396a** (2026-03-01 00:08) — fix #25: time machine pagination + sort order
+> Files changed: 4

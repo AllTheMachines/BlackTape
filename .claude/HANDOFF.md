@@ -1,7 +1,7 @@
-# Work Handoff - 2026-02-28
+# Work Handoff - 2026-03-01
 
 ## Current Task
-Working through open GitHub issues. This session closed #56, #55, #52, #51.
+Working through open GitHub issues. This session closed #43, #32, #31, #25.
 
 ## Context
 Steve's rule: work through open GitHub issues before starting new feature work. 197 tests passing, 0 failing.
@@ -9,17 +9,19 @@ Steve's rule: work through open GitHub issues before starting new feature work. 
 ## Progress
 
 ### Completed This Session
-- **#56** — Play Album button on release page. `▶ Play Album` + `+ Queue Album` side-by-side. Matches local library via `searchLocalTracks` + client-side album/artist filter. Also added `addAllToQueue()` bulk function to queue module.
-- **#55** — Library search/filter. Sticky text input at top of album list pane. Filters by album name, artist, or track title (client-side, in-memory). Auto-selects first match when selection filtered out.
-- **#52** — Style Map multi-select + artist panel. Click = toggle select (no longer navigates away). Selected nodes get accent fill + glow ring. "Find Artists" button fetches artists matching ALL selected tags via `getArtistsByTagIntersection`. "View all in Discover →" is opt-in.
-- **#51** — Discover tag input promoted. Added custom text input at top of filter panel as primary mechanism. Preset tag cloud demoted to "Suggestions" below. Type any genre, press Enter.
+- **#43** — Loading indicators. Sidebar nav pending state (`$navigating`), CSS `:active` on all interactive elements, progress bar 2px→3px.
+- **#32** — Share button brand colors. Mastodon (#6364FF), Bluesky (#0085FF), Twitter/X (--t-1) on hover.
+- **#31** — Discovery headers more prominent. h2 13→14px/t-2→t-1, description 11→12px/t-3→t-2 across all 6 discovery pages.
+- **#25** — Time Machine pagination + sort. Sort: alpha names first, then tag count desc (significance), special chars pushed to end. Pagination: page size 30, "Load more" button appends next batch.
 
 ## Relevant Files
-- `src/routes/artist/[slug]/release/[mbid]/+page.svelte` — Play Album + Queue Album implemented
-- `src/lib/player/queue.svelte.ts` — added `addAllToQueue()`
-- `src/lib/components/LibraryBrowser.svelte` — search input + filteredAlbums
-- `src/lib/components/StyleMap.svelte` — multi-select, artist panel, no goto
-- `src/routes/discover/+page.svelte` — custom tag input added
+- `src/lib/components/LeftSidebar.svelte` — pending nav state + :active CSS
+- `src/routes/+layout.svelte` — progress bar 3px + nav-link :active
+- `src/routes/artist/[slug]/+page.svelte` — platform pill :active + share btn brand colors
+- `src/routes/time-machine/+page.svelte` — pagination state + Load more button
+- `src/routes/time-machine/+page.ts` — limit 30, offset 0
+- `src/lib/db/queries.ts` — getArtistsByYear: sort fix + offset param
+- `src/routes/{crate,discover,explore,kb,style-map,time-machine}/+page.svelte` — discover-mode-desc text bumped
 
 ## Git Status
 - All changes committed, clean working tree
@@ -27,10 +29,10 @@ Steve's rule: work through open GitHub issues before starting new feature work. 
 
 ## Open Issues (remaining, priority order)
 - **Bug:** #23 scene page doesn't reflect local library
-- **Enhancements:** #43 no loading indicator, #33 help/about overhaul, #32 share button per-platform, #31 discovery page headers, #30 about page feedback form, #29 AI provider UX, #27 validate external links, #26 artist website first in links, #25 time machine pagination, #24 style map zoom, #64 geographic scene map, #15 MB live update strategy
+- **Enhancements:** #33 help/about overhaul, #30 about page feedback form, #29 AI provider UX, #24 style map zoom, #64 geographic scene map, #15 MB live update strategy
 
 ## Next Steps
-Pick next issue — suggest **#43** (no loading indicator) or **#26** (artist website first in links) as quick wins.
+Pick next issue — suggest **#24** (Style Map zoom, likely CSS/D3 only) or **#33** (help/about overhaul).
 
 ## Resume Command
 After `/clear`, run `/resume` to continue.
