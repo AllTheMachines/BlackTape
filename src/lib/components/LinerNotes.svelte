@@ -48,7 +48,14 @@
 				// MusicBrainz API — browse by release-group MBID (same pattern as page.server.ts)
 				// inc=artist-credits for release-level credits, labels for label info, recordings for track credits
 				const url = `https://musicbrainz.org/ws/2/release?release-group=${releaseMbid}&inc=artist-credits+labels+recordings&limit=1&fmt=json`;
-				const resp = await fetch(url, { headers: { 'User-Agent': 'Mercury/0.1.0' } });
+				const controller = new AbortController();
+				const timeoutId = setTimeout(() => controller.abort(), 5_000);
+				let resp: Response;
+				try {
+					resp = await fetch(url, { headers: { 'User-Agent': 'Mercury/0.1.0' }, signal: controller.signal });
+				} finally {
+					clearTimeout(timeoutId);
+				}
 				if (!resp.ok) throw new Error(`MusicBrainz ${resp.status}`);
 				const data = await resp.json() as { releases?: MbRelease[] };
 				// Browse endpoint returns { releases: [...] }, take first release

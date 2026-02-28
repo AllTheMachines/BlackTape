@@ -64,7 +64,7 @@
 		try {
 			const mbUrl = `https://musicbrainz.org/ws/2/release?release-group=${mbid}&inc=recordings+artist-credits+media+artist-rels+url-rels&limit=1&fmt=json`;
 			const controller = new AbortController();
-			const timeoutId = setTimeout(() => controller.abort(), 10_000);
+			const timeoutId = setTimeout(() => controller.abort(), 5_000);
 			let resp: Response;
 			try {
 				resp = await fetch(mbUrl, {

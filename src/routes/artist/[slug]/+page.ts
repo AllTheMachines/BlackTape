@@ -11,6 +11,24 @@ import type { PageLoad } from './$types';
 import type { PlatformLinks, CategorizedLinks, ReleaseGroup } from '$lib/embeds/types';
 
 const USER_AGENT = 'Mercury/0.1.0 (https://github.com/user/mercury)';
+const MB_TIMEOUT_MS = 8_000;
+
+/** fetch() with an AbortController timeout. Resolves to null on timeout/error. */
+async function fetchSafe(url: string, fetchFn: typeof fetch, timeoutMs: number): Promise<Response | null> {
+	const controller = new AbortController();
+	const t = setTimeout(() => controller.abort(), timeoutMs);
+	try {
+		const resp = await fetchFn(url, {
+			headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' },
+			signal: controller.signal
+		});
+		return resp;
+	} catch {
+		return null;
+	} finally {
+		clearTimeout(t);
+	}
+}
 
 export const load: PageLoad = async ({ params, fetch }) => {
 	const { getProvider } = await import('$lib/db/provider');
@@ -58,13 +76,21 @@ export const load: PageLoad = async ({ params, fetch }) => {
 	}
 	let relationships: ArtistRelationships = { members: [], influencedBy: [], influenced: [], labels: [] };
 
-	try {
-		const mbLinksResponse = await fetch(
+	// Run links + releases fetches in parallel (independent of each other).
+	// Bio fetch runs after links since it needs the Wikipedia URL.
+	const [mbLinksResponse, mbReleasesResponse] = await Promise.all([
+		fetchSafe(
 			`https://musicbrainz.org/ws/2/artist/${artist.mbid}?inc=url-rels+artist-rels+label-rels&fmt=json`,
-			{ headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' } }
-		);
+			fetch, MB_TIMEOUT_MS
+		),
+		fetchSafe(
+			`https://musicbrainz.org/ws/2/release-group?artist=${artist.mbid}&inc=url-rels&type=album|single|ep&fmt=json&limit=50`,
+			fetch, MB_TIMEOUT_MS
+		)
+	]);
 
-		if (mbLinksResponse.ok) {
+	try {
+		if (mbLinksResponse?.ok) {
 			const mbData = (await mbLinksResponse.json()) as {
 				relations?: Array<{
 					'target-type'?: string;
@@ -169,12 +195,7 @@ export const load: PageLoad = async ({ params, fetch }) => {
 	}
 
 	try {
-		const mbReleasesResponse = await fetch(
-			`https://musicbrainz.org/ws/2/release-group?artist=${artist.mbid}&inc=url-rels&type=album|single|ep&fmt=json&limit=50`,
-			{ headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' } }
-		);
-
-		if (mbReleasesResponse.ok) {
+		if (mbReleasesResponse?.ok) {
 			const { detectPlatform } = await import('$lib/embeds/categorize');
 
 			const mbRelData = (await mbReleasesResponse.json()) as {
@@ -235,7 +256,10 @@ export const load: PageLoad = async ({ params, fetch }) => {
 	try {
 		if (links.wikipedia.length > 0) {
 			const { fetchWikipediaBio } = await import('$lib/bio');
-			bio = await fetchWikipediaBio(links.wikipedia[0]);
+			bio = await Promise.race([
+				fetchWikipediaBio(links.wikipedia[0]),
+				new Promise<null>((resolve) => setTimeout(() => resolve(null), 5_000))
+			]);
 		}
 	} catch (err) {
 		console.error('Bio fetch error:', err);
