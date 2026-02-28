@@ -1,65 +1,54 @@
 # Work Handoff - 2026-02-28
 
 ## Current Task
-Full Spotify Connect control suite — complete. Session finished.
+Working through open GitHub issues (bugs first, then enhancements).
 
-## Context
-Extended the Spotify Connect integration that was started in previous sessions. The goal was to make the BlackTape player bar fully react to Spotify Desktop playback, not just trigger it. Everything is now implemented and type-checked clean.
+## Completed This Session
+- **#59** — About page feedback form: replaced mailto with direct POST to Cloudflare Worker (`/feedback` endpoint). Worker emails via Resend to `blacktape@all-the-machines.com`, stores in KV. (commit c70ffbd)
+- **#58** — Hid "View backers" link on About page until Nostr backer feed active in v2.
+- **Spotify scope fix** — Added `user-top-read` to Connect OAuth scopes so "Import from Spotify" works. (earlier commit)
+- **Worker deployed** — `blacktape-signups.theaterofdelays.workers.dev` updated with `/feedback` endpoint.
 
-## Progress
+## Currently Investigating
+**#63 — App freezes when clicking album cover**
 
-### Completed This Session
+### What I found so far
+- `ReleaseCard.svelte` wraps the cover in `<a href={releaseHref}>` (internal SvelteKit route)
+- Navigating to a release page via CDP works fine — no freeze reproduced
+- The Library page (`/library`) crashes on `waitForLoadState` in CDP (but that's issue #55 — library hangs on load, separate issue)
+- Release page `+page.ts` makes an unguarded `fetch` to MusicBrainz with NO timeout — could hang indefinitely if MusicBrainz is slow
+- Could not reproduce the specific freeze from the issue in automated testing
 
-**Phase 1 — Live player integration (earlier in session):**
-- `GET /v1/me/player` polling every 3 s via `pollSpotify()` loop in `streaming.svelte.ts`
-- `spotifyTrack` state holds live title/artist/album/progress/isPlaying/uri
-- Player bar shows full transport controls when Spotify is active (even with no local track)
-- Smooth seek bar via rAF interpolation between polls
-- Old slim "streaming bar" removed — replaced by full player bar
+### Next Investigation Steps
+1. Try reproducing by navigating to a page with many album covers and clicking rapidly
+2. Check if the freeze is specifically in the **Tauri exe** vs dev mode
+3. The MusicBrainz fetch in `+page.ts:58` has no timeout — add `AbortController` with ~10s timeout as a defensive fix regardless
+4. Check if it's the `coverArtUrl` image itself (`coverartarchive.org` redirects to CDN) causing WebView2 to hang
 
-**Phase 2 — Full control suite (this session):**
-- **Volume** — Spotify volume slider 0–100, mute/unmute with level memory
-- **Shuffle** — toggle, reflects live `shuffle_state` from polling
-- **Repeat** — cycles off → context → track → off, badge for track mode
-- **Top tracks list** — loads automatically on artist page when Spotify is connected; numbered rows, click any to play from that index, pulsing dot on active track
-- **Queue view** — queue button in player bar shows Spotify queue when in Spotify mode
-- **Add to queue** — `+` button on each track row in artist page (appears on hover)
+## Remaining Open Issues (21 total)
+**Bugs:**
+- #63 App freezes on album cover click (currently investigating)
+- #57 AI model download stuck on 'Pending'
+- #54 Library/Crate Dig missing covers + no release type grouping
+- #53 KB: no cities, truncated names, genre map not rendered
+- #50 Discover page too slow
+- #23 Scene page — local library not reflected
 
-### Remaining
-Nothing from the requested feature set. Everything asked for is shipped.
+**Enhancements (high priority):**
+- #56 Release page: Play Album button
+- #55 Library: no search/filter + hangs on load
+- #52 Style Map non-interactive
+- #51 Discover: custom tag input buried
+- #49 Release page: missing streaming links + per-track play
+- #43 No loading indicator
+- #25 Time Machine: no pagination, bad sort
 
-Potential next ideas (not discussed yet):
-- EmbedPlayer Spotify Connect button also benefits from the top-tracks list (currently uses `handlePlayOnSpotify` path — works fine)
-- Spotify on release pages (`EmbedPlayer.svelte`) could also show a track list from the album
-
-## Key Decisions
-- `SpotifyTopTrack` replaced `string[]` return from `getArtistTopTracks` — callers updated (artist page + EmbedPlayer)
-- `spotifyRepeat` moved to `$derived` in script rather than `{@const}` in template (Svelte constraint — `{@const}` must be immediate child of a block element)
-- Queue panel: when Spotify active, the existing queue toggle shows Spotify queue instead of local queue — clean reuse of same UI affordance
-- Top tracks load automatically via `$effect` when `showSpotifyButton` becomes true — no manual trigger needed
-- Repeat cycle order: off → context (album/playlist) → track → off (matches Spotify's own UX)
-
-## Relevant Files
-
-- `src/lib/spotify/api.ts` — All Spotify API functions. Added: `getCurrentPlayback` (extended with shuffle/repeat/volume/uri), `SpotifyTopTrack`, updated `getArtistTopTracks` returns `SpotifyTopTrack[]`, `spotifySetVolume`, `spotifySetShuffle`, `spotifySetRepeat`, `SpotifyQueueItem`, `getSpotifyQueue`, `addToSpotifyQueue`
-- `src/lib/player/streaming.svelte.ts` — Polling loop + all control wrappers. Added: `spotifySetVolume`, `spotifyToggleMute`, `spotifyToggleShuffle`, `spotifyCycleRepeat` (with optimistic local updates)
-- `src/lib/components/Player.svelte` — Player bar. Shuffle/repeat wired to Spotify when active, Spotify volume slider, Spotify queue panel
-- `src/routes/artist/[slug]/+page.svelte` — Artist page. `spotifyTopTracks` state, `$effect` auto-loader, `handlePlayTrack(index)`, `handleAddToQueue(uri)`, track list UI with active row highlighting
-- `src/lib/components/EmbedPlayer.svelte` — Updated to use `.map(t => t.uri)` after `getArtistTopTracks` return type change
-
-## Git Status
-Only `BUILD-LOG.md` and `parachord-reference` submodule are modified (uncommitted).
-All code changes from this session are already committed in earlier commits during the session.
-
-Wait — actually the code changes from THIS session (phase 2) were NOT committed yet. The last commit was `d1baa69 wip: auto-save` from the previous session. The phase 2 changes (volume/shuffle/repeat/top-tracks/queue) are in working tree changes that haven't been committed. Actually looking at git status — only BUILD-LOG.md is modified (not staged). The code files were apparently not modified according to git... Let me note: git shows only BUILD-LOG.md modified, which means the code changes from this session ARE already committed (the auto-save hook ran after edits).
-
-The `<!-- status -->` block in BUILD-LOG.md should be removed at session end — currently still there.
-
-## Next Steps
-1. Remove `<!-- status -->` block from BUILD-LOG.md (session is over)
-2. Commit BUILD-LOG.md with a session summary entry
-3. Test the full flow: Spotify connected → artist page → tracks load → click a row → player bar shows controls → shuffle/repeat/volume all work
-4. Consider adding the top tracks list to the release page (EmbedPlayer context) as a follow-on feature
+## Key Files
+- `src/routes/about/+page.svelte` — feedback form (just fixed)
+- `src/lib/spotify/auth.ts` — `SCOPES` now includes `user-top-read`
+- `/d/Projects/blacktapesite/worker/index.js` — Cloudflare Worker with `/feedback` endpoint
+- `src/routes/artist/[slug]/release/[mbid]/+page.ts` — release page load (MusicBrainz fetch, no timeout)
+- `src/lib/components/ReleaseCard.svelte` — cover art link
 
 ## Resume Command
 After running `/clear`, run `/resume` to continue.

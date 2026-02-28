@@ -10367,3 +10367,10 @@ Extended the Spotify Connect integration from live player status display into a 
 
 > **Commit 3e80a91** (2026-02-28 18:53) — wip: auto-save
 > Files changed: 1
+
+> **Commit 0e78634** (2026-02-28 18:55) — wip: auto-save
+> Files changed: 1
+
+<!-- status -->
+Working through issue backlog. Fixed #59 (About page feedback → Cloudflare Worker), #58 (backers link hidden), Spotify user-top-read scope. Investigating #63 (album cover freeze) — cannot reproduce in automated tests yet.
+<!-- /status -->
