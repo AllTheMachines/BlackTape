@@ -10060,3 +10060,6 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit 9f43b5d** (2026-02-28 15:06) — add tools/reload.mjs — force page reload in running Tauri app via CDP
 > Files changed: 1
+
+> **Commit d9d8e48** (2026-02-28 15:06) — wip: auto-save
+> Files changed: 1
