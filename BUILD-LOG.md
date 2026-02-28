@@ -9829,3 +9829,6 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit f19f5c2** (2026-02-28 12:44) — docs: UAT review complete — all 20 incidents filed (#43–#62)
 > Files changed: 1
+
+> **Commit ffe4ebb** (2026-02-28 12:44) — wip: auto-save
+> Files changed: 1
