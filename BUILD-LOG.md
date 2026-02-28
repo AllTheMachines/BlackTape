@@ -10119,3 +10119,9 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit 5059bcc** (2026-02-28 15:23) — wip: auto-save
 > Files changed: 1
+
+> **Commit 45c0ef1** (2026-02-28 15:25) — wip: auto-save
+> Files changed: 1
+
+> **Commit b40b7b3** (2026-02-28 15:27) — fix: restore Spotify Connect playback on artist page (#61)
+> Files changed: 1
