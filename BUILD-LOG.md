@@ -10789,3 +10789,6 @@ Added a sticky search bar at the top of the album list pane in `LibraryBrowser.s
 The hanging issue mentioned in the bug is already resolved from the previous session's lazy cover loading fix (load time: 9s → 500ms). No virtualization needed at this scale.
 
 Issue #55 closed.
+
+> **Commit bc0549f** (2026-02-28 23:33) — fix #55: add search/filter to library browser
+> Files changed: 3
