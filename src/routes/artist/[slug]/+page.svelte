@@ -344,6 +344,8 @@
 
 			const result = await playTracksOnSpotify(trackUris, token);
 			if (result === 'ok') {
+				const { pause } = await import('$lib/player/audio.svelte');
+				pause();
 				setActiveSource('spotify', `${data.artist.name} — Top Tracks`);
 				spotifyPlayState = 'idle';
 			} else if (result === 'no_device') {
