@@ -9841,3 +9841,9 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit cbf1f08** (2026-02-28 12:47) — chore: ignore large video files (*.mp4, *.mov, *.mkv)
 > Files changed: 2
+
+> **Commit 07c2cfa** (2026-02-28 12:47) — wip: auto-save
+> Files changed: 3
+
+> **Commit 3b01a0c** (2026-02-28 12:48) — chore: ignore press-screenshots directory
+> Files changed: 135
