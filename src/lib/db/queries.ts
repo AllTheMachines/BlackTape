@@ -504,6 +504,29 @@ export async function getDiscoveryArtists(
 
 	const hasFilters = safeTags.length > 0 || country || era;
 
+	// Fast path: no filters — use JOIN + GROUP BY to avoid correlated subqueries in ORDER BY.
+	// The old approach ran 3 correlated subqueries per artist row across 2.6M artists, holding
+	// the Rust Mutex for 10-30+ seconds and blocking all other DB calls (perceived app freeze).
+	if (!hasFilters) {
+		return db.all<ArtistResult>(
+			`SELECT
+			   a.id, a.mbid, a.name, a.slug, a.country,
+			   GROUP_CONCAT(at_r.tag, ', ') AS tags,
+			   ROUND(COALESCE(AVG(1.0 / NULLIF(ts_r.artist_count, 0)) * 1000, 0), 2) AS uniqueness_score
+			 FROM artists a
+			 JOIN artist_tags at_r ON at_r.artist_id = a.id
+			 LEFT JOIN tag_stats ts_r ON ts_r.tag = at_r.tag
+			 GROUP BY a.id
+			 ORDER BY
+			   (1.0 / NULLIF(COUNT(at_r.tag), 0))
+			   * COALESCE(AVG(1.0 / NULLIF(ts_r.artist_count, 0)), 0)
+			   * CASE WHEN a.begin_year >= 2010 THEN 1.2 ELSE 1.0 END
+			   * CASE WHEN a.ended = 0 THEN 1.1 ELSE 1.0 END DESC
+			 LIMIT ?`,
+			limit
+		);
+	}
+
 	const params: unknown[] = [];
 	const whereClauses: string[] = [];
 
@@ -531,25 +554,6 @@ export async function getDiscoveryArtists(
 
 	const whereStr = whereClauses.length > 0 ? `WHERE ${whereClauses.join('\n  AND ')}` : '';
 
-	// Order: when filters present, order by uniqueness DESC; otherwise by discovery_score
-	const orderByExpr = hasFilters
-		? `uniqueness_score DESC`
-		: `COALESCE(
-		     (
-		       1.0 / NULLIF((SELECT COUNT(*) FROM artist_tags WHERE artist_id = a.id), 0)
-		       *
-		       (SELECT AVG(1.0 / NULLIF(ts2.artist_count, 0))
-		        FROM artist_tags at_ds
-		        JOIN tag_stats ts2 ON ts2.tag = at_ds.tag
-		        WHERE at_ds.artist_id = a.id)
-		       *
-		       CASE WHEN a.begin_year >= 2010 THEN 1.2 ELSE 1.0 END
-		       *
-		       CASE WHEN a.ended = 0 THEN 1.1 ELSE 1.0 END
-		     ),
-		     0
-		   ) DESC`;
-
 	params.push(limit);
 
 	return db.all<ArtistResult>(
@@ -569,7 +573,7 @@ export async function getDiscoveryArtists(
 		 FROM artists a
 		 ${tagJoins}
 		 ${whereStr}
-		 ORDER BY ${orderByExpr}
+		 ORDER BY uniqueness_score DESC
 		 LIMIT ?`,
 		...params
 	);

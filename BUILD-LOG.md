@@ -4,6 +4,37 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-02-28 — Fix #45: Discover Page Freeze (SQL Performance)
+
+Root cause confirmed: `getDiscoveryArtists` unfiltered case ran 3 correlated subqueries **per artist row** in the ORDER BY clause, scanning all 2.6M artists. SQLite must evaluate ORDER BY for the full table before applying LIMIT, so the query took 10-30+ seconds.
+
+The Rust side uses a single `Mutex<Connection>` — every DB call waits for the lock. One slow Discover query held the Mutex for the duration, blocking all subsequent DB calls on every page. Users saw pages load but immediately stall on anything requiring data. Looked like a "freeze."
+
+**The fix (`src/lib/db/queries.ts:486`):** When no filters are active, branch to a JOIN + GROUP BY query:
+
+```sql
+-- Before (O(n) correlated subqueries × 2.6M artists):
+ORDER BY COALESCE((
+  1.0 / NULLIF((SELECT COUNT(*) FROM artist_tags WHERE artist_id = a.id), 0)
+  * (SELECT AVG(...) FROM artist_tags ... WHERE artist_id = a.id)
+  * ...
+), 0) DESC
+
+-- After (single join, aggregated once):
+FROM artists a
+JOIN artist_tags at_r ON at_r.artist_id = a.id
+LEFT JOIN tag_stats ts_r ON ts_r.tag = at_r.tag
+GROUP BY a.id
+ORDER BY (1.0 / NULLIF(COUNT(at_r.tag), 0)) * COALESCE(AVG(...), 0) * ... DESC
+LIMIT 50
+```
+
+Same ranking math, eliminates all correlated subqueries. The filtered case (tag/country/era active) retains the old approach — it operates on a small intersection set and was never the problem.
+
+`npm run check` — 0 errors.
+
+---
+
 ## Entry 2026-02-28 — UAT Review: All 20 Incidents Filed
 
 Processed the UAT recording from `F:\videorecordings\2026-02-28 11-27-15.mkv` (20:41). All 20 incidents identified from the transcript were reviewed with frame-by-frame evidence and filed as GitHub issues #43–#62.
@@ -9910,3 +9941,6 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit 7f117b8** (2026-02-28 13:19) — wip: auto-save
 > Files changed: 1
+
+> **Commit 4896414** (2026-02-28 13:22) — wip: auto-save
+> Files changed: 2
