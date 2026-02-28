@@ -34,6 +34,12 @@ Read `PROJECT.md` for the full vision, architecture, and research context.
 
 This project is documented like a documentary. Every decision, dead end, and breakthrough is recorded. **Steve streams the build process live on YouTube** — the build log viewer at `localhost:18800` is always running (Windows Startup).
 
+### Running the App (MANDATORY)
+- **Never ask Steve to launch, reload, or restart the app** — always do it yourself
+- Launch: `node tools/launch-cdp.mjs` (starts Vite + exe with CDP)
+- Reload after changes: `node tools/reload.mjs`
+- Always run these autonomously after making changes
+
 ### Session Start
 1. Read `BUILD-LOG.md` to understand where things stand
 2. Read the last few git commits for recent changes
