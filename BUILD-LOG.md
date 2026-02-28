@@ -10218,3 +10218,6 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit ab8a389** (2026-02-28 17:14) — fix: Spotify Connect on release pages — play album context instead of failing
 > Files changed: 3
+
+> **Commit c8c5334** (2026-02-28 17:14) — wip: auto-save
+> Files changed: 1
