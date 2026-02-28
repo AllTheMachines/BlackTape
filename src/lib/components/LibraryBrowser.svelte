@@ -17,6 +17,15 @@
 	}
 
 	let selectedAlbum = $derived(albums.find(a => albumKey(a) === selectedAlbumKey) ?? null);
+
+	const TYPE_ORDER = ['album', 'ep', 'single'] as const;
+	const TYPE_LABEL: Record<string, string> = { album: 'Albums', ep: 'EPs', single: 'Singles' };
+
+	let groupedAlbums = $derived(
+		TYPE_ORDER
+			.map(type => ({ type, items: albums.filter(a => a.releaseType === type) }))
+			.filter(g => g.items.length > 0)
+	);
 	let selectedAlbumPlayerTracks = $derived(selectedAlbum?.tracks.map(toPlayerTrack) ?? []);
 
 	// Auto-select first album on load and when albums list changes
@@ -103,25 +112,28 @@
 />
 
 <div class="library-panes">
-	<!-- Left pane: album list sorted by recently added (newest first) -->
+	<!-- Left pane: albums grouped by type (Albums / EPs / Singles) -->
 	<div class="album-list-pane" data-testid="album-list-pane">
-		{#each albums as album (albumKey(album))}
-			<button
-				class="album-list-item"
-				class:selected={selectedAlbumKey === albumKey(album)}
-				onclick={() => selectAlbum(album)}
-				data-testid="album-list-item"
-			>
-				{#if album.coverArtBase64}
-					<img class="album-thumb album-thumb-img" src={album.coverArtBase64} alt={album.name} />
-				{:else}
-					<div class="album-thumb">{getInitials(album.name)}</div>
-				{/if}
-				<div class="album-list-info">
-					<div class="album-list-title">{album.name}</div>
-					<a href="/search?q={encodeURIComponent(album.artist)}" class="album-list-artist" onclick={(e) => e.stopPropagation()}>{album.artist}</a>
-				</div>
-			</button>
+		{#each groupedAlbums as group (group.type)}
+			<div class="album-type-header">{TYPE_LABEL[group.type]}</div>
+			{#each group.items as album (albumKey(album))}
+				<button
+					class="album-list-item"
+					class:selected={selectedAlbumKey === albumKey(album)}
+					onclick={() => selectAlbum(album)}
+					data-testid="album-list-item"
+				>
+					{#if album.coverArtBase64}
+						<img class="album-thumb album-thumb-img" src={album.coverArtBase64} alt={album.name} />
+					{:else}
+						<div class="album-thumb">{getInitials(album.name)}</div>
+					{/if}
+					<div class="album-list-info">
+						<div class="album-list-title">{album.name}</div>
+						<a href="/search?q={encodeURIComponent(album.artist)}" class="album-list-artist" onclick={(e) => e.stopPropagation()}>{album.artist}</a>
+					</div>
+				</button>
+			{/each}
 		{/each}
 	</div>
 
@@ -191,6 +203,20 @@
 		border-right: 1px solid var(--b-1);
 		overflow-y: auto;
 		background: var(--bg-1);
+	}
+
+	.album-type-header {
+		padding: 6px 12px 4px;
+		font-size: 0.6rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--t-3);
+		border-bottom: 1px solid var(--b-1);
+		background: var(--bg-2);
+		position: sticky;
+		top: 0;
+		z-index: 1;
 	}
 
 	.album-list-item {

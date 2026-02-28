@@ -52,4 +52,6 @@ export interface LibraryAlbum {
 	tracks: LocalTrack[];
 	/** Data URL for the album cover art, taken from first track with embedded art. */
 	coverArtBase64: string | null;
+	/** Inferred release type based on track count. */
+	releaseType: 'album' | 'ep' | 'single';
 }

@@ -107,7 +107,8 @@ export function groupByAlbum(tracks: LocalTrack[], coverMap?: Map<string, string
 				artist,
 				year: track.year,
 				tracks: [],
-				coverArtBase64: cover
+				coverArtBase64: cover,
+				releaseType: 'album' // recalculated after all tracks are added
 			};
 			albumMap.set(key, album);
 		}
@@ -118,6 +119,12 @@ export function groupByAlbum(tracks: LocalTrack[], coverMap?: Map<string, string
 		if (track.year !== null && (album.year === null || track.year < album.year)) {
 			album.year = track.year;
 		}
+	}
+
+	// Compute release type from final track count: single ≤2, EP ≤6, album 7+
+	for (const album of albumMap.values()) {
+		const n = album.tracks.length;
+		album.releaseType = n <= 2 ? 'single' : n <= 6 ? 'ep' : 'album';
 	}
 
 	// Sort tracks within each album by disc then track number
