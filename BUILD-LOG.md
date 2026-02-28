@@ -12,9 +12,24 @@ The Tauri OAuth plugin requires `oauth:allow-start` and `oauth:allow-cancel` dec
 
 Issue closed.
 
-<!-- status -->
-Bug bash in progress — #62 done. Moving to next issue.
-<!-- /status -->
+---
+
+## Entry 2026-02-28 — Fix: Spotify Connect Button "Does Nothing" on Release Pages
+
+Picked up a handoff bug: "▶ Play in Spotify Desktop" button appeared to do nothing when clicked.
+
+**What actually happened:** Two separate situations, both misdiagnosed as one bug.
+
+**Artist page** — the `▶ Spotify` platform pill was working correctly all along. When Spotify Desktop isn't running, clicking the pill calls `handlePlayOnSpotify()` which returns `no_device` and shows the error message "Open Spotify Desktop and start playing anything, then try again." The previous test session was looking for an `.embed-player` div (wrong expectation — EmbedPlayer never renders when Spotify Connect mode is active). Running a fresh CDP debug confirmed the error message IS displayed.
+
+**Release page (the real bug)** — EmbedPlayer's `playOnSpotifyDesktop(url)` was extracting only artist IDs from Spotify URLs. A release page URL looks like `https://open.spotify.com/album/ABC123`, not `/artist/...`. So `extractSpotifyArtistId()` returned null and the error was "Could not find artist on Spotify." — misleading, wrong, and silent.
+
+**Fix:**
+- Added `extractSpotifyAlbumId(url)` to `src/lib/spotify/api.ts`
+- Added `playAlbumOnSpotify(albumId, token)` which sends `context_uri: "spotify:album:{id}"` to the Connect API — queues the full album in order
+- Updated `EmbedPlayer.svelte`'s `playOnSpotifyDesktop()` to try album URL first, artist URL second
+
+After the fix: clicking "▶ Play in Spotify Desktop" on a release page now attempts to play the album context, and returns the correct `no_device` error (since Spotify Desktop wasn't running in test). 191/191 tests passing.
 
 ---
 
@@ -10197,3 +10212,6 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit 55ecb03** (2026-02-28 17:03) — fix: Spotify OAuth, streaming settings, release page embeds
 > Files changed: 7
+
+> **Commit 1cd6e26** (2026-02-28 17:04) — wip: auto-save
+> Files changed: 2

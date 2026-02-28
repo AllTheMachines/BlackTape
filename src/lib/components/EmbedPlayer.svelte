@@ -33,17 +33,35 @@
 		spotifyConnectState[key] = 'loading';
 		spotifyConnectError[key] = '';
 		try {
-			const { extractSpotifyArtistId, getArtistTopTracks, playTracksOnSpotify } = await import('$lib/spotify/api');
+			const { extractSpotifyArtistId, extractSpotifyAlbumId, getArtistTopTracks, playTracksOnSpotify, playAlbumOnSpotify } = await import('$lib/spotify/api');
 			const { getValidAccessToken } = await import('$lib/spotify/auth');
-			const artistId = extractSpotifyArtistId(url);
-			if (!artistId) { spotifyConnectState[key] = 'error'; spotifyConnectError[key] = 'Could not find artist on Spotify.'; return; }
 			const token = await getValidAccessToken();
-			const trackUris = await getArtistTopTracks(artistId, token);
-			const result = await playTracksOnSpotify(trackUris, token);
-			if (result === 'ok') { spotifyConnectState[key] = 'playing'; }
-			else if (result === 'no_device') { spotifyConnectState[key] = 'error'; spotifyConnectError[key] = 'Open Spotify Desktop and start playing anything, then try again.'; }
-			else if (result === 'premium_required') { spotifyConnectState[key] = 'error'; spotifyConnectError[key] = 'Spotify Premium is required.'; }
-			else if (result === 'token_expired') { spotifyConnectState[key] = 'error'; spotifyConnectError[key] = 'Spotify session expired — reconnect in Settings.'; }
+
+			const albumId = extractSpotifyAlbumId(url);
+			if (albumId) {
+				// Release page: play the full album as context
+				const result = await playAlbumOnSpotify(albumId, token);
+				if (result === 'ok') { spotifyConnectState[key] = 'playing'; }
+				else if (result === 'no_device') { spotifyConnectState[key] = 'error'; spotifyConnectError[key] = 'Open Spotify Desktop and start playing anything, then try again.'; }
+				else if (result === 'premium_required') { spotifyConnectState[key] = 'error'; spotifyConnectError[key] = 'Spotify Premium is required.'; }
+				else if (result === 'token_expired') { spotifyConnectState[key] = 'error'; spotifyConnectError[key] = 'Spotify session expired — reconnect in Settings.'; }
+				return;
+			}
+
+			const artistId = extractSpotifyArtistId(url);
+			if (artistId) {
+				// Artist page (via EmbedPlayer): play top tracks
+				const trackUris = await getArtistTopTracks(artistId, token);
+				const result = await playTracksOnSpotify(trackUris, token);
+				if (result === 'ok') { spotifyConnectState[key] = 'playing'; }
+				else if (result === 'no_device') { spotifyConnectState[key] = 'error'; spotifyConnectError[key] = 'Open Spotify Desktop and start playing anything, then try again.'; }
+				else if (result === 'premium_required') { spotifyConnectState[key] = 'error'; spotifyConnectError[key] = 'Spotify Premium is required.'; }
+				else if (result === 'token_expired') { spotifyConnectState[key] = 'error'; spotifyConnectError[key] = 'Spotify session expired — reconnect in Settings.'; }
+				return;
+			}
+
+			spotifyConnectState[key] = 'error';
+			spotifyConnectError[key] = 'Could not find this release on Spotify.';
 		} catch {
 			spotifyConnectState[key] = 'error';
 			spotifyConnectError[key] = 'Could not connect to Spotify.';

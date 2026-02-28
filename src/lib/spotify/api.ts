@@ -55,6 +55,45 @@ export function extractSpotifyArtistId(spotifyUrl: string): string | null {
 	return match ? match[1] : null;
 }
 
+/**
+ * Extract the Spotify album ID from a MusicBrainz Spotify URL.
+ *
+ * Input:  "https://open.spotify.com/album/6dVIqQ8qmQ5GBnJ9shOYGE"
+ * Returns: "6dVIqQ8qmQ5GBnJ9shOYGE" or null if URL does not match.
+ */
+export function extractSpotifyAlbumId(spotifyUrl: string): string | null {
+	const match = spotifyUrl.match(/open\.spotify\.com\/album\/([a-zA-Z0-9]+)/);
+	return match ? match[1] : null;
+}
+
+/**
+ * Trigger playback of a Spotify album on the user's active device.
+ *
+ * Uses context_uri so Spotify queues the full album in order.
+ * Returns a discriminated PlayResult — never throws.
+ */
+export async function playAlbumOnSpotify(albumId: string, accessToken: string): Promise<PlayResult> {
+	try {
+		const res = await fetch('https://api.spotify.com/v1/me/player/play', {
+			method: 'PUT',
+			headers: {
+				Authorization: `Bearer ${accessToken}`,
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({ context_uri: `spotify:album:${albumId}` })
+		});
+
+		if (res.status === 204) return 'ok';
+		if (res.status === 401) return 'token_expired';
+		if (res.status === 403) return 'premium_required';
+		if (res.status === 404) return 'no_device';
+
+		return 'no_device';
+	} catch {
+		return 'no_device';
+	}
+}
+
 // ─── Spotify API response interfaces ─────────────────────────────────────────
 
 interface SpotifyTrack {
