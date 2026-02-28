@@ -9865,3 +9865,9 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit cd4f06e** (2026-02-28 12:51) — wip: auto-save
 > Files changed: 1
+
+> **Commit dc3838d** (2026-02-28 12:52) — wip: auto-save
+> Files changed: 1
+
+> **Commit dab7c3d** (2026-02-28 12:54) — fix: apply drag region to titlebar element directly (#46)
+> Files changed: 1
