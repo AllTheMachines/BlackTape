@@ -1,33 +1,39 @@
 # Work Handoff - 2026-02-28
 
 ## Current Task
-Bug-bashing open v1.4 Spotify issues — fixed keyboard input and UI confusion.
+Spotify Connect "Play in Spotify Desktop" button does nothing on the artist page.
 
 ## Completed This Session
-- **Input keyboard fix** — `main-pane` scroll container was stealing keyboard events from inputs (WebView2 + scrollable div implicit focus bug). Fixed by adding `tabindex="-1"` to `.main-pane` in `PanelLayout.svelte`.
-- **SpotifySettings improvements:**
-  - Added "Re-authorize" button (replaces useless "Done" button in connected state)
-  - Fixed `$state(reactiveValue)` read-only bug — changed to `$effect` with initialized flag
-  - Added `focusWindow()` on input mousedown (Tauri Win32 focus safety)
-  - Removed confusing dashboard mockup — users thought it was real input fields
-  - Fixed race condition: `$effect` instead of `onMount` for clientId pre-fill
+- Spotify OAuth fixed: fixed port 7743, correct redirect URI in dashboard
+- SpotifySettings UI improved: bigger font, correct instructions, dev mode note
+- Streaming settings: removed dead dropdown, replaced broken HTML5 drag with ↑↓ buttons
+- Release page: now fetches Spotify/SoundCloud/YouTube/Bandcamp from MB url-rels, shows EmbedPlayer
+- EmbedPlayer: when Spotify connected, shows Connect API button instead of broken iframe
+- All 191 tests passing, committed
 
-## App State
-- App running via `node tools/launch-cdp.mjs` (CDP on port 9224)
-- All changes reloaded, visible in app
-- No Spotify client ID stored in DB (user needs to enter fresh)
+## The Unresolved Bug
+"▶ Play in Spotify Desktop" button on artist page does nothing when clicked.
 
-## Next Steps (Spotify Issue Dependency Chain)
-1. **Steve tests Spotify OAuth**: Settings > Spotify > enter Client ID > Authorize
-   - Needs Spotify Desktop running + Spotify Developer app with redirect URI `http://127.0.0.1`
-2. **#61** — Streaming preference settings don't apply (dropdown + drag order disconnected from embed ordering)
-3. **#49** — Release page: no streaming links, no play buttons on tracks
+### Debug findings so far
+- CDP check found `document.querySelector('.embed-player')` returns null on the artist page
+- This means EmbedPlayer isn't rendering on the Radiohead artist page at all, OR it's inside a tab that isn't active
+- The only Spotify-related button found was "▶ Spotify" — which is likely a tab button, not the play button
 
-## Key Files Changed This Session
-- `src/lib/components/SpotifySettings.svelte` — Re-authorize button, $effect init, focusWindow, mockup removed
-- `src/lib/components/PanelLayout.svelte` — tabindex="-1" on main-pane (keyboard fix)
-- `CLAUDE.md` — added "never ask Steve to run the app" rule
-- `memory/MEMORY.md` — same rule added
+### Likely causes to investigate
+1. The artist page renders EmbedPlayer inside a tab (e.g. "Overview" tab) — need to check if the tab is active
+2. `spotifyState.connected` may be false in EmbedPlayer context (state not loaded yet)
+3. The Spotify Connect flow itself may be failing silently — the `@const cstate` in the template is NOT reactive in Svelte 5 (it's a snapshot, not a binding) — this means button state never updates visually
+
+### Fix needed
+- In EmbedPlayer.svelte, replace `{@const cstate = spotifyConnectState[key] ?? 'idle'}` with inline reads
+- Add console.log or CDP debug to verify `spotifyState.connected` is true when EmbedPlayer renders
+- Check why `.embed-player` div isn't found by CDP on the artist page
+
+## Key Files
+- `src/lib/components/EmbedPlayer.svelte` — Spotify Connect button + `playOnSpotifyDesktop()`
+- `src/lib/spotify/api.ts` — `getArtistTopTracks()` + `playTracksOnSpotify()` (already complete)
+- `src/lib/spotify/auth.ts` — `getValidAccessToken()` (already complete)
+- `src/lib/spotify/state.svelte.ts` — `spotifyState.connected` reactive state
 
 ## Resume Command
 Run `/resume` after `/clear`

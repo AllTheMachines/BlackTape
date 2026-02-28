@@ -10194,3 +10194,6 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit 82ac2f6** (2026-02-28 16:27) — wip: auto-save
 > Files changed: 1
+
+> **Commit 55ecb03** (2026-02-28 17:03) — fix: Spotify OAuth, streaming settings, release page embeds
+> Files changed: 7
