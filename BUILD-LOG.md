@@ -9853,3 +9853,9 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit f590de1** (2026-02-28 12:49) — wip: auto-save
 > Files changed: 2
+
+> **Commit dc6fe04** (2026-02-28 12:49) — wip: auto-save
+> Files changed: 1
+
+> **Commit 1b7dbf2** (2026-02-28 12:50) — fix: add oauth:allow-start capability (#62)
+> Files changed: 1
