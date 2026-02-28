@@ -13,7 +13,7 @@ Working through open GitHub issues (bugs first, then enhancements).
 
 ## Next Issues To Tackle
 **Bugs:**
-- #63 App freezes on album cover click (partial fix done — monitor)
+- #63 App freezes on album cover click (STILL REPRODUCIBLE — Steve confirmed on Radiohead, specifically multi-release cards like "5 Album Set". Timeout fix not enough. Next: check if it's the coverartarchive.org redirect hanging WebView2, or MB returning huge payload for box-set release groups)
 - #54 Library/Crate Dig missing covers + no release type grouping
 - #50 Discover page too slow (investigated: fast-path JOIN query on 2.6M artists is the bottleneck)
 - #23 Scene page — local library not reflected
