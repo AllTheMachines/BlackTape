@@ -761,7 +761,7 @@ export async function getGenreSubgraph(
 ): Promise<GenreGraph> {
 	const center = await db.get<GenreNode>(
 		`SELECT id, slug, name,
-		        CASE WHEN origin_lat IS NOT NULL THEN 'scene' ELSE 'genre' END AS type,
+		        COALESCE(type, 'genre') AS type,
 		        inception_year, origin_city, origin_lat, origin_lng,
 		        wikidata_id, wikipedia_title, mb_tag
 		 FROM genres WHERE slug = ?`,
@@ -771,7 +771,7 @@ export async function getGenreSubgraph(
 
 	const neighbors = await db.all<GenreNode>(
 		`SELECT DISTINCT g.id, g.slug, g.name,
-		        CASE WHEN g.origin_lat IS NOT NULL THEN 'scene' ELSE 'genre' END AS type,
+		        COALESCE(g.type, 'genre') AS type,
 		        g.inception_year, g.origin_city, g.origin_lat, g.origin_lng,
 		        g.wikidata_id, g.wikipedia_title, g.mb_tag
 		 FROM genre_relationships gr
@@ -803,7 +803,7 @@ export async function getGenreBySlug(
 ): Promise<GenreNode | null> {
 	return db.get<GenreNode>(
 		`SELECT id, slug, name,
-		        CASE WHEN origin_lat IS NOT NULL THEN 'scene' ELSE 'genre' END AS type,
+		        COALESCE(type, 'genre') AS type,
 		        inception_year, origin_city, origin_lat, origin_lng,
 		        wikidata_id, wikipedia_title, mb_tag
 		 FROM genres WHERE slug = ?`,
@@ -914,7 +914,7 @@ export async function getStarterGenreGraph(
 	const placeholders = centerIds.map(() => '?').join(', ');
 	const nodes = await db.all<GenreNode>(
 		`SELECT DISTINCT g.id, g.slug, g.name,
-		        CASE WHEN g.origin_lat IS NOT NULL THEN 'scene' ELSE 'genre' END AS type,
+		        COALESCE(g.type, 'genre') AS type,
 		        g.inception_year, g.origin_city, g.origin_lat, g.origin_lng,
 		        g.wikidata_id, g.wikipedia_title, g.mb_tag
 		 FROM genres g
@@ -954,7 +954,7 @@ export async function getStarterGenreGraph(
 export async function getAllGenreGraph(db: DbProvider): Promise<GenreGraph> {
 	const nodes = await db.all<GenreNode>(
 		`SELECT id, slug, name,
-		        CASE WHEN origin_lat IS NOT NULL THEN 'scene' ELSE 'genre' END AS type,
+		        COALESCE(type, 'genre') AS type,
 		        inception_year, origin_city, origin_lat, origin_lng,
 		        wikidata_id, wikipedia_title, mb_tag
 		 FROM genres

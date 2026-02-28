@@ -181,8 +181,9 @@ function insertGenres(db, bindings) {
         ? `${baseSlug}-${entry.wdId.slice(1, 9)}`
         : baseSlug;
 
-      // Determine node type: 'scene' if it has an origin city, else 'genre'
-      const type = entry.originCity ? 'scene' : 'genre';
+      // All Wikidata Q188451 items are music genres, not geographic scenes.
+      // origin_city stores P495 (country/region of origin) for display only.
+      const type = 'genre';
 
       // mb_tag: lowercase slug of name (bridge to artist_tags)
       const mbTag = baseSlug || null;
