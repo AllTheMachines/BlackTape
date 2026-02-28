@@ -9895,3 +9895,9 @@ This completes v1.0 — The Playback Milestone. All phases done.
 
 > **Commit 7f08004** (2026-02-28 13:06) — wip: auto-save
 > Files changed: 1
+
+> **Commit 73c3daa** (2026-02-28 13:08) — wip: auto-save
+> Files changed: 1
+
+> **Commit 41a381f** (2026-02-28 13:11) — fix: always show About tab, add empty state for missing relationships (#47)
+> Files changed: 2
