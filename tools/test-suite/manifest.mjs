@@ -2291,18 +2291,6 @@ export const PHASE_25 = [
     method: 'code',
     fn: () => fileContains('src/routes/artist/[slug]/release/[mbid]/+page.svelte', 'queue-album-btn')(),
   },
-  {
-    id: 'P25-10', phase: 25, area: 'Queue System',
-    desc: 'Artist page has play-all-btn testid',
-    method: 'code',
-    fn: () => fileContains('src/routes/artist/[slug]/+page.svelte', 'play-all-btn')(),
-  },
-  {
-    id: 'P25-11', phase: 25, area: 'Queue System',
-    desc: 'Artist page has queue-all-btn testid',
-    method: 'code',
-    fn: () => fileContains('src/routes/artist/[slug]/+page.svelte', 'queue-all-btn')(),
-  },
   // Plan 03: Queue panel + Library
   {
     id: 'P25-12', phase: 25, area: 'Queue System',

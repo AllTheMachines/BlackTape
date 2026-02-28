@@ -16,8 +16,6 @@
 	import { streamingPref, loadStreamingPreference } from '$lib/theme/preferences.svelte';
 	import { generateEmbedSnippets } from '$lib/curator/embed-snippet';
 	import { page } from '$app/stores';
-	import { setQueue, addToQueue } from '$lib/player/queue.svelte';
-	import type { PlayerTrack } from '$lib/player/state.svelte';
 	import EmbedPlayer from '$lib/components/EmbedPlayer.svelte';
 	import { streamingState, setActiveSource } from '$lib/player/streaming.svelte';
 	import type { PlatformType } from '$lib/embeds/types';
@@ -242,16 +240,6 @@
 			embedMode === 'script' && curatorHandle.trim() ? curatorHandle.trim() : undefined
 		)
 	);
-
-	/** Top tracks for the artist (populated when local library matching is available). */
-	let topPlayerTracks = $state<PlayerTrack[]>([]);
-
-	function handlePlayAll() {
-		if (topPlayerTracks.length > 0) setQueue(topPlayerTracks, 0);
-	}
-	function handleQueueAll() {
-		for (const t of topPlayerTracks) addToQueue(t);
-	}
 
 	/** Active embed service for source switcher. Null = show highest-priority available. */
 	let activeEmbedService = $state<PlatformType | null>(null);
@@ -561,36 +549,6 @@
 				artistTags={data.artist.tags ?? ''}
 				releases={data.releases}
 			/>
-
-			<!-- Top Tracks (Tauri-only: local library queue integration) -->
-			{#if tauriMode}
-				<div class="top-tracks-section" data-testid="top-tracks-section">
-					<div class="top-tracks-header">
-						<h3 class="section-label">Top Tracks</h3>
-						<div class="top-tracks-actions">
-							<button
-								class="btn-play-all"
-								onclick={handlePlayAll}
-								disabled={topPlayerTracks.length === 0}
-								title={topPlayerTracks.length === 0 ? 'Library track matching coming soon' : undefined}
-								data-testid="play-all-btn"
-							>
-								Play All
-							</button>
-							<button
-								class="btn-queue-all"
-								onclick={handleQueueAll}
-								disabled={topPlayerTracks.length === 0}
-								title={topPlayerTracks.length === 0 ? 'Library track matching coming soon' : undefined}
-								data-testid="queue-all-btn"
-							>
-								+ Queue All
-							</button>
-						</div>
-					</div>
-					<p class="top-tracks-stub">Local track matching coming in a future update.</p>
-				</div>
-			{/if}
 
 			<!-- Discography -->
 			{#if data.releases.length > 0}
@@ -1074,71 +1032,6 @@
 		text-transform: uppercase;
 		color: var(--t-3);
 		padding: 9px 20px;
-		margin: 0;
-	}
-
-	/* ── Top Tracks ────────────────────────────────────── */
-	.top-tracks-section {
-		padding: 9px 20px 14px;
-		border-bottom: 1px solid var(--b-1);
-	}
-
-	.top-tracks-header {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		margin-bottom: var(--space-sm);
-	}
-
-	.section-label {
-		font-size: 0.75rem;
-		font-weight: 600;
-		text-transform: uppercase;
-		letter-spacing: 0.08em;
-		color: var(--t-3);
-		margin: 0;
-	}
-
-	.top-tracks-actions {
-		display: flex;
-		gap: 6px;
-	}
-
-	.btn-play-all {
-		background: var(--acc);
-		color: #000;
-		border: none;
-		padding: 5px 12px;
-		border-radius: 0;
-		font-size: 0.75rem;
-		font-weight: 600;
-		cursor: pointer;
-	}
-
-	.btn-play-all:hover {
-		background: var(--acc-bg-h);
-		color: var(--acc);
-		border: 1px solid var(--b-acc);
-	}
-
-	.btn-queue-all {
-		background: transparent;
-		color: var(--t-1);
-		border: 1px solid var(--b-2);
-		padding: 5px 12px;
-		border-radius: 0;
-		font-size: 0.75rem;
-		cursor: pointer;
-	}
-
-	.btn-queue-all:hover {
-		border-color: var(--b-3);
-	}
-
-	.top-tracks-stub {
-		font-size: 0.75rem;
-		color: var(--t-3);
-		font-style: italic;
 		margin: 0;
 	}
 
