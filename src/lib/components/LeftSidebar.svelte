@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { page } from '$app/stores';
+	import { page, navigating } from '$app/stores';
 	import { goto } from '$app/navigation';
 
 	const MAX_TAGS = 5;
@@ -78,6 +78,14 @@
 		return pathname.startsWith(href);
 	}
 
+	/** True when a navigation is in-flight toward this href. */
+	function isPending(href: string): boolean {
+		const dest = $navigating?.to?.url?.pathname ?? null;
+		if (!dest) return false;
+		if (href === '/') return dest === '/';
+		return dest.startsWith(href);
+	}
+
 	/** True when we're on the Discover page — show filter controls. */
 	let isOnDiscover = $derived($page.url.pathname === '/discover');
 
@@ -108,6 +116,7 @@
 										href={mode.href}
 										class="mode-switch-btn"
 										class:active={mode.href === activeDiscoveryMode.href}
+										class:pending={isPending(mode.href)}
 										title={mode.label}
 									>{mode.icon}</a>
 								{/each}
@@ -116,7 +125,7 @@
 					{:else}
 						<!-- Not on a discovery page — show full link list -->
 						{#each DISCOVERY_MODES as mode}
-							<a href={mode.href} class="nav-item" class:active={isActive(mode.href)}>
+							<a href={mode.href} class="nav-item" class:active={isActive(mode.href)} class:pending={isPending(mode.href)}>
 								<span class="nav-ico">{mode.icon}</span>
 								{mode.label}
 							</a>
@@ -124,7 +133,7 @@
 					{/if}
 				{:else}
 					{#each group.links as link}
-						<a href={link.href} class="nav-item" class:active={isActive(link.href)}>
+						<a href={link.href} class="nav-item" class:active={isActive(link.href)} class:pending={isPending(link.href)}>
 							<span class="nav-ico">{link.icon}</span>
 							{link.label}
 						</a>
@@ -231,6 +240,11 @@
 		text-decoration: none;
 	}
 
+	.nav-item:active {
+		background: #1c1c1c;
+		color: var(--t-1);
+	}
+
 	.nav-item.active {
 		background: #1c1c1c;
 		color: var(--t-1);
@@ -239,6 +253,17 @@
 
 	.nav-item.active .nav-ico {
 		color: var(--acc);
+	}
+
+	.nav-item.pending {
+		background: #181818;
+		color: var(--t-2);
+		border-left-color: var(--t-3);
+		opacity: 0.8;
+	}
+
+	.nav-item.pending .nav-ico {
+		color: var(--t-2);
 	}
 
 	.nav-ico {
@@ -302,10 +327,20 @@
 		color: var(--t-1);
 	}
 
+	.mode-switch-btn:active {
+		opacity: 0.7;
+	}
+
 	.mode-switch-btn.active {
 		background: var(--acc);
 		border-color: var(--acc);
 		color: var(--bg-1);
+	}
+
+	.mode-switch-btn.pending {
+		border-color: var(--t-3);
+		color: var(--t-2);
+		opacity: 0.7;
 	}
 
 	/* Discovery Filters */

@@ -275,6 +275,11 @@
 		color: var(--t-1);
 	}
 
+	.back-btn:active {
+		color: var(--t-1);
+		opacity: 0.7;
+	}
+
 	.site-name {
 		font-size: 0.85rem;
 		font-weight: 500;
@@ -313,6 +318,10 @@
 	.nav-link:hover {
 		color: var(--t-2);
 		text-decoration: none;
+	}
+
+	.nav-link:active {
+		color: var(--t-1);
 	}
 
 	.nav-link.active {
@@ -404,7 +413,7 @@
 		position: fixed;
 		top: 0;
 		left: 0;
-		height: 2px;
+		height: 3px;
 		z-index: 200;
 		background: var(--acc);
 		width: 0%;

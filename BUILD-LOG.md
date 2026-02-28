@@ -4,6 +4,22 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-02-28 — Fix #43: Loading indicators
+
+Steve's complaint: *"There must be some message like wait until it's finished or whatever, but clicking and nothing happening is not working."*
+
+Three-part fix:
+
+**1. Sidebar nav pending state** — When you click a nav item while a page is loading, the clicked item now shows a visual pending state immediately (dim highlight + left border tick in `var(--t-3)`). Previously nothing changed until the full load function resolved, making it feel like the click didn't register. Used `$navigating.to?.url?.pathname` to derive which link is in-flight.
+
+**2. CSS `:active` states** — Added immediate click feedback across all interactive elements: sidebar nav items, mode-switch buttons, web nav links, platform pills, and the external link `↗` icon. Pure CSS — no JS needed.
+
+**3. Progress bar height** — Bumped from 2px to 3px. Subtle, but the 2px bar was easy to miss against the window chrome.
+
+The nav progress bar already existed and covered SvelteKit route transitions correctly. The gap was purely visual feedback at the click-point level.
+
+---
+
 ## Entry 2026-02-28 — Fix #49: STREAM ON Row on Release Page
 
 Added a "STREAM ON" section alongside "BUY ON" on every release page. Steve's complaint: *"There's no Spotify showing up here. It's just buy on. It should be also like the streaming links — buy on, stream on maybe."*
@@ -10839,4 +10855,7 @@ Issue #51 closed.
 > Files changed: 2
 
 > **Commit 0442ce0** (2026-02-28 23:46) — auto-save: 2 files @ 23:46
+> Files changed: 1
+
+> **Commit d4b3a41** (2026-02-28 23:49) — wip: auto-save
 > Files changed: 1

@@ -1007,6 +1007,11 @@
 		background: var(--bg-3);
 	}
 
+	.platform-pill:active {
+		opacity: 0.75;
+		transform: translateY(1px);
+	}
+
 	.platform-pill.active {
 		background: var(--bg-3);
 		border-color: var(--text-secondary);
@@ -1201,6 +1206,10 @@
 	.platform-ext-icon:hover {
 		background: var(--bg-3);
 		color: var(--text-primary);
+	}
+
+	.platform-ext-icon:active {
+		opacity: 0.7;
 	}
 
 	/* External-only platform pills — generic fallback */
