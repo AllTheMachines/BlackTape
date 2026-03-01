@@ -11098,3 +11098,6 @@ Issue #51 closed.
 
 > **Commit 25d0bf4** (2026-03-01 08:58) — fix(#65): LLM prompt injection hardening
 > Files changed: 7
+
+> **Commit 672ff41** (2026-03-01 09:06) — fix(#67): playlist export — M3U8, Traktor NML, copy to folder
+> Files changed: 6
