@@ -56,7 +56,11 @@
 				data.genre.inception_year,
 				data.genre.origin_city
 			);
-			aiSummary = await ai.complete(prompt, { temperature: 0.6, maxTokens: 150 });
+			aiSummary = await ai.complete(prompt.user, {
+				systemPrompt: prompt.system,
+				temperature: 0.6,
+				maxTokens: 150
+			});
 		} catch {
 			/* best-effort */
 		} finally {

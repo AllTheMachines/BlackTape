@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { isTauri } from '$lib/platform';
 	import { getAiProvider } from '$lib/ai/engine';
-	import { PROMPTS } from '$lib/ai/prompts';
+	import { PROMPTS, INJECTION_GUARD } from '$lib/ai/prompts';
 	import { tasteProfile } from '$lib/taste/profile.svelte';
 	import ExploreResult from '$lib/components/ExploreResult.svelte';
 
@@ -128,6 +128,7 @@
 					: PROMPTS.nlExplore(trimmed);
 
 			const response = await provider.complete(prompt, {
+				systemPrompt: INJECTION_GUARD,
 				temperature: 0.8,
 				maxTokens: 1024
 			});
@@ -185,6 +186,7 @@
 			);
 
 			const response = await provider.complete(prompt, {
+				systemPrompt: INJECTION_GUARD,
 				temperature: 0.8,
 				maxTokens: 1024
 			});

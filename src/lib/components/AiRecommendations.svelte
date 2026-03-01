@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { getAiProvider } from '$lib/ai/engine';
-	import { PROMPTS } from '$lib/ai/prompts';
+	import { PROMPTS, INJECTION_GUARD } from '$lib/ai/prompts';
 	import { tasteProfile } from '$lib/taste/profile.svelte';
 
 	let {
@@ -54,7 +54,7 @@
 
 			const response = await provider.complete(
 				PROMPTS.recommendation(artistName, tasteDescription),
-				{ temperature: 0.7, maxTokens: 200 }
+				{ systemPrompt: INJECTION_GUARD, temperature: 0.7, maxTokens: 200 }
 			);
 
 			// Parse response: one artist name per line, strip numbering/descriptions

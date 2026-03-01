@@ -76,13 +76,17 @@
 
 			aiLoading = true;
 			const { getAiProvider } = await import('$lib/ai/engine');
-			const { PROMPTS } = await import('$lib/ai/prompts');
+			const { PROMPTS, INJECTION_GUARD } = await import('$lib/ai/prompts');
 			const ai = getAiProvider();
 			if (!ai) return;
 
 			const artistNames = data.artists.map(a => a.name);
 			const prompt = PROMPTS.sceneDescription(data.scene.name, data.scene.tags, artistNames);
-			aiDescription = await ai.complete(prompt, { temperature: 0.7, maxTokens: 60 });
+			aiDescription = await ai.complete(prompt, {
+				systemPrompt: INJECTION_GUARD,
+				temperature: 0.7,
+				maxTokens: 60
+			});
 		} catch {
 			/* best-effort — no AI, no problem */
 		} finally {
