@@ -11284,3 +11284,6 @@ Replaced the blurred-backdrop-always approach with a four-case system that uses 
 - Artist page `+page.svelte` — fetches artist Wikipedia thumbnail via `$effect`, passes as `artistPhotoUrl` to all `ReleaseCard`s.
 
 **Verified on Radiohead page:** 3 live recording releases with no CAA art now show the band's Wikipedia photo — dimmed, title overlaid. On search results, obscure artists with neither Wikipedia photo nor CAA art gracefully fall back to the genre color solid.
+
+> **Commit 584adf6** (2026-03-01 12:58) — docs: 2026-03-01 — smart cover placeholders session
+> Files changed: 1
