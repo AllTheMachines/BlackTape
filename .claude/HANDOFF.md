@@ -1,54 +1,45 @@
 # Work Handoff - 2026-03-01
 
 ## Current Task
-Session complete — issue backlog cleared, strategic conversation about open source / donations.
+Rename project folder from `D:\Projects\Mercury` to `D:\Projects\BlackTape`
 
 ## Context
-This session worked through all actionable open GitHub issues. Also had a conversation with Steve about open source fears (fork risk) and donation buttons. All committed and clean.
+The project's real name is BlackTape (Mercury was always a codename). GitHub repo was renamed to `AllTheMachines/BlackTape` this session. The local folder still needs renaming, but Claude Code's own process locks the folder so it can't be done from within the session.
 
 ## Progress
 ### Completed
-- Closed #66 — Tauri updater (already implemented last session, just needed closing)
-- Closed #65 — LLM prompt injection hardening: INJECTION_GUARD + externalContent() in prompts.ts, all complete() call sites updated, genreSummary returns {system,user}, documented in ARCHITECTURE.md
-- Closed #67 — Playlist export: export.rs (M3U8, Traktor NML, copy to folder), ExportDialog.svelte, Export button in Queue.svelte
-- Closed #40 — Donation button research: answered "not yet, wait for organic signal"
-- Removed donation buttons from about page (Ko-fi, GitHub Sponsors, Open Collective — were placeholder URLs anyway)
-- Verified artist support links ARE real (from MusicBrainz relationship data — actual artist Ko-fi/Patreon URLs)
+- GitHub repo renamed: `AllTheMachines/Mercury` → `AllTheMachines/BlackTape`
+- Local git remote updated to: `https://github.com/AllTheMachines/BlackTape.git`
+- Windows Startup shortcut updated: `Mercury Build Log Viewer.lnk` now points to `D:\Projects\BlackTape\tools\build-log-viewer\`
+- Build-log-viewer process killed (PID 22732) to attempt rename — still locked by Claude Code process itself
 
 ### In Progress
-- Nothing. All work committed.
+- Folder rename: blocked — needs Claude Code session to be closed first
 
 ### Remaining
-- Remaining open issues are all research/meta/strategy (non-code):
-  - #39 — Testing video (Steve records)
-  - #38 — Scan audiologs/roadmap for missed features (research task)
-  - #37 — Marketing approach (strategic)
-  - #36 — Modular audit: can community features be cleanly disabled?
-  - #35 — v1 feature scope decision
-  - #15 — MusicBrainz live update strategy
+- Steve manually renames `D:\Projects\Mercury` → `D:\Projects\BlackTape` in Windows Explorer
+- Restart Claude Code from new folder path
+- Restart build-log-viewer: `node tools/build-log-viewer/server.js --file ../../BUILD-LOG.md` from `D:\Projects\BlackTape\tools\build-log-viewer\`
+- Optionally rename the Startup shortcut itself from "Mercury Build Log Viewer" to "BlackTape Build Log Viewer"
 
 ## Key Decisions
-- Open source fear: Steve worried about forks. Answered: creator advantage is real, forks usually die. License choice (GPL/AGPL) matters more than open vs closed. Not urgent until public launch.
-- Donation buttons: removed for now. Signal to watch = someone asking "how can I support this?" unprompted. Platforms when ready: GitHub Sponsors + Ko-fi.
-- Artist Ko-fi links on artist page are REAL MusicBrainz relationship URLs — not fake. No issue.
+- Keep GitHub org as `AllTheMachines` (that's Steve's identity, not the project name)
+- No sensitive data found in repo — safe to be public
+- No donations in app from day one — wait for organic "how can I support this?" signal
+- GSD creator (Lex Christopherson / @official_taches) launched the $GSD coin himself (it's in the official README). Down 80% from ATH.
 
 ## Relevant Files
-- `src/lib/ai/prompts.ts` — INJECTION_GUARD + externalContent() + all prompts updated
-- `src-tauri/src/export.rs` — NEW: M3U8, Traktor NML, copy-to-folder commands
-- `src/lib/components/ExportDialog.svelte` — NEW: export modal UI
-- `src/lib/components/Queue.svelte` — Export button added
-- `src/routes/about/+page.svelte` — Donation section removed
-- `tools/test-suite/manifest.mjs` — 14 new P67 tests added
+- `.claude/HANDOFF.md` — this file
+- Startup shortcut: `C:\Users\User\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\Mercury Build Log Viewer.lnk` — already updated to BlackTape path
 
 ## Git Status
-Clean. Only BUILD-LOG.md (auto-appended by post-commit hook) and parachord-reference submodule (pre-existing, unrelated) are modified. Safe to ignore or commit BUILD-LOG.md if desired.
+Only BUILD-LOG.md (auto-appended by post-commit hook) and parachord-reference submodule modified. Safe to ignore.
 
 ## Next Steps
-1. Tackle remaining issues — best candidates to actually build:
-   - #36 (modular audit) — can community features be disabled cleanly for v1?
-   - #35 (v1 scope) — what ships vs what's deferred
-   - #38 (missed features scan) — scan PROJECT.md + BUILD-LOG.md + audiologs
-2. Or start a new milestone focused on v1 launch readiness
+1. Close Claude Code
+2. Rename `D:\Projects\Mercury` → `D:\Projects\BlackTape` in Windows Explorer
+3. Reopen Claude Code from `D:\Projects\BlackTape`
+4. Run `/resume` — I'll restart the build-log-viewer
 
 ## Resume Command
-After running /clear, run /resume to continue.
+After running `/clear`, run `/resume` to continue.
