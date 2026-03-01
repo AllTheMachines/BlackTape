@@ -1,60 +1,76 @@
 # Work Handoff - 2026-03-01
 
 ## Current Task
-README overhaul complete — session was polishing and pushing.
+Cover placeholder feature shipped — session ended mid-demo-recording (user stopped it).
 
 ## Context
-Session started with a health check after the project folder was renamed Mercury → BlackTape. Fixed stale Rust build artifacts (cargo clean), then fully rewrote the README and added curated screenshots.
+Session covered: LICENSE file added (PolyForm Noncommercial), parachord reference fully purged (folder, BUILD-LOG entry, both git commits — history rewritten + force pushed), cover art placeholder redesign implemented, demo recording started and manually stopped.
 
 ## Progress
 ### Completed
-- Post-rename health check: `cargo clean` fixed stale build artifacts pointing to old `D:\Projects\Mercury` path
-- README fully rewritten with real copy from blacktape.org/about
-- `docs/screenshots/` folder created with 7 curated in-app screenshots (tracked in git)
-- `press-screenshots/` confirmed gitignored (not tracked)
-- Several README tweaks per Steve's feedback:
-  - Intro replaced with site tagline "Dig deeper." + about page prose
-  - Removed Spotify royalty stat
-  - Removed "same few thousand artists" line
-  - Removed band names (Spenza, Raw Stevens, Vox Sola) from credits
-  - Development section trimmed to essentials
-  - Time Machine screenshot swapped to 1983 version (cleaner, more content)
-  - WIP notice added with links to feedback form and GitHub issues
-  - Cache-bust commit for time-machine.png (GitHub CDN was showing stale image)
-- All commits pushed to `AllTheMachines/BlackTape` on GitHub
+- Added `LICENSE` (PolyForm Noncommercial 1.0.0) + updated README license section
+- Removed `parachord-reference` submodule from repo
+- Removed Parachord entry from BUILD-LOG.md
+- Rewrote git history to drop both parachord commits (`6c4c1a0` add + `9721b1c` remove)
+- Force pushed clean history to `AllTheMachines/BlackTape` on GitHub
+- Built debug binary (`cargo build` — `src-tauri/target/debug/mercury.exe` now exists)
+- Updated `record-and-run.mjs` to cover all v2.0 brief sections:
+  - Natural language search pass (Berlin, Warp Records) injected mid-search loop
+  - Queue export dialog (M3U8, Traktor NML, copy-files toggle)
+  - Crate Dig section (3 filter cycles)
+  - Explore/AI section (3 queries)
+- **Created `src/lib/components/CoverPlaceholder.svelte`** — new component with:
+  - 20 deterministic background colors (hashed from name)
+  - 14 Google Fonts mapped to genre families
+  - Font size scaled by name length
+  - Inner vignette shadow
+- Wired CoverPlaceholder into all 3 fallback locations:
+  - `ArtistCard.svelte` (replaces initials)
+  - `ReleaseCard.svelte` (replaces single letter)
+  - `release/[mbid]/+page.svelte` hero (replaces single letter)
+- App reloaded successfully after cover placeholder changes
+- Demo recording started (`record-and-run.mjs`) then stopped at user request (~3 min in, mid artist pages section)
 
 ### In Progress
 - Nothing actively in progress
 
 ### Remaining
-- Verify time-machine.png is now showing correctly on GitHub (was empty/cached when Steve last checked)
-- BUILD-LOG.md has auto-appended commit entries (uncommitted, normal state)
+- Check cover placeholder visually in the app (user wanted to inspect before/after recording was stopped)
+- Push the 5 unpushed commits to GitHub (LICENSE, README, record-and-run updates, CoverPlaceholder)
+- Re-run the demo recording when ready (`node tools/launch-cdp.mjs` then `node tools/record-and-run.mjs`)
+- BUILD-LOG.md has auto-appended commit entries (unstaged, normal state — hook handles it)
 
 ## Key Decisions
-- Screenshots go in `docs/screenshots/` (tracked), not `press-screenshots/` (gitignored)
-- README copy sourced from `src/routes/about/+page.svelte` (the actual site text)
-- No finger-pointing at platforms or artists in README copy
+- PolyForm Noncommercial 1.0.0 chosen for license (fork/build freely, no commercial use)
+- Parachord scrubbed entirely — not just the folder but both commits and the BUILD-LOG entry
+- CoverPlaceholder uses deterministic color (same name = same color every time, not truly random per render)
+- Google Fonts loaded via `<svelte:head>` in the component itself — no global CSS changes needed
+- Font fallback chain: genre-matched font → sans-serif
 
 ## Relevant Files
-- `README.md` — fully rewritten this session
-- `docs/screenshots/*.png` — 7 curated screenshots committed to git
-- `press-screenshots/v5/` — full screenshot library (gitignored, local only)
-- `src/routes/about/+page.svelte` — source of the README prose
-- `src/lib/config.ts` — tagline: "Dig deeper."
+- `src/lib/components/CoverPlaceholder.svelte` — new component, just created
+- `src/lib/components/ArtistCard.svelte` — imports + uses CoverPlaceholder
+- `src/lib/components/ReleaseCard.svelte` — imports + uses CoverPlaceholder
+- `src/routes/artist/[slug]/release/[mbid]/+page.svelte` — imports + uses CoverPlaceholder
+- `tools/record-and-run.mjs` — updated with NL search, export dialog, Crate Dig, Explore sections
+- `LICENSE` — new file, PolyForm Noncommercial 1.0.0
+- `README.md` — license section updated
+- `BUILD-LOG.md` — auto-appended by post-commit hook (unstaged, expected)
 
 ## Git Status
-Only BUILD-LOG.md (auto-appended by post-commit hook) and parachord-reference submodule are dirty. Both are expected/safe — do not commit them manually, the hook handles BUILD-LOG.md automatically.
+Branch is 5 commits ahead of origin/main (not yet pushed):
+- LICENSE added
+- README license section updated
+- record-and-run.mjs updated for v2.0 brief
+- CoverPlaceholder.svelte created + wired into 3 components
+- BUILD-LOG cleanup commit
 
-Branch is 1 commit ahead of origin — need to push that last commit:
-```
-git push
-```
-(The WIP notice commit was pushed. The "ahead by 1" may be a stale git status read.)
+Only BUILD-LOG.md is dirty (auto-appended by hook, normal).
 
 ## Next Steps
-1. Hard refresh GitHub repo page (Ctrl+Shift+R) to confirm time-machine screenshot is showing
-2. If still broken, the file is correct in git (225KB) — it's a CDN propagation delay, wait a few minutes
-3. Continue with whatever feature work is next
+1. Open the app and browse to Search or an artist page to verify cover placeholders look good
+2. Push 5 commits: `git push`
+3. Re-run demo recording when ready: `node tools/launch-cdp.mjs` then `node tools/record-and-run.mjs`
 
 ## Resume Command
 After running `/clear`, run `/resume` to continue.
