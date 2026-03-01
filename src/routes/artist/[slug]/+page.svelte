@@ -763,7 +763,7 @@
 					{:else}
 						<div class="releases-grid">
 							{#each filteredReleases() as release (release.mbid)}
-								<ReleaseCard {release} artistSlug={data.artist.slug} onplayinline={handlePlayInline} />
+								<ReleaseCard {release} artistSlug={data.artist.slug} artistName={data.artist.name} onplayinline={handlePlayInline} />
 							{/each}
 						</div>
 					{/if}

@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import CoverPlaceholder from '$lib/components/CoverPlaceholder.svelte';
+	import { getWikiThumbnail } from '$lib/wiki-thumbnail';
+	import { coverPool } from '$lib/cover-pool.svelte';
 	import { PROJECT_NAME } from '$lib/config';
 	import BuyOnBar from '$lib/components/BuyOnBar.svelte';
 	import LinerNotes from '$lib/components/LinerNotes.svelte';
@@ -30,6 +32,17 @@
 
 	let coverError = $state(false);
 	let tauriMode = $state(false);
+
+	// When the release cover 404s, fall back to the artist's Wikipedia thumbnail as backdrop
+	let artistThumb = $state<string | null>(null);
+
+	$effect(() => {
+		if (coverError && release?.artistName) {
+			getWikiThumbnail(release.artistName).then(url => {
+				artistThumb = url;
+			});
+		}
+	});
 	let creditsExpanded = $state(false);
 	let albumActionState = $state<'idle' | 'loading' | 'not-found'>('idle');
 
@@ -164,9 +177,10 @@
 						src={release.coverArtUrl}
 						alt="{release.title} cover art"
 						onerror={() => coverError = true}
+						onload={() => coverPool.register(release.coverArtUrl)}
 					/>
 				{:else}
-					<CoverPlaceholder name={release.title} />
+					<CoverPlaceholder name={release.title} sources={artistThumb ? [artistThumb] : []} />
 				{/if}
 			</div>
 
@@ -402,20 +416,6 @@
 		display: block;
 	}
 
-	.cover-placeholder {
-		width: 100%;
-		height: 100%;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		background: var(--bg-3);
-	}
-
-	.cover-placeholder span {
-		font-size: 4rem;
-		font-weight: 200;
-		color: var(--t-3);
-	}
 
 	.hero-info {
 		flex: 1;

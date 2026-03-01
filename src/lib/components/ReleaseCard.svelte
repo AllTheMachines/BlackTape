@@ -3,20 +3,36 @@
 	import CoverPlaceholder from './CoverPlaceholder.svelte';
 	import { spotifyEmbedUrl } from '$lib/embeds/spotify';
 	import { youtubeEmbedUrl } from '$lib/embeds/youtube';
+	import { getWikiThumbnail } from '$lib/wiki-thumbnail';
+	import { coverPool } from '$lib/cover-pool.svelte';
 
 	let {
 		release,
 		artistSlug,
+		artistName = '',
 		onplayinline
 	}: {
 		release: ReleaseGroup;
 		artistSlug: string;
+		artistName?: string;
 		onplayinline?: (embedHtml: string) => void;
 	} = $props();
 
 	let releaseHref = $derived(`/artist/${artistSlug}/release/${release.mbid}`);
 
 	let coverError = $state(false);
+
+	// When the release cover fails to load and we have an artist name,
+	// use the artist's Wikipedia thumbnail as the backdrop source
+	let artistThumb = $state<string | null>(null);
+
+	$effect(() => {
+		if (coverError && artistName) {
+			getWikiThumbnail(artistName).then(url => {
+				artistThumb = url;
+			});
+		}
+	});
 
 	/** First letter of release title for placeholder. */
 	let initial = $derived(release.title.charAt(0).toUpperCase());
@@ -83,9 +99,10 @@
 					alt="{release.title} cover art"
 					loading="lazy"
 					onerror={() => coverError = true}
+					onload={() => coverPool.register(release.coverArtUrl)}
 				/>
 			{:else}
-				<CoverPlaceholder name={release.title} />
+				<CoverPlaceholder name={release.title} sources={artistThumb ? [artistThumb] : []} />
 			{/if}
 		</div>
 	</a>
@@ -167,20 +184,6 @@
 		display: block;
 	}
 
-	.cover-placeholder {
-		width: 100%;
-		height: 100%;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		background: var(--bg-elevated);
-	}
-
-	.cover-placeholder span {
-		font-size: 3rem;
-		font-weight: 200;
-		color: var(--text-muted);
-	}
 
 	.release-info {
 		display: flex;
