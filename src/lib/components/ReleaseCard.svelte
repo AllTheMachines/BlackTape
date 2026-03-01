@@ -9,11 +9,14 @@
 		release,
 		artistSlug,
 		artistName = '',
+		artistPhotoUrl = null,
 		onplayinline
 	}: {
 		release: ReleaseGroup;
 		artistSlug: string;
 		artistName?: string;
+		/** Artist Wikipedia thumbnail — used as placeholder when release has no cover art. */
+		artistPhotoUrl?: string | null;
 		onplayinline?: (embedHtml: string) => void;
 	} = $props();
 
@@ -90,7 +93,12 @@
 					onload={() => registerCover(release.coverArtUrl)}
 				/>
 			{:else}
-				<CoverPlaceholder name={release.title} />
+				<!-- Case 3: artist photo as backdrop. Case 4: sibling covers from pool. -->
+				<CoverPlaceholder
+					name={release.title}
+					sources={artistPhotoUrl ? [artistPhotoUrl] : []}
+					blur={false}
+				/>
 			{/if}
 		</div>
 	</a>

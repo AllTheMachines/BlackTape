@@ -22,8 +22,15 @@
 	import { spotifyEmbedUrl } from '$lib/embeds/spotify';
 	import { youtubeEmbedUrl } from '$lib/embeds/youtube';
 	import { spotifyState } from '$lib/spotify/state.svelte';
+	import { getWikiThumbnail } from '$lib/wiki-thumbnail';
 
 	let { data } = $props();
+
+	/** Artist Wikipedia thumbnail — passed to release cards so missing covers can use it as backdrop. */
+	let artistPhotoUrl = $state<string | null>(null);
+	$effect(() => {
+		getWikiThumbnail(data.artist.name).then(url => { artistPhotoUrl = url; });
+	});
 
 	let tauriMode = $state(false);
 	let activeTab = $state<'overview' | 'stats' | 'about'>('overview');
@@ -763,7 +770,7 @@
 					{:else}
 						<div class="releases-grid">
 							{#each filteredReleases() as release (release.mbid)}
-								<ReleaseCard {release} artistSlug={data.artist.slug} artistName={data.artist.name} onplayinline={handlePlayInline} />
+								<ReleaseCard {release} artistSlug={data.artist.slug} artistName={data.artist.name} {artistPhotoUrl} onplayinline={handlePlayInline} />
 							{/each}
 						</div>
 					{/if}

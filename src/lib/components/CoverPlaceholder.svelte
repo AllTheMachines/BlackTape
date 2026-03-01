@@ -4,11 +4,14 @@
 	let {
 		name,
 		tags = '',
-		sources = []
+		sources = [],
+		blur = false
 	}: {
 		name: string;
 		tags?: string | null;
 		sources?: string[];
+		/** true = heavy blur (cross-artist fallback). false = sharp + dimmed (same-artist composite). */
+		blur?: boolean;
 	} = $props();
 
 	// Deterministic hash — same name always gets same color + font
@@ -169,8 +172,8 @@
 	aria-hidden="true"
 >
 	{#if effectiveSources.length > 0}
-		<!-- Blurred image backdrop — heavily dimmed so text stays readable -->
-		<div class="backdrop" class:mosaic={effectiveSources.length > 1}>
+		<!-- Image backdrop — dimmed so text stays readable. Sharp for same-artist composites, blurred for cross-artist fallback. -->
+		<div class="backdrop" class:mosaic={effectiveSources.length > 1} class:blurred={blur}>
 			{#each effectiveSources.slice(0, 4) as src}
 				<img
 					src={src}
@@ -217,11 +220,17 @@
 
 	.backdrop {
 		position: absolute;
-		/* Bleed past edges so blur doesn't show soft borders */
-		inset: -12px;
+		inset: 0;
 		overflow: hidden;
-		filter: blur(18px) brightness(0.45) saturate(1.4);
+		/* Sharp + dimmed by default — same-artist composite */
+		filter: brightness(0.45);
 		z-index: 0;
+	}
+
+	/* Cross-artist fallback: bleed past edges to hide blur soft borders */
+	.backdrop.blurred {
+		inset: -12px;
+		filter: blur(18px) brightness(0.45) saturate(1.4);
 	}
 
 	/* 2×2 mosaic when multiple source images are available */

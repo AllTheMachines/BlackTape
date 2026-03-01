@@ -42,15 +42,38 @@
 
 	/** Wikipedia thumbnail — null until loaded, stays null if not found */
 	let thumbnailUrl = $state<string | null>(null);
+	/** Release cover URLs for artists with no Wikipedia photo — case 1 composite */
+	let releaseCoverUrls = $state<string[]>([]);
 
 	$effect(() => {
 		// Only fetch for card (non-compact) mode — compact rows don't show the art square
 		if (!compact) {
-			getWikiThumbnail(artist.name).then(url => {
+			getWikiThumbnail(artist.name).then(async url => {
 				thumbnailUrl = url;
+				if (!url) {
+					// No Wikipedia photo — fetch top album covers from MusicBrainz for composite
+					releaseCoverUrls = await fetchReleaseCoverUrls(artist.mbid);
+				}
 			});
 		}
 	});
+
+	/** Fetch up to 4 release group MBIDs → CAA cover URLs for this artist. */
+	async function fetchReleaseCoverUrls(mbid: string): Promise<string[]> {
+		try {
+			const resp = await fetch(
+				`https://musicbrainz.org/ws/2/release-group?artist=${mbid}&limit=8&type=album&fmt=json`,
+				{ headers: { 'User-Agent': 'BlackTape/1.0 (https://github.com/AllTheMachines/mercury)' } }
+			);
+			if (!resp.ok) return [];
+			const data = await resp.json() as { 'release-groups': { id: string }[] };
+			return (data['release-groups'] ?? [])
+				.slice(0, 4)
+				.map(rg => `https://coverartarchive.org/release-group/${rg.id}/front-250`);
+		} catch {
+			return [];
+		}
+	}
 </script>
 
 <a href="/artist/{artist.slug}" class="artist-card" class:compact aria-label={artist.name}>
@@ -60,7 +83,14 @@
 			{#if thumbnailUrl}
 				<img src={thumbnailUrl} alt="" onload={() => registerCover(thumbnailUrl)} />
 			{:else}
-				<CoverPlaceholder name={artist.name} tags={artist.tags} />
+				<!-- Case 1: composite from artist's own album covers.
+				     Case 2: blurred pool fallback when no covers available. -->
+				<CoverPlaceholder
+					name={artist.name}
+					tags={artist.tags}
+					sources={releaseCoverUrls}
+					blur={releaseCoverUrls.length === 0}
+				/>
 			{/if}
 		</div>
 	{/if}
