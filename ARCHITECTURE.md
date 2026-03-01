@@ -1120,6 +1120,20 @@ The app uses Tauri's updater plugin with a minisign key pair:
 - **Private key:** `~/.tauri/mercury.key` (no password)
 - **Public key:** Embedded in `tauri.conf.json` updater config
 
+### Auto-Update
+
+The updater (`src-tauri/src/updater.rs`) exposes three commands:
+
+| Command | Description |
+|---------|-------------|
+| `check_for_update` | Polls the GitHub Releases `latest.json` endpoint |
+| `install_update` | Downloads and installs, then calls `app.restart()` |
+| `get_app_version` | Returns the current version string |
+
+The update endpoint is `https://github.com/AllTheMachines/Mercury/releases/latest/download/latest.json`. Releases must publish a `latest.json` manifest signed with the minisign private key.
+
+The frontend checks for updates 3 seconds after startup (non-blocking). If an update is available, `UpdateBanner.svelte` appears between the titlebar and main content with "Install Now" / "Later" options.
+
 ---
 
 ## Configuration Reference
@@ -1193,11 +1207,26 @@ The AI subsystem adds local intelligence to Mercury Desktop. It is entirely opt-
 
 Two llama-server instances run as Tauri sidecars (via `tauri-plugin-shell`), managed by Rust code in `src-tauri/src/ai/sidecar.rs`. The frontend communicates with them via OpenAI-compatible HTTP API on localhost. This same API format allows swapping in a remote provider (any OpenAI-compatible endpoint).
 
+### Secure Settings (OS Credential Store)
+
+API keys and OAuth tokens are stored in the OS credential store — Windows Credential Manager on Windows, Keychain on macOS, Secret Service on Linux. The `taste.db` file contains only non-sensitive preferences.
+
+The `secrets` Rust module (`src-tauri/src/secrets.rs`) exposes three Tauri commands (`get_secret`, `set_secret`, `delete_secret`) backed by the `keyring` crate (v3). Key names stored in the credential store:
+
+| Credential key | Content |
+|----------------|---------|
+| `ai_api_key` | Remote AI provider API key |
+| `spotify_client_id` | Spotify OAuth client ID |
+| `spotify_access_token` | Spotify OAuth access token |
+| `spotify_refresh_token` | Spotify OAuth refresh token |
+
+On startup, `migrate_plaintext_secrets()` runs once to move any legacy plaintext values from `ai_settings` rows into the credential store and delete the plaintext rows.
+
 ### taste.db Schema
 
-A third database alongside mercury.db and library.db. Managed by rusqlite (same as library.db). Stores AI settings, taste profile data, and vector embeddings.
+A third database alongside mercury.db and library.db. Managed by rusqlite (same as library.db). Stores non-sensitive AI settings, taste profile data, and vector embeddings.
 
-**ai_settings** — Key-value store for AI configuration and user preferences.
+**ai_settings** — Key-value store for non-sensitive AI configuration and user preferences. Sensitive values (API keys, OAuth tokens) are in the OS credential store, not here.
 
 | Column | Type | Description |
 |--------|------|-------------|
@@ -1213,6 +1242,7 @@ Phase 8 added these keys:
 | `layout_template` | `cockpit` \| `focus` \| `minimal` \| `user-{ts}` | Active layout template |
 | `preferred_platform` | `bandcamp` \| `spotify` \| `soundcloud` \| `youtube` \| `''` | Streaming platform preference |
 | `user_layout_templates` | JSON array | User-created layout template records |
+| `setup_complete` | `0` \| `1` | Whether the first-run setup wizard has been completed |
 
 **taste_tags** — Tags with weights derived from listening behavior and manual curation.
 

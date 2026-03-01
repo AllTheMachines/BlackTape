@@ -54,7 +54,7 @@
     "updater": {
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDQwQjAxMjlFRDQ2MEVGNkEKUldScTcyRFVuaEt3UUNxMHllbmJyZU9PbThjUWR1Qk1KaGJGd3hJbGlISGczdTFkTE5kR1N1VXAK",
       "endpoints": [
-        "https://mercury-updates.example.com/{{target}}/{{arch}}/{{current_version}}"
+        "https://github.com/AllTheMachines/Mercury/releases/latest/download/latest.json"
       ]
     }
   }

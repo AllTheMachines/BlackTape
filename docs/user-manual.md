@@ -54,12 +54,28 @@ Mercury is a music discovery engine that indexes all music from open databases a
 
 ### Desktop App (Recommended)
 
-The desktop app is the full Mercury experience — search, discover, and play local music.
+The desktop app is the full BlackTape experience — search, discover, and play local music.
 
-1. Download and install Mercury from the releases page
-2. On first launch, you'll be prompted to set up the discovery database
-3. Download the database file (~200MB compressed, ~800MB uncompressed) and place it in the indicated directory
-4. Once the database is loaded, Mercury is ready to use
+1. Download and install BlackTape from the releases page
+2. On first launch, the **Setup Wizard** guides you through getting everything ready
+3. Follow the wizard steps to download and place the discovery database
+4. AI models are optional — the app works fully without them
+5. Once setup completes, BlackTape is ready to use
+
+### Setup Wizard
+
+The setup wizard runs automatically on first launch. It has four steps:
+
+1. **Welcome** — Overview of what's needed
+2. **Database** — Download `mercury.db.gz` from the releases page, decompress it, and place it at the path shown in the wizard. Click "Check Again" once placed.
+3. **AI Models** — Optional. Download the generation model (~4 GB) and embedding model (~100 MB) for AI biography generation and music similarity. Click "Skip for now" to proceed without them.
+4. **Done** — Launch the app
+
+**Re-running the wizard:** Go to Settings → About → "Reset setup". This re-launches the wizard without deleting any of your data.
+
+### API Keys and Security
+
+API keys (for remote AI providers) and Spotify OAuth tokens are stored in the OS credential store — Windows Credential Manager on Windows. They are never written to plain text files. You can revoke access at any time from Settings → AI Settings or Settings → Streaming.
 
 ### Web Version
 

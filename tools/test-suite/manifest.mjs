@@ -108,15 +108,15 @@ export const PHASE_3 = [
   },
   {
     id: 'P3-03', phase: 3, area: 'Tauri core',
-    desc: 'DatabaseSetup component exists (first-run flow)',
+    desc: 'SetupWizard component exists (first-run flow)',
     method: 'code',
-    fn: fileExists('src/lib/components/DatabaseSetup.svelte'),
+    fn: fileExists('src/lib/components/SetupWizard.svelte'),
   },
   {
     id: 'P3-04', phase: 3, area: 'Distribution',
-    desc: 'Tauri config exists and names the app mercury',
+    desc: 'Tauri config exists and names the app BlackTape',
     method: 'code',
-    fn: fileContains('src-tauri/tauri.conf.json', 'mercury'),
+    fn: fileContains('src-tauri/tauri.conf.json', 'BlackTape'),
   },
 ];
 

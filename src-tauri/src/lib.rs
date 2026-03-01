@@ -3,7 +3,9 @@ mod ai;
 mod library;
 mod mercury_db;
 mod scanner;
+mod secrets;
 mod site_gen;
+mod updater;
 
 use tauri::Manager;
 
@@ -181,6 +183,12 @@ pub fn run() {
             site_gen::generate_artist_site,
             site_gen::open_in_explorer,
             activitypub::export_activitypub,
+            secrets::get_secret,
+            secrets::set_secret,
+            secrets::delete_secret,
+            updater::check_for_update,
+            updater::install_update,
+            updater::get_app_version,
         ])
         .plugin(tauri_plugin_sql::Builder::new().build())
         .plugin(tauri_plugin_updater::Builder::new().build())
@@ -202,6 +210,10 @@ pub fn run() {
             // Initialize taste.db for AI settings and taste profile
             let taste_conn = ai::taste_db::init_taste_db(&app_data)
                 .expect("failed to init taste db");
+
+            // Migrate any plaintext secrets from taste.db to OS credential store (one-shot).
+            secrets::migrate_plaintext_secrets(&taste_conn);
+
             app.manage(ai::taste_db::TasteDbState(std::sync::Mutex::new(taste_conn)));
 
             // Initialize AI sidecar state

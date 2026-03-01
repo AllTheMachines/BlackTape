@@ -4,6 +4,22 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-03-01 — Secure Settings + Updater + First-Run Bootstrap
+
+Three systems built together because they're all pre-ship infrastructure.
+
+**System 1 — Secrets out of the database.** API keys and OAuth tokens were stored as plaintext strings in `taste.db`. That's bad — `taste.db` lives in AppData and gets backed up by default Windows backup. Moved them to Windows Credential Manager via the `keyring` crate (v3). Three new Tauri commands: `get_secret`, `set_secret`, `delete_secret`. On startup, `migrate_plaintext_secrets()` runs once and moves any existing plaintext values to the credential store, then deletes the rows from the DB. Frontend routes `api_key` through `set_secret`/`get_secret` instead of `set_ai_setting`. Spotify tokens same treatment — `client_id`, `access_token`, `refresh_token` go to keyring; `token_expiry` and `display_name` stay in DB (non-sensitive).
+
+**System 2 — Updater wired to a real endpoint.** `tauri-plugin-updater` was already in Cargo.toml and lib.rs but pointed at `https://mercury-updates.example.com/...` (placeholder). Changed to `https://github.com/AllTheMachines/Mercury/releases/latest/download/latest.json`. Added `updater.rs` with `check_for_update`, `install_update`, `get_app_version`. Frontend has `update.svelte.ts` (reactive state + helpers) and `UpdateBanner.svelte` (slim bar below titlebar — appears only when an update is available). Layout checks for updates 3 seconds after startup, non-blocking. Settings About section shows the current version and has a "Check for updates" button.
+
+**System 3 — First-run wizard instead of a raw instruction screen.** The old `DatabaseSetup.svelte` just showed a wall of text. Replaced with `SetupWizard.svelte` — a 4-step wizard (Welcome → Database → AI Models → Done). The wizard runs when `setup_complete` in `ai_settings` is not `'1'`. Existing users (no `setup_complete` row but DB already present) are auto-graduated to `setup_complete = '1'` without seeing the wizard. New key in `ai_settings` defaults: `setup_complete = '0'`. Settings → About has a "Reset setup" button that sets it back to `'0'` and sends you to `/`.
+
+Also added `static/requirements.json` — machine-readable manifest of required/optional components for future automation.
+
+All 197 code tests pass. Rust compiles clean (`cargo check`). `npm run check` 0 errors.
+
+---
+
 ## Entry 2026-03-01 — Fix #64: Geographic scene map — proper data model + pipeline
 
 Issue had two problems: (1) no real Wikidata scene data in the DB, and (2) the SceneMap was permanently disabled because all entries were `type='genre'` after an earlier fix reset everything.
@@ -10978,4 +10994,7 @@ Issue #51 closed.
 > Files changed: 1
 
 > **Commit af54965** (2026-03-01 01:11) — wip: auto-save
+> Files changed: 1
+
+> **Commit 0cbb393** (2026-03-01 01:16) — auto-save: 2 files @ 01:16
 > Files changed: 1

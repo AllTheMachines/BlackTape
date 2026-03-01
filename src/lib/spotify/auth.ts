@@ -153,14 +153,17 @@ export async function startSpotifyAuth(clientId: string): Promise<SpotifyStoredS
 // ─── Token persistence ────────────────────────────────────────────────────────
 
 /**
- * Persist Spotify tokens to taste.db ai_settings.
- * All 5 keys are always written together for consistency.
+ * Persist Spotify tokens.
+ * Sensitive keys (client_id, access_token, refresh_token) go to the OS credential store.
+ * Non-sensitive metadata (expiry, display_name) stays in taste.db.
  */
 export async function saveSpotifyTokens(data: SpotifyStoredState): Promise<void> {
 	const invoke = await getInvoke();
-	await invoke('set_ai_setting', { key: 'spotify_client_id', value: data.clientId });
-	await invoke('set_ai_setting', { key: 'spotify_access_token', value: data.accessToken });
-	await invoke('set_ai_setting', { key: 'spotify_refresh_token', value: data.refreshToken });
+	// Sensitive — OS keyring
+	await invoke('set_secret', { key: 'spotify_client_id', value: data.clientId });
+	await invoke('set_secret', { key: 'spotify_access_token', value: data.accessToken });
+	await invoke('set_secret', { key: 'spotify_refresh_token', value: data.refreshToken });
+	// Non-sensitive — taste.db
 	await invoke('set_ai_setting', {
 		key: 'spotify_token_expiry',
 		value: String(data.tokenExpiry)
@@ -169,39 +172,43 @@ export async function saveSpotifyTokens(data: SpotifyStoredState): Promise<void>
 }
 
 /**
- * Load Spotify tokens from taste.db ai_settings.
- * Returns null if spotify_access_token is empty or missing.
+ * Load Spotify tokens.
+ * Sensitive keys come from the OS credential store; metadata from taste.db.
+ * Returns null if no access token is found.
  */
 export async function loadSpotifyState(): Promise<SpotifyStoredState | null> {
 	const invoke = await getInvoke();
-	const settings = await invoke<Record<string, string>>('get_all_ai_settings');
-	const accessToken = settings['spotify_access_token'] ?? '';
+	const [settings, accessToken, refreshToken, clientId] = await Promise.all([
+		invoke<Record<string, string>>('get_all_ai_settings'),
+		invoke<string | null>('get_secret', { key: 'spotify_access_token' }),
+		invoke<string | null>('get_secret', { key: 'spotify_refresh_token' }),
+		invoke<string | null>('get_secret', { key: 'spotify_client_id' })
+	]);
 	if (!accessToken) return null;
 	return {
 		accessToken,
-		refreshToken: settings['spotify_refresh_token'] ?? '',
+		refreshToken: refreshToken ?? '',
 		tokenExpiry: Number(settings['spotify_token_expiry'] ?? '0'),
-		clientId: settings['spotify_client_id'] ?? '',
+		clientId: clientId ?? '',
 		displayName: settings['spotify_display_name'] ?? ''
 	};
 }
 
 /**
- * Wipe all Spotify tokens from taste.db.
- * Sets all 5 keys to empty string — does not delete rows.
+ * Wipe all Spotify tokens.
+ * Sensitive keys deleted from OS keyring; metadata cleared in taste.db.
  */
 export async function clearSpotifyTokens(): Promise<void> {
 	const invoke = await getInvoke();
-	const keys = [
-		'spotify_client_id',
-		'spotify_access_token',
-		'spotify_refresh_token',
-		'spotify_token_expiry',
-		'spotify_display_name'
-	];
-	for (const key of keys) {
-		await invoke('set_ai_setting', { key, value: '' });
-	}
+	// Sensitive — remove from keyring
+	await Promise.all([
+		invoke('delete_secret', { key: 'spotify_client_id' }),
+		invoke('delete_secret', { key: 'spotify_access_token' }),
+		invoke('delete_secret', { key: 'spotify_refresh_token' })
+	]);
+	// Non-sensitive — clear in DB
+	await invoke('set_ai_setting', { key: 'spotify_token_expiry', value: '' });
+	await invoke('set_ai_setting', { key: 'spotify_display_name', value: '' });
 }
 
 // ─── Token refresh ────────────────────────────────────────────────────────────

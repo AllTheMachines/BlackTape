@@ -135,7 +135,6 @@ pub fn init_taste_db(app_data_dir: &Path) -> Result<Connection, String> {
     let defaults = [
         ("enabled", "false"),
         ("provider", "local"),
-        ("api_key", ""),
         ("api_base_url", ""),
         ("api_model", ""),
         ("local_gen_model_status", "none"),
@@ -143,6 +142,7 @@ pub fn init_taste_db(app_data_dir: &Path) -> Result<Connection, String> {
         ("private_listening", "false"),
         ("auto_generate_on_visit", "false"),
         ("selected_provider_name", ""),
+        ("setup_complete", "0"),
     ];
 
     for (key, value) in &defaults {

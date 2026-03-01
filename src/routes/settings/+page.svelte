@@ -18,6 +18,8 @@
 
 	let tauriMode = $state(false);
 	let newTemplateName = $state('');
+	let appVersion = $state('');
+	let updateCheckStatus = $state<'' | 'checking' | 'up-to-date' | 'available'>('');
 
 
 	const SERVICE_LABELS: Record<string, string> = {
@@ -193,6 +195,7 @@
 			const { loadAvatarState, avatarState } = await import('$lib/identity/avatar.svelte');
 			await loadAvatarState(tasteProfile.tags);
 			avatarModeLocal = (avatarState.mode === 'edited' ? 'edited' : 'generative') as 'generative' | 'edited';
+			appVersion = await invoke<string>('get_app_version');
 		}
 	});
 
@@ -263,6 +266,22 @@
 		order.splice(newIdx, 0, moved);
 		streamingState.serviceOrder = order;
 		saveServiceOrder(order);
+	}
+
+	// ─── About / Update handlers ─────────────────────────────────────────────────
+
+	async function handleCheckUpdate() {
+		updateCheckStatus = 'checking';
+		const { checkForUpdate, updateState } = await import('$lib/update.svelte');
+		await checkForUpdate();
+		updateCheckStatus = updateState.available ? 'available' : 'up-to-date';
+	}
+
+	async function handleResetSetup() {
+		const { invoke } = await import('@tauri-apps/api/core');
+		await invoke('set_ai_setting', { key: 'setup_complete', value: '0' });
+		const { goto } = await import('$app/navigation');
+		goto('/');
 	}
 </script>
 
@@ -612,6 +631,45 @@
 			<h2>Feedback</h2>
 			<p class="section-desc">Found a bug or have a suggestion? All reports go directly to the developer.</p>
 			<a href="/about#feedback" class="feedback-link">Leave feedback →</a>
+		</div>
+
+		<div class="section-separator"></div>
+		<div class="settings-section" data-testid="settings-about-section">
+			<h2>About</h2>
+
+			{#if appVersion}
+				<div class="setting-row">
+					<span class="setting-label">Version</span>
+					<span class="version-value">{appVersion}</span>
+				</div>
+			{/if}
+
+			<div class="setting-row">
+				<span class="setting-label">Updates</span>
+				<div class="about-actions">
+					<button class="about-btn" onclick={handleCheckUpdate} disabled={updateCheckStatus === 'checking'}>
+						{#if updateCheckStatus === 'checking'}
+							Checking...
+						{:else if updateCheckStatus === 'up-to-date'}
+							Up to date
+						{:else if updateCheckStatus === 'available'}
+							Update available — install from the banner above
+						{:else}
+							Check for updates
+						{/if}
+					</button>
+				</div>
+			</div>
+
+			<div class="setting-row">
+				<span class="setting-label">Setup wizard</span>
+				<div class="about-actions">
+					<button class="about-btn" onclick={handleResetSetup}>
+						Reset setup
+					</button>
+					<span class="setting-hint">Re-runs the setup wizard without deleting your data</span>
+				</div>
+			</div>
 		</div>
 
 	</div>
@@ -1208,5 +1266,43 @@
 
 	.feedback-link:hover {
 		text-decoration: underline;
+	}
+
+	/* ─── About section ─────────────────────────────────────────────── */
+
+	.version-value {
+		font-size: 0.85rem;
+		color: var(--t-2);
+		font-variant-numeric: tabular-nums;
+	}
+
+	.about-actions {
+		display: flex;
+		align-items: center;
+		gap: var(--space-md);
+		flex-wrap: wrap;
+	}
+
+	.about-btn {
+		background: var(--bg-3);
+		color: var(--t-1);
+		border: 1px solid var(--b-2);
+		padding: var(--space-sm) var(--space-md);
+		border-radius: 0;
+		cursor: pointer;
+		font-size: 0.8rem;
+		font-family: var(--font-sans);
+		transition: border-color 0.15s, background 0.15s;
+		white-space: nowrap;
+	}
+
+	.about-btn:hover:not(:disabled) {
+		border-color: var(--b-3);
+		background: var(--bg-3);
+	}
+
+	.about-btn:disabled {
+		opacity: 0.6;
+		cursor: not-allowed;
 	}
 </style>

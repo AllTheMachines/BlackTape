@@ -58,11 +58,14 @@ async function getInvoke(): Promise<typeof import('@tauri-apps/api/core').invoke
 export async function loadAiSettings(): Promise<void> {
 	try {
 		const invoke = await getInvoke();
-		const settings = await invoke<Record<string, string>>('get_all_ai_settings');
+		const [settings, apiKey] = await Promise.all([
+			invoke<Record<string, string>>('get_all_ai_settings'),
+			invoke<string | null>('get_secret', { key: 'ai_api_key' })
+		]);
 
 		aiState.enabled = settings['enabled'] === 'true';
 		aiState.provider = (settings['provider'] as 'local' | 'remote') || 'local';
-		aiState.apiKey = settings['api_key'] || '';
+		aiState.apiKey = apiKey || '';
 		aiState.apiBaseUrl = settings['api_base_url'] || '';
 		aiState.apiModel = settings['api_model'] || '';
 		aiState.autoGenerateOnVisit = settings['auto_generate_on_visit'] === 'true';
@@ -82,6 +85,18 @@ export async function loadAiSettings(): Promise<void> {
 export async function saveAiSetting(key: string, value: string): Promise<void> {
 	try {
 		const invoke = await getInvoke();
+
+		// api_key goes to the OS credential store, not taste.db
+		if (key === 'api_key') {
+			if (value) {
+				await invoke('set_secret', { key: 'ai_api_key', value });
+			} else {
+				await invoke('delete_secret', { key: 'ai_api_key' });
+			}
+			aiState.apiKey = value;
+			return;
+		}
+
 		await invoke('set_ai_setting', { key, value });
 
 		// Update local state to match
@@ -91,9 +106,6 @@ export async function saveAiSetting(key: string, value: string): Promise<void> {
 				break;
 			case 'provider':
 				aiState.provider = value as 'local' | 'remote';
-				break;
-			case 'api_key':
-				aiState.apiKey = value;
 				break;
 			case 'api_base_url':
 				aiState.apiBaseUrl = value;

@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "required": [
+    {
+      "id": "mercury-db",
+      "name": "BlackTape Database",
+      "description": "Music discovery catalog",
+      "check": "file:mercury.db"
+    }
+  ],
+  "optional": [
+    {
+      "id": "ai-gen-model",
+      "name": "AI Text Model",
+      "description": "Artist biography generation",
+      "check": "setting:local_gen_model_status=ready",
+      "size_bytes": 4000000000
+    },
+    {
+      "id": "ai-embed-model",
+      "name": "AI Embedding Model",
+      "description": "Music similarity matching",
+      "check": "setting:local_embed_model_status=ready",
+      "size_bytes": 100000000
+    }
+  ]
+}

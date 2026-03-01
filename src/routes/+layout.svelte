@@ -26,6 +26,7 @@
 	import { togglePlayPause } from '$lib/player/audio.svelte';
 	import { navProgress } from '$lib/nav-progress.svelte';
 	import Titlebar from '$lib/components/Titlebar.svelte';
+	import UpdateBanner from '$lib/components/UpdateBanner.svelte';
 
 	let { children } = $props();
 
@@ -92,6 +93,12 @@
 			if (storedSpotify) {
 				setSpotifyConnected(storedSpotify);
 			}
+
+			// Check for app updates in the background (non-blocking, 3s delay)
+			setTimeout(async () => {
+				const { checkForUpdate } = await import('$lib/update.svelte');
+				await checkForUpdate();
+			}, 3000);
 		}
 	});
 
@@ -138,6 +145,7 @@
 
 {#if tauriMode}
 	<Titlebar />
+	<UpdateBanner />
 {/if}
 
 {#if $navigating || (tauriMode && navProgress.active)}
