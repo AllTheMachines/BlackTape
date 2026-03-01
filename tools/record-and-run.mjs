@@ -238,6 +238,23 @@ for (let i = 0; i < GENRES.length; i++) {
     }
   }
   await wait(300);
+
+  // Natural language pass — once mid-sequence (after 5th genre)
+  if (i === 4) {
+    console.log('\n  ── Natural language pass ──');
+    await typeInSearch('artists from Berlin');
+    await circles(640, 380, 50, 1);
+    await count(5); // show city confirmation chip + match badges
+    await scroll(550, 22);
+    await count(8);
+    await scroll(-200, 10);
+    await wait(300);
+
+    await typeInSearch('artists on Warp Records');
+    await circles(640, 380, 50, 1);
+    await count(5); // show label match badges
+    await wait(400);
+  }
 }
 
 // ── Artist pages ──────────────────────────────────────────────────────────────
@@ -332,6 +349,26 @@ try {
 await click('.queue-remove');
 await count(3);
 
+// Export dialog
+console.log('  export dialog...');
+const exportOpened = await click('[data-testid="queue-export-btn"]') || await clickText('Export');
+if (exportOpened) {
+  await wait(1500);
+  // M3U8 — count of 3
+  await click('[data-testid="export-m3u8"], input[value="m3u8"], label');
+  await count(3);
+  // Switch to Traktor NML — count of 3
+  await click('[data-testid="export-nml"], input[value="nml"]') || await clickText('Traktor');
+  await count(3);
+  // Toggle copy files — count of 3
+  await click('[data-testid="copy-files-toggle"], input[type="checkbox"]');
+  await count(3);
+  await click('[data-testid="copy-files-toggle"], input[type="checkbox"]');
+  // Close dialog
+  await click('[data-testid="export-close"], .modal-close, button[aria-label*="close" i]') || await page.keyboard.press('Escape');
+  await wait(800);
+}
+
 await click('[data-testid="queue-toggle"]');
 await wait(800);
 
@@ -394,6 +431,132 @@ for (let i = 0; i < 5; i++) {
     await page.locator('.filter-chip.active').first().click({ timeout: 3000 });
     await wait(1000);
   } catch {}
+}
+
+// ── Crate Dig ─────────────────────────────────────────────────────────────────
+console.log('\n════ CRATE DIG ════');
+await nav('/crate-dig', 2000);
+await circles(640, 400, 60, 1);
+
+const crateGenres  = ['shoegaze', 'noise rock', 'ambient'];
+const crateDecades = ['1990s', '1980s', '2000s'];
+const crateCodes   = ['JP', 'US', 'DE'];
+
+for (let cycle = 0; cycle < 3; cycle++) {
+  console.log(`  crate dig cycle [${cycle + 1}/3]`);
+
+  // Genre filter
+  try {
+    await page.locator('.tag-chip').filter({ hasText: crateGenres[cycle] }).first().click({ timeout: 4000 });
+  } catch { await click('.tag-chip'); }
+  await wait(1500);
+  await count(3);
+
+  // Decade filter
+  try {
+    await page.getByText(crateDecades[cycle], { exact: false }).first().click({ timeout: 4000 });
+  } catch { await click('.decade-btn, .decade-chip'); }
+  await wait(1500);
+  await count(3);
+
+  // Country
+  try {
+    await page.locator('#country-input, [name="country"]').fill(crateCodes[cycle]);
+    await page.keyboard.press('Enter');
+  } catch {}
+  await wait(1500);
+  await count(3);
+
+  // Scroll the random grid
+  await circles(640, 400, 60, 1);
+  await scroll(700, 28);
+  await count(8);
+
+  // Click into an artist
+  const crateArtist = await click('a[href*="/artist/"]');
+  if (crateArtist) {
+    await wait(2000);
+    await count(4);
+    await page.goBack().catch(() => nav('/crate-dig'));
+    await wait(2000);
+  }
+
+  // Change decade
+  const nextDecade = crateDecades[(cycle + 1) % crateDecades.length];
+  try {
+    await page.getByText(nextDecade, { exact: false }).first().click({ timeout: 3000 });
+  } catch {}
+  await wait(1500);
+  await count(5);
+
+  if (cycle === 2) {
+    // Clear all filters — full random mode
+    try {
+      await page.locator('.filter-chip.active, .clear-filters').first().click({ timeout: 3000 });
+    } catch {}
+    await wait(1500);
+    await circles(640, 400, 60, 1);
+    await scroll(700, 28);
+    await count(8);
+    const crateArtist2 = await click('a[href*="/artist/"]');
+    if (crateArtist2) {
+      await wait(2000);
+      await count(4);
+      await page.goBack().catch(() => nav('/crate-dig'));
+      await wait(2000);
+    }
+  } else {
+    try {
+      await page.locator('.filter-chip.active').first().click({ timeout: 3000 });
+      await wait(1000);
+    } catch {}
+  }
+}
+
+// ── Explore (AI) ──────────────────────────────────────────────────────────────
+console.log('\n════ EXPLORE (AI) ════');
+await nav('/explore', 2000);
+await circles(640, 400, 60, 1);
+
+const exploreQueries = [
+  'dark electronic from Eastern Europe',
+  'post-punk from Manchester',
+  'ambient artists from Iceland',
+];
+
+for (let i = 0; i < exploreQueries.length; i++) {
+  const query = exploreQueries[i];
+  console.log(`  explore [${i + 1}/3]: "${query}"`);
+
+  try {
+    const input = page.locator('textarea, input[type="text"]').first();
+    await input.fill(query);
+    await input.press('Enter');
+  } catch { await typeInSearch(query); }
+
+  await wait(3500); // AI resolution
+  await circles(640, 400, 50, 1);
+  await count(6);
+
+  await scroll(700, 28);
+  await count(8);
+  await scroll(-300, 12);
+
+  const exploreArtist = await click('a[href*="/artist/"]');
+  if (exploreArtist) {
+    await wait(2000);
+    await count(4);
+    await page.goBack().catch(() => nav('/explore'));
+    await wait(2000);
+  }
+
+  if (i < exploreQueries.length - 1) {
+    try {
+      await page.locator('textarea, input[type="text"]').first().fill('');
+    } catch {}
+    await wait(500);
+    await count(3);
+  }
 }
 
 // ── Time Machine ──────────────────────────────────────────────────────────────
