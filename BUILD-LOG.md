@@ -11010,3 +11010,6 @@ Issue #51 closed.
 
 > **Commit 971e0c6** (2026-03-01 01:49) — docs: rename Mercury → BlackTape throughout, remove web version refs
 > Files changed: 2
+
+> **Commit d2ccb8e** (2026-03-01 01:49) — wip: auto-save
+> Files changed: 1
