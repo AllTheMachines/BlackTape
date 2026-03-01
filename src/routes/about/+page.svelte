@@ -119,18 +119,6 @@
 		<p>Built on the shoulders of <a href="https://musicbrainz.org" target="_blank" rel="noopener">MusicBrainz</a>, <a href="https://www.discogs.com" target="_blank" rel="noopener">Discogs</a>, and <a href="https://coverartarchive.org" target="_blank" rel="noopener">Cover Art Archive</a>. Powered by <a href="https://tauri.app" target="_blank" rel="noopener">Tauri</a>, <a href="https://kit.svelte.dev" target="_blank" rel="noopener">SvelteKit</a>, and SQLite. Distributed via Cloudflare. Open source throughout.</p>
 	</section>
 
-	<section id="support" class="about-section about-support-section">
-		<h2>Support</h2>
-		<p>{PROJECT_NAME} runs on no ads, no tracking, no VC money — just people who care about music.</p>
-		<div class="support-links-row">
-			<!-- TODO: Replace placeholder URLs with real account URLs when accounts are created -->
-			<a href="https://ko-fi.com/mercury" target="_blank" rel="noopener noreferrer" class="support-link-item">Ko-fi</a>
-			<a href="https://github.com/sponsors/mercury" target="_blank" rel="noopener noreferrer" class="support-link-item">GitHub Sponsors</a>
-			<a href="https://opencollective.com/mercury" target="_blank" rel="noopener noreferrer" class="support-link-item">Open Collective</a>
-		</div>
-		<!-- backers link hidden until Nostr backer feed is active in v2 -->
-	</section>
-
 	<section id="feedback" class="about-section">
 		<h2>Feedback</h2>
 		<p>Found a bug? Have a suggestion? All feedback is read and appreciated.</p>
@@ -296,28 +284,6 @@
 	.cta-primary:hover {
 		background: var(--acc);
 		color: var(--bg-base, #0a0a0a);
-	}
-
-	.support-links-row {
-		display: flex;
-		flex-wrap: wrap;
-		gap: var(--space-sm, 0.5rem);
-		margin-top: var(--space-sm, 0.5rem);
-		margin-bottom: var(--space-sm, 0.5rem);
-	}
-
-	.support-link-item {
-		font-size: 0.85rem;
-		color: var(--acc);
-		text-decoration: none;
-		padding: 0.25rem 0.6rem;
-		border: 1px solid color-mix(in srgb, var(--acc) 40%, transparent);
-		border-radius: 0;
-		transition: background 0.15s, color 0.15s;
-	}
-
-	.support-link-item:hover {
-		background: color-mix(in srgb, var(--acc) 15%, transparent);
 	}
 
 	.feedback-form {
