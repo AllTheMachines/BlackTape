@@ -1,8 +1,10 @@
 # BlackTape
 
-> A music search engine with taste. Indexes all music from open databases. Plays what you own. Helps you discover what you don't — using the open internet as its brain.
+> Dig deeper.
 
-Not a platform. Not a streaming service. Not a blockchain. A discovery engine that becomes an ecosystem.
+A discovery engine, not a streaming platform. BlackTape indexes everything from open databases, embeds players from wherever music already lives, and gets out of the way.
+
+The core inversion: niche artists surface first, not last. The less well-known you are, the more BlackTape rewards your discoverability. Search by tag combination and an underground artist with three matching tags ranks above a major act with fifty. That's the whole premise.
 
 ---
 
@@ -14,8 +16,8 @@ Not a platform. Not a streaming service. Not a blockchain. A discovery engine th
 | **Artist page** — streaming links, tags, discography, queue | **Search** — tag-based results with artist cards |
 | ![Discover — noise rock Japan filter](docs/screenshots/discover.png) | ![Style Map — genre connection graph](docs/screenshots/style-map.png) |
 | **Discover** — filter by tag, country, uniqueness score | **Style Map** — interactive genre connection graph |
-| ![Knowledge Base — post-punk genre page](docs/screenshots/knowledge-base.png) | ![Time Machine — 1977 genre landscape](docs/screenshots/time-machine.png) |
-| **Knowledge Base** — genre pages with key artists and related genres | **Time Machine** — scrub through music history by year |
+| ![Knowledge Base — post-punk genre page](docs/screenshots/knowledge-base.png) | ![Time Machine — 1983 genre landscape](docs/screenshots/time-machine.png) |
+| **Knowledge Base** — genre pages with key artists and related genres | **Time Machine** — see which genres defined each era |
 | ![Local Library — two-pane album browser with covers](docs/screenshots/library.png) | |
 | **Local Library** — scan your own files, play alongside the global index | |
 
@@ -23,11 +25,11 @@ Not a platform. Not a streaming service. Not a blockchain. A discovery engine th
 
 ## The Problem
 
-Music discovery is broken. Streaming platforms show you the same stuff. Every "discovery" feature is really a retention feature — designed to keep you inside one walled garden. 87% of songs on Spotify below 1,000 streams earn zero royalties. Artists are invisible unless an algorithm decides otherwise.
+Streaming has solved access and broken discovery. Every recording ever made is theoretically available — yet the same few thousand artists capture almost everything. The algorithms that decide what you hear next are built to maximise session length, not to help you find something you've never encountered.
 
-The data to fix this already exists in the open — MusicBrainz (2.6M artists, CC0), Discogs (18M+ releases), and the music itself lives on Bandcamp, SoundCloud, YouTube, and artist websites. Nobody has assembled the open pieces into a coherent discovery experience.
+The underground isn't hidden because it doesn't exist. It's hidden because it doesn't perform.
 
-BlackTape does that.
+The data to fix this already exists in the open — MusicBrainz (2.6M artists, CC0), Discogs (18M+ releases), and the music itself lives on Bandcamp, SoundCloud, YouTube, and artist websites. BlackTape assembles the open pieces into a coherent discovery experience.
 
 ---
 
