@@ -93,6 +93,7 @@
 		<h2>The data</h2>
 		<p><a href="https://musicbrainz.org" target="_blank" rel="noopener">MusicBrainz</a> is the backbone: 2.6 million artists, 4.7 million releases, 35 million recordings, all CC0 public domain. Maintained by a global community of volunteers who believe music metadata should be a commons. <a href="https://www.discogs.com" target="_blank" rel="noopener">Discogs</a> fills in release details, especially for genres that MusicBrainz covers less thoroughly.</p>
 		<p>No proprietary data. No locked-in sources. If MusicBrainz or Discogs disappears, the methodology can be applied to any equivalent open dataset. The database is distributed — you download it, you own a copy of it.</p>
+		<p>Notice missing cover art, wrong release dates, or an artist with no tags? <a href="https://musicbrainz.org/doc/How_to_Create_an_Account" target="_blank" rel="noopener">Anyone can edit MusicBrainz</a> — create a free account and fix it directly. Cover art is hosted separately at <a href="https://coverartarchive.org" target="_blank" rel="noopener">Cover Art Archive</a>; you can upload artwork there for any release in the MusicBrainz database. Improvements you make flow into the next database update and benefit everyone using this app.</p>
 	</section>
 
 	<section class="about-section">
