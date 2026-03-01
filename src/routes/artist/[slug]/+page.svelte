@@ -29,7 +29,7 @@
 	/** Artist Wikipedia thumbnail — passed to release cards so missing covers can use it as backdrop. */
 	let artistPhotoUrl = $state<string | null>(null);
 	$effect(() => {
-		getWikiThumbnail(data.artist.name).then(url => { artistPhotoUrl = url; });
+		getWikiThumbnail(data.artist.name).then(url => { artistPhotoUrl = url; }).catch(() => {});
 	});
 
 	let tauriMode = $state(false);
