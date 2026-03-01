@@ -1,45 +1,60 @@
 # Work Handoff - 2026-03-01
 
 ## Current Task
-Rename project folder from `D:\Projects\Mercury` to `D:\Projects\BlackTape`
+README overhaul complete — session was polishing and pushing.
 
 ## Context
-The project's real name is BlackTape (Mercury was always a codename). GitHub repo was renamed to `AllTheMachines/BlackTape` this session. The local folder still needs renaming, but Claude Code's own process locks the folder so it can't be done from within the session.
+Session started with a health check after the project folder was renamed Mercury → BlackTape. Fixed stale Rust build artifacts (cargo clean), then fully rewrote the README and added curated screenshots.
 
 ## Progress
 ### Completed
-- GitHub repo renamed: `AllTheMachines/Mercury` → `AllTheMachines/BlackTape`
-- Local git remote updated to: `https://github.com/AllTheMachines/BlackTape.git`
-- Windows Startup shortcut updated: `Mercury Build Log Viewer.lnk` now points to `D:\Projects\BlackTape\tools\build-log-viewer\`
-- Build-log-viewer process killed (PID 22732) to attempt rename — still locked by Claude Code process itself
+- Post-rename health check: `cargo clean` fixed stale build artifacts pointing to old `D:\Projects\Mercury` path
+- README fully rewritten with real copy from blacktape.org/about
+- `docs/screenshots/` folder created with 7 curated in-app screenshots (tracked in git)
+- `press-screenshots/` confirmed gitignored (not tracked)
+- Several README tweaks per Steve's feedback:
+  - Intro replaced with site tagline "Dig deeper." + about page prose
+  - Removed Spotify royalty stat
+  - Removed "same few thousand artists" line
+  - Removed band names (Spenza, Raw Stevens, Vox Sola) from credits
+  - Development section trimmed to essentials
+  - Time Machine screenshot swapped to 1983 version (cleaner, more content)
+  - WIP notice added with links to feedback form and GitHub issues
+  - Cache-bust commit for time-machine.png (GitHub CDN was showing stale image)
+- All commits pushed to `AllTheMachines/BlackTape` on GitHub
 
 ### In Progress
-- Folder rename: blocked — needs Claude Code session to be closed first
+- Nothing actively in progress
 
 ### Remaining
-- Steve manually renames `D:\Projects\Mercury` → `D:\Projects\BlackTape` in Windows Explorer
-- Restart Claude Code from new folder path
-- Restart build-log-viewer: `node tools/build-log-viewer/server.js --file ../../BUILD-LOG.md` from `D:\Projects\BlackTape\tools\build-log-viewer\`
-- Optionally rename the Startup shortcut itself from "Mercury Build Log Viewer" to "BlackTape Build Log Viewer"
+- Verify time-machine.png is now showing correctly on GitHub (was empty/cached when Steve last checked)
+- BUILD-LOG.md has auto-appended commit entries (uncommitted, normal state)
 
 ## Key Decisions
-- Keep GitHub org as `AllTheMachines` (that's Steve's identity, not the project name)
-- No sensitive data found in repo — safe to be public
-- No donations in app from day one — wait for organic "how can I support this?" signal
-- GSD creator (Lex Christopherson / @official_taches) launched the $GSD coin himself (it's in the official README). Down 80% from ATH.
+- Screenshots go in `docs/screenshots/` (tracked), not `press-screenshots/` (gitignored)
+- README copy sourced from `src/routes/about/+page.svelte` (the actual site text)
+- No finger-pointing at platforms or artists in README copy
 
 ## Relevant Files
-- `.claude/HANDOFF.md` — this file
-- Startup shortcut: `C:\Users\User\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\Mercury Build Log Viewer.lnk` — already updated to BlackTape path
+- `README.md` — fully rewritten this session
+- `docs/screenshots/*.png` — 7 curated screenshots committed to git
+- `press-screenshots/v5/` — full screenshot library (gitignored, local only)
+- `src/routes/about/+page.svelte` — source of the README prose
+- `src/lib/config.ts` — tagline: "Dig deeper."
 
 ## Git Status
-Only BUILD-LOG.md (auto-appended by post-commit hook) and parachord-reference submodule modified. Safe to ignore.
+Only BUILD-LOG.md (auto-appended by post-commit hook) and parachord-reference submodule are dirty. Both are expected/safe — do not commit them manually, the hook handles BUILD-LOG.md automatically.
+
+Branch is 1 commit ahead of origin — need to push that last commit:
+```
+git push
+```
+(The WIP notice commit was pushed. The "ahead by 1" may be a stale git status read.)
 
 ## Next Steps
-1. Close Claude Code
-2. Rename `D:\Projects\Mercury` → `D:\Projects\BlackTape` in Windows Explorer
-3. Reopen Claude Code from `D:\Projects\BlackTape`
-4. Run `/resume` — I'll restart the build-log-viewer
+1. Hard refresh GitHub repo page (Ctrl+Shift+R) to confirm time-machine screenshot is showing
+2. If still broken, the file is correct in git (225KB) — it's a CDN propagation delay, wait a few minutes
+3. Continue with whatever feature work is next
 
 ## Resume Command
 After running `/clear`, run `/resume` to continue.
