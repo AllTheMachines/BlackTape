@@ -2,6 +2,8 @@
 
 > Dig deeper.
 
+**Work in progress.** Early access — bugs are expected. Report them via the [feedback form](https://blacktape.org/about#feedback) or open an [issue](https://github.com/AllTheMachines/BlackTape/issues).
+
 A discovery engine, not a streaming platform. BlackTape indexes everything from open databases, embeds players from wherever music already lives, and gets out of the way.
 
 The core inversion: niche artists surface first, not last. The less well-known you are, the more BlackTape rewards your discoverability. Search by tag combination and an underground artist with three matching tags ranks above a major act with fifty. That's the whole premise.
