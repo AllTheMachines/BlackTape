@@ -221,7 +221,7 @@ BlackTape/
 
 ## Who's Building This
 
-Steve — musician (Theatre of Delays, Spenza, Raw Stevens, Vox Sola), label co-founder (Vakant, Kwik Snax), 30 years of electronic music. Built from lived frustration, not market analysis.
+Steve — musician, label co-founder (Vakant, Kwik Snax), 30 years of electronic music. Built from lived frustration, not market analysis.
 
 The build is streamed live on YouTube. The [BUILD-LOG.md](BUILD-LOG.md) is a documentary record of every decision, dead end, and breakthrough.
 
