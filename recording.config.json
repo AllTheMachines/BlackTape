@@ -1,0 +1,8 @@
+{
+  "app_type": "tauri",
+  "launch_cmd": "node tools/launch-cdp.mjs",
+  "cdp_port": 9224,
+  "viewport": { "width": 1920, "height": 1080 },
+  "output_dir": "app-recordings",
+  "recording_mode": "ffmpeg"
+}

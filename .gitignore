@@ -48,3 +48,8 @@ app-icon.png
 *.mov
 *.mkv
 press-screenshots/
+
+# app-recordings -- commit metadata and press shots, ignore large video files
+app-recordings/*/takes/
+app-recordings/*/final/*.mp4
+app-recordings/*/final/*.webm

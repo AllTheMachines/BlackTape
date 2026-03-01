@@ -1,0 +1,290 @@
+{
+  "brief": "Full app walkthrough",
+  "scenes": [
+    {
+      "name": "app-launch",
+      "description": "BlackTape launches and the main interface loads with the search bar and navigation visible",
+      "actions": [
+        { "type": "wait", "description": "Wait for the BlackTape main interface to fully load with the navigation sidebar and search bar visible" },
+        { "type": "delay", "ms": 1500, "description": "Let the interface fully settle after initial load" },
+        { "type": "screenshot", "label": "app-launch" }
+      ],
+      "duration_target": 5,
+      "framing": "full window",
+      "success_criteria": "The BlackTape main interface is visible with navigation sidebar, search bar, and the main content area fully rendered",
+      "press_screenshot": true
+    },
+    {
+      "name": "artist-search",
+      "description": "Search for an artist by name and show the search results with country flags and tags",
+      "actions": [
+        { "type": "click", "description": "Click the search input field in the header" },
+        { "type": "type", "description": "Type an artist name into the search bar", "text": "Boards of Canada" },
+        { "type": "delay", "ms": 1000, "description": "Wait for search results to populate" },
+        { "type": "wait", "description": "Wait for search results to appear showing artist names with country flags and tags" },
+        { "type": "delay", "ms": 1000, "description": "Let the viewer absorb the search results" }
+      ],
+      "duration_target": 5,
+      "framing": "full window",
+      "success_criteria": "Search results are visible showing at least one artist with tags and country flag information",
+      "press_screenshot": false
+    },
+    {
+      "name": "artist-page",
+      "description": "Navigate to an artist page showing the header with uniqueness badge, tags, bio, and discography",
+      "actions": [
+        { "type": "click", "description": "Click the first artist result in the search results to navigate to their artist page" },
+        { "type": "wait", "description": "Wait for the artist page to fully load with the artist header, tags, and discography visible" },
+        { "type": "delay", "ms": 1500, "description": "Let the artist page content settle" },
+        { "type": "screenshot", "label": "artist-page" }
+      ],
+      "duration_target": 6,
+      "framing": "full window",
+      "success_criteria": "The artist page is visible with the artist name, uniqueness badge, clickable tags, and at least some discography entries with cover art",
+      "press_screenshot": true
+    },
+    {
+      "name": "artist-page-scroll",
+      "description": "Scroll down the artist page to reveal the discography section with release cover art and platform links",
+      "actions": [
+        { "type": "scroll", "description": "Scroll down the main content area to reveal more of the discography and external links" },
+        { "type": "delay", "ms": 1000, "description": "Let the scrolled content settle" },
+        { "type": "scroll", "description": "Scroll down a bit more to show the embedded player or external links section" },
+        { "type": "delay", "ms": 1000, "description": "Pause for the viewer to see the discography and links" }
+      ],
+      "duration_target": 5,
+      "framing": "full window",
+      "success_criteria": "The discography section is visible showing album cover art, release years, and platform listen links",
+      "press_screenshot": false
+    },
+    {
+      "name": "tag-search",
+      "description": "Switch to tag search mode and search for a genre tag to find artists by style",
+      "actions": [
+        { "type": "scroll", "description": "Scroll back to the top of the page" },
+        { "type": "click", "description": "Click the search input field in the header" },
+        { "type": "click", "description": "Click the Tags toggle or switch to switch the search mode from artist search to tag search" },
+        { "type": "type", "description": "Type a genre tag into the search bar", "text": "shoegaze" },
+        { "type": "delay", "ms": 1000, "description": "Wait for tag search results to appear" },
+        { "type": "wait", "description": "Wait for tag search results showing artists tagged with the searched genre" },
+        { "type": "delay", "ms": 1000, "description": "Let the viewer see tag search results" }
+      ],
+      "duration_target": 5,
+      "framing": "full window",
+      "success_criteria": "Tag search results are visible showing artists associated with the searched tag, with relevance ordering",
+      "press_screenshot": false
+    },
+    {
+      "name": "discover-page",
+      "description": "Navigate to the Discover page showing the tag cloud and top discovery-ranked artists",
+      "actions": [
+        { "type": "navigate", "description": "Navigate to the Discover page using the sidebar navigation" },
+        { "type": "wait", "description": "Wait for the Discover page to load with the tag cloud and artist results" },
+        { "type": "delay", "ms": 1500, "description": "Let the Discover page content settle" },
+        { "type": "screenshot", "label": "discover-page" }
+      ],
+      "duration_target": 6,
+      "framing": "full window",
+      "success_criteria": "The Discover page is visible with a tag cloud of clickable genre tags and a list of discovery-ranked artists below",
+      "press_screenshot": true
+    },
+    {
+      "name": "discover-tag-filter",
+      "description": "Click tags on the Discover page to filter artists by intersecting genres, demonstrating the tag intersection discovery",
+      "actions": [
+        { "type": "click", "description": "Click a genre tag in the tag cloud, such as 'electronic' or 'ambient'" },
+        { "type": "delay", "ms": 1000, "description": "Wait for results to filter by the selected tag" },
+        { "type": "wait", "description": "Wait for the filtered artist results to appear" },
+        { "type": "click", "description": "Click a second genre tag to narrow down further with AND logic, such as 'ambient' or 'experimental'" },
+        { "type": "delay", "ms": 1000, "description": "Wait for the doubly-filtered results to appear" },
+        { "type": "wait", "description": "Wait for the results showing artists matching both tags" },
+        { "type": "delay", "ms": 1500, "description": "Let the viewer absorb the tag intersection results" }
+      ],
+      "duration_target": 7,
+      "framing": "full window",
+      "success_criteria": "The Discover page shows filtered results with at least two active tags in the filter row and a list of matching artists below",
+      "press_screenshot": false
+    },
+    {
+      "name": "style-map",
+      "description": "Navigate to the Style Map showing the interactive genre graph visualization with nodes and edges",
+      "actions": [
+        { "type": "navigate", "description": "Navigate to the Style Map page using the sidebar navigation" },
+        { "type": "wait", "description": "Wait for the Style Map graph visualization to load and settle with genre nodes and connecting edges visible" },
+        { "type": "delay", "ms": 2000, "description": "Let the D3 force simulation finish computing the layout" },
+        { "type": "screenshot", "label": "style-map" }
+      ],
+      "duration_target": 8,
+      "framing": "full window",
+      "success_criteria": "The Style Map visualization is visible showing genre nodes as circles of varying sizes connected by edges, with readable tag names",
+      "press_screenshot": true
+    },
+    {
+      "name": "style-map-hover",
+      "description": "Hover over nodes on the Style Map to highlight genres and show their names",
+      "actions": [
+        { "type": "hover", "description": "Hover over a large genre node near the center of the Style Map graph" },
+        { "type": "delay", "ms": 1000, "description": "Let the hover highlight effect appear" },
+        { "type": "hover", "description": "Move to hover over a different, smaller genre node nearby" },
+        { "type": "delay", "ms": 1000, "description": "Show the second genre highlight" }
+      ],
+      "duration_target": 4,
+      "framing": "full window",
+      "success_criteria": "A genre node is highlighted on hover with its tag name clearly visible",
+      "press_screenshot": false
+    },
+    {
+      "name": "knowledge-base",
+      "description": "Navigate to the Knowledge Base showing the genre encyclopedia with the genre graph",
+      "actions": [
+        { "type": "navigate", "description": "Navigate to the Knowledge Base page using the sidebar navigation" },
+        { "type": "wait", "description": "Wait for the Knowledge Base page to load with the genre graph centered on the user's taste" },
+        { "type": "delay", "ms": 1500, "description": "Let the knowledge base graph settle" },
+        { "type": "screenshot", "label": "knowledge-base" }
+      ],
+      "duration_target": 6,
+      "framing": "full window",
+      "success_criteria": "The Knowledge Base page is visible with a genre graph showing interconnected genres, scenes, and cities as distinct visual elements",
+      "press_screenshot": true
+    },
+    {
+      "name": "genre-page",
+      "description": "Click a genre in the Knowledge Base to open its encyclopedia page with description, key artists, and related genres",
+      "actions": [
+        { "type": "click", "description": "Click a genre node in the Knowledge Base graph to navigate to its genre page" },
+        { "type": "wait", "description": "Wait for the genre page to load showing the genre description, key artists, and related genres" },
+        { "type": "delay", "ms": 1500, "description": "Let the genre page content settle" },
+        { "type": "scroll", "description": "Scroll down slightly to reveal key artists and related genres sections" },
+        { "type": "delay", "ms": 1000, "description": "Pause to show the genre page content" }
+      ],
+      "duration_target": 6,
+      "framing": "full window",
+      "success_criteria": "A genre page is visible with a genre name, description text, and sections for key artists and related genres",
+      "press_screenshot": false
+    },
+    {
+      "name": "time-machine",
+      "description": "Navigate to the Time Machine and browse artists by decade and year",
+      "actions": [
+        { "type": "navigate", "description": "Navigate to the Time Machine page using the sidebar navigation" },
+        { "type": "wait", "description": "Wait for the Time Machine page to load with decade buttons and artist results" },
+        { "type": "delay", "ms": 1000, "description": "Let the Time Machine page settle" },
+        { "type": "click", "description": "Click a decade button, such as the 80s or 90s" },
+        { "type": "delay", "ms": 1000, "description": "Wait for results to filter by the selected decade" },
+        { "type": "wait", "description": "Wait for artist results from the selected decade to appear" },
+        { "type": "delay", "ms": 1000, "description": "Let the viewer see the time-filtered results" }
+      ],
+      "duration_target": 6,
+      "framing": "full window",
+      "success_criteria": "The Time Machine page is visible with decade navigation buttons, a year slider, and artist results from the selected time period",
+      "press_screenshot": false
+    },
+    {
+      "name": "crate-digging",
+      "description": "Navigate to Crate Digging mode and hit the Dig button to get random artist discoveries",
+      "actions": [
+        { "type": "navigate", "description": "Navigate to the Crate Digging page using the sidebar navigation" },
+        { "type": "wait", "description": "Wait for the Crate Digging page to load with filter inputs and the Dig button" },
+        { "type": "delay", "ms": 800, "description": "Let the page settle" },
+        { "type": "click", "description": "Click the Dig button to get a random batch of artists" },
+        { "type": "delay", "ms": 1500, "description": "Wait for random artist results to appear" },
+        { "type": "wait", "description": "Wait for the random artist results to fully render" },
+        { "type": "screenshot", "label": "crate-digging" },
+        { "type": "delay", "ms": 1000, "description": "Let the viewer see the random results" }
+      ],
+      "duration_target": 6,
+      "framing": "full window",
+      "success_criteria": "The Crate Digging page shows a batch of randomly selected artists with their names and tags visible",
+      "press_screenshot": true
+    },
+    {
+      "name": "library-page",
+      "description": "Navigate to the Local Music Library showing scanned albums in a grid layout",
+      "actions": [
+        { "type": "navigate", "description": "Navigate to the Library page using the sidebar navigation" },
+        { "type": "wait", "description": "Wait for the Library page to load showing the album grid or folder management interface" },
+        { "type": "delay", "ms": 1500, "description": "Let the library page content settle" }
+      ],
+      "duration_target": 4,
+      "framing": "full window",
+      "success_criteria": "The Library page is visible showing either an album grid with scanned music or the folder management interface for adding music folders",
+      "press_screenshot": false
+    },
+    {
+      "name": "player-bar",
+      "description": "Show the player bar at the bottom with retro FX effects -- VU meters, tape counter, scanlines, film grain, and blinking LED",
+      "actions": [
+        { "type": "click", "description": "Click a track in the library or navigate to an artist and play something to activate the player bar" },
+        { "type": "wait", "description": "Wait for the player bar to appear at the bottom of the screen with transport controls and track info" },
+        { "type": "delay", "ms": 2000, "description": "Let the player bar fully render with all retro FX effects active -- VU meters animating, tape counter glowing, LED blinking" },
+        { "type": "screenshot", "label": "player-bar" }
+      ],
+      "duration_target": 7,
+      "framing": "full window",
+      "success_criteria": "The player bar is visible at the bottom of the screen showing track info, transport controls, seek bar, and volume controls with retro cassette-era visual effects",
+      "press_screenshot": true
+    },
+    {
+      "name": "player-controls",
+      "description": "Interact with player transport controls -- demonstrate play, pause, and the queue panel",
+      "actions": [
+        { "type": "click", "description": "Click the queue icon button on the right side of the player bar to open the queue sidebar" },
+        { "type": "delay", "ms": 1000, "description": "Wait for the queue sidebar to open and show upcoming tracks" },
+        { "type": "wait", "description": "Wait for the queue sidebar to be visible with the track list" },
+        { "type": "delay", "ms": 1500, "description": "Let the viewer see the queue panel" }
+      ],
+      "duration_target": 5,
+      "framing": "full window",
+      "success_criteria": "The queue sidebar is open and visible alongside the player bar, showing the list of tracks in the queue",
+      "press_screenshot": false
+    },
+    {
+      "name": "settings-overview",
+      "description": "Navigate to Settings showing layout templates, theme options, and AI features configuration",
+      "actions": [
+        { "type": "navigate", "description": "Navigate to the Settings page using the sidebar navigation or header link" },
+        { "type": "wait", "description": "Wait for the Settings page to load showing the various configuration sections" },
+        { "type": "delay", "ms": 1000, "description": "Let the settings page content settle" },
+        { "type": "scroll", "description": "Scroll down to show the layout templates, theme mode options, and AI features section" },
+        { "type": "delay", "ms": 1500, "description": "Let the viewer see the settings options" }
+      ],
+      "duration_target": 5,
+      "framing": "full window",
+      "success_criteria": "The Settings page is visible showing configuration sections including layout templates, theme options, or AI features",
+      "press_screenshot": false
+    },
+    {
+      "name": "layout-switch",
+      "description": "Demonstrate switching between workspace layouts -- from Cockpit to Focus or Minimal",
+      "actions": [
+        { "type": "click", "description": "Click the layout switcher dropdown in the ControlBar at the top right of the workspace" },
+        { "type": "delay", "ms": 500, "description": "Wait for the layout dropdown to open" },
+        { "type": "click", "description": "Select a different layout template such as Focus or Minimal from the dropdown" },
+        { "type": "delay", "ms": 1000, "description": "Wait for the layout transition to complete with panels resizing" },
+        { "type": "wait", "description": "Wait for the new layout to settle with the correct panel configuration" },
+        { "type": "delay", "ms": 1000, "description": "Let the viewer see the new layout" },
+        { "type": "screenshot", "label": "layout-switch" }
+      ],
+      "duration_target": 5,
+      "framing": "full window",
+      "success_criteria": "The workspace layout has visibly changed -- panels have been added, removed, or resized to match a different layout template",
+      "press_screenshot": true
+    },
+    {
+      "name": "final-overview",
+      "description": "Return to the main Discover page for a final overview shot of the BlackTape interface",
+      "actions": [
+        { "type": "navigate", "description": "Navigate back to the Discover page for the closing shot" },
+        { "type": "wait", "description": "Wait for the Discover page to fully load" },
+        { "type": "delay", "ms": 2000, "description": "Hold on the Discover page for a final beauty shot of the full interface" },
+        { "type": "screenshot", "label": "final-overview" }
+      ],
+      "duration_target": 5,
+      "framing": "full window",
+      "success_criteria": "The Discover page is displayed in a clean, settled state showing the full BlackTape interface as a closing shot",
+      "press_screenshot": true
+    }
+  ],
+  "total_duration_target": 109,
+  "version": 1
+}

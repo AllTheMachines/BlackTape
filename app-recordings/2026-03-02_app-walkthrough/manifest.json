@@ -1,0 +1,190 @@
+{
+  "summary": "Recording session started",
+  "brief": "Full app walkthrough",
+  "feature_slug": "app-walkthrough",
+  "date": "2026-03-02",
+  "session_folder": "app-recordings/2026-03-02_app-walkthrough",
+  "config": {
+    "app_type": "tauri",
+    "launch_cmd": "node tools/launch-cdp.mjs",
+    "cdp_port": 9224,
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "output_dir": "app-recordings",
+    "recording_mode": "ffmpeg"
+  },
+  "storyboard_version": 1,
+  "passes": [
+    {
+      "pass": 1,
+      "started_at": "2026-03-02T06:00:00.000Z",
+      "completed_at": "2026-03-01T23:44:53.453Z",
+      "cameraman_status": "dry-run-failed",
+      "scenes": [
+        {
+          "scene_name": "app-launch",
+          "status": "pending",
+          "clip_path": null,
+          "checkpoint_screenshot_path": null,
+          "retry_count": 0,
+          "failure_reason": null
+        },
+        {
+          "scene_name": "artist-search",
+          "status": "pending",
+          "clip_path": null,
+          "checkpoint_screenshot_path": null,
+          "retry_count": 0,
+          "failure_reason": null
+        },
+        {
+          "scene_name": "artist-page",
+          "status": "pending",
+          "clip_path": null,
+          "checkpoint_screenshot_path": null,
+          "retry_count": 0,
+          "failure_reason": null
+        },
+        {
+          "scene_name": "artist-page-scroll",
+          "status": "pending",
+          "clip_path": null,
+          "checkpoint_screenshot_path": null,
+          "retry_count": 0,
+          "failure_reason": null
+        },
+        {
+          "scene_name": "tag-search",
+          "status": "pending",
+          "clip_path": null,
+          "checkpoint_screenshot_path": null,
+          "retry_count": 0,
+          "failure_reason": null
+        },
+        {
+          "scene_name": "discover-page",
+          "status": "pending",
+          "clip_path": null,
+          "checkpoint_screenshot_path": null,
+          "retry_count": 0,
+          "failure_reason": null
+        },
+        {
+          "scene_name": "discover-tag-filter",
+          "status": "pending",
+          "clip_path": null,
+          "checkpoint_screenshot_path": null,
+          "retry_count": 0,
+          "failure_reason": null
+        },
+        {
+          "scene_name": "style-map",
+          "status": "pending",
+          "clip_path": null,
+          "checkpoint_screenshot_path": null,
+          "retry_count": 0,
+          "failure_reason": null
+        },
+        {
+          "scene_name": "style-map-hover",
+          "status": "pending",
+          "clip_path": null,
+          "checkpoint_screenshot_path": null,
+          "retry_count": 0,
+          "failure_reason": null
+        },
+        {
+          "scene_name": "knowledge-base",
+          "status": "pending",
+          "clip_path": null,
+          "checkpoint_screenshot_path": null,
+          "retry_count": 0,
+          "failure_reason": null
+        },
+        {
+          "scene_name": "genre-page",
+          "status": "pending",
+          "clip_path": null,
+          "checkpoint_screenshot_path": null,
+          "retry_count": 0,
+          "failure_reason": null
+        },
+        {
+          "scene_name": "time-machine",
+          "status": "pending",
+          "clip_path": null,
+          "checkpoint_screenshot_path": null,
+          "retry_count": 0,
+          "failure_reason": null
+        },
+        {
+          "scene_name": "crate-digging",
+          "status": "pending",
+          "clip_path": null,
+          "checkpoint_screenshot_path": null,
+          "retry_count": 0,
+          "failure_reason": null
+        },
+        {
+          "scene_name": "library-page",
+          "status": "pending",
+          "clip_path": null,
+          "checkpoint_screenshot_path": null,
+          "retry_count": 0,
+          "failure_reason": null
+        },
+        {
+          "scene_name": "player-bar",
+          "status": "pending",
+          "clip_path": null,
+          "checkpoint_screenshot_path": null,
+          "retry_count": 0,
+          "failure_reason": null
+        },
+        {
+          "scene_name": "player-controls",
+          "status": "pending",
+          "clip_path": null,
+          "checkpoint_screenshot_path": null,
+          "retry_count": 0,
+          "failure_reason": null
+        },
+        {
+          "scene_name": "settings-overview",
+          "status": "pending",
+          "clip_path": null,
+          "checkpoint_screenshot_path": null,
+          "retry_count": 0,
+          "failure_reason": null
+        },
+        {
+          "scene_name": "layout-switch",
+          "status": "pending",
+          "clip_path": null,
+          "checkpoint_screenshot_path": null,
+          "retry_count": 0,
+          "failure_reason": null
+        },
+        {
+          "scene_name": "final-overview",
+          "status": "pending",
+          "clip_path": null,
+          "checkpoint_screenshot_path": null,
+          "retry_count": 0,
+          "failure_reason": null
+        }
+      ],
+      "checkpoint_screenshots": [],
+      "director_verdict": "pending",
+      "revision_notes": null,
+      "cut_spec_path": null,
+      "ffmpeg_output_path": null
+    }
+  ],
+  "current_pass": 1,
+  "director_approved": false,
+  "final_output_path": null,
+  "press_screenshots": []
+}
