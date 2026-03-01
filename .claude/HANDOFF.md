@@ -1,40 +1,31 @@
 # Work Handoff - 2026-03-01
 
-## ACTIVE BUG
+## WHERE WE ARE
 
-The Cure's artist page shows no discography — completely empty. Console shows `ERR_CONNECTION_RESET`. The `$effect` added to `+page.svelte` for `getWikiThumbnail` is the likely cause — if that fetch crashes the connection, it may be crashing the component before releases render.
+Preparing for demo recording. All storyboard artists verified, doc rewritten. Now checking whether visually discussed gimmicks are implemented before recording.
 
-**To fix:** Wrap the `getWikiThumbnail` call in `+page.svelte` in a try/catch, or check if `getWikiThumbnail` already handles errors gracefully. Look at `src/lib/wiki-thumbnail.ts`. The `$effect` in `+page.svelte` is:
+## WHAT WAS VERIFIED THIS SESSION
 
-```svelte
-$effect(() => {
-    getWikiThumbnail(data.artist.name).then(url => { artistPhotoUrl = url; });
-});
-```
+- Bug fixed: artist page `getWikiThumbnail` $effect missing `.catch()` — fixed
+- ArtistCard.svelte same fix applied
+- Reload button added to artist page when releases fail to load
+- Boris replaced with My Bloody Valentine in both recording scripts
+- HYPERSPEED-RECORDING-BRIEF.md rewritten (v3.0) at D:\Projects\blacktapesite\
+- All 6 storyboard artists audited: 4/4 covers, full discography, test run passed
 
-Should be:
-```svelte
-$effect(() => {
-    getWikiThumbnail(data.artist.name).then(url => { artistPhotoUrl = url; }).catch(() => {});
-});
-```
+## OPEN QUESTION — TAPE WHEELS + VISUAL GIMMICKS
 
-Also check: does `ArtistCard.svelte`'s `fetchReleaseCoverUrls` error handling need improvement? It already has try/catch.
+User asked to check the last 2 audiologs for mentions of visual gimmicks and tape wheels.
 
-## What Was Built This Session
+**Tape wheels:** Cassette reels ARE in the BUILD-LOG (2026-02-27) as implemented — spinning SVG reels in player bar. Need to visually verify they're working in the current build.
 
-Smart cover placeholder system — 4-case context-aware composites:
-- Case 1: Artist card, no Wikipedia photo → MusicBrainz fetch for top albums → crisp dimmed mosaic
-- Case 2: Artist card, no photo + no CAA art → blurred pool fallback
-- Case 3: Release card, no cover → artist Wikipedia photo as backdrop (sharp, dimmed)
-- Case 4: Release card, no cover + no artist photo → sibling covers via pool (sharp, dimmed)
+**Audiologs:** The D:/Audiologs/recordings/ files are old webm/wav from 2025 — not recent BlackTape sessions. The recent audiologs might be somewhere else, or they haven't been transcribed yet. User may need to point to the right location.
 
-## Files Changed
+## NEXT STEPS
 
-- `src/lib/components/CoverPlaceholder.svelte` — `blur` prop
-- `src/lib/components/ArtistCard.svelte` — MB release cover fetch
-- `src/lib/components/ReleaseCard.svelte` — `artistPhotoUrl` prop
-- `src/routes/artist/[slug]/+page.svelte` — `$effect` for artist thumbnail (HAS BUG)
+1. Ask user where the recent audiologs are (or if they want to share the content directly)
+2. Visually verify tape wheels work in the running app (`node tools/launch-cdp.mjs` then check player bar while playing)
+3. Once visual gimmicks confirmed → record
 
 ## Resume Command
 
