@@ -11359,3 +11359,6 @@ Replaced the blurred-backdrop-always approach with a four-case system that uses 
 
 > **Commit 6a03f13** (2026-03-01 14:49) — wip: auto-save
 > Files changed: 2
+
+> **Commit 491631e** (2026-03-01 14:49) — wip: auto-save
+> Files changed: 1
