@@ -33,11 +33,12 @@
 	let coverError = $state(false);
 	let tauriMode = $state(false);
 
-	// When the release cover 404s, fall back to the artist's Wikipedia thumbnail as backdrop
+	// Fetch artist's Wikipedia thumbnail eagerly — ready before cover art loads/fails.
+	// Used as backdrop source when the release has no cover art.
 	let artistThumb = $state<string | null>(null);
 
 	$effect(() => {
-		if (coverError && release?.artistName) {
+		if (release?.artistName) {
 			getWikiThumbnail(release.artistName).then(url => {
 				artistThumb = url;
 			});

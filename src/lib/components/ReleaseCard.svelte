@@ -22,12 +22,13 @@
 
 	let coverError = $state(false);
 
-	// When the release cover fails to load and we have an artist name,
-	// use the artist's Wikipedia thumbnail as the backdrop source
+	// Fetch the artist's Wikipedia thumbnail eagerly — cached, so one network
+	// request per artist name regardless of how many cards are on the page.
+	// Ready by the time cover art fails (or immediately if coverArtUrl is null).
 	let artistThumb = $state<string | null>(null);
 
 	$effect(() => {
-		if (coverError && artistName) {
+		if (artistName) {
 			getWikiThumbnail(artistName).then(url => {
 				artistThumb = url;
 			});
