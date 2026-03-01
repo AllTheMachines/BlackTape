@@ -26,6 +26,29 @@
 	let showQueue = $state(false);
 	let showExpanded = $state(false);
 
+	// ─── Retro FX: film grain canvas ────────────────────────────────────────────
+	let grainCanvas = $state<HTMLCanvasElement | null>(null);
+
+	$effect(() => {
+		if (!grainCanvas) return;
+		const ctx = grainCanvas.getContext('2d');
+		if (!ctx) return;
+		function draw() {
+			const w = grainCanvas!.width;
+			const h = grainCanvas!.height;
+			const id = ctx!.createImageData(w, h);
+			for (let i = 0; i < id.data.length; i += 4) {
+				const v = (Math.random() * 255) | 0;
+				id.data[i] = id.data[i + 1] = id.data[i + 2] = v;
+				id.data[i + 3] = 255;
+			}
+			ctx!.putImageData(id, 0, 0);
+		}
+		draw();
+		const t = setInterval(draw, 80);
+		return () => clearInterval(t);
+	});
+
 	// True when Spotify Connect is the active audio source.
 	const isSpotifyMode = $derived(streamingState.activeSource === 'spotify');
 	const spotifyRepeat = $derived(streamingState.spotifyTrack?.repeatState ?? 'off');
@@ -176,6 +199,14 @@
 	{/if}
 
 	<div class="player-bar">
+		<!-- Retro FX: film grain -->
+		<canvas bind:this={grainCanvas} class="grain-canvas" width="200" height="60" aria-hidden="true"></canvas>
+		<!-- Retro FX: pixel corner brackets -->
+		<div class="corner-bracket tl" aria-hidden="true"></div>
+		<div class="corner-bracket tr" aria-hidden="true"></div>
+		<div class="corner-bracket bl" aria-hidden="true"></div>
+		<div class="corner-bracket br" aria-hidden="true"></div>
+
 		<!-- Track info -->
 		<div class="track-info">
 			<div class="cassette-reels" class:playing={isPlaying}>
@@ -235,10 +266,35 @@
 					<circle cx="10" cy="10" r="1.2" fill="var(--bg-3)"/>
 				</svg>
 			</div>
+
+			<!-- Retro FX: VU meter bars (playing) / tape hiss waveform (idle) -->
+			{#if isPlaying}
+				<div class="vu-meter" aria-hidden="true">
+					<div class="vu-bar b1"></div>
+					<div class="vu-bar b2"></div>
+					<div class="vu-bar b3"></div>
+					<div class="vu-bar b4"></div>
+					<div class="vu-bar b5"></div>
+				</div>
+			{:else}
+				<div class="idle-wave" aria-hidden="true">
+					<div class="w-bar w1"></div>
+					<div class="w-bar w2"></div>
+					<div class="w-bar w3"></div>
+					<div class="w-bar w4"></div>
+					<div class="w-bar w5"></div>
+					<div class="w-bar w6"></div>
+					<div class="w-bar w7"></div>
+					<div class="w-bar w8"></div>
+				</div>
+			{/if}
+
 			<div class="track-text">
 				{#if isSpotifyMode && streamingState.spotifyTrack}
 					<div class="track-title">{streamingState.spotifyTrack.title}</div>
 					<div class="track-meta">
+						<!-- Retro FX: tape type badge -->
+						<span class="tape-badge">TYPE II</span>
 						<span class="track-artist">{streamingState.spotifyTrack.artist}</span>
 						{#if streamingState.spotifyTrack.album}
 							<span class="meta-sep">&mdash;</span>
@@ -251,6 +307,8 @@
 				{:else if playerState.currentTrack}
 					<div class="track-title">{playerState.currentTrack.title}</div>
 					<div class="track-meta">
+						<!-- Retro FX: tape type badge -->
+						<span class="tape-badge">C-90</span>
 						<span class="track-artist">{playerState.currentTrack.artist}</span>
 						{#if playerState.currentTrack.album}
 							<span class="meta-sep">&mdash;</span>
@@ -377,6 +435,9 @@
 
 		<!-- Right: volume + queue toggle -->
 		<div class="controls-right">
+			<!-- Retro FX: blinking PLAY LED -->
+			<div class="led-dot" class:active={isPlaying} aria-hidden="true"></div>
+
 			{#if isSpotifyMode}
 				{@const svol = streamingState.spotifyTrack?.volumePercent ?? 100}
 				<button
@@ -598,6 +659,7 @@
 		animation-play-state: running;
 	}
 
+	/* Retro FX #5: CRT Phosphor Glow — amber text shadow */
 	.track-title {
 		font-size: 11px;
 		font-weight: 500;
@@ -605,6 +667,7 @@
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
+		text-shadow: 0 0 8px rgba(196, 165, 90, 0.22), 0 0 18px rgba(196, 165, 90, 0.08);
 	}
 
 	.track-title.connecting {
@@ -757,11 +820,15 @@
 		width: 100%;
 	}
 
+	/* Retro FX #4: Tape Counter — amber mono glow */
 	.time-display {
-		font-size: 9px;
-		color: var(--t-3);
+		font-size: 10px;
+		color: var(--acc);
+		font-family: var(--font-mono);
 		font-variant-numeric: tabular-nums;
-		min-width: 30px;
+		letter-spacing: 1px;
+		text-shadow: 0 0 6px rgba(196, 165, 90, 0.45);
+		min-width: 32px;
 		text-align: center;
 	}
 
@@ -969,4 +1036,141 @@
 			transform: rotate(360deg);
 		}
 	}
+
+	/* ─── Retro FX ─────────────────────────────────────────────────────────────── */
+
+	/* #1: Scanlines */
+	.player-bar::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: repeating-linear-gradient(
+			0deg,
+			transparent,
+			transparent 3px,
+			rgba(0, 0, 0, 0.12) 3px,
+			rgba(0, 0, 0, 0.12) 4px
+		);
+		pointer-events: none;
+		z-index: 0;
+	}
+
+	/* #2: Film Grain */
+	.grain-canvas {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		opacity: 0.04;
+		pointer-events: none;
+		z-index: 0;
+	}
+
+	/* #3: VU Meter Bars */
+	.vu-meter {
+		display: flex;
+		align-items: flex-end;
+		gap: 2px;
+		height: 20px;
+		flex-shrink: 0;
+	}
+
+	.vu-bar {
+		width: 3px;
+		border-radius: 1px 1px 0 0;
+		background: var(--acc);
+		opacity: 0.75;
+	}
+
+	.b1 { animation: vu-a 0.8s ease-in-out infinite alternate; }
+	.b2 { animation: vu-b 0.6s ease-in-out infinite alternate; }
+	.b3 { animation: vu-c 1.1s ease-in-out infinite alternate; }
+	.b4 { animation: vu-a 0.5s ease-in-out infinite alternate; }
+	.b5 { animation: vu-b 0.9s ease-in-out infinite alternate; }
+
+	@keyframes vu-a { from { height: 4px } to { height: 18px } }
+	@keyframes vu-b { from { height: 3px } to { height: 13px } }
+	@keyframes vu-c { from { height: 6px } to { height: 20px } }
+
+	/* #6: Tape Type Badge */
+	.tape-badge {
+		font-size: 8px;
+		font-weight: 700;
+		font-family: var(--font-mono);
+		letter-spacing: 0.08em;
+		border: 1px solid var(--b-acc);
+		color: var(--acc);
+		padding: 0px 3px;
+		line-height: 1.4;
+		border-radius: 1px;
+		opacity: 0.7;
+		flex-shrink: 0;
+		margin-right: 5px;
+		vertical-align: middle;
+	}
+
+	/* #7: Blinking LED */
+	.led-dot {
+		width: 5px;
+		height: 5px;
+		border-radius: 50%;
+		background: var(--b-3);
+		flex-shrink: 0;
+		transition: background 0.3s;
+	}
+
+	.led-dot.active {
+		background: var(--acc);
+		box-shadow: 0 0 4px var(--acc), 0 0 8px rgba(196, 165, 90, 0.35);
+		animation: led-blink 1.6s ease-in-out infinite;
+	}
+
+	@keyframes led-blink {
+		0%, 100% { opacity: 1; }
+		50% { opacity: 0.35; }
+	}
+
+	/* #8: Pixel Corner Brackets */
+	.corner-bracket {
+		position: absolute;
+		width: 8px;
+		height: 8px;
+		pointer-events: none;
+		opacity: 0.35;
+		z-index: 1;
+	}
+
+	.tl { top: 5px; left: 5px; border-top: 1px solid var(--acc); border-left: 1px solid var(--acc); }
+	.tr { top: 5px; right: 5px; border-top: 1px solid var(--acc); border-right: 1px solid var(--acc); }
+	.bl { bottom: 5px; left: 5px; border-bottom: 1px solid var(--acc); border-left: 1px solid var(--acc); }
+	.br { bottom: 5px; right: 5px; border-bottom: 1px solid var(--acc); border-right: 1px solid var(--acc); }
+
+	/* #9: Idle Waveform / Tape Hiss */
+	.idle-wave {
+		display: flex;
+		align-items: center;
+		gap: 2px;
+		height: 20px;
+		flex-shrink: 0;
+	}
+
+	.w-bar {
+		width: 3px;
+		border-radius: 1px;
+		background: var(--acc);
+		opacity: 0.3;
+	}
+
+	.w1 { animation: hiss-a 2.8s ease-in-out infinite alternate; }
+	.w2 { animation: hiss-b 3.4s ease-in-out infinite alternate; }
+	.w3 { animation: hiss-a 2.2s ease-in-out infinite alternate 0.4s; }
+	.w4 { animation: hiss-c 3.1s ease-in-out infinite alternate 0.8s; }
+	.w5 { animation: hiss-b 2.6s ease-in-out infinite alternate 0.2s; }
+	.w6 { animation: hiss-a 3.7s ease-in-out infinite alternate 0.6s; }
+	.w7 { animation: hiss-c 2.4s ease-in-out infinite alternate 1s; }
+	.w8 { animation: hiss-b 3.0s ease-in-out infinite alternate; }
+
+	@keyframes hiss-a { from { height: 2px } to { height: 5px } }
+	@keyframes hiss-b { from { height: 3px } to { height: 7px } }
+	@keyframes hiss-c { from { height: 2px } to { height: 4px } }
 </style>

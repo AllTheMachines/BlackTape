@@ -4,6 +4,39 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-03-01 — All 9 Retro FX live in player bar + BlackTape branding in design system
+
+All 9 Retro FX ideas from the design system are now implemented in `Player.svelte`. They work together to give the player bar a subtle but unmistakable cassette-era aesthetic.
+
+**#1 — Scanlines:** CSS `::before` pseudo-element on `.player-bar`. Repeating horizontal lines at 4px intervals, 12% opacity. Evokes CRT monitor glass. Completely invisible at a glance, feels right up close.
+
+**#2 — Film Grain:** `<canvas>` element absolute-positioned over the player bar. A `$effect` drives a `setInterval` at ~12fps — fills the canvas with random white noise pixels, stretches over the full bar at 4% opacity. Like a worn VHS tape.
+
+**#3 — VU Meter Bars:** 5 animated CSS bars appear in the track-info section when a track is playing. Each bar has a different animation timing (0.5–1.1s) and range (3–20px). Amber colored. Disappears when paused.
+
+**#4 — Tape Counter:** The time displays (current position + duration) are now rendered in monospace amber with a subtle phosphor glow (`text-shadow: 0 0 6px rgba(196,165,90,0.45)`). Feels like an old digital counter.
+
+**#5 — CRT Phosphor Glow:** The track title has a two-layer amber `text-shadow` — very subtle (22% and 8% opacity). Barely visible in bright light, noticeable in a dark room. Like CRT text blooming.
+
+**#6 — Tape Type Badge:** A small `TYPE II` or `C-90` badge appears at the start of the track meta line. Spotify tracks get `TYPE II` (high quality), local files get `C-90` (standard tape). Amber border, monospace font, tiny.
+
+**#7 — Blinking LED:** A 5px dot in the right controls section. Dark gray when paused, amber + glow when playing. Blinks at 1.6s interval. Like the PLAY indicator light on a tape deck.
+
+**#8 — Pixel Corner Brackets:** Four 8×8px L-shaped corner accents (absolute positioned) on the player bar. Amber, 35% opacity. Like targeting reticles or old TV UI chrome.
+
+**#9 — Idle Waveform / Tape Hiss:** 8 very short bars (2–7px height range) that animate extremely slowly (2.2–3.7s cycles). Appears when paused, replaced by VU bars when playing. Like tape hiss — barely alive static.
+
+Also updated the design system:
+- Title: `Mercury — Design System` → `BlackTape — Design System`
+- Nav wordmark: `Mercury` → `BlackTape`
+- Brand section wordmark + caption updated (no more "Codename")
+- Version bump: v1.5 → v1.6
+- Retro FX section updated to reflect all 9 being live
+
+`npm run check`: 0 errors, 20 pre-existing warnings.
+
+---
+
 ## Entry 2026-03-01 — Post-rename health check + build artifact cleanup
 
 First session after the folder rename `D:\Projects\Mercury` → `D:\Projects\BlackTape`. The Rust build was broken because `cargo`'s compiled build cache had the old path hardcoded in it. `cargo clean` wiped the stale artifacts (18GB), and a fresh `cargo check` compiled clean. TypeScript/Svelte check: 0 errors, 20 pre-existing warnings across 609 files. Project is healthy.
@@ -11365,3 +11398,6 @@ Replaced the blurred-backdrop-always approach with a four-case system that uses 
 
 > **Commit 518e70f** (2026-03-01 14:51) — wip: auto-save
 > Files changed: 2
+
+> **Commit 7527a8f** (2026-03-01 14:51) — wip: auto-save
+> Files changed: 1
