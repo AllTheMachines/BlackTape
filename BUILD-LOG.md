@@ -4,6 +4,27 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-03-01 — Fix #64: Geographic scene map — proper data model + pipeline
+
+Issue had two problems: (1) no real Wikidata scene data in the DB, and (2) the SceneMap was permanently disabled because all entries were `type='genre'` after an earlier fix reset everything.
+
+**Root cause:** The pipeline was only querying Wikidata Q188451 (music genres). Scenes need a separate query for Q1640824 (local music scene) — geographically-anchored scenes like Madchester, Detroit techno, Seattle grunge.
+
+**What changed in `pipeline/build-genre-data.mjs`:**
+- Added `SPARQL_SCENES_QUERY` — queries `wdt:P31 wd:Q1640824` with city (P131), country (P17), and inception year (P571)
+- Added `fetchWikidataScenes()` — separate fetch with graceful failure (same pattern as genres)
+- Added `insertScenes(db, bindings)` — inserts with `type='scene'`, uses city label as `origin_city` (falls back to country label), collision-safe slugs
+- Updated `main()`: Steps 4+5 now fetch scenes then geocode. Existing `geocodeScenes()` fills lat/lng for all newly inserted scene cities via Nominatim
+
+**What didn't need changing:**
+- KB genre page (`/kb/genre/[slug]`) already shows origin city/country as text in the `genre-meta` line
+- SceneMap is already gated by `isScene` (type='scene' + has coordinates) — it auto-enables once the pipeline runs with real scene data
+- Schema already has `origin_city`, `origin_lat`, `origin_lng` columns
+
+Next time `node pipeline/build-genre-data.mjs` runs, real scenes land in the DB with coordinates, and the Leaflet map appears on their encyclopedia pages.
+
+---
+
 ## Entry 2026-03-01 — Fix #25: Time Machine pagination + sort
 
 Steve's complaint: *"Is there no next button or something to go to the next page?... They start with dots and stars and slashes. Maybe there should be shown more bands that are first like something that is based on your taste or the most known."*
@@ -10940,3 +10961,6 @@ Issue #51 closed.
 
 > **Commit 1f5da78** (2026-03-01 00:54) — wip: auto-save
 > Files changed: 2
+
+> **Commit 050b849** (2026-03-01 00:57) — wip: auto-save
+> Files changed: 1

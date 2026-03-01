@@ -46,6 +46,21 @@ SELECT DISTINCT ?genre ?genreLabel ?genreId ?parentGenre ?parentGenreLabel
 LIMIT 5000
 `;
 
+// SPARQL query: fetch local music scenes (Q1640824) with city, country, and inception year.
+// City label is used as origin_city; geocodeScenes() fills in lat/lng via Nominatim.
+const SPARQL_SCENES_QUERY = `
+SELECT DISTINCT ?scene ?sceneLabel ?sceneId ?cityLabel ?countryLabel ?inceptionYear WHERE {
+  ?scene wdt:P31 wd:Q1640824 .
+  BIND(STRAFTER(STR(?scene), "entity/") AS ?sceneId)
+  OPTIONAL { ?scene wdt:P131 ?city }
+  OPTIONAL { ?scene wdt:P17 ?country }
+  OPTIONAL { ?scene wdt:P571 ?inception . BIND(YEAR(?inception) AS ?inceptionYear) }
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "en" }
+  FILTER(!CONTAINS(STR(?sceneLabel), "Q"))
+}
+LIMIT 1000
+`;
+
 // --- Utilities ---
 
 /**
@@ -95,6 +110,38 @@ async function fetchWikidataGenres() {
     return bindings;
   } catch (err) {
     console.warn(`[Phase G] Wikidata unreachable: ${err.message} — proceeding with empty dataset`);
+    return [];
+  }
+}
+
+/**
+ * Fetch local music scene data from Wikidata SPARQL endpoint.
+ * Returns the bindings array, or empty array on network/parse failure.
+ */
+async function fetchWikidataScenes() {
+  console.log('[Phase G] Fetching music scene data from Wikidata...');
+
+  const url = `${WIKIDATA_SPARQL_URL}?query=${encodeURIComponent(SPARQL_SCENES_QUERY)}`;
+
+  try {
+    const response = await fetch(url, {
+      headers: {
+        Accept: 'application/sparql-results+json',
+        'User-Agent': USER_AGENT
+      }
+    });
+
+    if (!response.ok) {
+      console.warn(`[Phase G] Wikidata returned HTTP ${response.status} for scenes — skipping`);
+      return [];
+    }
+
+    const data = await response.json();
+    const bindings = data?.results?.bindings ?? [];
+    console.log(`[Phase G] Wikidata returned ${bindings.length} scene rows`);
+    return bindings;
+  } catch (err) {
+    console.warn(`[Phase G] Wikidata unreachable for scenes: ${err.message} — skipping`);
     return [];
   }
 }
@@ -264,6 +311,80 @@ function insertRelationships(db, wdIdToDbId, parentPairs, influencePairs) {
   return relCount;
 }
 
+// --- Scene insert ---
+
+/**
+ * Insert local music scenes (type='scene') from SPARQL bindings into the genres table.
+ * Uses INSERT OR IGNORE so slug collisions with existing genres are skipped.
+ * origin_city stores the city label (or country as fallback) for geocodeScenes() to fill.
+ */
+function insertScenes(db, bindings) {
+  // Deduplicate by Wikidata ID
+  const sceneMap = new Map();
+
+  for (const row of bindings) {
+    const wdId = row.sceneId?.value;
+    const name = row.sceneLabel?.value;
+
+    if (!wdId || !name) continue;
+    if (/^Q\d+$/.test(name)) continue;
+
+    if (!sceneMap.has(wdId)) {
+      sceneMap.set(wdId, {
+        wdId,
+        name,
+        // Prefer city label (P131) for geocoding; fall back to country label (P17)
+        originCity: row.cityLabel?.value ?? row.countryLabel?.value ?? null,
+        inceptionYear: row.inceptionYear ? parseInt(row.inceptionYear.value, 10) : null
+      });
+    }
+  }
+
+  if (sceneMap.size === 0) {
+    console.log('[Phase G] No scenes to insert.');
+    return 0;
+  }
+
+  // Detect slug collisions within the scene set itself
+  const slugCounts = new Map();
+  for (const entry of sceneMap.values()) {
+    const base = slugify(entry.name);
+    slugCounts.set(base, (slugCounts.get(base) ?? 0) + 1);
+  }
+
+  const insertScene = db.prepare(`
+    INSERT OR IGNORE INTO genres
+      (slug, name, type, wikidata_id, wikipedia_title, inception_year, origin_city, mb_tag)
+    VALUES
+      (@slug, @name, @type, @wikidataId, @wikipediaTitle, @inceptionYear, @originCity, @mbTag)
+  `);
+
+  const insertMany = db.transaction(() => {
+    for (const entry of sceneMap.values()) {
+      const baseSlug = slugify(entry.name);
+      const slug = (slugCounts.get(baseSlug) ?? 0) > 1
+        ? `${baseSlug}-${entry.wdId.slice(1, 9)}`
+        : baseSlug;
+
+      insertScene.run({
+        slug,
+        name: entry.name,
+        type: 'scene',
+        wikidataId: entry.wdId,
+        wikipediaTitle: entry.name,
+        inceptionYear: entry.inceptionYear,
+        originCity: entry.originCity,
+        mbTag: baseSlug || null
+      });
+    }
+  });
+
+  insertMany();
+
+  const sceneCount = db.prepare("SELECT COUNT(*) as n FROM genres WHERE type = 'scene'").get().n;
+  return sceneCount;
+}
+
 // --- Nominatim geocoding ---
 
 /**
@@ -355,7 +476,12 @@ async function main() {
 
   console.log(`[Phase G] Inserted ${genreCount} genres (${relCount} relationships)`);
 
-  // Step 4: Geocode scene cities
+  // Step 4: Fetch and insert local music scenes (Q1640824)
+  const sceneBindings = await fetchWikidataScenes();
+  const sceneCount = insertScenes(db, sceneBindings);
+  console.log(`[Phase G] Inserted ${sceneCount} scenes`);
+
+  // Step 5: Geocode scene cities (fills origin_lat/origin_lng via Nominatim)
   await geocodeScenes(db);
 
   db.close();
