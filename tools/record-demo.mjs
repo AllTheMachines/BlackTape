@@ -20,7 +20,7 @@ const ARTISTS = [
   { name: 'The Cure',                    slug: 'the-cure' },
   { name: 'Nick Cave & the Bad Seeds',   slug: 'nick-cave-the-bad-seeds' },
   { name: 'Godspeed You! Black Emperor', slug: 'godspeed-you-black-emperor' },
-  { name: 'Boris',                       slug: 'boris' },
+  { name: 'My Bloody Valentine',         slug: 'my-bloody-valentine' },
   { name: 'Grouper',                     slug: 'grouper' },
 ];
 
