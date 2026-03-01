@@ -54,7 +54,7 @@
 					// No Wikipedia photo — fetch top album covers from MusicBrainz for composite
 					releaseCoverUrls = await fetchReleaseCoverUrls(artist.mbid);
 				}
-			});
+			}).catch(() => {});
 		}
 	});
 

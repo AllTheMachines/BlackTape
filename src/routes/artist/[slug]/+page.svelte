@@ -16,6 +16,7 @@
 	import { streamingPref, loadStreamingPreference } from '$lib/theme/preferences.svelte';
 	import { generateEmbedSnippets } from '$lib/curator/embed-snippet';
 	import { page } from '$app/stores';
+	import { invalidateAll } from '$app/navigation';
 	import EmbedPlayer from '$lib/components/EmbedPlayer.svelte';
 	import { streamingState, setActiveSource } from '$lib/player/streaming.svelte';
 	import type { PlatformType } from '$lib/embeds/types';
@@ -35,6 +36,13 @@
 	let tauriMode = $state(false);
 	let activeTab = $state<'overview' | 'stats' | 'about'>('overview');
 	let showSiteGen = $state(false);
+	let reloading = $state(false);
+
+	async function reloadPage() {
+		reloading = true;
+		await invalidateAll();
+		reloading = false;
+	}
 
 	/** Save to Shelf state (Tauri-only) */
 	let savedInCollections = $state<string[]>([]);
@@ -731,6 +739,14 @@
 			/>
 
 			<!-- Discography -->
+			{#if data.releases.length === 0}
+				<section class="discography-empty-state">
+					<p class="no-releases-msg">No releases loaded — MusicBrainz may be unreachable.</p>
+					<button class="reload-btn" onclick={reloadPage} disabled={reloading}>
+						{reloading ? 'Reloading…' : 'Reload'}
+					</button>
+				</section>
+			{/if}
 			{#if data.releases.length > 0}
 				<section class="discography">
 					<h2 class="section-title">Discography</h2>
@@ -1359,6 +1375,42 @@
 	}
 
 	/* ── Discography ───────────────────────────────────── */
+	.discography-empty-state {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		padding: 16px 20px;
+		border-bottom: 1px solid var(--b-1);
+	}
+
+	.no-releases-msg {
+		font-size: 12px;
+		color: var(--t-3);
+		margin: 0;
+	}
+
+	.reload-btn {
+		font-size: 11px;
+		padding: 4px 10px;
+		border-radius: 4px;
+		border: 1px solid var(--b-2);
+		background: var(--bg-3);
+		color: var(--t-2);
+		cursor: pointer;
+		transition: background 0.1s, border-color 0.1s;
+	}
+
+	.reload-btn:hover:not(:disabled) {
+		background: var(--bg-4);
+		border-color: var(--b-3);
+		color: var(--t-1);
+	}
+
+	.reload-btn:disabled {
+		opacity: 0.5;
+		cursor: default;
+	}
+
 	.discography {
 		display: flex;
 		flex-direction: column;
