@@ -2,47 +2,36 @@
 
 ## WHERE WE ARE
 
-Preparing for demo recording. All storyboard artists verified, doc rewritten. Now checking whether visually discussed gimmicks are implemented before recording.
+Cassette done. Design system updated. Now picking which Retro FX to actually implement.
 
-## WHAT WAS VERIFIED THIS SESSION
+## WHAT WAS DONE THIS SESSION
 
-- Bug fixed: artist page `getWikiThumbnail` $effect missing `.catch()` — fixed
-- ArtistCard.svelte same fix applied
-- Reload button added to artist page when releases fail to load
-- Boris replaced with My Bloody Valentine in both recording scripts
-- HYPERSPEED-RECORDING-BRIEF.md rewritten (v3.0) at D:\Projects\blacktapesite\
-- All 6 storyboard artists audited: 4/4 covers, full discography, test run passed
+- Cassette reels redesigned: 32-point notched hub polygon (8 rectangular notches), thin outer ring, spindle hole
+- Both reels spin same direction (authentic compact cassette)
+- Full cassette body SVG added behind the reels: outer shell (var(--bg-1)), inner bezel, label area, reel holes, tape head window, corner screws
+- Sized at 80%, body fill-opacity 0.9 using --bg-1 (#0f0f0f) for near-black look
+- Design system updated to v1.5 with 3 new sections:
+  - **Icons** — all transport, volume, UI action icons catalogued with live SVGs
+  - **Cassette** — live clickable demo + layer structure docs
+  - **Retro FX Ideas** — 9 ideas with live previews (see below)
 
-## NEXT TASKS (pre-recording visual polish)
+## RETRO FX IDEAS (documented in design-system.html #retro-fx)
 
-Both confirmed by Steve from audiolog `2026-02-27_1645_tech_stuff-everything-black-tape.md`.
+All 9 have live demos in the design system page. Decide which to implement:
 
-### Task 1 — Fix tape wheels (BLOCKER for recording)
+1. **Scanlines** — CSS repeating-linear-gradient, 4px intervals, ~18% opacity. Sidebar/panel headers.
+2. **Film Grain** — Canvas animated noise, 5–8% opacity. Background panels.
+3. **VU Meter Bars** — 5 animated amber bars pulsing while playing. Player bar or sidebar.
+4. **Tape Counter** — Monospaced amber digits with glow for time display. Seek row.
+5. **CRT Phosphor Glow** — text-shadow amber glow on accent elements. Track title, active nav.
+6. **Tape Type Badge** — "TYPE II / CHROME / C-90" tiny uppercase badges. Cards/track rows.
+7. **Blinking LED Indicator** — Amber/green 6px glowing dot for REC/PLAY state. Player bar.
+8. **Pixel Corner Brackets** — L-shaped corner accents on cards/now-playing panel.
+9. **Idle Waveform / Tape Hiss** — Slow flat SVG waveform when idle, active when playing.
 
-The cassette reels in the player bar are implemented but look like **Zahnräder (gears with teeth)**, not real cassette spools. Steve's exact words: *"they don't look really like cassette wheels… they look much more like a Zahnrad, like they have teeth."*
+## NEXT STEP
 
-Fix the SVG in the player bar to look like real cassette reels:
-- Solid outer ring
-- 3 spokes radiating from center hub (120° apart)
-- Small circular hub in the middle
-- No teeth / no gear profile
-- Counter-rotating: left reel clockwise, right reel counterclockwise
-- Static when paused, spinning when playing
-
-File to edit: find the cassette reel SVG in `src/lib/components/Player.svelte` or wherever the player bar lives.
-
-### Task 2 — Retro micro-details (nice-to-have, do after Task 1)
-
-Steve wants small retro decorative elements scattered through the UI. His words: *"little animated stuff and funny graphics everywhere… little stripes here and there, some pixelation here… not big, just here and there… that is like the dot on the eye."*
-
-Ideas to implement (pick the best ones, keep them subtle):
-- Thin horizontal rule stripes / scanline texture on panel headers or sidebar
-- Pixel-art style decorative dots or dashes in corners of cards
-- Subtle noise/grain texture overlay on bg panels
-- Small retro icon accents (cassette, radio, etc.) in the sidebar or player bar
-- CRT-style glow or vignette on certain elements
-
-Keep everything small and opt-in to the aesthetic — nothing that crowds the UI.
+Open `docs/design-system.html` in browser, look at the Retro FX Ideas section, decide which ones to build. Then implement them one by one.
 
 ## Resume Command
 

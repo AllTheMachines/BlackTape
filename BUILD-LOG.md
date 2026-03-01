@@ -11353,3 +11353,6 @@ Replaced the blurred-backdrop-always approach with a four-case system that uses 
 
 > **Commit e57fd6f** (2026-03-01 14:47) — auto-save: 2 files @ 14:47
 > Files changed: 2
+
+> **Commit 7421463** (2026-03-01 14:49) — feat: cassette graphic in player bar + design system Icons/Cassette/Retro FX sections
+> Files changed: 2
