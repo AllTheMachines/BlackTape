@@ -1,5 +1,6 @@
 <script lang="ts">
 	import TagChip from './TagChip.svelte';
+	import CoverPlaceholder from './CoverPlaceholder.svelte';
 	import type { ArtistResult } from '$lib/db/queries';
 	import { getWikiThumbnail } from '$lib/wiki-thumbnail';
 
@@ -58,7 +59,7 @@
 			{#if thumbnailUrl}
 				<img src={thumbnailUrl} alt="" />
 			{:else}
-				{initials}
+				<CoverPlaceholder name={artist.name} tags={artist.tags} />
 			{/if}
 		</div>
 	{/if}

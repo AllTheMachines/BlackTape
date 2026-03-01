@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import CoverPlaceholder from '$lib/components/CoverPlaceholder.svelte';
 	import { PROJECT_NAME } from '$lib/config';
 	import BuyOnBar from '$lib/components/BuyOnBar.svelte';
 	import LinerNotes from '$lib/components/LinerNotes.svelte';
@@ -165,9 +166,7 @@
 						onerror={() => coverError = true}
 					/>
 				{:else}
-					<div class="cover-placeholder">
-						<span>{release.title.charAt(0).toUpperCase()}</span>
-					</div>
+					<CoverPlaceholder name={release.title} />
 				{/if}
 			</div>
 

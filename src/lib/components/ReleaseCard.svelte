@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { ReleaseGroup, PlatformType } from '$lib/embeds/types';
+	import CoverPlaceholder from './CoverPlaceholder.svelte';
 	import { spotifyEmbedUrl } from '$lib/embeds/spotify';
 	import { youtubeEmbedUrl } from '$lib/embeds/youtube';
 
@@ -84,9 +85,7 @@
 					onerror={() => coverError = true}
 				/>
 			{:else}
-				<div class="cover-placeholder">
-					<span>{initial}</span>
-				</div>
+				<CoverPlaceholder name={release.title} />
 			{/if}
 		</div>
 	</a>
