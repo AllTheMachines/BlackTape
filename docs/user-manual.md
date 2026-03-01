@@ -1,6 +1,6 @@
-# Mercury User Manual
+# BlackTape User Manual
 
-Mercury is a music discovery engine that indexes all music from open databases and lets you discover through tags, genres, and connections between artists. The desktop app adds a local music player — scan your own files and discover how they connect to the wider world of music.
+BlackTape is a music discovery engine that indexes all music from open databases and lets you discover through tags, genres, and connections between artists. The desktop app adds a local music player — scan your own files and discover how they connect to the wider world of music.
 
 ---
 
@@ -28,10 +28,6 @@ Mercury is a music discovery engine that indexes all music from open databases a
     - [Import Listening History](#import-listening-history)
     - [Export Your Data](#export-your-data)
 14. [Communication](#communication)
-    - [Direct Messages (DMs)](#direct-messages-dms)
-    - [Scene Rooms](#scene-rooms)
-    - [Listening Parties (Ephemeral Sessions)](#listening-parties-ephemeral-sessions)
-    - [Privacy Notes](#privacy-notes)
 15. [Scenes](#scenes)
     - [Browsing Scenes](#browsing-scenes)
     - [Scene Pages](#scene-pages)
@@ -45,7 +41,7 @@ Mercury is a music discovery engine that indexes all music from open databases a
     - [RSS Feeds](#rss-feeds)
     - [New & Rising](#new--rising)
     - [Curator Attribution](#curator-attribution)
-17. [Web vs Desktop](#web-vs-desktop)
+17. [Desktop-Only App](#desktop-only-app)
 18. [Troubleshooting](#troubleshooting)
 
 ---
@@ -77,17 +73,13 @@ The setup wizard runs automatically on first launch. It has four steps:
 
 API keys (for remote AI providers) and Spotify OAuth tokens are stored in the OS credential store — Windows Credential Manager on Windows. They are never written to plain text files. You can revoke access at any time from Settings → AI Settings or Settings → Streaming.
 
-### Web Version
-
-The web version at [mercury website] provides search and artist pages without requiring installation. It does not include the local music player or library features.
-
 ---
 
 ## Searching for Music
 
 ### Artist Search
 
-Type an artist name in the search bar and press Enter. Mercury searches across 2.8 million artists from MusicBrainz.
+Type an artist name in the search bar and press Enter. BlackTape searches across 2.8 million artists from MusicBrainz.
 
 - Search is fuzzy — partial names and misspellings will still return results
 - Exact name matches appear first, followed by relevance-ranked results
@@ -137,7 +129,7 @@ Click any artist from search results to see their full page.
 
 ### Uniqueness Badge
 
-Next to the artist name, a small badge shows how niche the artist is relative to the full Mercury catalog. The badge maps the artist's uniqueness score to four tiers:
+Next to the artist name, a small badge shows how niche the artist is relative to the full BlackTape catalog. The badge maps the artist's uniqueness score to four tiers:
 
 | Badge | Meaning |
 |-------|---------|
@@ -146,17 +138,17 @@ Next to the artist name, a small badge shows how niche the artist is relative to
 | **Eclectic** | Broad or mixed genre profile |
 | **Mainstream** | Widely tagged genres — commonly known styles |
 
-The badge is absent for artists with no tags. This is the core Mercury thesis made visible: the more niche you are, the more discoverable you become through the tag intersection system.
+The badge is absent for artists with no tags. This is the core BlackTape thesis made visible: the more niche you are, the more discoverable you become through the tag intersection system.
 
 ### Important
 
-All music plays from where it already lives — Bandcamp, Spotify, SoundCloud, YouTube. Mercury never hosts audio. The artist keeps control of their music.
+All music plays from where it already lives — Bandcamp, Spotify, SoundCloud, YouTube. BlackTape never hosts audio. The artist keeps control of their music.
 
 ---
 
 ## Discover Page
 
-The Discover page (`/discover`) is Mercury's primary browsing interface. Instead of searching for a known artist by name, you browse by intersecting tags to find artists you didn't know existed.
+The Discover page (`/discover`) is BlackTape's primary browsing interface. Instead of searching for a known artist by name, you browse by intersecting tags to find artists you didn't know existed.
 
 ### Browsing by Tag
 
@@ -170,11 +162,11 @@ The URL updates with each click (`?tags=shoegaze,post-rock`) — this makes your
 
 ### Niche-First Ordering
 
-When you've selected tags, results are ordered niche-first: artists with fewer total tags appear first. The fewer tags an artist has, the more specific and unusual they are. This is the core of Mercury's discovery philosophy — uniqueness is rewarded.
+When you've selected tags, results are ordered niche-first: artists with fewer total tags appear first. The fewer tags an artist has, the more specific and unusual they are. This is the core of BlackTape's discovery philosophy — uniqueness is rewarded.
 
 ### No Tags Selected
 
-When the Discover page loads with no tags selected, it shows Mercury's top 50 discovery-ranked artists. The discovery score rewards:
+When the Discover page loads with no tags selected, it shows BlackTape's top 50 discovery-ranked artists. The discovery score rewards:
 - Rare tags (tags that appear on fewer artists)
 - Artists with fewer tags overall (more niche)
 - Active artists (not disbanded)
@@ -188,15 +180,15 @@ Active tags appear in a "Filtering by:" row above the cloud. Click any active ta
 
 You can select up to 5 tags at a time. At 5 tags, all remaining inactive tags are grayed out. Remove an active tag to free a slot.
 
-### Works on Web and Desktop
+### Desktop Only
 
-The Discover page works identically on both the web version (data from Cloudflare D1) and the desktop app (data from your local mercury.db).
+The Discover page is part of the BlackTape desktop app (data from your local mercury.db).
 
 ---
 
 ## Style Map
 
-The Style Map (`/style-map`) is a visual overview of how music genres relate to each other. It is available on both the web and desktop versions.
+The Style Map (`/style-map`) is a visual overview of how music genres relate to each other. It is available in the desktop app.
 
 ### What You See
 
@@ -219,7 +211,7 @@ The graph layout is computed once on page load using D3's force simulation (500 
 
 ### Genre Map
 
-The Knowledge Base is Mercury's music encyclopedia — a living map of genres, scenes, and musical movements. Find it under **Knowledge Base** in the navigation.
+The Knowledge Base is BlackTape's music encyclopedia — a living map of genres, scenes, and musical movements. Find it under **Knowledge Base** in the navigation.
 
 The genre graph starts centered on your taste. Click any genre to open its page. Genres (global), scenes (geographic/temporal), and cities are visually distinct. The graph expands as you navigate — always a neighborhood, never an overwhelming hairball.
 
@@ -228,7 +220,7 @@ The genre graph starts centered on your taste. Click any genre to open its page.
 Each genre or scene page shows:
 - A description pulled from Wikipedia when available
 - An AI-generated vibe summary (desktop app, when AI is enabled)
-- Key artists linked to their Mercury profiles
+- Key artists linked to their BlackTape profiles
 - Related genres and scenes
 - For scenes with a city origin: a map pinning the location
 
@@ -236,7 +228,7 @@ Pages with limited data show a contribution invitation — community editing com
 
 ### Time Machine
 
-The **Time Machine** lets you browse Mercury's catalog by year. Navigate decades (60s–20s) with the decade buttons, then fine-tune within the decade using the year slider. Add a genre tag filter to narrow the results.
+The **Time Machine** lets you browse BlackTape's catalog by year. Navigate decades (60s–20s) with the decade buttons, then fine-tune within the decade using the year slider. Add a genre tag filter to narrow the results.
 
 Opening state: approximately 30 years in the past — a natural starting point for musical nostalgia. Adjust freely.
 
@@ -255,7 +247,7 @@ Liner Notes are fetched from MusicBrainz on demand — expanding is instant when
 
 *Desktop app only.*
 
-Mercury can scan your local music folders, read metadata from your files, and build a browsable library.
+BlackTape can scan your local music folders, read metadata from your files, and build a browsable library.
 
 ### Adding Music Folders
 
@@ -357,17 +349,17 @@ Click the queue icon (list icon, far right of the player bar) to open the queue 
 
 *Desktop app only.*
 
-Mercury bridges your local music with its 2.8-million-artist discovery index.
+BlackTape bridges your local music with its 2.8-million-artist discovery index.
 
 ### Now-Playing Discovery
 
 While a track is playing, click the **Discover** button in the player bar to expand the discovery panel.
 
-Mercury matches the playing track's artist name against the discovery index:
+BlackTape matches the playing track's artist name against the discovery index:
 
 - **Matched Artist** — If found, shows the artist name (linked to their artist page), country, and tags
 - **Related Artists** — Up to 5 artists who share the same primary tag
-- **Not Found** — Shows "Not found in Mercury index" if the artist isn't in the database (this is normal for very obscure artists)
+- **Not Found** — Shows "Not found in BlackTape index" if the artist isn't in the database (this is normal for very obscure artists)
 
 Click the matched artist name to navigate to their full artist page — your audio keeps playing.
 
@@ -382,7 +374,7 @@ If matches exist in both sources, "Your Library" appears above "Discovery" with 
 
 ### How Matching Works
 
-Mercury normalizes artist names from your file metadata before searching:
+BlackTape normalizes artist names from your file metadata before searching:
 - Strips leading "The" (e.g., "The Beatles" matches "Beatles")
 - Splits on featuring credits (e.g., "Artist feat. Other" matches "Artist")
 - Removes trailing qualifiers like "(Remastered)" or "[Deluxe Edition]"
@@ -395,7 +387,7 @@ Matching is best-effort and never blocks playback. If a match can't be found, th
 
 *Desktop app only.*
 
-Crate Digging (`/crate`) is Mercury's serendipity mechanism. Hit a button and get 20 random artists from the database. Each click is a fresh random draw — no repeat order, no algorithm, no curation. Just wandering.
+Crate Digging (`/crate`) is BlackTape's serendipity mechanism. Hit a button and get 20 random artists from the database. Each click is a fresh random draw — no repeat order, no algorithm, no curation. Just wandering.
 
 ### Filters
 
@@ -422,7 +414,7 @@ Crate digging state is ephemeral — the URL doesn't change when you dig. This i
 
 *Desktop app only. All AI processing runs locally on your machine.*
 
-Mercury includes an optional AI system that adds natural language exploration, personalized recommendations, and taste profiling. It is disabled by default — you choose whether to enable it.
+BlackTape includes an optional AI system that adds natural language exploration, personalized recommendations, and taste profiling. It is disabled by default — you choose whether to enable it.
 
 ### Enabling AI
 
@@ -445,7 +437,7 @@ Type a query describing what you're looking for:
 - "ambient music for late night coding"
 - "female-fronted shoegaze bands"
 
-Mercury generates a curated list of artist recommendations with brief descriptions of why each fits your query. Click any matched artist name to navigate to their artist page.
+BlackTape generates a curated list of artist recommendations with brief descriptions of why each fits your query. Click any matched artist name to navigate to their artist page.
 
 **Refinement:** After getting results, you can refine your query with follow-up messages (up to 5 exchanges). For example, after getting results for "ambient music," type "more electronic" or "less minimal" to narrow the results.
 
@@ -471,7 +463,7 @@ Favorites feed directly into your taste profile. They are weighted more heavily 
 
 ### AI Artist Summaries
 
-When an artist's Wikipedia bio is unavailable, Mercury generates a brief AI summary instead. Wikipedia bios always take priority when available — the AI summary is a fallback for lesser-known artists who don't have Wikipedia entries.
+When an artist's Wikipedia bio is unavailable, BlackTape generates a brief AI summary instead. Wikipedia bios always take priority when available — the AI summary is a fallback for lesser-known artists who don't have Wikipedia entries.
 
 ### Taste Profile
 
@@ -507,7 +499,7 @@ When using the default local AI:
 - Your taste profile, favorites, and queries stay entirely local
 - The only network traffic is the initial model download from HuggingFace
 
-When using a remote API provider, your queries are sent to whichever endpoint you configure. Mercury does not add any tracking or telemetry regardless of provider choice.
+When using a remote API provider, your queries are sent to whichever endpoint you configure. BlackTape does not add any tracking or telemetry regardless of provider choice.
 
 ---
 
@@ -515,7 +507,7 @@ When using a remote API provider, your queries are sent to whichever endpoint yo
 
 *Desktop app only.*
 
-The Mercury desktop app has a configurable workspace with resizable panels, a personalized color theme, and a streaming platform preference. All of these are set from the **Settings** page.
+The BlackTape desktop app has a configurable workspace with resizable panels, a personalized color theme, and a streaming platform preference. All of these are set from the **Settings** page.
 
 ### ControlBar
 
@@ -529,7 +521,7 @@ The ControlBar is the thin toolbar that appears below the site header in the des
 
 ### Layout Templates
 
-Mercury's desktop workspace supports three built-in layouts and unlimited user-created layouts.
+BlackTape's desktop workspace supports three built-in layouts and unlimited user-created layouts.
 
 **Built-in layouts:**
 
@@ -544,7 +536,7 @@ Mercury's desktop workspace supports three built-in layouts and unlimited user-c
 - Use the layout switcher dropdown in the ControlBar (top right of workspace)
 - Or go to **Settings > Layout** and click any template
 
-Panel sizes are remembered independently per template — resize them once and Mercury remembers your preference for each layout.
+Panel sizes are remembered independently per template — resize them once and BlackTape remembers your preference for each layout.
 
 **Left sidebar (Cockpit and Focus modes):**
 - Quick navigation links (Discover, Style Map, Dig, Library, Explore, Settings)
@@ -562,7 +554,7 @@ Panel sizes are remembered independently per template — resize them once and M
 3. Go to **Settings > Layout**
 4. Type a name in the "Name this layout..." field and click **Save layout**
 
-Your custom layout appears in the ControlBar dropdown under "My Layouts" and in the Settings layout picker. Use it, resize it further, and Mercury remembers the new panel sizes independently.
+Your custom layout appears in the ControlBar dropdown under "My Layouts" and in the Settings layout picker. Use it, resize it further, and BlackTape remembers the new panel sizes independently.
 
 **Deleting a custom layout:**
 
@@ -570,13 +562,13 @@ In **Settings > Layout > My Layouts**, click the **×** next to any custom layou
 
 ### Theme Modes
 
-Mercury's desktop app can color itself based on your music taste — or you can pick your own color.
+BlackTape's desktop app can color itself based on your music taste — or you can pick your own color.
 
 Go to **Settings > Appearance** to choose a theme mode:
 
-**Default** — Classic dark theme. The static OKLCH colors from Mercury's base theme apply. No personalization.
+**Default** — Classic dark theme. The static OKLCH colors from BlackTape's base theme apply. No personalization.
 
-**Taste** — Colors derived from your music taste. Mercury takes your top taste tags, hashes them to a hue angle, and generates a full color palette in OKLCH space. The same taste always produces the same color — it's deterministic. Switch artists or add favorites and the theme shifts to match.
+**Taste** — Colors derived from your music taste. BlackTape takes your top taste tags, hashes them to a hue angle, and generates a full color palette in OKLCH space. The same taste always produces the same color — it's deterministic. Switch artists or add favorites and the theme shifts to match.
 
 This option requires a taste profile (needs 5+ favorites OR 20+ library tracks). If you don't have enough data yet, it shows "(need more data)" — add favorites to unlock it.
 
@@ -588,7 +580,7 @@ All theme settings persist across app restarts.
 
 ### Streaming Preference
 
-Mercury embeds music from Bandcamp, Spotify, SoundCloud, and YouTube. By default, Bandcamp is shown first (most direct artist support). If you prefer a different platform, go to **Settings > Streaming Preference** and choose it from the dropdown.
+BlackTape embeds music from Bandcamp, Spotify, SoundCloud, and YouTube. By default, Bandcamp is shown first (most direct artist support). If you prefer a different platform, go to **Settings > Streaming Preference** and choose it from the dropdown.
 
 Your preference affects two places:
 
@@ -605,11 +597,11 @@ Setting "No preference" restores the default order (Bandcamp → Spotify → Sou
 
 ### Your Profile
 
-Your profile is your musical identity inside Mercury. It's optional and local — no account, no sign-up, no central server.
+Your profile is your musical identity inside BlackTape. It's optional and local — no account, no sign-up, no central server.
 
 **Access:** Desktop app → Profile (in the top navigation)
 
-**Handle:** A name you choose for yourself. No uniqueness enforcement — Mercury is local-first. Your handle appears on your profile page only.
+**Handle:** A name you choose for yourself. No uniqueness enforcement — BlackTape is local-first. Your handle appears on your profile page only.
 
 **Avatar:** Automatically generated from your taste profile (the same tags that color your theme). To customize: Settings → Identity → Edit Avatar. Draw pixel art on a 16×16 grid. Switch back to "Generative" any time.
 
@@ -629,13 +621,13 @@ Shelves are named collections of artists and releases — like a real record she
 
 ### Import Listening History
 
-Bring your existing listening history into Mercury from other services.
+Bring your existing listening history into BlackTape from other services.
 
 **Access:** Settings → Import Listening History
 
-**Spotify:** Requires a Spotify Client ID (register a free app at developer.spotify.com). Mercury imports your top 50 artists from the past 6 months. Your Client ID is never stored.
+**Spotify:** Requires a Spotify Client ID (register a free app at developer.spotify.com). BlackTape imports your top 50 artists from the past 6 months. Your Client ID is never stored.
 
-**Last.fm:** Requires your Last.fm username and an API key (create one free at last.fm/api). Mercury imports your full scrobble history (up to 10,000 tracks). Aggregated by artist play count.
+**Last.fm:** Requires your Last.fm username and an API key (create one free at last.fm/api). BlackTape imports your full scrobble history (up to 10,000 tracks). Aggregated by artist play count.
 
 **Apple Music:** Requires an Apple Developer Token (MusicKit key from the Apple Developer portal — requires $99/year Apple Developer membership). Imports your saved library artists. This is an advanced option.
 
@@ -647,86 +639,21 @@ After import, matched artists are added to a new shelf named "Imported from [Pla
 
 **Access:** Settings → Your Data → Export All Data
 
-Mercury exports everything: your handle, avatar, all shelves and their contents, your taste profile, and your listening history. Saved as a single JSON file.
+BlackTape exports everything: your handle, avatar, all shelves and their contents, your taste profile, and your listening history. Saved as a single JSON file.
 
-Your data is yours. Mercury will never hold it hostage.
+Your data is yours. BlackTape will never hold it hostage.
 
 ---
 
 ## Communication
 
-Mercury's communication layer lets you talk with other users through encrypted messages, scene-based group rooms, and ephemeral listening parties. All communication uses the Nostr protocol — a decentralized network with no central server.
-
-### Getting Started
-
-When you first open the chat overlay (click the Chat icon in the navigation), Mercury generates a Nostr identity for you automatically. This identity is stored locally — it's yours and it's permanent.
-
-### Direct Messages (DMs)
-
-DMs are encrypted end-to-end using the NIP-17 gift-wrap protocol. Even the relay servers that carry your messages cannot read their contents or see who you're talking to.
-
-**To send a DM:**
-1. Click Chat in the navigation bar to open the chat overlay
-2. In the DMs tab, type or paste a user's Nostr public key (npub...)
-3. Type your message and press Enter or click the send button
-
-**Mercury link previews:** When you paste a Mercury artist, release, or genre URL in a message, it automatically unfurls into a mini card showing the cover art and name — after an 800ms pause to avoid triggering on partial typing.
-
-### Scene Rooms
-
-Scene rooms are persistent group chats organized by Mercury's tag taxonomy — the same tags used to discover artists. Rooms are discoverable through:
-- The **Rooms** tab in the chat overlay (browse all Mercury rooms, filter by tag)
-- The **Scene rooms for [tag]** button on artist pages
-- The **Rooms for this vibe** button on the Discover page when tags are active
-
-**Joining a room:** Find a room in the directory and click it to join. Messages arrive in real time via Nostr WebSocket subscriptions.
-
-**Creating a room:** Requires an AI model configured in Settings (this ensures every room has moderation coverage from day one). The room creation form requires a name and at least one tag. Your room name passes an AI content safety check before being published.
-
-**Inactive rooms** that have received no messages in 30 days are automatically archived — they stay searchable but don't appear in the active directory.
-
-#### Room Moderation
-
-If you created a room, you have access to moderation tools:
-- **Delete messages:** Remove a message from the room (NIP-28 kind:43 — clients that respect this won't show the message)
-- **Kick:** Remove a user from the room (kind:44)
-- **Ban:** Kick and prevent return (client-enforced)
-- **Slow mode:** Limit how often users can send messages (30s / 2min / 5min / 15min options)
-- **Co-moderators:** Appoint trusted members to share moderation duties
-
-**Flagging messages:** Any participant can flag a message — you won't see anything change, but the room owner receives a notification in their Moderation Queue. Flagging is silent and private.
-
-### Listening Parties (Ephemeral Sessions)
-
-A listening party is a live, shared moment tied to specific music. The core use case: "I'm playing this album right now — come listen with me."
-
-**Starting a party:**
-- On any artist or release page: click **"Start a listening party"**
-- In the chat overlay: click the **Parties** tab, then **+ New Party**
-
-Choose **Public** (visible in the active sessions feed and discoverable) or **Private** (invite-only — you receive a code to share).
-
-**When a party ends:** Everything is gone. Messages, participants, context — completely deleted. No recordings, no tracklist, no receipts. This is by design.
-
-### AI in Communication
-
-Mercury's existing AI configuration (from Settings → AI Settings) powers communication features:
-- **Room moderation:** Your AI model monitors your rooms for harmful content
-- **Taste translation:** When you connect with someone via DM, AI explains the musical bridge between your tastes
-- **Matchmaking context:** AI suggests conversation starters based on your overlapping discoveries
-
-### Privacy Notes
-
-- Nostr keypairs are stored in your browser's IndexedDB, not in any Mercury database
-- DMs use NIP-17 gift-wrap — relay servers see only encrypted blobs, not sender/recipient relationships
-- Ephemeral session messages never touch your local database
-- Scene room messages are publicly visible on the Nostr network to anyone subscribing to those event kinds
+Real-time communication features (Nostr DMs, scene rooms, listening parties) are planned for a future version of BlackTape. They are not currently available in the app.
 
 ---
 
 ## Scenes
 
-Scenes are music micro-communities that Mercury discovers automatically from your listening and collection data. A scene forms when the same niche artists keep appearing together — both in tag data and in what people actually collect.
+Scenes are music micro-communities that BlackTape discovers automatically from your listening and collection data. A scene forms when the same niche artists keep appearing together — both in tag data and in what people actually collect.
 
 ### Browsing Scenes
 
@@ -760,13 +687,13 @@ If you'd like features like collaborative playlists or shared collections, use t
 
 ### How Detection Works
 
-Mercury uses your favorites and the tag co-occurrence map to detect scenes automatically each time you open the app. No configuration needed — scenes emerge as your collection grows.
+BlackTape uses your favorites and the tag co-occurrence map to detect scenes automatically each time you open the app. No configuration needed — scenes emerge as your collection grows.
 
 ---
 
 ## Curator Tools
 
-Mercury gives music bloggers and curators tools to share discoveries and get credit for them.
+BlackTape gives music bloggers and curators tools to share discoveries and get credit for them.
 
 ### Embedding Artist Cards
 
@@ -782,7 +709,7 @@ To get attribution credit when you embed an artist, enter your blog handle in th
 
 ### Collection Embeds
 
-Collection embeds (`/embed/collection/[id]`) are available in the desktop app when sharing a public collection. The web version shows a placeholder directing visitors to download Mercury.
+Collection embeds (`/embed/collection/[id]`) are available in the desktop app when sharing a public collection.
 
 ### RSS Feeds
 
@@ -801,7 +728,7 @@ Look for the RSS icon (orange signal arcs) on artist pages, the Discover page, a
 
 ### New & Rising
 
-The **New & Rising** page (link in the navigation) surfaces artists that Mercury doesn't see discussed elsewhere yet:
+The **New & Rising** page (link in the navigation) surfaces artists that BlackTape doesn't see discussed elsewhere yet:
 
 - **Newly Active** — artists with recent activity dates
 - **Gaining Traction** — niche artists accumulating unusual tag combinations (the most interesting view for finding artists worth writing about)
@@ -814,47 +741,48 @@ When you embed an artist on your site (using the script-tag snippet with your ha
 
 All curators who have featured an artist are credited — not just the first. Embedding the same artist on multiple posts still only records once per curator.
 
-Click your handle on any artist page to see all artists you've featured on Mercury (`/new-rising?curator=[yourhandle]`).
+Click your handle on any artist page to see all artists you've featured on BlackTape (`/new-rising?curator=[yourhandle]`).
 
 ---
 
-## Web vs Desktop
+## Desktop-Only App
 
-| Feature | Web | Desktop |
-|---------|-----|---------|
-| Artist search | Yes | Yes |
-| Tag search | Yes | Yes |
-| Artist pages | Yes | Yes |
-| Embedded players (Bandcamp, etc.) | Yes | Yes |
-| Discover page (tag intersection browsing) | Yes | Yes |
-| Style Map (genre graph visualization) | Yes | Yes |
-| Knowledge Base (genre encyclopedia) | Yes | Yes |
-| Time Machine (browse by year) | Yes | Yes |
-| Liner Notes (release credits) | Yes | Yes |
-| Local music library | No | Yes |
-| Audio playback of local files | No | Yes |
-| Player bar + queue | No | Yes |
-| Now-playing discovery | No | Yes |
-| Unified search (local + discovery) | No | Yes |
-| Crate Digging Mode | No | Yes |
-| AI features (explore, recommendations, taste) | No | Yes |
-| AI genre summaries in Knowledge Base | No | Yes |
-| Offline search | No | Yes |
-| Panel workspace (Cockpit, Focus, Minimal layouts) | No | Yes |
-| Custom theme (taste-based or manual hue) | No | Yes |
-| Streaming platform preference | No | Yes |
-| Profile (handle, avatar, Taste Fingerprint) | No | Yes |
-| Shelves (save artists and releases) | No | Yes |
-| Import listening history (Spotify, Last.fm, Apple, CSV) | No | Yes |
-| Export all user data | No | Yes |
-| Communication (DMs, scene rooms, listening parties) | Yes | Yes |
-| Scenes directory (browse proto-scenes) | Yes | Yes |
-| Scenes — follow, suggest, AI detection | No | Yes |
-| New & Rising page | Yes | Yes |
-| Embed artist cards (copy snippet) | Yes | Yes |
-| RSS feeds (artist, tag, curator, new & rising) | Yes | Yes |
-| Curator attribution tracking | Yes | Yes |
-| Requires internet for artist pages | Yes | Yes* |
+BlackTape is a desktop-only application — there is no web version. All features listed in this manual are part of the desktop app.
+
+| Feature | Desktop |
+|---------|---------|
+| Artist search | Yes |
+| Tag search | Yes |
+| Artist pages | Yes |
+| Embedded players (Bandcamp, etc.) | Yes |
+| Discover page (tag intersection browsing) | Yes |
+| Style Map (genre graph visualization) | Yes |
+| Knowledge Base (genre encyclopedia) | Yes |
+| Time Machine (browse by year) | Yes |
+| Liner Notes (release credits) | Yes |
+| Local music library | Yes |
+| Audio playback of local files | Yes |
+| Player bar + queue | Yes |
+| Now-playing discovery | Yes |
+| Unified search (local + discovery) | Yes |
+| Crate Digging Mode | Yes |
+| AI features (explore, recommendations, taste) | Yes |
+| AI genre summaries in Knowledge Base | Yes |
+| Offline search | Yes |
+| Panel workspace (Cockpit, Focus, Minimal layouts) | Yes |
+| Custom theme (taste-based or manual hue) | Yes |
+| Streaming platform preference | Yes |
+| Profile (handle, avatar, Taste Fingerprint) | Yes |
+| Shelves (save artists and releases) | Yes |
+| Import listening history (Spotify, Last.fm, Apple, CSV) | Yes |
+| Export all user data | Yes |
+| Scenes directory (browse proto-scenes) | Yes |
+| Scenes — follow, suggest, AI detection | Yes |
+| New & Rising page | Yes |
+| Embed artist cards (copy snippet) | Yes |
+| RSS feeds (artist, tag, curator, new & rising) | Yes |
+| Curator attribution tracking | Yes |
+| Requires internet for artist pages | Yes* |
 
 *Artist pages fetch releases and links from MusicBrainz, which requires internet. Search works offline using the local database.
 
@@ -864,7 +792,7 @@ Click your handle on any artist page to see all artists you've featured on Mercu
 
 ### "Database not found" on first launch
 
-Mercury needs a discovery database file to search. On first launch:
+BlackTape needs a discovery database file to search. On first launch:
 1. Follow the on-screen instructions to download the database
 2. Place the file at the indicated path
 3. Click "Retry" to check again
@@ -878,7 +806,7 @@ Mercury needs a discovery database file to search. On first launch:
 ### No sound when playing local files
 
 - Check that your system volume is up and not muted
-- Check the volume slider in Mercury's player bar (right side)
+- Check the volume slider in BlackTape's player bar (right side)
 - Ensure the audio file isn't corrupted — try playing it in another application
 - Supported formats: MP3, FLAC, OGG, M4A, AAC, WAV, Opus, WavPack
 
@@ -890,11 +818,11 @@ Mercury needs a discovery database file to search. On first launch:
 
 ### Player bar disappears
 
-The player bar only appears when a track is playing or loaded. It also only appears in the desktop app — the web version does not have a player bar.
+The player bar only appears when a track is playing or loaded.
 
 ### Artist page shows "No releases found"
 
-Release data comes from MusicBrainz. Some artists may not have releases listed there. Mercury does not store release data locally — it's fetched live, so internet connectivity is required.
+Release data comes from MusicBrainz. Some artists may not have releases listed there. BlackTape does not store release data locally — it's fetched live, so internet connectivity is required.
 
 ### Embedded player doesn't load
 
@@ -940,4 +868,4 @@ Local model processing time depends on your hardware. The generation model (Qwen
 
 ---
 
-*Mercury v0.1.0 — Last updated: 2026-02-23 (Phase 11: Scene Building — auto-detected music micro-communities, follow, suggest, feature requests)*
+*BlackTape v0.1.0 — Last updated: 2026-03-01*

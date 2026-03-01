@@ -1,6 +1,6 @@
-# Mercury — Technical Architecture
+# BlackTape — Technical Architecture
 
-A comprehensive guide to how Mercury works, how its parts connect, and how data flows through the system. Written for developers who need to understand, modify, or extend the codebase.
+A comprehensive guide to how BlackTape works, how its parts connect, and how data flows through the system. Written for developers who need to understand, modify, or extend the codebase.
 
 ---
 
@@ -31,13 +31,13 @@ A comprehensive guide to how Mercury works, how its parts connect, and how data 
 
 ## System Overview
 
-Mercury is a music discovery engine for the desktop. It runs as a Tauri 2.0 application — a SvelteKit SPA rendered inside a Rust/WebView2 shell.
+BlackTape is a music discovery engine for the desktop. It runs as a Tauri 2.0 application — a SvelteKit SPA rendered inside a Rust/WebView2 shell.
 
-The core principle is **"the internet is the database"**: Mercury stores only a search index locally (artist names, tags, countries). Everything else — releases, cover art, streaming links, bios — is fetched live from public APIs (MusicBrainz, Wikipedia, Cover Art Archive). Audio is never hosted; it's always embedded from where it already lives (Bandcamp, Spotify, SoundCloud, YouTube).
+The core principle is **"the internet is the database"**: BlackTape stores only a search index locally (artist names, tags, countries). Everything else — releases, cover art, streaming links, bios — is fetched live from public APIs (MusicBrainz, Wikipedia, Cover Art Archive). Audio is never hosted; it's always embedded from where it already lives (Bandcamp, Spotify, SoundCloud, YouTube).
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
-│                       Mercury Desktop                             │
+│                      BlackTape Desktop                            │
 │  ┌──────────────┐  ┌──────────────┐  ┌───────────────┐          │
 │  │ SvelteKit UI │  │ Tauri (Rust) │  │ HTML5 Audio   │          │
 │  │  Search       │  │  Scanner     │  │  Local files  │          │
@@ -106,6 +106,7 @@ Mercury/
 │   │   │   ├── model-manager.ts  # Model download orchestration
 │   │   │   ├── state.svelte.ts   # Reactive AI state ($state runes)
 │   │   │   └── index.ts          # Barrel export
+│   │   ├── update.svelte.ts      # Reactive update state (check_for_update, install_update)
 │   │   ├── taste/                # Taste profile (Tauri only)
 │   │   │   ├── profile.svelte.ts # Reactive taste state
 │   │   │   ├── favorites.ts      # Favorite artist CRUD
@@ -119,7 +120,8 @@ Mercury/
 │   │       ├── ReleaseCard.svelte
 │   │       ├── EmbedPlayer.svelte
 │   │       ├── ExternalLink.svelte
-│   │       ├── DatabaseSetup.svelte
+│   │       ├── SetupWizard.svelte   # 4-step first-run wizard
+│   │       ├── UpdateBanner.svelte  # Update notification bar (between titlebar and content)
 │   │       ├── Player.svelte
 │   │       ├── Queue.svelte
 │   │       ├── LibraryBrowser.svelte
@@ -170,12 +172,14 @@ Mercury/
 │       ├── library/
 │       │   ├── mod.rs            # Module entry
 │       │   └── db.rs             # rusqlite schema + CRUD operations
-│       └── ai/
-│           ├── mod.rs            # Module declarations
-│           ├── sidecar.rs        # llama-server lifecycle management
-│           ├── taste_db.rs       # taste.db schema + CRUD
-│           ├── embeddings.rs     # sqlite-vec + vector operations
-│           └── download.rs       # Model download with streaming progress
+│       ├── ai/
+│       │   ├── mod.rs            # Module declarations
+│       │   ├── sidecar.rs        # llama-server lifecycle management
+│       │   ├── taste_db.rs       # taste.db schema + CRUD
+│       │   ├── embeddings.rs     # sqlite-vec + vector operations
+│       │   └── download.rs       # Model download with streaming progress
+│       ├── secrets.rs            # OS credential store (keyring crate v3) — get/set/delete_secret
+│       └── updater.rs            # Auto-update commands — check_for_update, install_update, get_app_version
 ├── tools/
 │   └── build-log-viewer/         # OBS browser source for YouTube stream
 ├── BUILD-LOG.md                  # Documentary record of all decisions
@@ -314,7 +318,7 @@ export interface DbProvider {
 
 ### Implementation
 
-**TauriProvider** (`tauri-provider.ts`) — Wraps `@tauri-apps/plugin-sql`. Lazy singleton — database connection opens on first query. Opens `mercury.db` from the app data directory (`%APPDATA%/com.mercury.app/` on Windows).
+**TauriProvider** (`tauri-provider.ts`) — Wraps `@tauri-apps/plugin-sql`. Lazy singleton — database connection opens on first query. Opens `mercury.db` from the app data directory (`%APPDATA%/BlackTape/` on Windows, identifier `com.blacktape.app`).
 
 ### Factory
 
@@ -486,7 +490,7 @@ These are module-scoped singletons — they persist across page navigations. The
 
 ## Discovery Bridge
 
-The discovery bridge connects local file metadata to Mercury's 2.8M-artist search index.
+The discovery bridge connects local file metadata to BlackTape's 2.8M-artist search index.
 
 ### Artist Matching (`src/lib/library/matching.ts`)
 
@@ -503,7 +507,7 @@ Reactive panel triggered by `$effect` when the playing artist changes:
 
 - Shows matched artist name (linked to `/artist/{slug}`), country, and tags (as clickable `TagChip` components)
 - Related artists found via tag co-occurrence: takes the first (most prominent) tag, searches for other artists with the same tag, returns top 5
-- Graceful "Not found in Mercury index" when no match
+- Graceful "Not found in BlackTape index" when no match
 
 ### Unified Search
 
@@ -526,13 +530,13 @@ Local library search is a client-side filter on all tracks (case-insensitive sub
 
 ## Discovery Engine
 
-The Discover page (`/discover`) is Mercury's primary browsing interface. Instead of searching for a known artist, users browse by intersecting tags — starting broad and narrowing down to find niche artists they wouldn't have thought to search for.
+The Discover page (`/discover`) is BlackTape's primary browsing interface. Instead of searching for a known artist, users browse by intersecting tags — starting broad and narrowing down to find niche artists they wouldn't have thought to search for.
 
 ### How It Works
 
 1. **Tag cloud** — The page loads the top 100 tags by artist count from `tag_stats` (pre-computed in the data pipeline).
 2. **Tag intersection** — Clicking a tag adds it to the URL as `?tags=tagname`. Clicking a second tag adds it: `?tags=shoegaze,post-rock`. The filter is AND logic — only artists with ALL selected tags appear.
-3. **Niche-first ordering** — Tag intersection results are ordered by `artist_tag_count ASC` (fewest total tags first). Artists with fewer tags are more niche, which Mercury surfaces first.
+3. **Niche-first ordering** — Tag intersection results are ordered by `artist_tag_count ASC` (fewest total tags first). Artists with fewer tags are more niche, which BlackTape surfaces first.
 4. **Discovery ranking** — When no tags are selected, the page shows a discovery-ranked list of 50 artists. The composite score rewards: rare tags (low `artist_count`), low total tag count, recent origin (post-2010), and active status (not ended).
 
 ### URL State
@@ -632,14 +636,14 @@ The header shows `Discover`, `Style Map`, `Dig`, `Library`, `Explore`, `Settings
 
 ## Knowledge Base
 
-The Knowledge Base is Mercury's genre and scene encyclopedia — a structured graph of musical genres, scenes, and cities with linked artist data, geographic context, and descriptive content.
+The Knowledge Base is BlackTape's genre and scene encyclopedia — a structured graph of musical genres, scenes, and cities with linked artist data, geographic context, and descriptive content.
 
 ### Overview
 
 Four content layers blend seamlessly on each genre/scene page:
 
 1. **Open data** — Wikidata/Wikipedia descriptions, inception years, geographic origins
-2. **Links and embeds** — Key artists linking to their Mercury profiles
+2. **Links and embeds** — Key artists linking to their BlackTape profiles
 3. **AI summaries** — 2–3 sentence vibe summaries generated by the local model (Tauri only, best-effort)
 4. **Community writing** — Explicitly deferred to Phase 9+
 
@@ -651,7 +655,7 @@ Source attribution is shown as a small badge or tooltip — no hard tabs between
 |-------|---------|
 | `/kb` | Landing page — genre graph overview + navigation entry point |
 | `/kb/genre/[slug]` | Genre or scene detail page — description, artists, relationships, map |
-| `/time-machine` | Year browser — browse Mercury's catalog by decade and year |
+| `/time-machine` | Year browser — browse BlackTape's catalog by decade and year |
 
 ### Components
 
