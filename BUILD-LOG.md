@@ -10964,3 +10964,6 @@ Issue #51 closed.
 
 > **Commit 050b849** (2026-03-01 00:57) — wip: auto-save
 > Files changed: 1
+
+> **Commit 81f3559** (2026-03-01 01:04) — fix #64: geographic scene map — scenes pipeline + data model
+> Files changed: 2
