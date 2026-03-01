@@ -1,62 +1,65 @@
 # Work Handoff - 2026-03-01
 
 ## Current Task
-Retro visual enhancements — picking which Retro FX ideas to implement next.
+Record a short showcase video of the 9 Retro FX effects live in the player bar.
 
 ## Context
-Pre-demo recording session. Cassette tape graphic is done and in the player bar. We built 9 retro FX ideas and documented them in the design system. Steve just opened the design system page to review the live previews and decide what to build next.
+Just finished implementing all 9 Retro FX effects in Player.svelte and updating the design system branding from Mercury → BlackTape. Everything is committed. Steve asked to "go start and record a video now" — we were about to write a focused ~90s showcase recording script (not the full 30-min demo) then fire it.
 
 ## Progress
 
 ### Completed This Session
-- **Cassette reels redesigned**: 32-point notched hub polygon (8 rectangular notches), thin outer ring, spindle hole — looks like a real compact cassette, both reels spin same direction
-- **Full cassette body SVG** built around the reels: near-black shell (var(--bg-1), 0.9 opacity), inner bezel, label area, tape head window with guides, 4 corner screws
-- **Sized at 80%** (76×49px body, 29×29px reels) with padding that aligns reel holes precisely to reel SVG centers
-- **Design system v1.5** — 3 new sections added to `docs/design-system.html`:
-  - **Icons** — all transport, volume, UI action icons with live SVGs
-  - **Cassette** — live clickable demo (click to spin reels) + layer structure docs
-  - **Retro FX Ideas** — 9 ideas with live interactive previews
+- **All 9 Retro FX implemented in Player.svelte** (committed: `39f8ce5`)
+  1. Scanlines — CSS `::before` on `.player-bar`
+  2. Film Grain — canvas + `$effect` at ~12fps, 4% opacity
+  3. VU Meter Bars — 5 amber bars when playing, disappear when paused
+  4. Tape Counter — amber mono glow on time displays
+  5. CRT Phosphor Glow — two-layer amber `text-shadow` on track title
+  6. Tape Type Badge — `TYPE II` (Spotify) / `C-90` (local) in track meta
+  7. Blinking LED — 5px dot in controls-right, blinks when playing
+  8. Pixel Corner Brackets — 4 L-shaped amber corners on player bar
+  9. Idle Waveform — 8 slow-breathing bars when paused
+- **Design system updated to BlackTape branding** (v1.5 → v1.6)
+  - Title, CSS comment, nav wordmark, brand section: Mercury → BlackTape
+- `npm run check`: 0 errors | 197/197 tests pass
 
 ### In Progress
-- Steve is reviewing the Retro FX Ideas in the design system (just opened the page)
+- Writing a short focused recording script for the retro FX showcase
 
 ### Remaining
-- Pick which Retro FX ideas to implement
-- Implement chosen effects
-- Update BUILD-LOG.md with session summary
+- Create `tools/record-retro-fx.mjs` — ~90s focused video:
+  - Set fullscreen
+  - Start ffmpeg recording (gdigrab, BlackTape window title)
+  - Navigate to an artist page (e.g. Slowdive)
+  - Play a track so player bar activates with all effects
+  - Hover near player bar for a few seconds showing playing state (VU bars, LED, cassette, glow)
+  - Pause to show idle state (waveform, LED off)
+  - Resume
+  - Stop recording → save to `press-screenshots/retro-fx-showcase.mp4`
+- Run the script
 
 ## Key Decisions
-- Cassette body uses `fill="var(--bg-1)"` not `currentColor` — `currentColor` is a light text color so more opacity = more white, not darker
-- Both reels spin same direction (clockwise) — authentic compact cassette behavior
-- Build *around* the existing reels, not replacing them — the spinning animation works great
-- Design system is the staging ground: preview ideas there first, then implement in app
+- Full `record-and-run.mjs` demo is too long for a retro FX showcase — need a new focused short script
+- `record-and-run.mjs` pattern is the right template: connectOverCDP → fullscreen via Tauri API → ffmpeg gdigrab → playwright automation → stop recording
+- The gdigrab ffmpeg capture targets `title=BlackTape` window
 
 ## Relevant Files
-- `src/lib/components/Player.svelte` — cassette body SVG + reel SVGs + CSS (lines ~181–230, ~544–570)
-- `docs/design-system.html` — design system v1.5, new sections at lines ~1758–2100
+- `src/lib/components/Player.svelte` — all 9 effects implemented here
+- `tools/record-and-run.mjs` — template to base the new script on
+- `tools/record-demo.mjs` — reference for the demo automation helpers
+- `press-screenshots/` — output directory for recordings
+- `docs/design-system.html` — branding updated to BlackTape v1.6
 
 ## Git Status
-Only BUILD-LOG.md has uncommitted changes (3 lines, auto-appended by post-commit hook). Everything else is committed.
-
-## The 9 Retro FX Ideas (live previews in design-system.html#retro-fx)
-
-| # | Idea | Where | Type |
-|---|------|--------|------|
-| 1 | **Scanlines** | Sidebar / panel headers | CSS · Static |
-| 2 | **Film Grain** | Background panels | Canvas · Animated |
-| 3 | **VU Meter Bars** | Player bar | CSS · Animated |
-| 4 | **Tape Counter** (glowing mono digits) | Seek row time display | CSS+JS · Animated |
-| 5 | **CRT Phosphor Glow** | Accent text / track title | CSS · Static/hover |
-| 6 | **Tape Type Badges** (TYPE II, CHROME, C-90) | Cards / track rows | CSS · Static |
-| 7 | **Blinking LED** (REC/PLAY dot) | Player bar | CSS · Animated |
-| 8 | **Pixel Corner Brackets** | Cards / now-playing panel | CSS · Static |
-| 9 | **Idle Waveform / Tape Hiss** | Player bar idle state | SVG+CSS · Animated |
+Only `BUILD-LOG.md` has uncommitted changes (3 lines auto-appended by post-commit hook). Everything else is committed clean.
 
 ## Next Steps
-1. Steve picks which Retro FX to implement from the design system previews
-2. Implement chosen effects one by one
-3. Update design system to mark implemented ones
-4. Update BUILD-LOG.md with final session summary
+1. Create `tools/record-retro-fx.mjs` — short focused script (copy structure from record-and-run.mjs):
+   - ffmpeg → `press-screenshots/retro-fx-showcase.mp4`
+   - nav to `/artist/slowdive`, play a track, hover player bar
+   - show playing state ~20s, pause ~10s, resume ~10s, stop
+2. Run: `node tools/record-retro-fx.mjs`
+3. Confirm output file exists and duration is reasonable
 
 ## Resume Command
 After `/clear`, run `/resume` to continue.
