@@ -4,6 +4,12 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-03-01 — Post-rename health check + build artifact cleanup
+
+First session after the folder rename `D:\Projects\Mercury` → `D:\Projects\BlackTape`. The Rust build was broken because `cargo`'s compiled build cache had the old path hardcoded in it. `cargo clean` wiped the stale artifacts (18GB), and a fresh `cargo check` compiled clean. TypeScript/Svelte check: 0 errors, 20 pre-existing warnings across 609 files. Project is healthy.
+
+---
+
 ## Entry 2026-03-01 — Secure Settings + Updater + First-Run Bootstrap
 
 Three systems built together because they're all pre-ship infrastructure.
@@ -11203,3 +11209,6 @@ Issue #51 closed.
 
 > **Commit 7f4bac0** (2026-03-01 10:36) — wip: auto-save
 > Files changed: 2
+
+> **Commit e494755** (2026-03-01 10:43) — wip: auto-save
+> Files changed: 1
