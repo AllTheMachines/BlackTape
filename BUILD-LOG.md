@@ -11230,3 +11230,12 @@ Issue #51 closed.
 
 > **Commit 7369cc2** (2026-03-01 10:52) — wip: auto-save
 > Files changed: 1
+
+> **Commit df5d449** (2026-03-01 11:02) — wip: auto-save
+> Files changed: 1
+
+> **Commit 951822f** (2026-03-01 11:04) — docs: use site copy in README, swap time machine screenshot
+> Files changed: 2
+
+> **Commit 9d71fc5** (2026-03-01 11:05) — docs: trim artist credits in README
+> Files changed: 1
