@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { queueState, setQueue, removeFromQueue, clearQueue, reorderQueue } from '$lib/player/queue.svelte';
+	import ExportDialog from '$lib/components/ExportDialog.svelte';
+	import { isTauri } from '$lib/platform';
 
 	interface Props {
 		onclose: () => void;
@@ -9,6 +11,7 @@
 
 	let dragSrcIndex = $state<number | null>(null);
 	let isDragTarget = $state<number | null>(null);
+	let showExport = $state(false);
 
 	function formatDuration(secs: number): string {
 		if (!isFinite(secs) || secs < 0) return '0:00';
@@ -33,6 +36,9 @@
 		<h3>Queue</h3>
 		<div class="queue-actions">
 			{#if queueState.tracks.length > 0}
+				{#if isTauri()}
+					<button class="clear-btn" onclick={() => { showExport = true; }} data-testid="queue-export-btn">Export</button>
+				{/if}
 				<button class="clear-btn" onclick={clearQueue}>Clear</button>
 			{/if}
 			<button class="close-btn" onclick={onclose} aria-label="Close queue">
@@ -86,6 +92,10 @@
 		</div>
 	{/if}
 </aside>
+
+{#if showExport}
+	<ExportDialog tracks={queueState.tracks} onclose={() => { showExport = false; }} />
+{/if}
 
 <style>
 	.queue-panel {

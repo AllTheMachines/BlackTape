@@ -2913,6 +2913,98 @@ export const PHASE_33 = [
 ];
 
 // ---------------------------------------------------------------------------
+// PHASE_67 — Playlist export (#67)
+// ---------------------------------------------------------------------------
+
+export const PHASE_67 = [
+  {
+    id: 'P67-01', phase: 67, area: 'Export',
+    desc: 'export.rs module exists with M3U, NML, and copy commands',
+    method: 'code',
+    fn: () => fileExists('src-tauri/src/export.rs'),
+  },
+  {
+    id: 'P67-02', phase: 67, area: 'Export',
+    desc: 'export_queue_m3u command exists in export.rs',
+    method: 'code',
+    fn: () => fileContains('src-tauri/src/export.rs', 'export_queue_m3u'),
+  },
+  {
+    id: 'P67-03', phase: 67, area: 'Export',
+    desc: 'export_queue_nml command exists in export.rs',
+    method: 'code',
+    fn: () => fileContains('src-tauri/src/export.rs', 'export_queue_nml'),
+  },
+  {
+    id: 'P67-04', phase: 67, area: 'Export',
+    desc: 'copy_tracks_to_folder command exists in export.rs',
+    method: 'code',
+    fn: () => fileContains('src-tauri/src/export.rs', 'copy_tracks_to_folder'),
+  },
+  {
+    id: 'P67-05', phase: 67, area: 'Export',
+    desc: 'mod export registered in lib.rs',
+    method: 'code',
+    fn: () => fileContains('src-tauri/src/lib.rs', 'mod export;'),
+  },
+  {
+    id: 'P67-06', phase: 67, area: 'Export',
+    desc: 'ExportDialog.svelte component exists',
+    method: 'code',
+    fn: () => fileExists('src/lib/components/ExportDialog.svelte'),
+  },
+  {
+    id: 'P67-07', phase: 67, area: 'Export',
+    desc: 'ExportDialog has export-dialog testid',
+    method: 'code',
+    fn: () => fileContains('src/lib/components/ExportDialog.svelte', 'data-testid="export-dialog"'),
+  },
+  {
+    id: 'P67-08', phase: 67, area: 'Export',
+    desc: 'ExportDialog has M3U and NML format options',
+    method: 'code',
+    fn: () => fileContains('src/lib/components/ExportDialog.svelte', "'nml'") &&
+              fileContains('src/lib/components/ExportDialog.svelte', "'m3u'"),
+  },
+  {
+    id: 'P67-09', phase: 67, area: 'Export',
+    desc: 'Queue.svelte has Export button (queue-export-btn testid)',
+    method: 'code',
+    fn: () => fileContains('src/lib/components/Queue.svelte', 'queue-export-btn'),
+  },
+  {
+    id: 'P67-10', phase: 67, area: 'Export',
+    desc: 'Queue.svelte imports ExportDialog',
+    method: 'code',
+    fn: () => fileContains('src/lib/components/Queue.svelte', 'ExportDialog'),
+  },
+  {
+    id: 'P67-11', phase: 67, area: 'Export',
+    desc: 'Traktor NML uses /: path separator format',
+    method: 'code',
+    fn: () => fileContains('src-tauri/src/export.rs', '/:'),
+  },
+  {
+    id: 'P67-12', phase: 67, area: 'Export',
+    desc: 'Export skips streaming-only tracks (empty path filter)',
+    method: 'code',
+    fn: () => fileContains('src-tauri/src/export.rs', 'path.is_empty()'),
+  },
+  {
+    id: 'P67-13', phase: 67, area: 'Export',
+    desc: 'ExportDialog export is gated to Tauri (isTauri check)',
+    method: 'code',
+    fn: () => fileContains('src/lib/components/Queue.svelte', 'isTauri()'),
+  },
+  {
+    id: 'P67-14', phase: 67, area: 'Export',
+    desc: 'Copy-to-folder option available separately from playlist format',
+    method: 'code',
+    fn: () => fileContains('src/lib/components/ExportDialog.svelte', 'copyFiles'),
+  },
+];
+
+// ---------------------------------------------------------------------------
 // Build check — always runs last
 // ---------------------------------------------------------------------------
 
@@ -2958,5 +3050,6 @@ export const ALL_TESTS = [
   ...PHASE_28,
   ...PHASE_31,
   ...PHASE_33,
+  ...PHASE_67,
   ...BUILD,
 ];

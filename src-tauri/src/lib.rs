@@ -1,5 +1,6 @@
 mod activitypub;
 mod ai;
+mod export;
 mod library;
 mod mercury_db;
 mod scanner;
@@ -189,6 +190,9 @@ pub fn run() {
             updater::check_for_update,
             updater::install_update,
             updater::get_app_version,
+            export::export_queue_m3u,
+            export::export_queue_nml,
+            export::copy_tracks_to_folder,
         ])
         .plugin(tauri_plugin_sql::Builder::new().build())
         .plugin(tauri_plugin_updater::Builder::new().build())
