@@ -220,7 +220,7 @@
 		/* Bleed past edges so blur doesn't show soft borders */
 		inset: -12px;
 		overflow: hidden;
-		filter: blur(20px) brightness(0.28) saturate(1.3);
+		filter: blur(18px) brightness(0.45) saturate(1.4);
 		z-index: 0;
 	}
 
@@ -243,7 +243,7 @@
 		position: absolute;
 		inset: 0;
 		z-index: 1;
-		opacity: 0.38;
+		opacity: 0.28;
 	}
 
 	/* ── Plain color fallback (no source images) ─────────── */
