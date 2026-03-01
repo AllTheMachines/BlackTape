@@ -25,7 +25,7 @@ The core inversion: niche artists surface first, not last. The less well-known y
 
 ## The Problem
 
-Streaming has solved access and broken discovery. Every recording ever made is theoretically available — yet the same few thousand artists capture almost everything. The algorithms that decide what you hear next are built to maximise session length, not to help you find something you've never encountered.
+Streaming has solved access and broken discovery. Every recording ever made is theoretically available — yet the algorithms that decide what you hear next are built to maximise session length, not to help you find something you've never encountered.
 
 The underground isn't hidden because it doesn't exist. It's hidden because it doesn't perform.
 
@@ -130,81 +130,22 @@ DESKTOP (the product)
 
 ## Development
 
-### Requirements
-
-- Node.js 20+
-- Rust (stable) + Cargo
-- [Tauri prerequisites for Windows](https://tauri.app/start/prerequisites/)
-
-### Setup
+Requires Node.js 20+, Rust (stable), and the [Tauri prerequisites](https://tauri.app/start/prerequisites/).
 
 ```bash
 git clone https://github.com/AllTheMachines/BlackTape.git
 cd BlackTape
 npm install
+npm run tauri dev    # Rust + frontend
 ```
-
-### Running
 
 ```bash
-npm run dev          # Start the SvelteKit dev server
-npm run tauri dev    # Start Tauri dev build (Rust + frontend)
-npm run build        # Production SvelteKit build
-npm run check        # TypeScript + Svelte type checking
+npm run dev      # Frontend only (no Tauri)
+npm run build    # Production build
+npm run check    # TypeScript + Svelte checks
 ```
 
-### Data Pipeline
-
-To build your own discovery database from source data:
-
-```bash
-# Download MusicBrainz data dumps first, then:
-node pipeline/build-genre-data.mjs     # Genres + scenes from Wikidata
-node pipeline/import-musicbrainz.mjs   # Artist + release data
-```
-
-Produces `mercury.db` — the distributable discovery index.
-
-### Testing
-
-```bash
-node tools/test-suite/run.mjs --code-only    # 285 structural code tests
-node tools/test-suite/run.mjs                # Full suite including Tauri
-```
-
-The pre-commit hook runs `--code-only` tests automatically on every commit.
-
-### Project Structure
-
-```
-BlackTape/
-├── src/                    # SvelteKit frontend
-│   ├── lib/
-│   │   ├── config.ts       # Project name — single variable for renaming
-│   │   ├── db/             # Database abstraction (TauriProvider)
-│   │   ├── ai/             # AI providers, prompts, injection hardening
-│   │   ├── components/     # Shared UI components
-│   │   └── styles/         # CSS design tokens
-│   └── routes/             # Pages (artist, release, discover, kb, etc.)
-├── src-tauri/              # Rust backend
-│   ├── src/
-│   │   ├── lib.rs          # Tauri command registration
-│   │   ├── mercury_db.rs   # Search index queries
-│   │   ├── scanner/        # Local music file scanner
-│   │   ├── export.rs       # M3U / Traktor NML playlist export
-│   │   ├── site_gen.rs     # Artist static site generator
-│   │   └── activitypub.rs  # ActivityPub / Fediverse export
-│   └── Cargo.toml
-├── pipeline/               # Data pipeline scripts
-├── tools/
-│   ├── test-suite/         # Test runner
-│   └── build-log-viewer/   # Live BUILD-LOG.md viewer (localhost:18800)
-├── docs/
-│   └── user-manual.md      # End-user documentation
-├── PROJECT.md              # Full vision and philosophy
-├── ARCHITECTURE.md         # Technical architecture deep-dive
-└── BUILD-LOG.md            # Documentary record of every decision
-```
+See [ARCHITECTURE.md](ARCHITECTURE.md) for a full breakdown of how everything connects.
 
 ---
 
