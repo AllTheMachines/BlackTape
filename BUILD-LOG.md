@@ -11258,3 +11258,29 @@ After shipping the pool system, a concern was raised that a real Radiohead cover
 
 > **Commit 9c6bf72** (2026-03-01 12:45) — wip: auto-save
 > Files changed: 1
+
+> **Commit 837ee98** (2026-03-01 12:46) — auto-save: 1 files @ 12:46
+> Files changed: 1
+
+> **Commit a12abe6** (2026-03-01 12:57) — feat: smart cover placeholders — composite from artist/sibling images
+> Files changed: 4
+
+## 2026-03-01 — Smart Cover Placeholders: Context-Aware Composites
+
+Replaced the blurred-backdrop-always approach with a four-case system that uses contextually relevant images as placeholder backdrops — always dimmed enough to keep text readable, but never blurry unless there's truly nothing artist-specific available.
+
+**The four cases:**
+
+1. **Artist card, no Wikipedia photo** → fetch top 4 albums from MusicBrainz, display as crisp dimmed mosaic
+2. **Artist card, no photo + no CAA covers** → blurred pool fallback (cross-artist, least specific)
+3. **Release card, no cover art** → artist's Wikipedia photo as backdrop (sharp, dimmed)
+4. **Release card, no cover + no artist photo** → sibling releases via pool (sharp, dimmed)
+
+**What changed:**
+
+- `CoverPlaceholder.svelte` — added `blur` prop (default `false`). Sharp mode: `brightness(0.45)` only, `inset: 0` (no bleed). Blurred mode: `blur(18px) brightness(0.45) saturate(1.4)`, `inset: -12px` to hide soft edges.
+- `ArtistCard.svelte` — when `thumbnailUrl` returns null, fires `fetchReleaseCoverUrls(artist.mbid)` against MusicBrainz browse API, constructs CAA URLs, passes as `sources`. `blur` is true only if that array is empty.
+- `ReleaseCard.svelte` — accepts `artistPhotoUrl?: string | null`. When cover fails, passes it as `sources={[artistPhotoUrl]}` with `blur={false}`.
+- Artist page `+page.svelte` — fetches artist Wikipedia thumbnail via `$effect`, passes as `artistPhotoUrl` to all `ReleaseCard`s.
+
+**Verified on Radiohead page:** 3 live recording releases with no CAA art now show the band's Wikipedia photo — dimmed, title overlaid. On search results, obscure artists with neither Wikipedia photo nor CAA art gracefully fall back to the genre color solid.
