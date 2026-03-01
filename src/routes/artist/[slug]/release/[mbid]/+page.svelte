@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import CoverPlaceholder from '$lib/components/CoverPlaceholder.svelte';
 	import { getWikiThumbnail } from '$lib/wiki-thumbnail';
-	import { coverPool } from '$lib/cover-pool.svelte';
+	import { registerCover } from '$lib/cover-pool.svelte';
 	import { PROJECT_NAME } from '$lib/config';
 	import BuyOnBar from '$lib/components/BuyOnBar.svelte';
 	import LinerNotes from '$lib/components/LinerNotes.svelte';
@@ -178,7 +178,7 @@
 						src={release.coverArtUrl}
 						alt="{release.title} cover art"
 						onerror={() => coverError = true}
-						onload={() => coverPool.register(release.coverArtUrl)}
+						onload={() => registerCover(release.coverArtUrl)}
 					/>
 				{:else}
 					<CoverPlaceholder name={release.title} sources={artistThumb ? [artistThumb] : []} />

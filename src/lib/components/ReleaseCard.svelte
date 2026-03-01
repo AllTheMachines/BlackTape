@@ -4,7 +4,7 @@
 	import { spotifyEmbedUrl } from '$lib/embeds/spotify';
 	import { youtubeEmbedUrl } from '$lib/embeds/youtube';
 	import { getWikiThumbnail } from '$lib/wiki-thumbnail';
-	import { coverPool } from '$lib/cover-pool.svelte';
+	import { registerCover } from '$lib/cover-pool.svelte';
 
 	let {
 		release,
@@ -100,7 +100,7 @@
 					alt="{release.title} cover art"
 					loading="lazy"
 					onerror={() => coverError = true}
-					onload={() => coverPool.register(release.coverArtUrl)}
+					onload={() => registerCover(release.coverArtUrl)}
 				/>
 			{:else}
 				<CoverPlaceholder name={release.title} sources={artistThumb ? [artistThumb] : []} />

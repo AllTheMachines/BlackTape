@@ -1,76 +1,57 @@
 # Work Handoff - 2026-03-01
 
 ## Current Task
-Cover placeholder feature shipped — session ended mid-demo-recording (user stopped it).
+Smart cover placeholder system — built and debugged across two sessions.
 
 ## Context
-Session covered: LICENSE file added (PolyForm Noncommercial), parachord reference fully purged (folder, BUILD-LOG entry, both git commits — history rewritten + force pushed), cover art placeholder redesign implemented, demo recording started and manually stopped.
+Building a fallback hierarchy for cover art placeholders:
+1. No album cover → use artist Wikipedia thumbnail as blurred backdrop
+2. No artist pic → use album covers from page pool as blurred mosaic
+3. Nothing → plain color background (existing)
 
 ## Progress
 ### Completed
-- Added `LICENSE` (PolyForm Noncommercial 1.0.0) + updated README license section
-- Removed `parachord-reference` submodule from repo
-- Removed Parachord entry from BUILD-LOG.md
-- Rewrote git history to drop both parachord commits (`6c4c1a0` add + `9721b1c` remove)
-- Force pushed clean history to `AllTheMachines/BlackTape` on GitHub
-- Built debug binary (`cargo build` — `src-tauri/target/debug/mercury.exe` now exists)
-- Updated `record-and-run.mjs` to cover all v2.0 brief sections:
-  - Natural language search pass (Berlin, Warp Records) injected mid-search loop
-  - Queue export dialog (M3U8, Traktor NML, copy-files toggle)
-  - Crate Dig section (3 filter cycles)
-  - Explore/AI section (3 queries)
-- **Created `src/lib/components/CoverPlaceholder.svelte`** — new component with:
-  - 20 deterministic background colors (hashed from name)
-  - 14 Google Fonts mapped to genre families
-  - Font size scaled by name length
-  - Inner vignette shadow
-- Wired CoverPlaceholder into all 3 fallback locations:
-  - `ArtistCard.svelte` (replaces initials)
-  - `ReleaseCard.svelte` (replaces single letter)
-  - `release/[mbid]/+page.svelte` hero (replaces single letter)
-- App reloaded successfully after cover placeholder changes
-- Demo recording started (`record-and-run.mjs`) then stopped at user request (~3 min in, mid artist pages section)
+- Created `src/lib/cover-pool.svelte.ts` — page-level reactive pool using `$state({urls:[]})`
+- Rewrote `CoverPlaceholder.svelte` — layered structure:
+  - Blurred image backdrop (blur 20px, brightness 0.28, saturate 1.3)
+  - Genre color tint overlay (38% opacity)
+  - Name label at z-index 2 with text-shadow
+  - "Not official artwork" hover indicator (slides up from bottom)
+  - Hash-based `object-position` for "parts of it" crop effect on single images
+- Updated `ReleaseCard.svelte` — fetches artist Wikipedia thumb eagerly (not gated on coverError), seeds pool on cover load
+- Updated `ArtistCard.svelte` — seeds pool when Wikipedia thumbnail loads
+- Updated artist page — passes `artistName` to ReleaseCard
+- Updated release page — fetches artist Wikipedia thumb eagerly, seeds pool
+- Fixed pool reactivity bug: changed from plain JS getter pattern to `$state({})` proxy pattern (matches `playerState` etc.)
 
-### In Progress
-- Nothing actively in progress
+### Status
+- Just reloaded after the pool reactivity fix
+- User hasn't confirmed if it works yet
 
-### Remaining
-- Check cover placeholder visually in the app (user wanted to inspect before/after recording was stopped)
-- Push the 5 unpushed commits to GitHub (LICENSE, README, record-and-run updates, CoverPlaceholder)
-- Re-run the demo recording when ready (`node tools/launch-cdp.mjs` then `node tools/record-and-run.mjs`)
-- BUILD-LOG.md has auto-appended commit entries (unstaged, normal state — hook handles it)
+### Known working
+- "5 Album Set" on Radiohead page shows blurred backdrop from pool covers
+- Hover indicator for "Not official artwork" implemented
 
-## Key Decisions
-- PolyForm Noncommercial 1.0.0 chosen for license (fork/build freely, no commercial use)
-- Parachord scrubbed entirely — not just the folder but both commits and the BUILD-LOG entry
-- CoverPlaceholder uses deterministic color (same name = same color every time, not truly random per render)
-- Google Fonts loaded via `<svelte:head>` in the component itself — no global CSS changes needed
-- Font fallback chain: genre-matched font → sans-serif
+### Possible remaining issues
+- If Wikipedia thumbnail fetch returns null for some artists, fallback will be pool-only
+- Pool fills as page renders — earliest placeholder cards may briefly show solid color before pool populates
 
 ## Relevant Files
-- `src/lib/components/CoverPlaceholder.svelte` — new component, just created
-- `src/lib/components/ArtistCard.svelte` — imports + uses CoverPlaceholder
-- `src/lib/components/ReleaseCard.svelte` — imports + uses CoverPlaceholder
-- `src/routes/artist/[slug]/release/[mbid]/+page.svelte` — imports + uses CoverPlaceholder
-- `tools/record-and-run.mjs` — updated with NL search, export dialog, Crate Dig, Explore sections
-- `LICENSE` — new file, PolyForm Noncommercial 1.0.0
-- `README.md` — license section updated
-- `BUILD-LOG.md` — auto-appended by post-commit hook (unstaged, expected)
+- `src/lib/cover-pool.svelte.ts` — NEW: `$state` pool store + `registerCover()` function
+- `src/lib/components/CoverPlaceholder.svelte` — full rewrite with layered backdrop system
+- `src/lib/components/ReleaseCard.svelte` — `artistName?` prop, eager wiki fetch, pool seeding
+- `src/lib/components/ArtistCard.svelte` — pool seeding on thumbnail load
+- `src/routes/artist/[slug]/+page.svelte` — passes `artistName={data.artist.name}` to ReleaseCard
+- `src/routes/artist/[slug]/release/[mbid]/+page.svelte` — eager wiki fetch, pool seeding
 
 ## Git Status
-Branch is 5 commits ahead of origin/main (not yet pushed):
-- LICENSE added
-- README license section updated
-- record-and-run.mjs updated for v2.0 brief
-- CoverPlaceholder.svelte created + wired into 3 components
-- BUILD-LOG cleanup commit
-
-Only BUILD-LOG.md is dirty (auto-appended by hook, normal).
+Branch is ahead of origin — BUILD-LOG.md dirty (hook auto-appends, normal). Nothing committed yet from this session.
 
 ## Next Steps
-1. Open the app and browse to Search or an artist page to verify cover placeholders look good
-2. Push 5 commits: `git push`
-3. Re-run demo recording when ready: `node tools/launch-cdp.mjs` then `node tools/record-and-run.mjs`
+1. Verify the backdrop is now showing on all placeholder cards (Radiohead page is a good test)
+2. If Wikipedia returns null for artist, the pool fallback should still kick in from other loaded covers
+3. If everything looks good: commit + push
+4. Potential future tweak: brightness/opacity values if backdrop is too dark or too light
 
 ## Resume Command
 After running `/clear`, run `/resume` to continue.

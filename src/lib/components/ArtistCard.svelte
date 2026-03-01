@@ -3,7 +3,7 @@
 	import CoverPlaceholder from './CoverPlaceholder.svelte';
 	import type { ArtistResult } from '$lib/db/queries';
 	import { getWikiThumbnail } from '$lib/wiki-thumbnail';
-	import { coverPool } from '$lib/cover-pool.svelte';
+	import { registerCover } from '$lib/cover-pool.svelte';
 
 	let {
 		artist,
@@ -58,7 +58,7 @@
 		<!-- Square art area — Wikipedia thumbnail if available, initials fallback -->
 		<div class="a-art" aria-hidden="true">
 			{#if thumbnailUrl}
-				<img src={thumbnailUrl} alt="" onload={() => coverPool.register(thumbnailUrl)} />
+				<img src={thumbnailUrl} alt="" onload={() => registerCover(thumbnailUrl)} />
 			{:else}
 				<CoverPlaceholder name={artist.name} tags={artist.tags} />
 			{/if}
