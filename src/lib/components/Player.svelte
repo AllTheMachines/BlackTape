@@ -180,35 +180,35 @@
 		<div class="track-info">
 			<div class="cassette-reels" class:playing={isPlaying}>
 				<!-- Cassette body sits behind the reel SVGs (absolute, pointer-events:none) -->
-				<svg class="cassette-body" viewBox="0 0 92 60" width="92" height="60" aria-hidden="true">
+				<svg class="cassette-body" viewBox="0 0 76 49" width="76" height="49" aria-hidden="true">
 					<!-- Outer shell -->
-					<rect x="0.5" y="0.5" width="91" height="59" rx="4" fill="currentColor" fill-opacity="0.1" stroke="currentColor" stroke-width="1"/>
+					<rect x="0.5" y="0.5" width="75" height="48" rx="3.5" fill="currentColor" fill-opacity="0.2" stroke="currentColor" stroke-width="1"/>
 					<!-- Inner bezel -->
-					<rect x="3" y="3" width="86" height="54" rx="2.5" fill="none" stroke="currentColor" stroke-width="0.5" stroke-opacity="0.5"/>
+					<rect x="2.5" y="2.5" width="71" height="44" rx="2" fill="none" stroke="currentColor" stroke-width="0.5" stroke-opacity="0.65"/>
 					<!-- Label/window area -->
-					<rect x="7" y="12" width="78" height="32" rx="1.5" fill="currentColor" fill-opacity="0.06" stroke="currentColor" stroke-width="0.4" stroke-opacity="0.4"/>
-					<!-- Reel holes — bg fill "punches through" the shell; the live reel SVGs sit on top -->
-					<circle cx="25" cy="26" r="18" fill="var(--bg-3)"/>
-					<circle cx="67" cy="26" r="18" fill="var(--bg-3)"/>
-					<!-- Center bridge between the two holes -->
-					<rect x="43" y="14" width="6" height="24" fill="currentColor" fill-opacity="0.1" stroke="currentColor" stroke-width="0.4" stroke-opacity="0.45"/>
+					<rect x="6" y="10" width="64" height="27" rx="1.5" fill="currentColor" fill-opacity="0.12" stroke="currentColor" stroke-width="0.4" stroke-opacity="0.55"/>
+					<!-- Reel holes (cx/cy = reel SVG centers after padding: 6+14.5=20.5, 7+14.5=21.5) -->
+					<circle cx="20.5" cy="21.5" r="14.5" fill="var(--bg-3)"/>
+					<circle cx="55.5" cy="21.5" r="14.5" fill="var(--bg-3)"/>
+					<!-- Center bridge -->
+					<rect x="35" y="11" width="6" height="21" fill="currentColor" fill-opacity="0.2" stroke="currentColor" stroke-width="0.4" stroke-opacity="0.55"/>
 					<!-- Tape head access window -->
-					<rect x="35" y="45" width="22" height="10" rx="1.5" fill="var(--bg-3)" stroke="currentColor" stroke-width="0.7"/>
-					<!-- Tape guides visible in window -->
-					<rect x="37" y="47" width="5" height="6" rx="0.5" fill="currentColor" fill-opacity="0.3"/>
-					<rect x="50" y="47" width="5" height="6" rx="0.5" fill="currentColor" fill-opacity="0.3"/>
+					<rect x="29" y="37" width="18" height="8" rx="1.5" fill="var(--bg-3)" stroke="currentColor" stroke-width="0.7"/>
+					<!-- Tape guides in window -->
+					<rect x="31" y="39" width="3" height="4" rx="0.5" fill="currentColor" fill-opacity="0.45"/>
+					<rect x="42" y="39" width="3" height="4" rx="0.5" fill="currentColor" fill-opacity="0.45"/>
 					<!-- Corner screws -->
-					<circle cx="9" cy="9" r="1.8" fill="none" stroke="currentColor" stroke-width="0.7" stroke-opacity="0.5"/>
-					<circle cx="83" cy="9" r="1.8" fill="none" stroke="currentColor" stroke-width="0.7" stroke-opacity="0.5"/>
-					<circle cx="9" cy="51" r="1.8" fill="none" stroke="currentColor" stroke-width="0.7" stroke-opacity="0.5"/>
-					<circle cx="83" cy="51" r="1.8" fill="none" stroke="currentColor" stroke-width="0.7" stroke-opacity="0.5"/>
+					<circle cx="8" cy="8" r="1.5" fill="none" stroke="currentColor" stroke-width="0.7" stroke-opacity="0.65"/>
+					<circle cx="68" cy="8" r="1.5" fill="none" stroke="currentColor" stroke-width="0.7" stroke-opacity="0.65"/>
+					<circle cx="8" cy="41" r="1.5" fill="none" stroke="currentColor" stroke-width="0.7" stroke-opacity="0.65"/>
+					<circle cx="68" cy="41" r="1.5" fill="none" stroke="currentColor" stroke-width="0.7" stroke-opacity="0.65"/>
 				</svg>
 				<!--
 					Compact cassette reel: thin outer ring + open gap + notched hub + spindle hole.
 					Hub is a 32-point polygon: 8 rectangular notches (outer r=4, notch r=3, 16° per notch, 29° between).
 					Both reels spin the same direction (like real cassettes).
 				-->
-				<svg class="reel" viewBox="0 0 20 20" width="36" height="36">
+				<svg class="reel" viewBox="0 0 20 20" width="29" height="29">
 					<circle cx="10" cy="10" r="8.5" fill="currentColor" fill-opacity="0.08" stroke="currentColor" stroke-width="1.3"/>
 					<polygon fill="currentColor" fill-opacity="0.65" points="
 						13.96,9.44 12.97,9.58 12.97,10.42 13.96,10.56
@@ -221,7 +221,7 @@
 						12.41,6.81 11.81,7.60 12.40,8.20 13.19,7.59"/>
 					<circle cx="10" cy="10" r="1.2" fill="var(--bg-3)"/>
 				</svg>
-				<svg class="reel" viewBox="0 0 20 20" width="36" height="36">
+				<svg class="reel" viewBox="0 0 20 20" width="29" height="29">
 					<circle cx="10" cy="10" r="8.5" fill="currentColor" fill-opacity="0.08" stroke="currentColor" stroke-width="1.3"/>
 					<polygon fill="currentColor" fill-opacity="0.65" points="
 						13.96,9.44 12.97,9.58 12.97,10.42 13.96,10.56
@@ -573,7 +573,7 @@
 		flex-shrink: 0;
 		position: relative;
 		/* padding creates room for the cassette body: 8px top, 16px bottom (tape window), 7px sides */
-		padding: 8px 7px 16px 7px;
+		padding: 7px 6px 13px 6px;
 	}
 
 	.cassette-body {
