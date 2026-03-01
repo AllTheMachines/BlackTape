@@ -179,26 +179,36 @@
 		<!-- Track info -->
 		<div class="track-info">
 			<div class="cassette-reels" class:playing={isPlaying}>
-				<!-- Left reel: clockwise. 3 large arc windows between 3 solid spokes + hub + spindle hole. -->
+				<!--
+					Compact cassette reel: thin outer ring + open gap + notched hub + spindle hole.
+					Hub is a 32-point polygon: 8 rectangular notches (outer r=4, notch r=3, 16° per notch, 29° between).
+					Both reels spin the same direction (like real cassettes).
+				-->
 				<svg class="reel" viewBox="0 0 20 20" width="36" height="36">
-					<circle cx="10" cy="10" r="8.5" fill="currentColor" fill-opacity="0.12" stroke="currentColor" stroke-width="0.8"/>
-					<!-- Window 1: 45°→135° (bottom) -->
-					<path fill="var(--bg-3)" d="M 12.12,12.12 L 15.30,15.30 A 7.5,7.5 0 0,1 4.70,15.30 L 7.88,12.12 A 3,3 0 0,0 12.12,12.12 Z"/>
-					<!-- Window 2: 165°→255° (upper-left) -->
-					<path fill="var(--bg-3)" d="M 7.10,10.78 L 2.75,11.94 A 7.5,7.5 0 0,1 8.06,2.75 L 9.22,7.10 A 3,3 0 0,0 7.10,10.78 Z"/>
-					<!-- Window 3: 285°→15° (upper-right) -->
-					<path fill="var(--bg-3)" d="M 10.78,7.10 L 11.94,2.75 A 7.5,7.5 0 0,1 17.24,11.94 L 12.90,10.78 A 3,3 0 0,0 10.78,7.10 Z"/>
-					<circle cx="10" cy="10" r="2.7" fill="currentColor" fill-opacity="0.5"/>
-					<circle cx="10" cy="10" r="1" fill="var(--bg-3)"/>
+					<circle cx="10" cy="10" r="8.5" fill="currentColor" fill-opacity="0.08" stroke="currentColor" stroke-width="1.3"/>
+					<polygon fill="currentColor" fill-opacity="0.65" points="
+						13.96,9.44 12.97,9.58 12.97,10.42 13.96,10.56
+						13.19,12.41 12.40,11.81 11.81,12.40 12.41,13.19
+						10.56,13.96 10.42,12.97 9.58,12.97 9.44,13.96
+						7.59,13.19 8.20,12.40 7.60,11.81 6.81,12.41
+						6.04,10.56 7.03,10.42 7.03,9.58 6.04,9.44
+						6.81,7.59 7.60,8.20 8.20,7.60 7.59,6.81
+						9.44,6.04 9.58,7.03 10.42,7.03 10.56,6.04
+						12.41,6.81 11.81,7.60 12.40,8.20 13.19,7.59"/>
+					<circle cx="10" cy="10" r="1.2" fill="var(--bg-3)"/>
 				</svg>
-				<!-- Right reel: counterclockwise (reel-reverse). -->
-				<svg class="reel reel-reverse" viewBox="0 0 20 20" width="36" height="36">
-					<circle cx="10" cy="10" r="8.5" fill="currentColor" fill-opacity="0.12" stroke="currentColor" stroke-width="0.8"/>
-					<path fill="var(--bg-3)" d="M 12.12,12.12 L 15.30,15.30 A 7.5,7.5 0 0,1 4.70,15.30 L 7.88,12.12 A 3,3 0 0,0 12.12,12.12 Z"/>
-					<path fill="var(--bg-3)" d="M 7.10,10.78 L 2.75,11.94 A 7.5,7.5 0 0,1 8.06,2.75 L 9.22,7.10 A 3,3 0 0,0 7.10,10.78 Z"/>
-					<path fill="var(--bg-3)" d="M 10.78,7.10 L 11.94,2.75 A 7.5,7.5 0 0,1 17.24,11.94 L 12.90,10.78 A 3,3 0 0,0 10.78,7.10 Z"/>
-					<circle cx="10" cy="10" r="2.7" fill="currentColor" fill-opacity="0.5"/>
-					<circle cx="10" cy="10" r="1" fill="var(--bg-3)"/>
+				<svg class="reel" viewBox="0 0 20 20" width="36" height="36">
+					<circle cx="10" cy="10" r="8.5" fill="currentColor" fill-opacity="0.08" stroke="currentColor" stroke-width="1.3"/>
+					<polygon fill="currentColor" fill-opacity="0.65" points="
+						13.96,9.44 12.97,9.58 12.97,10.42 13.96,10.56
+						13.19,12.41 12.40,11.81 11.81,12.40 12.41,13.19
+						10.56,13.96 10.42,12.97 9.58,12.97 9.44,13.96
+						7.59,13.19 8.20,12.40 7.60,11.81 6.81,12.41
+						6.04,10.56 7.03,10.42 7.03,9.58 6.04,9.44
+						6.81,7.59 7.60,8.20 8.20,7.60 7.59,6.81
+						9.44,6.04 9.58,7.03 10.42,7.03 10.56,6.04
+						12.41,6.81 11.81,7.60 12.40,8.20 13.19,7.59"/>
+					<circle cx="10" cy="10" r="1.2" fill="var(--bg-3)"/>
 				</svg>
 			</div>
 			<div class="track-text">
