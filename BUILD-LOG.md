@@ -10998,3 +10998,6 @@ Issue #51 closed.
 
 > **Commit 0cbb393** (2026-03-01 01:16) — auto-save: 2 files @ 01:16
 > Files changed: 1
+
+> **Commit 8cffdc6** (2026-03-01 01:37) — feat: secure settings + updater + first-run bootstrap
+> Files changed: 21
