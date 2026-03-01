@@ -1,61 +1,54 @@
 # Work Handoff - 2026-03-01
 
 ## Current Task
-Session complete — no active in-progress work. Two sessions of planned work were fully implemented and committed.
+Session complete — issue backlog cleared, strategic conversation about open source / donations.
 
 ## Context
-This session implemented the "Secure Settings + Updater + First-Run Bootstrap" plan, then updated all documentation to reflect the BlackTape rename and current feature state.
+This session worked through all actionable open GitHub issues. Also had a conversation with Steve about open source fears (fork risk) and donation buttons. All committed and clean.
 
 ## Progress
 ### Completed
-- System 1 — Secure Settings: keyring crate added, secrets.rs created, API keys + Spotify tokens moved from taste.db to Windows Credential Manager. Migration runs on startup. Frontend updated to use keyring commands.
-- System 2 — Updater: Placeholder endpoint replaced with real GitHub Releases URL. updater.rs created. UpdateBanner.svelte + update.svelte.ts created. Wired into layout and settings About section.
-- System 3 — First-Run Bootstrap: SetupWizard.svelte (4-step wizard) created. DatabaseSetup.svelte deleted. setup_complete key added to taste.db. +page.svelte updated with existing-user auto-graduation logic. static/requirements.json created.
-- Docs update: Both docs/user-manual.md and ARCHITECTURE.md fully updated — Mercury → BlackTape throughout, web version removed, Communication section replaced, directory trees updated.
-- Test suite: 197/197 passing.
+- Closed #66 — Tauri updater (already implemented last session, just needed closing)
+- Closed #65 — LLM prompt injection hardening: INJECTION_GUARD + externalContent() in prompts.ts, all complete() call sites updated, genreSummary returns {system,user}, documented in ARCHITECTURE.md
+- Closed #67 — Playlist export: export.rs (M3U8, Traktor NML, copy to folder), ExportDialog.svelte, Export button in Queue.svelte
+- Closed #40 — Donation button research: answered "not yet, wait for organic signal"
+- Removed donation buttons from about page (Ko-fi, GitHub Sponsors, Open Collective — were placeholder URLs anyway)
+- Verified artist support links ARE real (from MusicBrainz relationship data — actual artist Ko-fi/Patreon URLs)
 
 ### In Progress
-- Nothing. All work is committed.
+- Nothing. All work committed.
 
 ### Remaining
-- New Rust commands won't work until app binary is rebuilt (cargo build). Running mercury.exe is old pre-compiled binary.
-- Next: clear GitHub issues before new features (Steve's rule). 25 open issues.
+- Remaining open issues are all research/meta/strategy (non-code):
+  - #39 — Testing video (Steve records)
+  - #38 — Scan audiologs/roadmap for missed features (research task)
+  - #37 — Marketing approach (strategic)
+  - #36 — Modular audit: can community features be cleanly disabled?
+  - #35 — v1 feature scope decision
+  - #15 — MusicBrainz live update strategy
 
 ## Key Decisions
-- Keyring service name: "blacktape"
-- Keyring keys: ai_api_key, spotify_client_id, spotify_access_token, spotify_refresh_token
-- Non-sensitive Spotify fields (token_expiry, display_name) stay in taste.db
-- Update endpoint: https://github.com/AllTheMachines/Mercury/releases/latest/download/latest.json
-- Existing users (DB present, no setup_complete row) auto-graduated to setup_complete='1'
+- Open source fear: Steve worried about forks. Answered: creator advantage is real, forks usually die. License choice (GPL/AGPL) matters more than open vs closed. Not urgent until public launch.
+- Donation buttons: removed for now. Signal to watch = someone asking "how can I support this?" unprompted. Platforms when ready: GitHub Sponsors + Ko-fi.
+- Artist Ko-fi links on artist page are REAL MusicBrainz relationship URLs — not fake. No issue.
 
 ## Relevant Files
-- src-tauri/src/secrets.rs — NEW: OS keyring commands + migration
-- src-tauri/src/updater.rs — NEW: update check/install/version commands
-- src-tauri/src/lib.rs — new mods registered, migration called in setup
-- src-tauri/src/ai/taste_db.rs — removed api_key default, added setup_complete
-- src-tauri/Cargo.toml — added keyring = "3"
-- src-tauri/tauri.conf.json — real GitHub Releases endpoint
-- src/lib/update.svelte.ts — NEW: reactive update state
-- src/lib/components/UpdateBanner.svelte — NEW: update notification UI
-- src/lib/components/SetupWizard.svelte — NEW: first-run wizard
-- src/lib/components/DatabaseSetup.svelte — DELETED
-- src/lib/ai/state.svelte.ts — api_key routed to keyring
-- src/lib/spotify/auth.ts — tokens routed to keyring
-- src/routes/+layout.svelte — UpdateBanner + update check on mount
-- src/routes/+page.svelte — SetupWizard with setup_complete logic
-- src/routes/settings/+page.svelte — About section (version, updates, reset)
-- static/requirements.json — NEW: machine-readable requirements manifest
-- docs/user-manual.md — full rename + accuracy pass
-- ARCHITECTURE.md — full rename + new modules documented
+- `src/lib/ai/prompts.ts` — INJECTION_GUARD + externalContent() + all prompts updated
+- `src-tauri/src/export.rs` — NEW: M3U8, Traktor NML, copy-to-folder commands
+- `src/lib/components/ExportDialog.svelte` — NEW: export modal UI
+- `src/lib/components/Queue.svelte` — Export button added
+- `src/routes/about/+page.svelte` — Donation section removed
+- `tools/test-suite/manifest.mjs` — 14 new P67 tests added
 
 ## Git Status
-BUILD-LOG.md has 3 lines of auto-appended commit info (post-commit hook) — unstaged, safe to commit or leave.
-parachord-reference submodule shows modified (pre-existing, unrelated).
+Clean. Only BUILD-LOG.md (auto-appended by post-commit hook) and parachord-reference submodule (pre-existing, unrelated) are modified. Safe to ignore or commit BUILD-LOG.md if desired.
 
 ## Next Steps
-1. Rebuild binary: npm run tauri dev or cargo build in src-tauri/ to activate new Rust commands
-2. Work through open GitHub issues (top: #56 play album, #55 library search, #52 style map, #49 release page streaming)
-3. Run full test suite after rebuild to confirm Tauri E2E tests pass
+1. Tackle remaining issues — best candidates to actually build:
+   - #36 (modular audit) — can community features be disabled cleanly for v1?
+   - #35 (v1 scope) — what ships vs what's deferred
+   - #38 (missed features scan) — scan PROJECT.md + BUILD-LOG.md + audiologs
+2. Or start a new milestone focused on v1 launch readiness
 
 ## Resume Command
 After running /clear, run /resume to continue.
