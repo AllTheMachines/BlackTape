@@ -11004,3 +11004,9 @@ Issue #51 closed.
 
 > **Commit 9c25472** (2026-03-01 01:37) — wip: auto-save
 > Files changed: 1
+
+> **Commit 6ab57fd** (2026-03-01 01:46) — auto-save: 4 files @ 01:46
+> Files changed: 3
+
+> **Commit 971e0c6** (2026-03-01 01:49) — docs: rename Mercury → BlackTape throughout, remove web version refs
+> Files changed: 2
