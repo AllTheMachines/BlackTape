@@ -182,7 +182,7 @@
 				<!-- Cassette body sits behind the reel SVGs (absolute, pointer-events:none) -->
 				<svg class="cassette-body" viewBox="0 0 76 49" width="76" height="49" aria-hidden="true">
 					<!-- Outer shell -->
-					<rect x="0.5" y="0.5" width="75" height="48" rx="3.5" fill="currentColor" fill-opacity="0.5" stroke="currentColor" stroke-width="1"/>
+					<rect x="0.5" y="0.5" width="75" height="48" rx="3.5" fill="var(--bg-1)" fill-opacity="0.9" stroke="currentColor" stroke-width="1"/>
 					<!-- Inner bezel -->
 					<rect x="2.5" y="2.5" width="71" height="44" rx="2" fill="none" stroke="currentColor" stroke-width="0.5" stroke-opacity="0.65"/>
 					<!-- Label/window area -->
