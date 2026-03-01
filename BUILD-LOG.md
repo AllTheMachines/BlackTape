@@ -11287,3 +11287,6 @@ Replaced the blurred-backdrop-always approach with a four-case system that uses 
 
 > **Commit 584adf6** (2026-03-01 12:58) — docs: 2026-03-01 — smart cover placeholders session
 > Files changed: 1
+
+> **Commit 7b43a28** (2026-03-01 12:58) — wip: auto-save
+> Files changed: 4
