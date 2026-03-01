@@ -45,6 +45,8 @@ if (page.url().includes('chrome-error') || page.url() === 'about:blank') {
 // ─── Fullscreen via Tauri API ─────────────────────────────────────────────────
 
 console.log('Setting fullscreen...');
+await page.bringToFront();
+await new Promise(r => setTimeout(r, 500));
 try {
   await page.evaluate(async () => {
     const win = window.__TAURI__?.window?.getCurrentWindow
@@ -52,9 +54,16 @@ try {
       : window.__TAURI__?.window?.appWindow;
     await win?.setFullscreen(true);
   });
-  await new Promise(r => setTimeout(r, 1500));
+  await new Promise(r => setTimeout(r, 2000));
   await page.bringToFront();
-  console.log('Fullscreen set.');
+  // Verify fullscreen took effect
+  const isFS = await page.evaluate(async () => {
+    const win = window.__TAURI__?.window?.getCurrentWindow
+      ? window.__TAURI__.window.getCurrentWindow()
+      : window.__TAURI__?.window?.appWindow;
+    return win?.isFullscreen?.();
+  }).catch(() => null);
+  console.log('Fullscreen confirmed:', isFS);
 } catch (e) {
   console.warn('Fullscreen via Tauri failed:', e.message, '— trying maximize');
   try {
@@ -62,7 +71,8 @@ try {
       const win = window.__TAURI__?.window?.getCurrentWindow?.() ?? window.__TAURI__?.window?.appWindow;
       await win?.maximize();
     });
-    await new Promise(r => setTimeout(r, 1000));
+    await new Promise(r => setTimeout(r, 1500));
+    await page.bringToFront();
   } catch {}
 }
 
@@ -472,7 +482,7 @@ for (let i = 0; i < 5; i++) {
 
 // ── Crate Dig ─────────────────────────────────────────────────────────────────
 console.log('\n════ CRATE DIG ════');
-await nav('/crate-dig', 2000);
+await nav('/crate', 2000);
 await circles(640, 400, 60, 1);
 
 const crateGenres  = ['shoegaze', 'noise rock', 'ambient'];
@@ -509,7 +519,7 @@ for (let cycle = 0; cycle < 3; cycle++) {
   if (crateArtist) {
     await wait(2000);
     await count(4);
-    await page.goBack().catch(() => nav('/crate-dig'));
+    await page.goBack().catch(() => nav('/crate'));
     await wait(2000);
   }
 
@@ -532,7 +542,7 @@ for (let cycle = 0; cycle < 3; cycle++) {
     if (crateArtist2) {
       await wait(2000);
       await count(4);
-      await page.goBack().catch(() => nav('/crate-dig'));
+      await page.goBack().catch(() => nav('/crate'));
       await wait(2000);
     }
   } else {
