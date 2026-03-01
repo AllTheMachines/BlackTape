@@ -11218,3 +11218,28 @@ Issue #51 closed.
 
 > **Commit e888062** (2026-03-01 12:31) — wip: auto-save
 > Files changed: 2
+
+> **Commit 814ea1c** (2026-03-01 12:33) — wip: auto-save
+> Files changed: 3
+
+## 2026-03-01 — Cover Placeholder: Pool-Based Blurred Backdrop
+
+Overhauled the cover art placeholder system. Previously, missing covers showed a solid color block with the release title. Now, placeholders pull real cover art from the same page and use it as a blurred backdrop — giving orphaned releases context rather than a void.
+
+**What shipped:**
+
+- **`src/lib/cover-pool.svelte.ts`** — Module-level `$state` singleton accumulating successfully-loaded cover URLs across the page (max 24). `registerCover()` deduplicates and prepends.
+- **`CoverPlaceholder.svelte`** rewrite — Layered system: blurred image backdrop (`blur(18px) brightness(0.45) saturate(1.4)`) + genre color tint overlay (0.28 opacity) + title text. When the pool has multiple images, renders a 2×2 mosaic grid. Hash-based crop position so different releases show different fragments of the same source image. Hover reveals a "Not official artwork" indicator.
+- **`ReleaseCard.svelte`** — `onload` handler calls `registerCover()` so every loaded cover feeds the pool.
+- **`ArtistCard.svelte`** — Artist thumbnails also seed the pool on load.
+- **`about/+page.svelte`** — Added MusicBrainz/Cover Art Archive contribution paragraph.
+
+**Investigated reported bug (no code change needed):**
+
+After shipping the pool system, a concern was raised that a real Radiohead cover was showing the placeholder instead of the actual art. Full CDP investigation revealed no bug: the 3 "suspicious" releases (live recordings, bootlegs) legitimately have no artwork on Cover Art Archive — their URLs 404, `onerror` fires correctly, and `CoverPlaceholder` mounts. The backdrop those placeholders show (a blurred Radiohead studio album cover from the pool) is exactly the intended behavior. The `querySelector('.cover-art img')` in the initial check was finding backdrop images inside `CoverPlaceholder`, not real cover elements — a false positive in the detection script.
+
+**Key decisions:**
+
+- Pool is a module singleton — persists across page navigations. Intentional: cover art from an artist thumbnail seeds the pool for that artist's releases.
+- `{#each}` on artist page keys by `release.mbid` — each release gets its own component instance, `coverError` state never bleeds between cards.
+- Solid color fallback still renders when pool is empty (first page load before any images arrive).
