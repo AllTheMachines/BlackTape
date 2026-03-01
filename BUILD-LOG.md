@@ -816,111 +816,6 @@ Rewrote the screenshot script from scratch for a full 50-shot marketing set. New
 
 ---
 
-## Entry 2026-02-26 — v1.5 Parachord Analysis: Deep Code Review + Phase 30 Design
-
-### Parachord Deep Dive (Architecture Analyzed)
-
-Downloaded and analyzed the Parachord codebase (Jason Herskowitz's Tomahawk rebuilt). Full technical analysis saved to auto-memory. Key findings:
-
-**Architecture:**
-- Electron + React, 53K line monolithic app.js
-- Plugin system: `.axe` files (JSON manifest + implementation functions)
-- Each resolver (service) has: id, name, version, capabilities, urlPatterns, weight (priority)
-- Source priority: `resolverOrder` array maintained in state, used for drag-to-reorder UI
-
-**How it works:**
-- User enables services (Spotify, Apple Music, YouTube, Bandcamp, etc.) in Settings > Plugins
-- Drag-to-reorder sets resolver priority (weight)
-- When resolving a track: try each resolver in order, first match wins
-- Multiple sources stored per track (for fallback)
-- Rate limiting only on Apple Music iTunes API (not MusicKit)
-
-**What Parachord does well:**
-- Drag-to-reorder is intuitive, users immediately understand priority
-- Plugin pattern is clean (manifest + implementation)
-- Parallel resolution with smart rate limiting
-- Service switching mid-track works seamlessly
-
-**What's broken:**
-- OAuth setup is confusing: Client ID, Redirect URI, manual reconnection
-- Requires Spotify Desktop app running in background (not user-friendly)
-- Users must create API keys from developer portals (high friction)
-- Incremental resolution UI (sources appear one-by-one) confuses users
-- Large monolithic codebase (hard to maintain, navigate)
-
-### Steve's Parachord Video Assessment (Analyzed)
-
-Processed UAT video with Whisper transcription. Key observations:
-- Playlist names showing "untitled" (loading states are broken/confusing)
-- OAuth flow is "not easy" and requires too many steps
-- "Takes so long" to play (performance criticism)
-- **Validation of Mercury approach:** Steve explicitly noted "keep local data first, not Spotify first" — this validates Mercury's discovery-first philosophy
-
-### Phase 30 Design Decision
-
-Based on deep analysis, recommend:
-
-**What to steal from Parachord:**
-1. Drag-to-reorder for service priority (it works, don't reinvent)
-2. Service indicator on player bar ("Playing from Bandcamp")
-3. Available sources as badges/buttons (allows source switching)
-
-**What NOT to copy:**
-1. Plugin architecture — Mercury should hardcode 4 services only (no extensibility needed)
-2. User API key setup — Mercury handles server-side (users never see Client ID)
-3. Multi-step OAuth — simplify to one-click or skip (use Mercury's existing auth infrastructure)
-4. Incremental resolution UI — show loading state, then all sources at once (cleaner UX)
-
-**Phase 30 Implementation Plan:**
-- **Services:** Spotify, SoundCloud, Bandcamp, YouTube (hardcoded in src-tauri)
-- **Priority UI:** Settings > Streaming tab with drag-to-reorder list
-- **Service indicator:** Small badge on player bar ("S" for Spotify, "♪" for Bandcamp, etc.)
-- **Authentication:** Handle server-side (users see: "✓ Connected to Spotify")
-- **Philosophy:** Keep discovery-first. Streaming is a bonus, not the goal.
-
-**Mercury's competitive advantages:**
-- Discovery-first beats aggregation (uniqueness rewards niche artists)
-- No Spotify bias (helps underground indie artists)
-- Embedded players (no external app requirement like Parachord)
-- Server-side auth (no developer portal complexity)
-
-### Parachord UI/UX Deep Dive (Code + App Analyzed)
-
-**ResolverCard grid design** — how Parachord shows services:
-- 120x120px colored squares in grid layout
-- Priority number badge (top-left) — shows position: 1, 2, 3, etc.
-- Status indicator (top-right) — checkmark (enabled), "↑" (update available), yellow "!" (needs setup)
-- Drag-to-reorder with visual feedback — purple drop indicator on hover
-- Disabled/unavailable services shown as grayed out 50% opacity
-
-**Source badges on individual tracks:**
-- 20x20px colored squares showing available streaming sources
-- Resolver icon/logo inside each square
-- Opacity varies by confidence score (high confidence = 100%, low = 60%)
-- Clickable to play that specific track from that service
-- Sorted by resolver priority order
-
-**Drag-and-drop implementation:**
-- Only active (enabled) resolvers are draggable
-- Smooth visual feedback during drag (opacity fade, drop indicator)
-- Updates `resolverOrder` array in state
-- Order persists in localStorage
-- First service in order is default for that track
-
-**Mercury's Phase 30 approach (simpler):**
-- Use same grid + drag-to-reorder pattern (it works great)
-- Show 4 services only (Spotify, YouTube, SoundCloud, Bandcamp) — no extensibility
-- Priority numbers are optional (could simplify)
-- Skip incremental resolution — show all sources at once with loading spinner
-- Server-side auth (users don't see API key setup)
-
-### Next: Phase 28 (Bug Fixes)
-
-Parachord full analysis complete (architecture, code, UI patterns, app tested).
-Ready to start Phase 28: fix 9 open bugs.
-
----
-
 ## Entry 2026-02-26 — Phase 28 Plans Complete
 
 Phase 28 plans generated: 7 plans across 2 waves.
@@ -8788,9 +8683,6 @@ Fix: renamed to `avatar.svelte.ts`, updated 5 import sites (AvatarEditor, Avatar
 > **Commit cd89301** (2026-02-26 12:18) — wip: auto-save
 > Files changed: 1
 
-> **Commit 6c4c1a0** (2026-02-26 12:19) — docs: Parachord deep analysis — UI/UX patterns documented for Phase 30
-> Files changed: 1
-
 > **Commit bee8c71** (2026-02-26 12:19) — wip: auto-save
 > Files changed: 1
 
@@ -11276,5 +11168,5 @@ Issue #51 closed.
 > **Commit f7ced72** (2026-03-01 11:24) — wip: auto-save
 > Files changed: 2
 
-> **Commit 9721b1c** (2026-03-01 11:26) — chore: remove parachord-reference submodule
+> **Commit c846763** (2026-03-01 11:27) — wip: auto-save
 > Files changed: 1
