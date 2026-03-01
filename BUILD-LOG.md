@@ -11243,3 +11243,6 @@ After shipping the pool system, a concern was raised that a real Radiohead cover
 - Pool is a module singleton — persists across page navigations. Intentional: cover art from an artist thumbnail seeds the pool for that artist's releases.
 - `{#each}` on artist page keys by `release.mbid` — each release gets its own component instance, `coverError` state never bleeds between cards.
 - Solid color fallback still renders when pool is empty (first page load before any images arrive).
+
+> **Commit b704a5e** (2026-03-01 12:40) — docs: 2026-03-01 session — cover placeholder pool-based blurred backdrop
+> Files changed: 1
