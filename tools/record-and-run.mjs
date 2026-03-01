@@ -7,6 +7,13 @@
  * Requires:
  *   - App running with CDP on port 9224 (node tools/launch-cdp.mjs)
  *   - ffmpeg on PATH
+ *
+ * Crash avoidance (learned from v1):
+ *   - Use -i desktop (not title=BlackTape — VS Code can match that too)
+ *   - Skip queue export dialog (crashes WebView)
+ *   - Skip queue drag-and-drop (unstable)
+ *   - Skip About tab (mostly empty, not working)
+ *   - Keep playback running always (cassette wheels spinning)
  */
 
 import { chromium } from 'playwright';
@@ -22,7 +29,7 @@ const CDP       = 'http://127.0.0.1:9224';
 
 fs.mkdirSync(OUT_DIR, { recursive: true });
 
-// ─── Connect to app ──────────────────────────────────────────────────────────
+// ─── Connect to app ───────────────────────────────────────────────────────────
 
 const browser = await chromium.connectOverCDP(CDP);
 const page = browser.contexts()[0]?.pages()?.[0];
@@ -30,24 +37,20 @@ if (!page) { console.error('No page found via CDP'); process.exit(1); }
 page.setDefaultTimeout(10000);
 console.log('Connected. URL:', page.url());
 
-// Wait for SvelteKit app to load (in case WebView2 is still initializing)
 if (page.url().includes('chrome-error') || page.url() === 'about:blank') {
   console.log('Waiting for app to load...');
   await new Promise(r => setTimeout(r, 4000));
-  console.log('URL now:', page.url());
 }
 
-// ─── Fullscreen via Tauri API ────────────────────────────────────────────────
+// ─── Fullscreen via Tauri API ─────────────────────────────────────────────────
 
 console.log('Setting fullscreen...');
 try {
   await page.evaluate(async () => {
-    if (window.__TAURI__?.window) {
-      const win = window.__TAURI__.window.getCurrentWindow
-        ? window.__TAURI__.window.getCurrentWindow()
-        : window.__TAURI__.window.appWindow;
-      await win.setFullscreen(true);
-    }
+    const win = window.__TAURI__?.window?.getCurrentWindow
+      ? window.__TAURI__.window.getCurrentWindow()
+      : window.__TAURI__?.window?.appWindow;
+    await win?.setFullscreen(true);
   });
   await new Promise(r => setTimeout(r, 1500));
   await page.bringToFront();
@@ -64,33 +67,24 @@ try {
 }
 
 // ─── Start ffmpeg screen recording ───────────────────────────────────────────
+// Use -i desktop (not title=BlackTape — VS Code can match if project is open)
 
 console.log(`Starting screen capture → ${OUT_FILE}`);
 
-// Find the display dimensions
-let width = 1920, height = 1080;
-try {
-  const sizeResult = await page.evaluate(() => ({ w: screen.width, h: screen.height }));
-  width  = sizeResult.w || 1920;
-  height = sizeResult.h || 1080;
-} catch {}
-console.log(`Screen: ${width}x${height}`);
-
 const ffmpeg = spawn('ffmpeg', [
-  '-y',                         // overwrite output
-  '-f', 'gdigrab',              // Windows GDI screen capture
+  '-y',
+  '-f', 'gdigrab',
   '-framerate', '30',
-  '-i', 'title=BlackTape',      // capture only the BlackTape window
+  '-i', 'desktop',          // full desktop — app is fullscreen, so this = app
   '-c:v', 'libx264',
-  '-preset', 'ultrafast',       // low CPU, good for live capture
-  '-crf', '18',                 // high quality
+  '-preset', 'ultrafast',
+  '-crf', '18',
   '-pix_fmt', 'yuv420p',
   OUT_FILE
 ], { stdio: ['pipe', 'ignore', 'pipe'] });
 
 ffmpeg.stderr.on('data', d => {
   const line = d.toString();
-  // Only log frame/fps lines
   if (line.includes('frame=')) process.stdout.write('\r' + line.trim().slice(0, 80));
 });
 
@@ -98,30 +92,12 @@ ffmpeg.on('close', code => {
   console.log(`\nffmpeg exited (${code}). Output: ${OUT_FILE}`);
 });
 
-// Give ffmpeg 2s to start capturing
 await new Promise(r => setTimeout(r, 2000));
 console.log('\nRecording started. Running demo sequence...\n');
 
-// ─── Import and run the demo sequence ────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
-// Re-export the helpers for use here — we just inline the demo sequence
-// by importing the demo module's exported run function.
-// Since record-demo.mjs is not a module with exports, we run it as a subprocess
-// BUT we need the same page object. So we inline the full sequence here.
-
-// Pull in all helpers from record-demo.mjs approach — inline the same logic:
 const COUNT_MS = 1200;
-
-const ARTISTS = [
-  { name: 'Slowdive',                    slug: 'slowdive' },
-  { name: 'The Cure',                    slug: 'the-cure' },
-  { name: 'Nick Cave & the Bad Seeds',   slug: 'nick-cave-the-bad-seeds' },
-  { name: 'Godspeed You! Black Emperor', slug: 'godspeed-you-black-emperor' },
-  { name: 'My Bloody Valentine',         slug: 'my-bloody-valentine' },
-  { name: 'Grouper',                     slug: 'grouper' },
-];
-const GENRES = ['jazz', 'shoegaze', 'krautrock', 'ambient', 'death metal', 'hyperpop', 'noise rock', 'dream pop'];
-
 const wait = ms => new Promise(r => setTimeout(r, ms));
 
 async function safe(fn, timeout = 5000) {
@@ -215,6 +191,52 @@ async function typeInSearch(text) {
   }
 }
 
+// ─── Artist roster — all verified ✓ GOOD ─────────────────────────────────────
+
+const ARTISTS = [
+  { name: 'Slowdive',                    slug: 'slowdive' },
+  { name: 'My Bloody Valentine',         slug: 'my-bloody-valentine' },
+  { name: 'Cocteau Twins',               slug: 'cocteau-twins' },
+  { name: 'Joy Division',                slug: 'joy-division' },
+  { name: 'Bauhaus',                     slug: 'bauhaus-0688add2' },
+  { name: 'Siouxsie and the Banshees',   slug: 'siouxsie-and-the-banshees' },
+  { name: 'Aphex Twin',                  slug: 'aphex-twin' },
+  { name: 'Boards of Canada',            slug: 'boards-of-canada-69158f97' },
+  { name: 'Massive Attack',              slug: 'massive-attack' },
+  { name: 'Portishead',                  slug: 'portishead' },
+  { name: 'Mogwai',                      slug: 'mogwai-d700b3f5' },
+  { name: 'Explosions in the Sky',       slug: 'explosions-in-the-sky' },
+  { name: 'Sigur Rós',                   slug: 'sigur-ros' },
+  { name: 'Godspeed You! Black Emperor', slug: 'godspeed-you-black-emperor' },
+  { name: 'Nick Cave & the Bad Seeds',   slug: 'nick-cave-the-bad-seeds' },
+  { name: 'Swans',                       slug: 'swans-3285dc48' },
+  { name: 'Radiohead',                   slug: 'radiohead' },
+  { name: 'Pixies',                      slug: 'pixies' },
+  { name: 'PJ Harvey',                   slug: 'pj-harvey' },
+  { name: 'Talk Talk',                   slug: 'talk-talk' },
+  { name: 'Ride',                        slug: 'ride-3f575ecd' },
+  { name: 'Mazzy Star',                  slug: 'mazzy-star' },
+  { name: 'Beach House',                 slug: 'beach-house' },
+  { name: 'The Cure',                    slug: 'the-cure' },
+  { name: 'The Birthday Party',          slug: 'the-birthday-party' },
+  { name: 'Gang of Four',                slug: 'gang-of-four' },
+  { name: 'The Fall',                    slug: 'the-fall-d5da1841' },
+  { name: 'Brian Eno',                   slug: 'brian-eno' },
+  { name: 'Burial',                      slug: 'burial-9ddce51c' },
+  { name: 'Kraftwerk',                   slug: 'kraftwerk' },
+  { name: 'Nick Drake',                  slug: 'nick-drake' },
+  { name: 'Tom Waits',                   slug: 'tom-waits' },
+  { name: 'Dead Can Dance',              slug: 'dead-can-dance' },
+  { name: 'Kate Bush',                   slug: 'kate-bush' },
+  { name: 'Björk',                       slug: 'bjork-87c5dedd' },
+  { name: 'Grouper',                     slug: 'grouper' },
+  { name: 'Sparklehorse',                slug: 'sparklehorse' },
+  { name: 'Red House Painters',          slug: 'red-house-painters' },
+  { name: 'Galaxie 500',                 slug: 'galaxie-500' },
+];
+
+const GENRES = ['jazz', 'shoegaze', 'krautrock', 'ambient', 'death metal', 'hyperpop', 'noise rock', 'dream pop'];
+
 // ── Search sequences ──────────────────────────────────────────────────────────
 console.log('\n════ SEARCH SEQUENCES ════');
 await nav('/search', 1500);
@@ -239,12 +261,11 @@ for (let i = 0; i < GENRES.length; i++) {
   }
   await wait(300);
 
-  // Natural language pass — once mid-sequence (after 5th genre)
   if (i === 4) {
     console.log('\n  ── Natural language pass ──');
     await typeInSearch('artists from Berlin');
     await circles(640, 380, 50, 1);
-    await count(5); // show city confirmation chip + match badges
+    await count(5);
     await scroll(550, 22);
     await count(8);
     await scroll(-200, 10);
@@ -252,22 +273,53 @@ for (let i = 0; i < GENRES.length; i++) {
 
     await typeInSearch('artists on Warp Records');
     await circles(640, 380, 50, 1);
-    await count(5); // show label match badges
+    await count(5);
     await wait(400);
   }
 }
 
-// ── Artist pages ──────────────────────────────────────────────────────────────
+// ── Artist pages + start playback ─────────────────────────────────────────────
 console.log('\n════ ARTIST PAGES ════');
-for (let i = 0; i < ARTISTS.length; i++) {
+
+let playbackStarted = false;
+
+// Visit first 20 artists from roster
+for (let i = 0; i < 20; i++) {
   const artist = ARTISTS[i];
-  console.log(`  artist [${i + 1}/6]: ${artist.name}`);
+  console.log(`  artist [${i + 1}/20]: ${artist.name}`);
   await goToArtist(artist);
   await circles(640, 400, 50, 1);
   await count(3);
   await scroll(800, 30);
   await wait(300);
 
+  // Start playback on first artist — keep it running the whole recording
+  if (!playbackStarted) {
+    console.log('  → starting playback (will keep running throughout)');
+    const played = await click('[data-testid="play-all-btn"]');
+    if (played) {
+      playbackStarted = true;
+      await wait(2500);
+      // Show player bar / cassette wheels for a count
+      await page.mouse.move(640, 760, { steps: 10 });
+      await count(5, 640, 760);
+    } else {
+      // Try clicking first release then play
+      if (await click('a[href*="/release/"]')) {
+        await wait(2000);
+        if (await click('[data-testid="play-album-btn"]')) {
+          playbackStarted = true;
+          await wait(2000);
+          await page.mouse.move(640, 760, { steps: 10 });
+          await count(5, 640, 760);
+          await page.goBack().catch(() => {});
+          await wait(2000);
+        }
+      }
+    }
+  }
+
+  // Click into a release
   const clickedRelease = await click('a[href*="/release/"]');
   if (clickedRelease) {
     await wait(2000);
@@ -277,100 +329,75 @@ for (let i = 0; i < ARTISTS.length; i++) {
     await wait(2000);
   }
 
+  // Stats tab — skip About tab entirely
   const statsOk = await click('[data-testid="tab-stats"]');
   if (!statsOk) await clickText('Stats');
   await count(3);
 
-  const aboutOk = await click('[data-testid="tab-about"]');
-  if (!aboutOk) await clickText('About');
-  await count(3);
-
+  // Back to Overview (not About)
   const overviewOk = await click('[data-testid="tab-overview"]');
   if (!overviewOk) await clickText('Overview');
   await count(2);
-}
 
-// ── Playback ──────────────────────────────────────────────────────────────────
-console.log('\n════ PLAYBACK ════');
-const playbackArtists = [ARTISTS[0], ARTISTS[2], ARTISTS[3]];
-for (let i = 0; i < playbackArtists.length; i++) {
-  const artist = playbackArtists[i];
-  console.log(`  playback artist [${i + 1}/3]: ${artist.name}`);
-  await goToArtist(artist);
-
-  const playedAll = await click('[data-testid="play-all-btn"]');
-  if (!playedAll) {
-    if (await click('a[href*="/release/"]')) {
-      await wait(2000);
-      await click('[data-testid="play-album-btn"]');
-      await page.goBack().catch(() => {});
-      await wait(2000);
-    }
+  // Every 4 artists, hover the player bar to show cassette wheels
+  if ((i + 1) % 4 === 0 && playbackStarted) {
+    console.log('  → showing player bar / cassette wheels');
+    await page.mouse.move(640, 760, { steps: 10 });
+    await count(3, 640, 760);
   }
-  await wait(2000);
-  await page.mouse.move(640, 760, { steps: 10 });
-  await count(5, 640, 760);
-
-  await click('[data-testid="queue-btn"]');
-  await wait(600);
-  await nav('/search', 1500);
-  await page.mouse.move(640, 760, { steps: 10 });
-  await count(5, 640, 760);
 }
 
-// ── Queue ─────────────────────────────────────────────────────────────────────
-console.log('\n════ QUEUE ════');
-for (let i = 0; i < 3; i++) {
-  const artist = ARTISTS[(i + 1) % ARTISTS.length];
+// ── Queue (brief — no export, no drag-and-drop) ───────────────────────────────
+console.log('\n════ QUEUE (brief) ════');
+
+// Add tracks from a few more artists first
+const queueArtists = [ARTISTS[10], ARTISTS[11], ARTISTS[12]];
+for (const artist of queueArtists) {
   await goToArtist(artist);
   await click('[data-testid="queue-btn"]');
-  await wait(400);
-  await click('[data-testid="queue-btn"]');
-  await wait(400);
+  await wait(600);
 }
 
-await click('[data-testid="queue-toggle"]');
+// Open queue panel
+const queueOpened = await click('[data-testid="queue-toggle"]');
 await wait(1200);
-await scroll(400, 18);
-await count(8, 1000, 400);
-await scroll(-200, 10);
 
-try {
-  await page.dragAndDrop('.queue-item:nth-child(1)', '.queue-item:nth-child(2)', { timeout: 5000 });
-  await wait(600);
-} catch (e) { console.warn('  queue drag failed:', e.message.slice(0, 50)); }
-await count(3);
+if (queueOpened) {
+  // Hover player bar to show cassette wheels
+  await page.mouse.move(640, 760, { steps: 10 });
+  await count(3, 640, 760);
 
-try {
-  const firstItem = page.locator('.queue-item').first();
-  const box = await firstItem.boundingBox();
-  if (box) await page.mouse.move(box.x + 20, box.y + box.height / 2);
-} catch {}
-await click('.queue-remove');
-await count(3);
+  // Scroll through queue
+  await scroll(400, 18);
+  await count(8, 1000, 400);
+  await scroll(-200, 10);
 
-// Export dialog
-console.log('  export dialog...');
-const exportOpened = await click('[data-testid="queue-export-btn"]') || await clickText('Export');
-if (exportOpened) {
-  await wait(1500);
-  // M3U8 — count of 3
-  await click('[data-testid="export-m3u8"], input[value="m3u8"], label');
+  // Remove one track (no drag-and-drop)
+  try {
+    const firstItem = page.locator('.queue-item').first();
+    const box = await firstItem.boundingBox();
+    if (box) await page.mouse.move(box.x + 20, box.y + box.height / 2);
+  } catch {}
+  await click('.queue-remove');
   await count(3);
-  // Switch to Traktor NML — count of 3
-  await click('[data-testid="export-nml"], input[value="nml"]') || await clickText('Traktor');
-  await count(3);
-  // Toggle copy files — count of 3
-  await click('[data-testid="copy-files-toggle"], input[type="checkbox"]');
-  await count(3);
-  await click('[data-testid="copy-files-toggle"], input[type="checkbox"]');
-  // Close dialog
-  await click('[data-testid="export-close"], .modal-close, button[aria-label*="close" i]') || await page.keyboard.press('Escape');
+
+  // Tease the export button without clicking it
+  console.log('  → teasing export button...');
+  try {
+    const exportBtn = page.locator('[data-testid="queue-export-btn"]').first();
+    const box = await exportBtn.boundingBox({ timeout: 3000 });
+    if (box) {
+      await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 8 });
+      await wait(1200);
+      await page.mouse.move(640, 400, { steps: 8 }); // move away without clicking
+    }
+  } catch {}
+  await count(2);
+
+  // Close queue
+  await click('[data-testid="queue-toggle"]');
   await wait(800);
 }
-
-await click('[data-testid="queue-toggle"]');
-await wait(800);
 
 // ── Library ───────────────────────────────────────────────────────────────────
 console.log('\n════ LIBRARY ════');
@@ -384,6 +411,10 @@ await scroll(400, 18);
 await count(6, 1000, 400);
 await scroll(-200, 10);
 await count(3, 400, 400);
+
+// Hover player bar mid-library to show playback
+await page.mouse.move(640, 760, { steps: 10 });
+await count(3, 640, 760);
 
 // ── Discover ──────────────────────────────────────────────────────────────────
 console.log('\n════ DISCOVER ════');
@@ -431,6 +462,12 @@ for (let i = 0; i < 5; i++) {
     await page.locator('.filter-chip.active').first().click({ timeout: 3000 });
     await wait(1000);
   } catch {}
+
+  // Every 2 cycles, show player bar
+  if (i % 2 === 1) {
+    await page.mouse.move(640, 760, { steps: 10 });
+    await count(2, 640, 760);
+  }
 }
 
 // ── Crate Dig ─────────────────────────────────────────────────────────────────
@@ -445,21 +482,18 @@ const crateCodes   = ['JP', 'US', 'DE'];
 for (let cycle = 0; cycle < 3; cycle++) {
   console.log(`  crate dig cycle [${cycle + 1}/3]`);
 
-  // Genre filter
   try {
     await page.locator('.tag-chip').filter({ hasText: crateGenres[cycle] }).first().click({ timeout: 4000 });
   } catch { await click('.tag-chip'); }
   await wait(1500);
   await count(3);
 
-  // Decade filter
   try {
     await page.getByText(crateDecades[cycle], { exact: false }).first().click({ timeout: 4000 });
   } catch { await click('.decade-btn, .decade-chip'); }
   await wait(1500);
   await count(3);
 
-  // Country
   try {
     await page.locator('#country-input, [name="country"]').fill(crateCodes[cycle]);
     await page.keyboard.press('Enter');
@@ -467,12 +501,10 @@ for (let cycle = 0; cycle < 3; cycle++) {
   await wait(1500);
   await count(3);
 
-  // Scroll the random grid
   await circles(640, 400, 60, 1);
   await scroll(700, 28);
   await count(8);
 
-  // Click into an artist
   const crateArtist = await click('a[href*="/artist/"]');
   if (crateArtist) {
     await wait(2000);
@@ -481,7 +513,6 @@ for (let cycle = 0; cycle < 3; cycle++) {
     await wait(2000);
   }
 
-  // Change decade
   const nextDecade = crateDecades[(cycle + 1) % crateDecades.length];
   try {
     await page.getByText(nextDecade, { exact: false }).first().click({ timeout: 3000 });
@@ -490,7 +521,6 @@ for (let cycle = 0; cycle < 3; cycle++) {
   await count(5);
 
   if (cycle === 2) {
-    // Clear all filters — full random mode
     try {
       await page.locator('.filter-chip.active, .clear-filters').first().click({ timeout: 3000 });
     } catch {}
@@ -534,7 +564,7 @@ for (let i = 0; i < exploreQueries.length; i++) {
     await input.press('Enter');
   } catch { await typeInSearch(query); }
 
-  await wait(3500); // AI resolution
+  await wait(3500);
   await circles(640, 400, 50, 1);
   await count(6);
 
@@ -662,27 +692,42 @@ for (let i = 0; i < 4; i++) {
   await wait(500);
 }
 
-// ── Service priority ──────────────────────────────────────────────────────────
-console.log('\n════ SERVICE PRIORITY ════');
+// ── Settings (tease only — no drag-and-drop) ──────────────────────────────────
+console.log('\n════ SETTINGS (tease) ════');
 await nav('/settings', 2000);
 const streamingTab = await click('[data-testid*="streaming" i]') || await clickText('Streaming');
 await wait(1500);
 await circles(640, 400, 50, 1);
 await count(5);
 
+// Hover over drag handles without dragging
 try {
-  await page.locator('.service-row').first().waitFor({ state: 'visible', timeout: 5000 });
-  await wait(1000);
-  await page.dragAndDrop('.service-row:nth-child(1)', '.service-row:nth-child(2)', { timeout: 5000 });
-  await wait(600);
-} catch (e) { console.warn('  drag service failed:', e.message.slice(0, 50)); }
-await count(5);
+  const serviceRows = page.locator('.service-row');
+  await serviceRows.first().waitFor({ state: 'visible', timeout: 5000 });
+  const box = await serviceRows.first().boundingBox();
+  if (box) {
+    await page.mouse.move(box.x + 20, box.y + box.height / 2, { steps: 10 });
+    await wait(800);
+    await page.mouse.move(box.x + 20, box.y + box.height / 2 + 50, { steps: 10 });
+    await wait(800);
+  }
+} catch (e) { console.warn('  settings hover failed:', e.message.slice(0, 50)); }
+await count(3);
+
+// Final player bar showcase
+console.log('\n  → final player bar showcase (cassette wheels, effects)');
+await page.mouse.move(640, 760, { steps: 10 });
+for (let i = 0; i <= 30; i++) {
+  const x = 200 + (i / 30) * 1520;
+  await page.mouse.move(x, 760 + Math.sin(i * 0.4) * 3, { steps: 2 });
+  await wait(100);
+}
+await wait(2000);
 
 // ─── Done — stop recording ───────────────────────────────────────────────────
 
 console.log('\n✓ Demo sequence complete. Stopping recording...');
 
-// Exit fullscreen
 try {
   await page.evaluate(async () => {
     const win = window.__TAURI__?.window?.getCurrentWindow?.() ?? window.__TAURI__?.window?.appWindow;
@@ -690,11 +735,9 @@ try {
   });
 } catch {}
 
-// Send 'q' to ffmpeg stdin to gracefully stop
 ffmpeg.stdin.write('q');
 ffmpeg.stdin.end();
 
-// Give ffmpeg 5s to finalize
 await new Promise(r => setTimeout(r, 5000));
 
 console.log(`\nDone! Video saved to: ${OUT_FILE}`);
