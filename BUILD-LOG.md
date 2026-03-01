@@ -11101,3 +11101,6 @@ Issue #51 closed.
 
 > **Commit 672ff41** (2026-03-01 09:06) — fix(#67): playlist export — M3U8, Traktor NML, copy to folder
 > Files changed: 6
+
+> **Commit adb582c** (2026-03-01 09:06) — wip: auto-save
+> Files changed: 1
