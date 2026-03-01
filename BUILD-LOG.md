@@ -11221,3 +11221,9 @@ Issue #51 closed.
 
 > **Commit 26b4004** (2026-03-01 10:45) — wip: auto-save
 > Files changed: 1
+
+> **Commit 1de5643** (2026-03-01 10:46) — auto-save: 2 files @ 10:46
+> Files changed: 1
+
+> **Commit 22162b9** (2026-03-01 10:52) — docs: rewrite README + add curated screenshots
+> Files changed: 8
