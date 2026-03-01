@@ -3,7 +3,6 @@
 	import CoverPlaceholder from './CoverPlaceholder.svelte';
 	import { spotifyEmbedUrl } from '$lib/embeds/spotify';
 	import { youtubeEmbedUrl } from '$lib/embeds/youtube';
-	import { getWikiThumbnail } from '$lib/wiki-thumbnail';
 	import { registerCover } from '$lib/cover-pool.svelte';
 
 	let {
@@ -22,18 +21,6 @@
 
 	let coverError = $state(false);
 
-	// Fetch the artist's Wikipedia thumbnail eagerly — cached, so one network
-	// request per artist name regardless of how many cards are on the page.
-	// Ready by the time cover art fails (or immediately if coverArtUrl is null).
-	let artistThumb = $state<string | null>(null);
-
-	$effect(() => {
-		if (artistName) {
-			getWikiThumbnail(artistName).then(url => {
-				artistThumb = url;
-			});
-		}
-	});
 
 	/** First letter of release title for placeholder. */
 	let initial = $derived(release.title.charAt(0).toUpperCase());
@@ -103,7 +90,7 @@
 					onload={() => registerCover(release.coverArtUrl)}
 				/>
 			{:else}
-				<CoverPlaceholder name={release.title} sources={artistThumb ? [artistThumb] : []} />
+				<CoverPlaceholder name={release.title} />
 			{/if}
 		</div>
 	</a>

@@ -141,10 +141,14 @@
 		return '0.9rem';
 	})());
 
+	// Pool sources — updated via $effect so the template re-renders when pool fills
+	let poolSources = $state<string[]>([]);
+	$effect(() => {
+		poolSources = coverPool.urls.slice(0, 4);
+	});
+
 	// Provided sources take priority; fall back to page-level pool
-	let effectiveSources = $derived(
-		sources.length > 0 ? sources : coverPool.urls.slice(0, 4)
-	);
+	let effectiveSources = $derived(sources.length > 0 ? sources : poolSources);
 
 	// Hash-based crop position — each name shows a different fragment of the same image
 	// Creates the "parts of it" effect: Aphex Twin's album and his artist card crop differently

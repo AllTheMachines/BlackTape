@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import CoverPlaceholder from '$lib/components/CoverPlaceholder.svelte';
-	import { getWikiThumbnail } from '$lib/wiki-thumbnail';
 	import { registerCover } from '$lib/cover-pool.svelte';
 	import { PROJECT_NAME } from '$lib/config';
 	import BuyOnBar from '$lib/components/BuyOnBar.svelte';
@@ -33,17 +32,6 @@
 	let coverError = $state(false);
 	let tauriMode = $state(false);
 
-	// Fetch artist's Wikipedia thumbnail eagerly — ready before cover art loads/fails.
-	// Used as backdrop source when the release has no cover art.
-	let artistThumb = $state<string | null>(null);
-
-	$effect(() => {
-		if (release?.artistName) {
-			getWikiThumbnail(release.artistName).then(url => {
-				artistThumb = url;
-			});
-		}
-	});
 	let creditsExpanded = $state(false);
 	let albumActionState = $state<'idle' | 'loading' | 'not-found'>('idle');
 
@@ -181,7 +169,7 @@
 						onload={() => registerCover(release.coverArtUrl)}
 					/>
 				{:else}
-					<CoverPlaceholder name={release.title} sources={artistThumb ? [artistThumb] : []} />
+					<CoverPlaceholder name={release.title} />
 				{/if}
 			</div>
 
