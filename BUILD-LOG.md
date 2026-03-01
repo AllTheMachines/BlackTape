@@ -11401,3 +11401,6 @@ Replaced the blurred-backdrop-always approach with a four-case system that uses 
 
 > **Commit 7527a8f** (2026-03-01 14:51) — wip: auto-save
 > Files changed: 1
+
+> **Commit 39f8ce5** (2026-03-01 14:59) — feat: all 9 Retro FX live in player bar + BlackTape branding in design system
+> Files changed: 3
