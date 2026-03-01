@@ -178,4 +178,4 @@ The codebase is open. Read [ARCHITECTURE.md](ARCHITECTURE.md) to understand how 
 
 ## License
 
-Open source. License TBD.
+[PolyForm Noncommercial 1.0.0](LICENSE) — free to use, fork, and build on. Commercial use requires permission.
