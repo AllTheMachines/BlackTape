@@ -254,7 +254,7 @@ BlackTape can scan your local music folders, read metadata from your files, and 
 1. Click **Library** in the top navigation bar
 2. Click **Add Folder**
 3. Select a folder containing music files in the OS file picker
-4. Mercury scans the folder recursively, reading metadata from all supported audio files
+4. BlackTape scans the folder recursively, reading metadata from all supported audio files
 
 ### Supported Audio Formats
 
@@ -558,7 +558,7 @@ Your custom layout appears in the ControlBar dropdown under "My Layouts" and in 
 
 **Deleting a custom layout:**
 
-In **Settings > Layout > My Layouts**, click the **×** next to any custom layout. If that layout was active, Mercury falls back to Cockpit. Built-in templates cannot be deleted.
+In **Settings > Layout > My Layouts**, click the **×** next to any custom layout. If that layout was active, BlackTape falls back to Cockpit. Built-in templates cannot be deleted.
 
 ### Theme Modes
 
@@ -666,7 +666,7 @@ Scenes are displayed in random order within each section — popular scenes don'
 ### Scene Pages
 
 Each scene page shows:
-- The artists Mercury detected as part of the scene
+- The artists BlackTape detected as part of the scene
 - How many of your favorites are in this scene
 - The tags that define the scene
 - A one-sentence AI-generated description (Tauri desktop, when AI is enabled)
@@ -679,7 +679,7 @@ Click **Follow Scene** on any scene detail page to follow it. Following a scene:
 
 ### Suggesting an Artist
 
-If you know an artist who belongs in a scene but Mercury hasn't detected them, use the **Suggest an artist** box at the bottom of any scene page. Suggestions are queued and feed into the next detection run.
+If you know an artist who belongs in a scene but BlackTape hasn't detected them, use the **Suggest an artist** box at the bottom of any scene page. Suggestions are queued and feed into the next detection run.
 
 ### Requesting Creation Tools
 
@@ -703,7 +703,7 @@ Every artist page has an **Embed** button. Click it to get:
 
 Both snippets automatically adapt to your blog's dark or light mode.
 
-To get attribution credit when you embed an artist, enter your blog handle in the "Your handle" field before copying the script-tag snippet. When readers load your page, Mercury records you as a curator for that artist.
+To get attribution credit when you embed an artist, enter your blog handle in the "Your handle" field before copying the script-tag snippet. When readers load your page, BlackTape records you as a curator for that artist.
 
 **QR Code**: Click "QR Code" to generate a QR code for the embed URL — useful for print materials or event flyers.
 
@@ -737,7 +737,7 @@ Use New & Rising as your weekly "what should I write about next" list. Subscribe
 
 ### Curator Attribution
 
-When you embed an artist on your site (using the script-tag snippet with your handle), Mercury records you as a curator for that artist. Your handle then appears on the artist's Mercury page as "Discovered by @[yourhandle]".
+When you embed an artist on your site (using the script-tag snippet with your handle), BlackTape records you as a curator for that artist. Your handle then appears on the artist's BlackTape page as "Discovered by @[yourhandle]".
 
 All curators who have featured an artist are credited — not just the first. Embedding the same artist on multiple posts still only records once per curator.
 
@@ -813,7 +813,7 @@ BlackTape needs a discovery database file to search. On first launch:
 ### Library scan shows 0 tracks
 
 - Ensure the folder contains supported audio file formats
-- Mercury reads metadata from file tags — untagged files will show as "Unknown Title" / "Unknown Artist" but should still appear
+- BlackTape reads metadata from file tags — untagged files will show as "Unknown Title" / "Unknown Artist" but should still appear
 - Try removing and re-adding the folder
 
 ### Player bar disappears

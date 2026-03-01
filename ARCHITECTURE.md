@@ -157,7 +157,7 @@ Mercury/
 │       ├── time-machine/         # Year browser
 │       └── api/                  # Utility server routes
 │           ├── soundcloud-oembed/# SoundCloud oEmbed proxy (CORS workaround)
-│           ├── unfurl/           # Mercury URL unfurl for Nostr comms
+│           ├── unfurl/           # BlackTape URL unfurl for Nostr comms
 │           └── rss/collection/[id]/ # Collection RSS feed
 ├── src-tauri/                    # Tauri/Rust backend
 │   ├── Cargo.toml
@@ -395,7 +395,7 @@ Display labels are generated from URLs with friendly name mapping (e.g., `open.s
 
 ## Embed System
 
-Mercury embeds players from four platforms. No audio is ever hosted.
+BlackTape embeds players from four platforms. No audio is ever hosted.
 
 ### Platform Priority
 
@@ -887,7 +887,7 @@ Four import sources, all Tauri-only:
 - **Apple Music** — MusicKit JS (loaded on demand, same lazy pattern as Leaflet). User provides Developer Token (JWT). Returns saved library artists.
 - **CSV** — Client-side parse of any CSV with Artist column. Native string processing.
 
-Import results are matched to Mercury index via `match_artists_batch` Rust command (single IPC round-trip for N artist names). Matched artists are added to a new "Imported from [Platform]" collection.
+Import results are matched to BlackTape index via `match_artists_batch` Rust command (single IPC round-trip for N artist names). Matched artists are added to a new "Imported from [Platform]" collection.
 
 ### Data Export
 
@@ -907,11 +907,13 @@ Import results are matched to Mercury index via `match_artists_batch` Rust comma
 
 ## Communication Layer (Phase 10)
 
-Mercury's communication layer is built on the Nostr protocol — a decentralized, open messaging protocol with zero server cost. Users communicate through WebSocket relays operated by the open Nostr community. Mercury ships with a curated relay list; no Mercury-operated infrastructure is required.
+> **Note:** The real-time communication features described in this section (Nostr DMs, scene rooms, listening parties) were removed during Phase 31 cleanup. `ChatOverlay` is no longer imported in the layout. This section is retained for architectural reference — these features are planned for a future version.
+
+BlackTape's communication layer design is built on the Nostr protocol — a decentralized, open messaging protocol with zero server cost. Users communicate through WebSocket relays operated by the open Nostr community. BlackTape ships with a curated relay list; no BlackTape-operated infrastructure is required.
 
 ### Protocol: Nostr via NDK
 
-**Why Nostr:** The only protocol that satisfies all three communication layers (encrypted DMs, persistent scene rooms, ephemeral sessions) with zero server cost. Mercury rooms are scoped to the global Nostr network via the `['t', 'mercury']` tag convention.
+**Why Nostr:** The only protocol that satisfies all three communication layers (encrypted DMs, persistent scene rooms, ephemeral sessions) with zero server cost. BlackTape rooms are scoped to the global Nostr network via the `['t', 'blacktape']` tag convention.
 
 | Layer | Nostr NIP | Kind | Storage |
 |-------|-----------|------|---------|
@@ -931,14 +933,14 @@ src/lib/comms/
 ├── sessions.svelte.ts      # Ephemeral listening party sessions
 ├── moderation.ts           # AI safety filter, flag/kick/ban/slow mode
 ├── notifications.svelte.ts # Chat overlay state + unread badge counts
-└── unfurl.ts               # Mercury URL detection + unfurl fetch util
+└── unfurl.ts               # BlackTape URL detection + unfurl fetch util
 
 src/lib/components/chat/
 ├── ChatOverlay.svelte       # Root drawer (fixed-right, CSS transition, not dialog modal)
 ├── ChatPanel.svelte         # Unified DM + room message panel
 ├── MessageList.svelte       # Scrollable message history
 ├── MessageInput.svelte      # Composer with URL detection + slow mode
-├── UnfurlCard.svelte        # Inline Mercury link preview
+├── UnfurlCard.svelte        # Inline BlackTape link preview
 ├── RoomDirectory.svelte     # Scene room browse/search/join
 ├── RoomCreator.svelte       # Room creation form (AI gate check)
 ├── AiGatePrompt.svelte      # Friendly AI configuration prompt
@@ -946,12 +948,12 @@ src/lib/components/chat/
 └── ModerationQueue.svelte   # Room owner flag review panel
 
 src/routes/api/
-└── unfurl/+server.ts        # POST — OG metadata fetch for Mercury URL previews in comms
+└── unfurl/+server.ts        # POST — OG metadata fetch for BlackTape URL previews in comms
 ```
 
 ### Identity
 
-Each Mercury user generates a Nostr keypair (secp256k1) on first communication init. The keypair is stored as raw Uint8Array in IndexedDB (not localStorage — better isolation). The user's Mercury handle (from Phase 9 profile) becomes their Nostr display name. The keypair is permanent — it IS the user's communication identity.
+Each BlackTape user generates a Nostr keypair (secp256k1) on first communication init. The keypair is stored as raw Uint8Array in IndexedDB (not localStorage — better isolation). The user's BlackTape handle (from Phase 9 profile) becomes their Nostr display name. The keypair is permanent — it IS the user's communication identity.
 
 ### AI Gate for Room Creation
 
@@ -966,9 +968,9 @@ The AI moderation check uses the user's configured provider (same provider used 
 
 Listening party sessions use Nostr kinds 20001/20002 (ephemeral range — relays MUST NOT store). Architectural guarantee: `sessions.svelte.ts` contains ZERO Tauri `invoke()` calls. Session data lives only in Svelte `$state` for the overlay's lifetime. `endSession()` sets both `mySession` and `joinedSession` to `null` — complete wipe.
 
-### Mercury Room Scoping
+### BlackTape Room Scoping
 
-All Mercury scene rooms include `['t', 'mercury']` as a required tag at creation. Room discovery queries always filter `#t: ['mercury']` to avoid seeing rooms from other Nostr applications. Genre taxonomy tags are added alongside the mercury scope tag.
+All BlackTape scene rooms include `['t', 'blacktape']` as a required tag at creation. Room discovery queries always filter `#t: ['blacktape']` to avoid seeing rooms from other Nostr applications. Genre taxonomy tags are added alongside the scope tag.
 
 ### Anti-Patterns
 
@@ -979,12 +981,12 @@ All Mercury scene rooms include `['t', 'mercury']` as a required tag at creation
 | `dialog.showModal()` for chat | CSS fixed-right drawer | `showModal()` creates inert backdrop blocking page interaction |
 | Store session messages to taste.db | Leave in $state only | Ephemeral sessions must have zero persistence |
 | `polling` for new messages | NDK `ndk.subscribe()` | Nostr uses WebSocket — subscriptions deliver events in real time |
-| Omit `['t', 'mercury']` tag | Always include it on room create | Without it, Mercury rooms are indistinguishable from global Nostr rooms |
+| Omit `['t', 'blacktape']` tag | Always include it on room create | Without it, BlackTape rooms are indistinguishable from global Nostr rooms |
 | Show error on missing AI for room creation | `AiGatePrompt.svelte` | Users need to understand WHY and HOW to configure AI |
 
 ### Relay Strategy
 
-Mercury ships with a hardcoded relay list of 4–5 well-known public relays. NDK's outbox model selects the optimal relay per operation. No Mercury-operated relay is required. If relay spam becomes a problem, the `['t', 'mercury']` scoping convention provides a filter layer; a Mercury-specific relay can be added later without protocol changes.
+BlackTape ships with a hardcoded relay list of 4–5 well-known public relays. NDK's outbox model selects the optimal relay per operation. No BlackTape-operated relay is required. If relay spam becomes a problem, the `['t', 'blacktape']` scoping convention provides a filter layer; a BlackTape-specific relay can be added later without protocol changes.
 
 ---
 
@@ -1024,7 +1026,7 @@ Scenes are NEVER sorted by listener count. This prevents popular scenes from alw
 
 ### Interactions
 
-- **Follow a scene**: Writes to `scene_follows` (taste.db) + publishes NIP-51 kind 30001 list to Nostr relays with `d='mercury-scenes'`. Local state is authoritative; Nostr is optional social layer.
+- **Follow a scene**: Writes to `scene_follows` (taste.db) + publishes NIP-51 kind 30001 list to Nostr relays with `d='blacktape-scenes'`. Local state is authoritative; Nostr is optional social layer.
 - **Suggest an artist**: Queued in `scene_suggestions`. Appears on scene page as "community suggested." Feeds into next detection run as weighted input.
 - **Feature request vote**: Upvotes a deferred creation tool idea. Stored in `feature_requests` (Tauri) or localStorage (web).
 
@@ -1051,7 +1053,7 @@ Phase 12 adds surfaces for music bloggers and curators — embeddable widgets, R
 
 ### Embed Widgets
 
-Dedicated routes at `/embed/artist/[slug]` and `/embed/collection/[id]` serve minimal artist/collection cards with their own layout (`/embed/+layout.svelte` — replaces root layout via `+layout@.svelte`, no Mercury nav/player/chat). Dark/light mode auto-detected via `window.matchMedia('(prefers-color-scheme: dark)')` inside the iframe context.
+Dedicated routes at `/embed/artist/[slug]` and `/embed/collection/[id]` serve minimal artist/collection cards with their own layout (`/embed/+layout.svelte` — replaces root layout via `+layout@.svelte`, no BlackTape nav or player). Dark/light mode auto-detected via `window.matchMedia('(prefers-color-scheme: dark)')` inside the iframe context.
 
 Embed snippet generation: `src/lib/curator/embed-snippet.ts` — `generateEmbedSnippets(embedUrl, title, curatorHandle?)` returns both an `<iframe>` snippet and a `<script>` + `<div data-src>` snippet. The artist page (`/artist/[slug]`) shows a copy-paste embed UI with format toggle and QR code generation.
 
@@ -1086,7 +1088,7 @@ Curator filter: `/new-rising?curator=[handle]` shows a third tab with artists fe
 | Anti-Pattern | Why Wrong | Correct Approach |
 |-------------|-----------|-----------------|
 | Hand-rolled RSS XML | Artist names with `&`, `<`, `'` break feed parsers | Always use `feed` npm package |
-| Root layout in /embed/* routes | Mercury nav/player/chat break the iframe card | `/embed/+layout.svelte` via `+layout@.svelte` breaks out of root layout |
+| Root layout in /embed/* routes | BlackTape nav/player break the iframe card | `/embed/+layout.svelte` via `+layout@.svelte` breaks out of root layout |
 | `prefers-color-scheme` via postMessage | Unnecessary — iframe reads OS preference directly | `window.matchMedia` inside the embed page |
 | Blocking artist page on curator attribution | Attribution load failure breaks core page | try/catch with empty array fallback |
 | Using `MBID` from embed URL client-side | embed.js only knows the slug from the URL path | `/api/curator-feature` accepts `slug` as alternative to MBID for lookups |
@@ -1176,7 +1178,7 @@ The entire visual system is driven by CSS custom properties. Key groups:
 
 ## AI Subsystem
 
-The AI subsystem adds local intelligence to Mercury Desktop. It is entirely opt-in — disabled by default, with no impact on users who don't enable it.
+The AI subsystem adds local intelligence to BlackTape Desktop. It is entirely opt-in — disabled by default, with no impact on users who don't enable it.
 
 ### Architecture Overview
 
@@ -1414,4 +1416,4 @@ Tags tracked by source: `library`, `favorite`, `manual`. Recomputation clears co
 
 ---
 
-*Last updated: 2026-02-24 — After Phase 14 (full web/Cloudflare purge — Tauri-desktop-only codebase).*
+*Last updated: 2026-03-01 — Updated for BlackTape rename + Phase 31 additions (secrets.rs, updater.rs, SetupWizard, UpdateBanner).*
