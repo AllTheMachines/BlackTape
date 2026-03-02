@@ -2,23 +2,24 @@ import { chromium } from 'playwright';
 const browser = await chromium.connectOverCDP('http://127.0.0.1:9224');
 const page = browser.contexts()[0].pages()[0];
 
-// Test MB API from within WebView
-const result = await page.evaluate(async () => {
-  try {
-    const resp = await fetch('https://musicbrainz.org/ws/2/release-group?artist=a74b1b7f-71a5-4011-9441-d0b5e4122711&inc=url-rels&type=album|single|ep&fmt=json&limit=50', {
-      headers: { 'User-Agent': 'BlackTape/1.0', 'Accept': 'application/json' }
-    });
-    return `Status: ${resp.status}, OK: ${resp.ok}`;
-  } catch (e) {
-    return `Error: ${e.message}`;
-  }
-});
-console.log('MB API from WebView:', result);
+// What URL is the release build serving from?
+console.log('Current URL:', page.url());
 
-// Now try reload
-await page.goto('http://localhost:5173/artist/radiohead');
-await page.waitForTimeout(5000);
+// Navigate to Radiohead using the app's actual origin
+const origin = new URL(page.url()).origin;
+console.log('Origin:', origin);
+
+// Capture ALL console messages
+page.on('console', msg => console.log(`[${msg.type()}]`, msg.text()));
+page.on('pageerror', err => console.log('[PAGE ERROR]', err.message));
+
+await page.goto(origin + '/artist/radiohead', { waitUntil: 'networkidle' });
+await page.waitForTimeout(10000);
+
+console.log('Final URL:', page.url());
+const h1 = await page.evaluate(() => document.querySelector('h1')?.textContent?.trim());
+console.log('H1:', h1);
 const releases = await page.evaluate(() => document.querySelectorAll('.releases-grid > *').length);
-console.log('Releases after fresh load:', releases);
+console.log('Release cards:', releases);
 
 await browser.close();

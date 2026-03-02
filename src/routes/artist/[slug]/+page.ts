@@ -13,21 +13,26 @@ import type { PlatformLinks, CategorizedLinks, ReleaseGroup } from '$lib/embeds/
 const USER_AGENT = 'Mercury/0.1.0 (https://github.com/user/mercury)';
 const MB_TIMEOUT_MS = 8_000;
 
-/** fetch() with an AbortController timeout. Resolves to null on timeout/error. */
+/** fetch() with an AbortController timeout and one retry (handles cold-start network failures). */
 async function fetchSafe(url: string, fetchFn: typeof fetch, timeoutMs: number): Promise<Response | null> {
-	const controller = new AbortController();
-	const t = setTimeout(() => controller.abort(), timeoutMs);
-	try {
-		const resp = await fetchFn(url, {
-			headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' },
-			signal: controller.signal
-		});
-		return resp;
-	} catch {
-		return null;
-	} finally {
-		clearTimeout(t);
+	for (let attempt = 0; attempt < 2; attempt++) {
+		const controller = new AbortController();
+		const t = setTimeout(() => controller.abort(), timeoutMs);
+		try {
+			const resp = await fetchFn(url, {
+				headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' },
+				signal: controller.signal
+			});
+			if (resp.ok) return resp;
+			// Non-ok (503 etc.) — retry once
+		} catch {
+			// Network error or abort — retry once
+		} finally {
+			clearTimeout(t);
+		}
+		if (attempt === 0) await new Promise(r => setTimeout(r, 1000));
 	}
+	return null;
 }
 
 export const load: PageLoad = async ({ params, fetch }) => {
