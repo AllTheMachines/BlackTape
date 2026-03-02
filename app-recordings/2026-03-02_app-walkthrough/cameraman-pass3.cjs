@@ -10,8 +10,8 @@
  *   1x  crate-dig (random grid browsing)
  *   1x  player-bar-finale (slow sweep across retro FX)
  *
- * Window: Win32 SetWindowPos(HWND_TOPMOST, 0, 0, 1920, 1080)
- * Capture: FFmpeg gdigrab primary monitor only (-offset_x 0 -offset_y 0 -video_size 1920x1080)
+ * Window: Win32 SetWindowPos(0, 0, 1920, 1080) — no TOPMOST, Steve can use other apps
+ * Capture: FFmpeg gdigrab window capture (-i title=BlackTape) — records only the app window
  *
  * Usage: node cameraman-pass3.cjs [--dry]
  */
@@ -157,8 +157,7 @@ function startFFmpeg(sceneName) {
   console.log(`  🎬 ${path.basename(clipPath)}`);
   const proc = spawn('ffmpeg', [
     '-y', '-f', 'gdigrab', '-framerate', '30',
-    '-offset_x', '0', '-offset_y', '0', '-video_size', '1920x1080',
-    '-i', 'desktop',
+    '-i', 'title=BlackTape',
     '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '18', '-pix_fmt', 'yuv420p',
     clipPath
   ], { stdio: ['pipe', 'ignore', 'pipe'] });
@@ -196,14 +195,15 @@ async function scene(name, fn) {
 // ─── Window management ──────────────────────────────────────────────────────
 
 function applyFullscreen() {
-  console.log('Setting window 1920x1080 + HWND_TOPMOST...');
+  console.log('Setting window 1920x1080 (no TOPMOST — window capture mode)...');
   try {
     const out = execSync(`powershell -ExecutionPolicy Bypass -File "${FS_PS1}"`,
       { timeout: 15000, encoding: 'utf-8' });
     console.log(out.trim().split('\n').map(l => '  ' + l).join('\n'));
   } catch (e) {
     console.warn('PS1 failed, trying inline:', e.message);
-    execSync(`powershell -Command "Add-Type -TypeDefinition 'using System; using System.Runtime.InteropServices; public class W { [DllImport(\\\"user32.dll\\\")] public static extern bool ShowWindow(IntPtr h, int c); [DllImport(\\\"user32.dll\\\")] public static extern bool SetForegroundWindow(IntPtr h); [DllImport(\\\"user32.dll\\\")] public static extern bool SetWindowPos(IntPtr h, IntPtr a, int x, int y, int w, int ht, uint f); }'; $p = Get-Process -Name mercury -EA SilentlyContinue | Select -First 1; if($p){ [W]::ShowWindow($p.MainWindowHandle, 9); Start-Sleep -MS 500; [W]::SetForegroundWindow($p.MainWindowHandle); [W]::SetWindowPos($p.MainWindowHandle, [IntPtr]::new(-1), 0, 0, 1920, 1080, 0) }"`, { stdio: 'ignore' });
+    // SWP_NOZORDER (0x0004) — resize + reposition without changing z-order
+    execSync(`powershell -Command "Add-Type -TypeDefinition 'using System; using System.Runtime.InteropServices; public class W { [DllImport(\\\"user32.dll\\\")] public static extern bool ShowWindow(IntPtr h, int c); [DllImport(\\\"user32.dll\\\")] public static extern bool SetForegroundWindow(IntPtr h); [DllImport(\\\"user32.dll\\\")] public static extern bool SetWindowPos(IntPtr h, IntPtr a, int x, int y, int w, int ht, uint f); }'; $p = Get-Process -Name mercury -EA SilentlyContinue | Select -First 1; if($p){ [W]::ShowWindow($p.MainWindowHandle, 9); Start-Sleep -MS 500; [W]::SetForegroundWindow($p.MainWindowHandle); [W]::SetWindowPos($p.MainWindowHandle, [IntPtr]::Zero, 0, 0, 1920, 1080, 0x0004) }"`, { stdio: 'ignore' });
   }
 }
 
@@ -220,7 +220,7 @@ function killApp() {
 function verifyFrame(label = 'verify') {
   const p = path.join(TAKES_DIR, `${label}.png`);
   try {
-    execSync(`ffmpeg -f gdigrab -framerate 1 -offset_x 0 -offset_y 0 -video_size 1920x1080 -i desktop -frames:v 1 -update 1 -y "${p}"`,
+    execSync(`ffmpeg -f gdigrab -framerate 1 -i "title=BlackTape" -frames:v 1 -update 1 -y "${p}"`,
       { timeout: 10000, stdio: ['ignore', 'ignore', 'ignore'] });
     const sz = fs.statSync(p).size;
     console.log(`  Verify frame: ${sz} bytes → ${p}`);

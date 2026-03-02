@@ -23,8 +23,8 @@ if ($proc) {
     [WinAPI]::SetForegroundWindow($handle) | Out-Null
     Start-Sleep -Milliseconds 300
 
-    # Step 3: SetWindowPos HWND_TOPMOST, position 0,0, size 1920x1080
-    [WinAPI]::SetWindowPos($handle, [IntPtr]::new(-1), 0, 0, 1920, 1080, 0) | Out-Null
+    # Step 3: SetWindowPos — position 0,0, size 1920x1080, SWP_NOZORDER (no TOPMOST)
+    [WinAPI]::SetWindowPos($handle, [IntPtr]::Zero, 0, 0, 1920, 1080, 0x0004) | Out-Null
     Start-Sleep -Milliseconds 500
 
     # Step 4: SetForegroundWindow again (belt and suspenders)
