@@ -2,10 +2,10 @@ name = "mercury-api"
 main = "src/index.ts"
 compatibility_date = "2025-03-01"
 
-# Custom domain: api.blacktape.org (configure in Cloudflare dashboard)
-# routes = [{ pattern = "api.blacktape.org", custom_domain = true }]
+workers_dev = true
+routes = [{ pattern = "api.blacktape.org", custom_domain = true }]
 
 [[d1_databases]]
 binding = "DB"
 database_name = "mercury-db"
-database_id = "PLACEHOLDER"  # Run: wrangler d1 create mercury-db → paste ID here
+database_id = "633adc97-ad49-4e6a-a13f-90ff5c3aa427"

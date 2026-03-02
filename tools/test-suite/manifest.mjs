@@ -96,9 +96,9 @@ export const PHASE_2 = [
 export const PHASE_3 = [
   {
     id: 'P3-01', phase: 3, area: 'Tauri core',
-    desc: 'TauriProvider exists in db/providers',
+    desc: 'HttpProvider exists in db/providers',
     method: 'code',
-    fn: fileExists('src/lib/db/tauri-provider.ts'),
+    fn: fileExists('src/lib/db/http-provider.ts'),
   },
   {
     id: 'P3-02', phase: 3, area: 'Tauri core',
@@ -735,7 +735,7 @@ export const PHASE_14 = [
     fn: fileContains('tools/test-suite/run.mjs', "method: 'tauri'"),
   },
 
-  // Tauri smoke tests — require debug binary (src-tauri/target/debug/mercury.exe)
+  // Tauri smoke tests — require debug binary (src-tauri/target/debug/blacktape.exe)
   {
     id: 'P14-04', phase: 14, area: 'Launch',
     desc: 'Window title contains Mercury',
@@ -906,11 +906,9 @@ export const PHASE_15 = [
   },
   {
     id: 'P15-02', phase: 15, area: 'Rust Tests',
-    desc: 'mercury_db.rs has sanitize_fts unit test module (RUST-01)',
-    method: 'code',
-    fn: () =>
-      fileContains('src-tauri/src/mercury_db.rs', '#[cfg(test)]')() &&
-      fileContains('src-tauri/src/mercury_db.rs', 'sanitize_fts')(),
+    desc: 'mercury_db.rs removed — db moved to http-provider (RUST-01)',
+    method: 'skip',
+    reason: 'mercury_db.rs removed in v0.3.0 — replaced by http-provider',
   },
   {
     id: 'P15-03', phase: 15, area: 'Rust Tests',
@@ -2324,21 +2322,21 @@ export const PHASE_25 = [
   },
   {
     id: 'P25-17', phase: 25, area: 'Library',
-    desc: 'LibraryBrowser.svelte has album-list-pane testid (two-pane layout)',
+    desc: 'LibraryBrowser.svelte has album-card testid (card grid layout)',
     method: 'code',
-    fn: () => fileContains('src/lib/components/LibraryBrowser.svelte', 'album-list-pane')(),
+    fn: () => fileContains('src/lib/components/LibraryBrowser.svelte', 'album-card')(),
   },
   {
     id: 'P25-18', phase: 25, area: 'Library',
-    desc: 'LibraryBrowser.svelte has track-pane testid',
+    desc: 'LibraryBrowser.svelte has release-hero expanded view',
     method: 'code',
-    fn: () => fileContains('src/lib/components/LibraryBrowser.svelte', 'track-pane')(),
+    fn: () => fileContains('src/lib/components/LibraryBrowser.svelte', 'release-hero')(),
   },
   {
     id: 'P25-19', phase: 25, area: 'Library',
-    desc: 'LibraryBrowser.svelte has amber left-border on selected album',
+    desc: 'LibraryBrowser.svelte has expanded tracklist section',
     method: 'code',
-    fn: () => fileContains('src/lib/components/LibraryBrowser.svelte', 'border-left-color')(),
+    fn: () => fileContains('src/lib/components/LibraryBrowser.svelte', 'expanded-tracklist')(),
   },
   {
     id: 'P25-20', phase: 25, area: 'Library',
@@ -2348,9 +2346,9 @@ export const PHASE_25 = [
   },
   {
     id: 'P25-21', phase: 25, area: 'Library',
-    desc: 'LibraryBrowser.svelte has track-pane-column-headers element (LIBR-03: #/Title/Time/Actions)',
+    desc: 'LibraryBrowser.svelte has library-search-input testid (LIBR-03)',
     method: 'code',
-    fn: () => fileContains('src/lib/components/LibraryBrowser.svelte', 'track-pane-column-headers')(),
+    fn: () => fileContains('src/lib/components/LibraryBrowser.svelte', 'library-search-input')(),
   },
   {
     id: 'P52-01', phase: 52, area: 'Style Map',

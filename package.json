@@ -14,7 +14,7 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"build:desktop": "cross-env TAURI_ENV=1 VITE_TAURI=1 vite build",
 		"tauri": "tauri",
-		"tauri:dev": "cross-env VITE_TAURI=1 tauri dev",
+		"tauri:dev": "cross-env VITE_TAURI=1 tauri dev --config src-tauri/tauri.dev.conf.json",
 		"tauri:build": "tauri build",
 		"test:seed-db": "node tools/test-suite/fixtures/seed-test-db.mjs"
 	},
@@ -29,6 +29,7 @@
 		"cross-env": "^10.1.0",
 		"glob": "^13.0.6",
 		"playwright": "^1.58.2",
+		"sharp": "^0.34.5",
 		"svelte": "^5.49.2",
 		"svelte-check": "^4.3.6",
 		"typescript": "^5.9.3",

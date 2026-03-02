@@ -1,25 +1,27 @@
 <script lang="ts">
-	import { PROJECT_NAME, DATABASE_DOWNLOAD_URL } from '$lib/config';
+	import { PROJECT_NAME } from '$lib/config';
 	import { aiState, saveAiSetting } from '$lib/ai/state.svelte';
 	import { MODELS, downloadModel, checkModelExists } from '$lib/ai/model-manager';
 	import type { DownloadProgressEvent } from '$lib/ai/model-manager';
-	import { Channel } from '@tauri-apps/api/core';
+	import { pickMusicFolder, addMusicFolder, scanMusicFolder } from '$lib/library/scanner';
+	import type { ScanProgress } from '$lib/library/types';
+	import { spotifyState } from '$lib/spotify/state.svelte';
+	import SpotifySettings from './SpotifySettings.svelte';
 
 	let props: {
-		dbPath: string;
 		onComplete: () => void;
-		onRetry: () => void;
 	} = $props();
 
-	let step = $state(1); // 1=Welcome, 2=Database, 3=AI Models, 4=Done
-	let dbChecking = $state(false);
-	let dbReady = $state(false);
-	let dbDownloading = $state(false);
-	let dbDownloadPhase = $state('');
-	let dbDownloaded = $state(0);
-	let dbTotal = $state(0);
-	let dbDownloadError = $state('');
+	let step = $state(1); // 1=Welcome, 2=Library, 3=Spotify, 4=AI Models, 5=Done
 
+	// Library state
+	let libraryPath = $state('');
+	let isScanning = $state(false);
+	let scanProgress = $state<ScanProgress | null>(null);
+	let scanResult = $state<number | null>(null);
+	let scanError = $state('');
+
+	// AI model state
 	let generationExists = $state(false);
 	let embeddingExists = $state(false);
 	let isDownloading = $state(false);
@@ -27,51 +29,25 @@
 	let downloadProgress = $state<DownloadProgressEvent | null>(null);
 	let downloadError = $state('');
 
-	async function checkDb() {
-		dbChecking = true;
+	async function handlePickFolder() {
+		const path = await pickMusicFolder();
+		if (!path) return;
+		libraryPath = path;
+		isScanning = true;
+		scanError = '';
 		try {
-			await props.onRetry();
-			const { invoke } = await import('@tauri-apps/api/core');
-			const result: { exists: boolean } = await invoke('check_database');
-			dbReady = result.exists;
-		} finally {
-			dbChecking = false;
-		}
-	}
-
-	async function goToDatabase() {
-		step = 2;
-		await checkDb();
-	}
-
-	async function handleDownloadDb() {
-		dbDownloading = true;
-		dbDownloadError = '';
-		dbDownloadPhase = 'downloading';
-		dbDownloaded = 0;
-		dbTotal = 0;
-		try {
-			const { invoke } = await import('@tauri-apps/api/core');
-			const channel = new Channel<{ phase: string; downloaded: number; total: number }>();
-			channel.onmessage = (msg) => {
-				dbDownloadPhase = msg.phase;
-				dbDownloaded = msg.downloaded;
-				dbTotal = msg.total;
-			};
-			await invoke('download_database', {
-				url: DATABASE_DOWNLOAD_URL,
-				onProgress: channel
-			});
-			dbDownloading = false;
-			dbReady = true;
+			await addMusicFolder(path);
+			const count = await scanMusicFolder(path, (p) => { scanProgress = { ...p }; });
+			scanResult = count;
+			isScanning = false;
 		} catch (err) {
-			dbDownloadError = err instanceof Error ? err.message : String(err);
-			dbDownloading = false;
+			scanError = err instanceof Error ? err.message : String(err);
+			isScanning = false;
 		}
 	}
 
 	async function goToAiModels() {
-		step = 3;
+		step = 4;
 		const { invoke } = await import('@tauri-apps/api/core');
 		const settings = await invoke<Record<string, string>>('get_all_ai_settings');
 		generationExists = settings['local_gen_model_status'] === 'ready' || settings['local_gen_model_status'] === 'downloaded';
@@ -124,7 +100,7 @@
 <div class="wizard">
 	<!-- Step indicators -->
 	<div class="steps-nav">
-		{#each [1, 2, 3, 4] as s}
+		{#each [1, 2, 3, 4, 5] as s}
 			<div class="step-dot" class:active={step === s} class:done={step > s}></div>
 		{/each}
 	</div>
@@ -143,9 +119,13 @@
 			<p class="step-desc">Let's get a few things set up before you start discovering music.</p>
 
 			<div class="checklist">
-				<div class="check-item required">
-					<span class="check-icon">✗</span>
-					<span class="check-label">Database <span class="check-badge required-badge">Required</span></span>
+				<div class="check-item optional">
+					<span class="check-icon">○</span>
+					<span class="check-label">Music library <span class="check-badge optional-badge">Optional</span></span>
+				</div>
+				<div class="check-item optional">
+					<span class="check-icon">○</span>
+					<span class="check-label">Spotify <span class="check-badge optional-badge">Optional</span></span>
 				</div>
 				<div class="check-item optional">
 					<span class="check-icon">○</span>
@@ -153,71 +133,86 @@
 				</div>
 			</div>
 
-			<button class="primary-btn" onclick={goToDatabase}>Continue</button>
+			<button class="primary-btn" onclick={() => step = 2}>Continue</button>
 		</div>
 
-	<!-- Step 2: Database -->
+	<!-- Step 2: Music Library -->
 	{:else if step === 2}
 		<div class="step">
-			<div class="step-icon" class:ready={dbReady}>
+			<div class="step-icon">
 				<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-					<ellipse cx="12" cy="5" rx="9" ry="3" />
-					<path d="M21 12c0 1.66-4.03 3-9 3s-9-1.34-9-3" />
-					<path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5" />
+					<path d="M9 18V5l12-2v13" />
+					<circle cx="6" cy="18" r="3" />
+					<circle cx="18" cy="16" r="3" />
 				</svg>
 			</div>
+			<h1>Music library (optional)</h1>
+			<p class="step-desc">
+				Point {PROJECT_NAME} at your music folder to browse and play your local collection.
+			</p>
 
-			{#if dbReady}
-				<h1>Database found</h1>
-				<p class="step-desc">The music catalog is in place.</p>
-				<button class="primary-btn" onclick={goToAiModels}>Continue</button>
-			{:else}
-				<h1>Download the database</h1>
-				<p class="step-desc">
-					The search index is a local SQLite database that powers all discovery.
-					It's not bundled with the app because of its size.
-				</p>
-
-				{#if dbDownloading}
-					<div class="download-progress">
-						{#if dbDownloadPhase === 'downloading'}
-							<p class="downloading-label">Downloading database...</p>
-							<div class="progress-bar">
-								<div
-									class="progress-fill"
-									style="width: {dbTotal > 0 ? Math.round((dbDownloaded / dbTotal) * 100) : 0}%"
-								></div>
-							</div>
-							<p class="progress-text">
-								{formatBytes(dbDownloaded)}{dbTotal > 0 ? ` / ${formatBytes(dbTotal)}` : ''}
-							</p>
-						{:else}
-							<p class="downloading-label">Decompressing database...</p>
-							<div class="progress-bar">
-								<div class="progress-fill decompressing"></div>
-							</div>
-							{#if dbDownloaded > 0}
-								<p class="progress-text">{formatBytes(dbDownloaded)} written</p>
-							{/if}
-						{/if}
-					</div>
-				{:else if dbDownloadError}
-					<p class="error-text">{dbDownloadError}</p>
-				{/if}
-
-				<div class="step-actions">
-					<button class="primary-btn" onclick={handleDownloadDb} disabled={dbDownloading}>
-						{dbDownloadError ? 'Retry download' : 'Download database'}
-					</button>
-					<button class="secondary-btn" onclick={checkDb} disabled={dbChecking || dbDownloading}>
-						{dbChecking ? 'Checking...' : 'I have it already'}
-					</button>
-				</div>
+			{#if libraryPath}
+				<div class="folder-path">{libraryPath}</div>
 			{/if}
+
+			{#if isScanning && scanProgress}
+				<div class="download-progress">
+					<p class="downloading-label">Scanning files...</p>
+					<div class="progress-bar">
+						<div
+							class="progress-fill"
+							style="width: {scanProgress.total > 0 ? Math.round((scanProgress.scanned / scanProgress.total) * 100) : 0}%"
+						></div>
+					</div>
+					<p class="progress-text">
+						{scanProgress.scanned} / {scanProgress.total} files
+					</p>
+				</div>
+			{:else if scanResult !== null}
+				<p class="scan-summary">Found {scanResult} tracks</p>
+			{:else if scanError}
+				<p class="error-text">{scanError}</p>
+			{/if}
+
+			<div class="step-actions">
+				{#if scanResult === null}
+					<button class="primary-btn" onclick={handlePickFolder} disabled={isScanning}>
+						Choose folder
+					</button>
+				{/if}
+				<button class="secondary-btn" onclick={() => step = 3} disabled={isScanning}>
+					{scanResult !== null ? 'Continue' : 'Skip'}
+				</button>
+			</div>
 		</div>
 
-	<!-- Step 3: AI Models -->
+	<!-- Step 3: Connect Spotify -->
 	{:else if step === 3}
+		<div class="step">
+			<div class="step-icon">
+				<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+					<path d="M3 18v-6a9 9 0 0 1 18 0v6" />
+					<path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
+				</svg>
+			</div>
+			<h1>Connect Spotify (optional)</h1>
+			<p class="step-desc">
+				Link your Spotify account to play artist top tracks directly in Spotify Desktop.
+			</p>
+
+			<div class="spotify-embed">
+				<SpotifySettings />
+			</div>
+
+			<div class="step-actions">
+				<button class="secondary-btn" onclick={goToAiModels}>
+					{spotifyState.connected ? 'Continue' : 'Skip'}
+				</button>
+			</div>
+		</div>
+
+	<!-- Step 4: AI Models -->
+	{:else if step === 4}
 		<div class="step">
 			<div class="step-icon">
 				<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -269,14 +264,14 @@
 						Download models
 					</button>
 				{/if}
-				<button class="secondary-btn" onclick={finishSetup} disabled={isDownloading}>
+				<button class="secondary-btn" onclick={() => step = 5} disabled={isDownloading}>
 					{generationExists && embeddingExists ? 'Continue' : 'Skip for now'}
 				</button>
 			</div>
 		</div>
 
-	<!-- Step 4: Done -->
-	{:else if step === 4}
+	<!-- Step 5: Done -->
+	{:else if step === 5}
 		<div class="step">
 			<div class="step-icon ready">
 				<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -379,7 +374,6 @@
 		text-align: center;
 	}
 
-	.check-item.required .check-icon { color: var(--t-2); }
 	.check-item.optional .check-icon { color: var(--t-3); }
 
 	.check-badge {
@@ -392,72 +386,41 @@
 		margin-left: 4px;
 	}
 
-	.required-badge {
-		background: color-mix(in oklch, var(--acc) 15%, transparent);
-		color: var(--acc);
-		border: 1px solid color-mix(in oklch, var(--acc) 40%, transparent);
-	}
-
 	.optional-badge {
 		background: var(--bg-3);
 		color: var(--t-3);
 		border: 1px solid var(--b-1);
 	}
 
-	/* Database step */
-	.instructions {
-		text-align: left;
-		width: 100%;
-		margin-bottom: var(--space-lg);
-	}
-
-	.instructions ol {
-		margin: 0;
-		padding-left: var(--space-lg);
-		color: var(--t-1);
-		line-height: 2;
-		font-size: 0.9rem;
-	}
-
-	.instructions a {
-		color: var(--acc);
-	}
-
-	.instructions a:hover {
-		text-decoration: underline;
-	}
-
-	.instructions code {
-		font-family: var(--font-mono);
-		font-size: 0.85em;
-		color: var(--t-1);
-		background: var(--bg-3);
-		padding: 0.1em 0.4em;
-	}
-
-	.path-box {
-		width: 100%;
-		background: var(--bg-3);
-		border: 1px solid var(--b-1);
-		padding: var(--space-md);
-		margin-bottom: var(--space-xl);
-		text-align: left;
-	}
-
-	.path-label {
-		display: block;
-		font-size: 0.7rem;
-		text-transform: uppercase;
-		letter-spacing: 0.1em;
-		color: var(--t-3);
-		margin-bottom: var(--space-xs);
-	}
-
-	.path-value {
+	/* Folder path display */
+	.folder-path {
 		font-family: var(--font-mono);
 		font-size: 0.8rem;
-		color: var(--t-1);
-		word-break: break-all;
+		color: var(--t-2);
+		background: var(--bg-2);
+		border: 1px solid var(--b-1);
+		padding: var(--space-xs) var(--space-sm);
+		margin-bottom: var(--space-md);
+		width: 100%;
+		text-align: left;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	/* Scan summary */
+	.scan-summary {
+		color: var(--acc);
+		font-size: 0.9rem;
+		font-weight: 500;
+		margin: 0 0 var(--space-md);
+	}
+
+	/* Spotify embed */
+	.spotify-embed {
+		width: 100%;
+		margin-bottom: var(--space-lg);
+		text-align: left;
 	}
 
 	/* AI models step */
@@ -527,18 +490,6 @@
 		height: 100%;
 		background: var(--acc);
 		transition: width 0.3s ease;
-	}
-
-	.progress-fill.decompressing {
-		width: 100%;
-		background: linear-gradient(90deg, transparent 0%, var(--acc) 50%, transparent 100%);
-		background-size: 200% 100%;
-		animation: shimmer 1.5s ease-in-out infinite;
-	}
-
-	@keyframes shimmer {
-		0% { background-position: 200% 0; }
-		100% { background-position: -200% 0; }
 	}
 
 	.progress-text {

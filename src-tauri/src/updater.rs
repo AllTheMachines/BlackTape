@@ -1,5 +1,5 @@
 use serde::Serialize;
-use tauri::AppHandle;
+use tauri::{AppHandle, Emitter};
 use tauri_plugin_updater::UpdaterExt;
 
 #[derive(Serialize)]
@@ -7,6 +7,13 @@ pub struct UpdateInfo {
     pub available: bool,
     pub version: Option<String>,
     pub notes: Option<String>,
+    pub critical: bool,
+}
+
+#[derive(Clone, Serialize)]
+struct DownloadProgress {
+    downloaded: usize,
+    total: Option<u64>,
 }
 
 /// Check GitHub Releases for a newer version of the app.
@@ -18,21 +25,32 @@ pub async fn check_for_update(app: AppHandle) -> Result<UpdateInfo, String> {
         .map_err(|e| format!("Updater build error: {}", e))?;
 
     match updater.check().await {
-        Ok(Some(update)) => Ok(UpdateInfo {
-            available: true,
-            version: Some(update.version.clone()),
-            notes: update.body.clone(),
-        }),
+        Ok(Some(update)) => {
+            let raw_notes = update.body.clone().unwrap_or_default();
+            let (critical, clean_notes) = if raw_notes.starts_with("[CRITICAL]") {
+                (true, raw_notes.trim_start_matches("[CRITICAL]").trim_start().to_string())
+            } else {
+                (false, raw_notes)
+            };
+            Ok(UpdateInfo {
+                available: true,
+                version: Some(update.version.clone()),
+                notes: if clean_notes.is_empty() { None } else { Some(clean_notes) },
+                critical,
+            })
+        }
         Ok(None) => Ok(UpdateInfo {
             available: false,
             version: None,
             notes: None,
+            critical: false,
         }),
         Err(e) => Err(format!("Update check failed: {}", e)),
     }
 }
 
-/// Download and install the latest update, then restart the app.
+/// Download and install the latest update, then exit.
+/// The NSIS installer (launched by download_and_install) handles starting the new version.
 #[tauri::command]
 pub async fn install_update(app: AppHandle) -> Result<(), String> {
     let updater = app
@@ -46,12 +64,26 @@ pub async fn install_update(app: AppHandle) -> Result<(), String> {
         .map_err(|e| format!("Update check failed: {}", e))?
         .ok_or_else(|| "No update available".to_string())?;
 
+    let handle = app.clone();
     update
-        .download_and_install(|_, _| {}, || {})
+        .download_and_install(
+            move |downloaded, total| {
+                let _ = handle.emit("update-progress", DownloadProgress { downloaded, total });
+            },
+            || {},
+        )
         .await
         .map_err(|e| format!("Install failed: {}", e))?;
 
-    app.restart();
+    // Tell frontend to show "Restarting..." then exit on a background thread
+    // so the event loop can deliver the event before we die
+    let _ = app.emit("update-restarting", ());
+    std::thread::spawn(|| {
+        std::thread::sleep(std::time::Duration::from_millis(2500));
+        std::process::exit(0);
+    });
+
+    Ok(())
 }
 
 /// Return the current app version string (e.g. "0.1.0").

@@ -30,7 +30,7 @@ export function isBandcampUrl(url: string): boolean {
  *
  * SPIKE RESULT (2026-02-27): PASSES in Tauri WebView2 on Windows.
  * Confirmed: url= parameter renders Bandcamp compact player in WebView2.
- * Method: Launched mercury.exe debug binary with CDP, injected iframe with url= param,
+ * Method: Launched blacktape.exe debug binary with CDP, injected iframe with url= param,
  * observed onload event firing within 12 seconds (tools/bandcamp-spike.mjs).
  * Implementation: EmbedPlayer renders iframe using this URL for BC-01 and BC-02.
  * Format confirmed by Bluesky social app PR #9445 (2024).

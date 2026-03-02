@@ -5,7 +5,7 @@
  * Functions will only be called in Tauri context (guarded by isTauri checks in callers).
  */
 
-import type { LocalTrack, MusicFolder, ScanProgress } from './types';
+import type { LocalTrack, MusicFolder, ScanProgress, EnrichProgress, AlbumCover } from './types';
 
 /** Dynamically import Tauri invoke to avoid web build failures */
 async function getInvoke() {
@@ -69,6 +69,19 @@ export async function refreshCovers(): Promise<number> {
 }
 
 /**
+ * Enrich library albums by looking up cover art from MusicBrainz + Cover Art Archive.
+ * Skips albums already cached. Returns the number of albums that got cover art.
+ */
+export async function enrichLibrary(
+	onProgress: (p: EnrichProgress) => void
+): Promise<number> {
+	const { invoke, Channel } = await import('@tauri-apps/api/core');
+	const channel = new Channel<EnrichProgress>();
+	channel.onmessage = onProgress;
+	return await invoke<number>('enrich_library', { onProgress: channel });
+}
+
+/**
  * Search library tracks by title/artist/album — SQL-filtered, no cover art.
  * Use this instead of getLibraryTracks() + client filter to avoid IPC blob overload.
  */
@@ -78,7 +91,7 @@ export async function searchLocalTracks(query: string): Promise<LocalTrack[]> {
 }
 
 /** One cover per album — use with getLibraryTracks() to avoid per-track blob loading. */
-export async function getAlbumCovers(): Promise<Array<{ album: string; album_artist: string | null; cover_art_base64: string | null }>> {
+export async function getAlbumCovers(): Promise<AlbumCover[]> {
 	const invoke = await getInvoke();
 	return await invoke('get_album_covers');
 }

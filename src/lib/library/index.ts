@@ -5,12 +5,13 @@
  *   import { libraryState, loadLibrary, scanFolder } from '$lib/library';
  */
 
-export type { LocalTrack, MusicFolder, ScanProgress, LibraryAlbum } from './types';
+export type { LocalTrack, MusicFolder, ScanProgress, EnrichProgress, LibraryAlbum } from './types';
 
 export {
 	libraryState,
 	loadLibrary,
 	scanFolder,
+	runEnrichment,
 	groupByAlbum,
 	getSortedTracks
 } from './store.svelte';

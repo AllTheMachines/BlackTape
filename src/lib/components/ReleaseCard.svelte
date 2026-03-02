@@ -55,8 +55,10 @@
 			return; // default <a> behavior
 		}
 
-		// SoundCloud and YouTube expand inline
+		// SoundCloud and YouTube expand inline — stop propagation so the
+		// global shell.open() handler in +layout.svelte doesn't also open the URL.
 		e.preventDefault();
+		e.stopPropagation();
 
 		if (platform === 'youtube') {
 			const embed = youtubeEmbedUrl(url);

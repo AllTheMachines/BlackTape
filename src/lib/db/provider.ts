@@ -3,11 +3,13 @@
  * query functions and the underlying database engine.
  *
  * Two implementations exist:
- * - D1Provider  — wraps Cloudflare D1 for the web build
- * - TauriProvider — wraps @tauri-apps/plugin-sql for the desktop build
+ * - HttpProvider  — POSTs queries to the Mercury API (Cloudflare Worker + D1)
+ * - TauriProvider — wraps rusqlite for the desktop build (legacy, unused)
  *
- * Query functions in queries.ts accept DbProvider, never D1Database directly.
+ * Query functions in queries.ts accept DbProvider, never a database directly.
  */
+
+import { API_BASE_URL } from '$lib/config';
 
 // ---------------------------------------------------------------------------
 // Interface
@@ -22,30 +24,14 @@ export interface DbProvider {
 }
 
 // ---------------------------------------------------------------------------
-// Factory (used by Tauri desktop builds; web builds create D1Provider directly)
+// Factory
 // ---------------------------------------------------------------------------
 
 /**
- * Detect the runtime platform and return the appropriate DbProvider.
- *
- * - In a Tauri context this returns a TauriProvider backed by local SQLite.
- * - In a web/server context this throws — D1Provider must be created explicitly
- *   from `platform.env.DB` inside SvelteKit server routes.
+ * Return the HttpProvider backed by the Mercury API.
+ * Works identically in Tauri desktop and future web builds.
  */
 export async function getProvider(): Promise<DbProvider> {
-	try {
-		// Dynamic import so this never breaks the web build
-		const { isTauri } = await import('@tauri-apps/api/core');
-		if (isTauri()) {
-			const { TauriProvider } = await import('./tauri-provider');
-			return TauriProvider.getInstance();
-		}
-	} catch {
-		// @tauri-apps/api not installed — we're in the web build
-	}
-
-	throw new Error(
-		'getProvider() cannot be used in the web build. ' +
-			'Create a D1Provider from platform.env.DB in your server route instead.'
-	);
+	const { HttpProvider } = await import('./http-provider');
+	return new HttpProvider(API_BASE_URL);
 }

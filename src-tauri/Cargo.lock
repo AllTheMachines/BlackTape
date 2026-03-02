@@ -152,6 +152,34 @@ dependencies = [
 ]
 
 [[package]]
+name = "blacktape"
+version = "0.3.0"
+dependencies = [
+ "base64 0.22.1",
+ "futures-util",
+ "keyring",
+ "lofty",
+ "rand 0.8.5",
+ "reqwest 0.12.28",
+ "rsa",
+ "rusqlite",
+ "serde",
+ "serde_json",
+ "sqlite-vec",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-dialog",
+ "tauri-plugin-oauth",
+ "tauri-plugin-process",
+ "tauri-plugin-shell",
+ "tauri-plugin-sql",
+ "tauri-plugin-updater",
+ "tokio",
+ "walkdir",
+ "zerocopy",
+]
+
+[[package]]
 name = "block-buffer"
 version = "0.10.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2145,34 +2173,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "488016bfae457b036d996092f6cb448677611ce4449e970ceaf42695203f218a"
 dependencies = [
  "autocfg",
-]
-
-[[package]]
-name = "mercury"
-version = "0.1.0"
-dependencies = [
- "base64 0.22.1",
- "flate2",
- "futures-util",
- "keyring",
- "lofty",
- "rand 0.8.5",
- "reqwest 0.12.28",
- "rsa",
- "rusqlite",
- "serde",
- "serde_json",
- "sqlite-vec",
- "tauri",
- "tauri-build",
- "tauri-plugin-dialog",
- "tauri-plugin-oauth",
- "tauri-plugin-process",
- "tauri-plugin-shell",
- "tauri-plugin-sql",
- "tauri-plugin-updater",
- "walkdir",
- "zerocopy",
 ]
 
 [[package]]

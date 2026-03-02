@@ -2,7 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/nicehash/tauri/dev/crates/tauri-config-schema/schema.json",
   "productName": "BlackTape",
   "identifier": "com.blacktape.app",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "build": {
     "beforeDevCommand": "npx cross-env VITE_TAURI=1 npm run dev",
     "beforeBuildCommand": "npx cross-env TAURI_ENV=1 VITE_TAURI=1 npm run build",
@@ -33,6 +33,7 @@
   },
   "bundle": {
     "active": true,
+    "createUpdaterArtifacts": true,
     "targets": ["nsis"],
     "icon": [
       "icons/32x32.png",
@@ -52,9 +53,9 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDQwQjAxMjlFRDQ2MEVGNkEKUldScTcyRFVuaEt3UUNxMHllbmJyZU9PbThjUWR1Qk1KaGJGd3hJbGlISGczdTFkTE5kR1N1VXAK",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IENBOTI3MkZEQjZENThFMzYKUldRMmp0VzIvWEtTeXJUc05mMzNGTnlFcTFqMEpGZCtZQXRBSWp1Q0tzVFFJMk9hUG02MWdiTUsK",
       "endpoints": [
-        "https://github.com/AllTheMachines/Mercury/releases/latest/download/latest.json"
+        "https://github.com/AllTheMachines/BlackTape/releases/latest/download/latest.json"
       ]
     }
   }

@@ -1,5 +1,5 @@
 /**
- * BlackTape v1.7 Screenshot + QA Pass
+ * Mercury v1.7 Screenshot + QA Pass
  *
  * Uses Tauri binary + CDP (page.goto, not window.location.href). All v1.6 issues addressed:
  *   - Search: mode=tag (searchByTag) for genre grid, NOT mode=artist (name FTS)
@@ -25,7 +25,7 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 const OUT = path.join(ROOT, 'press-screenshots', 'v5');
-const BINARY = path.join(ROOT, 'src-tauri', 'target', 'debug', 'mercury.exe');
+const BINARY = path.join(ROOT, 'src-tauri', 'target', 'debug', 'blacktape.exe');
 const CDP_PORT = 9224;
 const CDP_BASE = `http://127.0.0.1:${CDP_PORT}`;
 // Debug binary loads from dev server. Release binary uses tauri.localhost.
@@ -292,10 +292,10 @@ let page = null;
 const getPage = () => page;
 
 async function launchTauri() {
-  // Kill any existing mercury.exe
+  // Kill any existing blacktape.exe
   try {
-    execSync('taskkill /f /im mercury.exe', { stdio: 'ignore' });
-    console.log('Killed existing mercury.exe');
+    execSync('taskkill /f /im blacktape.exe', { stdio: 'ignore' });
+    console.log('Killed existing blacktape.exe');
     await new Promise(r => setTimeout(r, 1500));
   } catch {}
 
@@ -704,7 +704,7 @@ async function run() {
   await reconnectCDP(); // Fresh start — page.evaluate() can hang after many navigations
   // Clear existing queue from localStorage
   await page.evaluate(() => {
-    try { localStorage.removeItem('blacktape_queue'); } catch {}
+    try { localStorage.removeItem('mercury_queue'); } catch {}
   }).catch(() => {});
   await new Promise(r => setTimeout(r, 300));
 

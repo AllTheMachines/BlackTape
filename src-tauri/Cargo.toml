@@ -1,10 +1,10 @@
 [package]
-name = "mercury"
-version = "0.1.0"
+name = "blacktape"
+version = "0.3.0"
 edition = "2021"
 
 [lib]
-name = "mercury_lib"
+name = "blacktape_lib"
 crate-type = ["lib", "cdylib", "staticlib"]
 
 [features]
@@ -25,7 +25,7 @@ lofty = "0.23"
 walkdir = "2"
 rusqlite = { version = "0.31", features = ["bundled"] }
 tauri-plugin-shell = "2"
-reqwest = { version = "0.12", features = ["stream"] }
+reqwest = { version = "0.12", features = ["stream", "json"] }
 futures-util = "0.3"
 sqlite-vec = "0.1"
 zerocopy = { version = "0.8", features = ["derive"] }
@@ -34,4 +34,4 @@ rsa = { version = "0.9", features = ["pem"] }
 rand = "0.8"
 tauri-plugin-oauth = "2"
 keyring = "3"
-flate2 = "1"
+tokio = { version = "1", features = ["time"] }

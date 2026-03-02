@@ -38,5 +38,5 @@ if ($proc) {
     Write-Host "After:  Left=$($rect.Left) Top=$($rect.Top) Right=$($rect.Right) Bottom=$($rect.Bottom)"
     Write-Host "Size: $($rect.Right - $rect.Left) x $($rect.Bottom - $rect.Top)"
 } else {
-    Write-Host "mercury.exe not found"
+    Write-Host "blacktape.exe not found"
 }

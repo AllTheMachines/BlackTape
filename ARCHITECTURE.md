@@ -47,7 +47,7 @@ The core principle is **"the internet is the database"**: BlackTape stores only 
 │  │  Player bar   │  │  IPC bridge  │  │               │          │
 │  └──────┬───────┘  └──────┬───────┘  └───────────────┘          │
 │         │                  │                                      │
-│    mercury.db          library.db          taste.db               │
+│    D1 API (remote)     library.db          taste.db               │
 │    (2.8M artists)      (user's files)      (AI + taste profile)  │
 │                                                                   │
 │         ┌──────────────────────────────┐                         │
@@ -77,8 +77,8 @@ Mercury/
 │   │   ├── bio.ts                # Wikipedia bio fetcher
 │   │   ├── styles/theme.css      # CSS custom properties (dark theme)
 │   │   ├── db/                   # Database abstraction layer
-│   │   │   ├── provider.ts       # DbProvider interface + TauriProvider factory
-│   │   │   ├── tauri-provider.ts # Tauri SQLite implementation (tauri-plugin-sql)
+│   │   │   ├── provider.ts       # DbProvider interface + HttpProvider factory
+│   │   │   ├── http-provider.ts  # HttpProvider — POSTs queries to Mercury API (D1)
 │   │   │   └── queries.ts        # All SQL queries (FTS5 search, tag search, lookup)
 │   │   ├── embeds/               # Platform embed logic
 │   │   │   ├── types.ts          # Platform types, link structures
@@ -121,7 +121,8 @@ Mercury/
 │   │       ├── EmbedPlayer.svelte
 │   │       ├── ExternalLink.svelte
 │   │       ├── SetupWizard.svelte   # 4-step first-run wizard
-│   │       ├── UpdateBanner.svelte  # Update notification bar (between titlebar and content)
+│   │       ├── UpdateBanner.svelte         # Dismissible update banner (normal updates)
+│   │       ├── CriticalUpdateModal.svelte # Blocking modal for critical updates (no dismiss)
 │   │       ├── Player.svelte
 │   │       ├── Queue.svelte
 │   │       ├── LibraryBrowser.svelte
@@ -191,9 +192,9 @@ Mercury/
 
 ## Data Model
 
-### Discovery Index (mercury.db)
+### Discovery Index (Cloudflare D1 — api.blacktape.org)
 
-Contains 2.8 million artists sourced from MusicBrainz data dumps. This is the search index — it does NOT store releases, links, or audio.
+Contains 2.8 million artists sourced from MusicBrainz data dumps. This is the search index — it does NOT store releases, links, or audio. Hosted on Cloudflare D1, accessed via the Mercury API Worker.
 
 **artists** — One row per MusicBrainz artist.
 
@@ -293,9 +294,9 @@ Separate database managed by Rust (rusqlite). Stores metadata from the user's lo
 | path | TEXT UNIQUE | Absolute folder path |
 | added_at | TEXT | When the folder was added |
 
-### Why Two Databases?
+### Why This Architecture?
 
-- **mercury.db** is managed by `tauri-plugin-sql` (via sqlx) — used for the 2.8M-artist discovery index.
+- **Discovery index (D1)** is hosted on Cloudflare — accessed via HttpProvider through the Mercury API. No local download needed.
 - **library.db** is managed by `rusqlite` — used for local track metadata written by the Rust scanner.
 
 They use different SQLite bindings because both link against `libsqlite3-sys`. Using the same version (0.28) of that C library avoids linker conflicts. The two databases serve fundamentally different purposes and never interact at the SQL level.
@@ -318,14 +319,14 @@ export interface DbProvider {
 
 ### Implementation
 
-**TauriProvider** (`tauri-provider.ts`) — Wraps `@tauri-apps/plugin-sql`. Lazy singleton — database connection opens on first query. Opens `mercury.db` from the app data directory (`%APPDATA%/BlackTape/` on Windows, identifier `com.blacktape.app`).
+**HttpProvider** (`http-provider.ts`) — POSTs SQL queries to the Mercury API (Cloudflare Worker + D1) at `api.blacktape.org`. Stateless — no local database file needed.
 
 ### Factory
 
 ```typescript
 export async function getProvider(): Promise<DbProvider> {
-    // Returns TauriProvider singleton. Uses dynamic import to defer
-    // loading @tauri-apps/api until the first DB query.
+    // Returns HttpProvider backed by the Mercury API.
+    // Works identically in Tauri desktop and future web builds.
 }
 ```
 
@@ -351,7 +352,7 @@ FTS5 search uses the porter stemmer and unicode61 tokenizer. Exact name matches 
 ```
 User types query
     → SearchBar.svelte calls goto('/search?q=...')
-    → +page.ts queries local mercury.db via TauriProvider
+    → +page.ts queries D1 via HttpProvider
     → Also queries library.db for local track matches
     → +page.svelte renders "Your Library" section + ArtistCard grid
 ```
@@ -369,7 +370,7 @@ Artist pages combine local index data with live API calls:
 
 ```
 /artist/[slug]
-    ├── Local: Artist name, tags, country, type (from mercury.db)
+    ├── API: Artist name, tags, country, type (from D1 via HttpProvider)
     ├── Live: Releases + cover art (MusicBrainz API + Cover Art Archive)
     ├── Live: External links (MusicBrainz API, categorized)
     └── Live: Bio snippet (Wikipedia REST API)
@@ -515,7 +516,7 @@ In Tauri mode, the search page queries both data sources:
 
 ```
 Search query
-    ├── mercury.db → ArtistResult[] (discovery index)
+    ├── D1 API → ArtistResult[] (discovery index)
     └── library.db → LocalTrack[] (local files, client-side filter)
 
 Search results page:
@@ -559,7 +560,7 @@ Tag state lives entirely in the URL. This makes discover pages shareable and boo
 
 ```
 URL ?tags param
-    └── +page.ts → getProvider() → TauriProvider
+    └── +page.ts → getProvider() → HttpProvider
             → getPopularTags(100) + getArtistsByTagIntersection | getDiscoveryRankedArtists
 ```
 
@@ -612,7 +613,7 @@ layoutNodes = settled;
 
 ```
 /style-map
-    └── +page.ts → TauriProvider → getStyleMapData(50)
+    └── +page.ts → HttpProvider → getStyleMapData(50)
 ```
 
 ### Crate Digging Mode (`/crate`)
@@ -666,7 +667,7 @@ Source attribution is shown as a small badge or tooltip — no hard tabs between
 | `LinerNotes.svelte` | Expandable release credits panel on release pages. Collapsed by default — zero network cost on page load. On expand, lazy-fetches MusicBrainz release-group browse endpoint. Shows artist credits, label info, catalog numbers, and per-track recording credits. |
 | `GenreGraphEvolution.svelte` | Time-animated genre graph on the Time Machine page. Uses `from_id`/`to_id` fields (not D3's mutated `.source`/`.target`) for O(1) edge filtering via `Set<number>`. |
 
-### DB Tables (mercury.db)
+### DB Tables (D1 discovery index)
 
 **genres** — Genre and scene metadata.
 
@@ -1067,15 +1068,15 @@ RssButton component: `src/lib/components/RssButton.svelte` — renders the stand
 
 ### Curator Attribution
 
-mercury.db table: `curator_features (id, artist_mbid, curator_handle, featured_at, source)` with `UNIQUE(artist_mbid, curator_handle)` to deduplicate.
+D1 table: `curator_features (id, artist_mbid, curator_handle, featured_at, source)` with `UNIQUE(artist_mbid, curator_handle)` to deduplicate.
 
 Attribution trigger: when a blogger includes `data-curator="[handle]"` in the script-tag embed snippet, `embed.js` fires a GET to `/api/curator-feature?artist=[mbid]&curator=[handle]`. Input validation: handle must match `/^[\w\-\.]{1,50}$/`, MBID must match UUID format. Returns 200 regardless of outcome (fire-and-forget).
 
-Display: artist page `+page.ts` queries curator_features from local mercury.db (wrapped in try/catch — table may not exist on older DB versions). Renders as "Discovered by @handle" list linking to `/new-rising?curator=[handle]`.
+Display: artist page `+page.ts` queries curator_features from D1 via HttpProvider (wrapped in try/catch — table may not exist on older DB versions). Renders as "Discovered by @handle" list linking to `/new-rising?curator=[handle]`.
 
 ### New & Rising Page
 
-`/new-rising` — queries local mercury.db directly from `+page.ts`.
+`/new-rising` — queries D1 via HttpProvider from `+page.ts`.
 
 Two views:
 - **Newly Active**: `WHERE begin_year >= (currentYear - 1) AND ended = 0` — proxy for "recently active" (no `added_at` column in artists table). Ordered by begin_year DESC.
@@ -1138,7 +1139,25 @@ The updater (`src-tauri/src/updater.rs`) exposes three commands:
 
 The update endpoint is `https://github.com/AllTheMachines/Mercury/releases/latest/download/latest.json`. Releases must publish a `latest.json` manifest signed with the minisign private key.
 
-The frontend checks for updates 3 seconds after startup (non-blocking). If an update is available, `UpdateBanner.svelte` appears between the titlebar and main content with "Install Now" / "Later" options.
+The frontend checks for updates 3 seconds after startup (non-blocking). If an update is available, one of two UI paths activates:
+
+**Normal updates:** `UpdateBanner.svelte` appears between the titlebar and main content with "Install Now" / "Later" options. Dismissible — the user can continue using the app.
+
+**Critical updates:** `CriticalUpdateModal.svelte` renders a full-screen blocking overlay (`z-index: 2000`, `role="alertdialog"`). No dismiss, no escape, no "Later" button — the user must install. Used for security patches or data-breaking changes.
+
+#### Critical Update Protocol
+
+The `[CRITICAL]` prefix in the `notes` field of `latest.json` controls which path fires:
+
+```json
+{
+  "version": "1.9.0",
+  "notes": "[CRITICAL] Security fix: patched vulnerability in database loader.",
+  "platforms": { "windows-x86_64": { "signature": "...", "url": "..." } }
+}
+```
+
+Rust parses the prefix in `check_for_update`, strips it from the notes, and returns `critical: bool` alongside the cleaned text. The frontend reads `updateState.critical` to choose between the banner and the modal. Normal updates omit the prefix — everything works as before.
 
 ---
 
@@ -1230,7 +1249,7 @@ On startup, `migrate_plaintext_secrets()` runs once to move any legacy plaintext
 
 ### taste.db Schema
 
-A third database alongside mercury.db and library.db. Managed by rusqlite (same as library.db). Stores non-sensitive AI settings, taste profile data, and vector embeddings.
+A local database alongside library.db. Managed by rusqlite (same as library.db). Stores non-sensitive AI settings, taste profile data, and vector embeddings.
 
 **ai_settings** — Key-value store for non-sensitive AI configuration and user preferences. Sensitive values (API keys, OAuth tokens) are in the OS credential store, not here.
 
@@ -1288,13 +1307,13 @@ Phase 8 added these keys:
 | mbid | TEXT PK | MusicBrainz artist ID |
 | rowid | INTEGER | References artist_embeddings.rowid |
 
-### Why Three Databases?
+### Why This Database Split?
 
-- **mercury.db** — Discovery index (2.8M artists). Managed by `tauri-plugin-sql` (sqlx).
-- **library.db** — Local audio file metadata. Managed by `rusqlite`.
-- **taste.db** — AI settings, taste profile, embeddings. Managed by `rusqlite`.
+- **D1 (remote)** — Discovery index (2.8M artists). Hosted on Cloudflare D1, accessed via Mercury API Worker.
+- **library.db (local)** — Local audio file metadata. Managed by `rusqlite`.
+- **taste.db (local)** — AI settings, taste profile, embeddings. Managed by `rusqlite`.
 
-taste.db is separate because it's exclusively AI-related data that has no reason to mix with the scanner's track metadata in library.db or the shared discovery index in mercury.db.
+The discovery index is remote because it's shared public data (CC0). library.db and taste.db are local because they contain user-specific data that belongs on-device.
 
 ### Provider Pattern
 
@@ -1418,12 +1437,12 @@ Tags tracked by source: `library`, `favorite`, `manual`. Recomputation clears co
   ┌──────────────────────┐  ┌─────────────────────┐  ┌──────────┐
   │    db/ module         │  │  library/ module     │  │ ai/ Rust │
   │  provider → queries   │  │  scanner → store     │  │ sidecar  │
-  │  TauriProvider        │  │  types → matching    │  │ taste_db │
+  │  HttpProvider         │  │  types → matching    │  │ taste_db │
   └──────────┬───────────┘  └──────────┬──────────┘  │ embed    │
              │                         │              │ download │
              ▼                         ▼              └────┬─────┘
-        mercury.db               library.db                │
-     (tauri-plugin-sql)         (rusqlite/Rust)            ▼
+     D1 API (remote)            library.db                 │
+     (api.blacktape.org)       (rusqlite/Rust)             ▼
              │                         │              taste.db
              ▼                         ▼           (rusqlite/Rust)
       ┌─────────────┐          ┌──────────────┐         │

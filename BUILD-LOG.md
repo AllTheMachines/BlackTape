@@ -4,6 +4,90 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-03-02 — Auto-Updater Verified End-to-End
+
+The updater finally works. The full flow was tested: dev build (v0.1.0) detects v0.2.0 on GitHub → downloads 9.3MB installer → verifies signature → runs NSIS installer → app restarts with new version.
+
+**The bug:** Tauri expects the `signature` field in `latest.json` to be `base64(entire .sig file text)` — a single base64 blob encoding the full minisign signature text. We were putting raw minisign text (with spaces, newlines, tabs) directly in the JSON, which caused "Invalid symbol 32, offset 9" (space character failing base64 decode).
+
+**The fix:** `base64 -w0 installer.exe.sig` → that base64 string goes in `latest.json`.
+
+**Debugging odyssey:** Added a `debug_update_sig` Rust command to decode both the pubkey and signature inside the running app, verified key IDs match byte-for-byte (`[36, 8e, d5, b6, fd, 72, 92, ca]`). The earlier "different key" error was a red herring from testing with a same-version build (v0.2.0 app checking for v0.2.0 update).
+
+**Also fixed:** `DownloadProgress.downloaded` was `u64` but Tauri's callback now provides `usize`. Changed to match.
+
+---
+
+## Entry 2026-03-02 — Separate Dev and Release Builds
+
+Two independent BlackTape installations — one for development/debugging, one for daily use (listening to music naturally). Without this, both would share the same `AppData` directory, so settings, library, and AI models would collide.
+
+**How it works:** Tauri's `--config` flag merges a partial config on top of `tauri.conf.json`:
+- **Dev** → `npm run tauri:dev` → `com.blacktape.dev` identifier, "BlackTape DEV" title, dev icons
+- **Release** → `npm run tauri:build` → `com.blacktape.app` identifier, "BlackTape" title, normal icons
+
+Each identifier gets its own `AppData\Roaming\{identifier}\` directory — completely separate databases, settings, and models. Both can run simultaneously.
+
+**What was added:**
+- `src-tauri/tauri.dev.conf.json` — minimal override config (productName, identifier, window title, dev icon paths)
+- `src-tauri/icons-dev/` — auto-generated icons with a red "DEV" corner banner so you can tell them apart in the taskbar
+- `tools/gen-dev-icons.mjs` — reads base icons, composites the red DEV banner via sharp, outputs to icons-dev/. Run once, commit output, re-run when base icon changes.
+- `package.json` updated: `tauri:dev` now passes `--config src-tauri/tauri.dev.conf.json`, added `sharp` as devDependency
+
+---
+
+## Entry 2026-03-02 — Expand Setup Wizard to 5 steps
+
+The wizard was 3 steps (Welcome → AI Models → Done) — it didn't guide users through library setup or Spotify. New users would finish setup and have no music folder connected, no playback source linked.
+
+**New flow:** Welcome → Music Library → Connect Spotify → AI Models → Done (5 steps, all skippable).
+
+- **Step 2 (Music Library):** Pick a folder via native OS dialog, scans with progress bar (reuses existing `scanMusicFolder` + `ScanProgress` channel), shows "Found X tracks" on completion. Fully skippable.
+- **Step 3 (Spotify):** Embeds the `SpotifySettings` component directly — it's self-contained with its own OAuth flow. Button text swaps from "Skip" to "Continue" when `spotifyState.connected` goes true.
+- **Steps 4–5:** AI Models and Done, unchanged, just renumbered.
+
+Welcome screen checklist now shows all three optional items: Music library, Spotify, AI models.
+
+No new components created — reused existing `SpotifySettings`, `pickMusicFolder`, `addMusicFolder`, `scanMusicFolder` from the library scanner module. 0 TypeScript errors.
+
+---
+
+## Entry 2026-03-02 — Migrate mercury.db from local SQLite to Cloudflare D1 API
+
+Every new user had to download an 812 MB database before they could search anything. That's a terrible first impression and blocks a future web version entirely.
+
+**The fix:** Replace the local SQLite database with a hosted Cloudflare D1 API at `api.blacktape.org`. The search index now lives in the cloud — search works immediately, no download step.
+
+**Architecture change:**
+```
+Before:  Frontend → queries.ts → TauriProvider → invoke('query_mercury_db') → Rust → local SQLite
+After:   Frontend → queries.ts → HttpProvider  → fetch('api.blacktape.org')  → Worker → D1
+```
+
+The `DbProvider` abstraction (2 methods: `all()`, `get()`) made this a clean swap. `queries.ts` — all 50+ query functions — stayed completely untouched.
+
+**What was built:**
+- `workers/mercury-api/` — Cloudflare Workers project with D1 binding. Three endpoints: `GET /health`, `POST /query` (generic SQL passthrough, read-only), `POST /match-batch` (artist name matching). SQL safety enforced server-side (only SELECT/WITH allowed).
+- `src/lib/db/http-provider.ts` — new `HttpProvider` implementing `DbProvider` via fetch. Drop-in replacement for the old `TauriProvider`.
+- `workers/mercury-api/scripts/import-db.mjs` — import pipeline that exports tables from local mercury.db, chunks them for D1's limits, and imports via wrangler. Handles FTS5 recreation separately (virtual tables can't be exported directly).
+
+**What was removed:**
+- `download_database` Rust command + all decompression logic (flate2 dependency gone)
+- `check_database` Rust command
+- `match_artists_batch` Rust command (replaced by API endpoint)
+- `mercury_db.rs` module entirely (query_mercury_db, search_artists, search_by_tag, get_artist_by_slug, get_popular_tags — all superseded by HttpProvider)
+- `TauriProvider` (tauri-provider.ts deleted)
+- `DATABASE_DOWNLOAD_URL` from config
+- Setup Wizard Step 2 (database download) — wizard is now 3 steps: Welcome → AI Models → Done
+
+**What was kept:** taste.db (local AI/taste profile), library.db (local music scanner), all AI sidecar commands. These are user-specific data that belongs on-device.
+
+34 Rust tests still pass. Frontend compiles with 0 errors.
+
+**Next steps:** Create the D1 database (`wrangler d1 create mercury-db`), run the import script, deploy the worker, configure `api.blacktape.org` custom domain.
+
+---
+
 ## Entry 2026-03-02 — Auto-download database in Setup Wizard
 
 The manual "download, decompress, place at path" flow for first-time setup was unacceptable. Steve was clear: click a button, see progress, done.
@@ -11804,3 +11888,24 @@ Built a comprehensive extended test suite that connects to the running app via P
 
 > **Commit eccd48b** (2026-03-02 13:37) — wip: auto-save
 > Files changed: 1
+
+> **Commit 101d0e2** (2026-03-02 13:46) — auto-save: 2 files @ 13:46
+> Files changed: 4
+
+### 2026-03-02 — Binary Rename Complete
+
+Completed the `mercury.exe` → `blacktape.exe` rename across the entire project:
+
+1. **Cargo.toml** already had `name = "blacktape"` from prior session
+2. Ran `tauri build` — produced `src-tauri/target/release/blacktape.exe` (23.7 MB)
+3. Debug binary also exists at `src-tauri/target/debug/blacktape.exe`
+4. Bulk-renamed all 27 references across 10 tool scripts:
+   - `tools/launch-cdp.mjs` (7 refs)
+   - `tools/bandcamp-spike.mjs`, `debug-kb-genre.mjs` (1 each)
+   - `tools/take-press-screenshots*.mjs` (6 total across 3 files)
+   - `tools/take-screenshots-v1.6.mjs` (6), `v1.7.mjs` (4)
+   - `tools/test-suite/manifest.mjs`, `runners/tauri.mjs` (1 each)
+5. Also updated recording scripts in `app-recordings/` and the `bandcamp.ts` source comment
+6. Smoke test: `launch-cdp.mjs` successfully launches `blacktape.exe` with CDP on port 9224
+
+Zero `mercury.exe` references remain in tools, src, or app-recordings. Historical entries in BUILD-LOG.md and .planning/ left as-is (they're documentation of what happened).

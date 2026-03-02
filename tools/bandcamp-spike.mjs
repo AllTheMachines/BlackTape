@@ -47,7 +47,7 @@ function pollCdp(timeoutMs) {
 }
 
 async function runSpike() {
-  const binaryPath = path.join(ROOT_DIR, 'src-tauri', 'target', 'debug', 'mercury.exe');
+  const binaryPath = path.join(ROOT_DIR, 'src-tauri', 'target', 'debug', 'blacktape.exe');
   if (!fs.existsSync(binaryPath)) {
     throw new Error(`Binary not found: ${binaryPath}`);
   }

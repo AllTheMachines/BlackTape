@@ -28,6 +28,7 @@ pub struct LocalTrack {
     pub file_modified: i64,
     pub created_at: String,
     pub cover_art_base64: Option<String>,
+    pub mb_tags: Option<String>,
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -77,8 +78,21 @@ pub fn init_library_db(app_data_dir: &Path) -> Result<Connection, String> {
     .map_err(|e| format!("Failed to create library tables: {}", e))?;
 
     // Migration: add cover_art_base64 column if it doesn't exist yet.
-    // Silently ignored if column already exists.
     let _ = conn.execute_batch("ALTER TABLE local_tracks ADD COLUMN cover_art_base64 TEXT;");
+    // Migration: add mb_tags column for MusicBrainz genre tags.
+    let _ = conn.execute_batch("ALTER TABLE local_tracks ADD COLUMN mb_tags TEXT;");
+
+    // MusicBrainz lookup cache — avoids re-querying MB for the same album on every scan.
+    conn.execute_batch(
+        "CREATE TABLE IF NOT EXISTS mb_album_cache (
+            album TEXT NOT NULL,
+            artist TEXT NOT NULL,
+            mbid TEXT,
+            looked_up_at TEXT NOT NULL DEFAULT (datetime('now')),
+            PRIMARY KEY (album, artist)
+        );",
+    )
+    .map_err(|e| format!("Failed to create mb_album_cache: {}", e))?;
 
     Ok(conn)
 }
@@ -112,7 +126,7 @@ pub fn get_all_tracks(conn: &Connection) -> Result<Vec<LocalTrack>, String> {
     let mut stmt = conn
         .prepare(
             "SELECT id, path, title, artist, album, album_artist, track_number, disc_number,
-                    genre, year, duration_secs, file_modified, created_at
+                    genre, year, duration_secs, file_modified, created_at, mb_tags
              FROM local_tracks
              ORDER BY album_artist, album, disc_number, track_number",
         )
@@ -135,6 +149,7 @@ pub fn get_all_tracks(conn: &Connection) -> Result<Vec<LocalTrack>, String> {
                 file_modified: row.get(11)?,
                 created_at: row.get(12)?,
                 cover_art_base64: None,
+                mb_tags: row.get(13)?,
             })
         })
         .map_err(|e| format!("Failed to query tracks: {}", e))?
@@ -196,7 +211,7 @@ pub fn search_tracks(conn: &Connection, query: &str) -> Result<Vec<LocalTrack>, 
     let mut stmt = conn
         .prepare(
             "SELECT id, path, title, artist, album, album_artist, track_number, disc_number,
-                    genre, year, duration_secs, file_modified, created_at
+                    genre, year, duration_secs, file_modified, created_at, mb_tags
              FROM local_tracks
              WHERE LOWER(title) LIKE ?1 OR LOWER(artist) LIKE ?1 OR LOWER(album) LIKE ?1
              LIMIT 50",
@@ -220,6 +235,7 @@ pub fn search_tracks(conn: &Connection, query: &str) -> Result<Vec<LocalTrack>, 
                 file_modified: row.get(11)?,
                 created_at: row.get(12)?,
                 cover_art_base64: None, // not needed for search results
+                mb_tags: row.get(13)?,
             })
         })
         .map_err(|e| e.to_string())?
@@ -274,6 +290,61 @@ pub fn get_cover_for_album(conn: &Connection, album: &str, artist: &str) -> Resu
         .optional()
         .map_err(|e| e.to_string())?;
     Ok(result)
+}
+
+/// Get all unique (album, artist) pairs that have no cover art and no MB cache entry yet.
+/// These are the candidates for MusicBrainz enrichment.
+pub fn get_albums_needing_enrichment(conn: &Connection) -> Result<Vec<(String, String)>, String> {
+    let mut stmt = conn
+        .prepare(
+            "SELECT DISTINCT lt.album, COALESCE(lt.album_artist, lt.artist)
+             FROM local_tracks lt
+             WHERE lt.album IS NOT NULL
+               AND lt.cover_art_base64 IS NULL
+               AND NOT EXISTS (
+                   SELECT 1 FROM mb_album_cache mc
+                   WHERE mc.album = lt.album
+                     AND mc.artist = COALESCE(lt.album_artist, lt.artist)
+               )
+             ORDER BY lt.album",
+        )
+        .map_err(|e| e.to_string())?;
+
+    let result = stmt
+        .query_map([], |row| {
+            Ok((
+                row.get::<_, String>(0)?,
+                row.get::<_, String>(1)?,
+            ))
+        })
+        .map_err(|e| e.to_string())?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|e| e.to_string())?;
+
+    Ok(result)
+}
+
+/// Insert a MusicBrainz lookup result into the cache.
+/// mbid is None if no match was found.
+pub fn insert_mb_cache(conn: &Connection, album: &str, artist: &str, mbid: Option<&str>) -> Result<(), String> {
+    conn.execute(
+        "INSERT OR REPLACE INTO mb_album_cache (album, artist, mbid) VALUES (?1, ?2, ?3)",
+        params![album, artist, mbid],
+    )
+    .map_err(|e| format!("Failed to insert mb_album_cache: {}", e))?;
+    Ok(())
+}
+
+/// Set MusicBrainz genre tags for all tracks in an album.
+pub fn set_album_mb_tags(conn: &Connection, album: &str, artist: &str, tags: &str) -> Result<u32, String> {
+    let n = conn
+        .execute(
+            "UPDATE local_tracks SET mb_tags = ?1
+             WHERE album = ?2 AND (album_artist = ?3 OR (album_artist IS NULL AND artist = ?3))",
+            params![tags, album, artist],
+        )
+        .map_err(|e| format!("Failed to set mb_tags: {}", e))?;
+    Ok(n as u32)
 }
 
 pub fn remove_music_folder(conn: &Connection, path: &str) -> Result<(), String> {

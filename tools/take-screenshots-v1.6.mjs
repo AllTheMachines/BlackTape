@@ -1,5 +1,5 @@
 /**
- * BlackTape v1.6 Screenshot + QA Pass
+ * Mercury v1.6 Screenshot + QA Pass
  *
  * Uses Tauri binary + CDP (same approach as take-press-screenshots-v3.mjs).
  * Captures all 21 screens at 1200×800 into static/screenshots/.
@@ -7,8 +7,8 @@
  * Run: node tools/take-screenshots-v1.6.mjs
  *
  * Requirements:
- *   - Tauri debug binary at src-tauri/target/debug/mercury.exe
- *   - Real mercury.db in %APPDATA%/com.blacktape.app/mercury.db
+ *   - Tauri debug binary at src-tauri/target/debug/blacktape.exe
+ *   - Real mercury.db in %APPDATA%/com.mercury.app/mercury.db
  *   - npm run dev running on port 5173 (script will start it if not already up)
  */
 
@@ -22,7 +22,7 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 const OUT = path.join(ROOT, 'static', 'screenshots');
-const BINARY = path.join(ROOT, 'src-tauri', 'target', 'debug', 'mercury.exe');
+const BINARY = path.join(ROOT, 'src-tauri', 'target', 'debug', 'blacktape.exe');
 const CDP_PORT = 9224;
 const CDP_BASE = `http://127.0.0.1:${CDP_PORT}`;
 const DEV_PORT = 5173;
@@ -291,13 +291,13 @@ async function run() {
     await new Promise(r => setTimeout(r, 2000));
   }
 
-  // --- Step 2: Kill any existing mercury.exe ---
+  // --- Step 2: Kill any existing blacktape.exe ---
   try {
-    execSync('taskkill /f /im mercury.exe', { stdio: 'ignore' });
-    console.log('Killed existing mercury.exe');
+    execSync('taskkill /f /im blacktape.exe', { stdio: 'ignore' });
+    console.log('Killed existing blacktape.exe');
     await new Promise(r => setTimeout(r, 1500));
   } catch {
-    // No mercury.exe running — that's fine
+    // No blacktape.exe running — that's fine
   }
 
   // --- Step 3: Launch Tauri binary with CDP ---

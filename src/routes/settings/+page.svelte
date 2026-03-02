@@ -62,21 +62,27 @@
 
 	// ─── Import helpers ───────────────────────────────────────────────────────────
 
-	/** Match artist names to Mercury MBIDs via Rust, add to a named collection. */
+	/** Match artist names to Mercury MBIDs via API, add to a named collection. */
 	async function matchAndImport(platformName: string, artistNames: string[]): Promise<string> {
 		if (artistNames.length === 0) return 'No artists found.';
-		const { invoke } = await import('@tauri-apps/api/core');
+		const { API_BASE_URL } = await import('$lib/config');
 		const { createCollection, addToCollection } = await import('$lib/taste/collections.svelte');
 
-		type MatchResult = { name: string; mbid: string | null; slug: string | null };
+		type MatchResult = { name: string; artist_mbid: string | null; artist_slug: string | null };
 		let matched: MatchResult[] = [];
 		try {
-			matched = await invoke<MatchResult[]>('match_artists_batch', { names: artistNames });
+			const res = await fetch(`${API_BASE_URL}/match-batch`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ names: artistNames }),
+			});
+			if (!res.ok) throw new Error(`API error: ${res.status}`);
+			matched = await res.json();
 		} catch {
-			return 'match_artists_batch not available — import aborted.';
+			return 'Artist matching API not available — import aborted.';
 		}
 
-		const hits = matched.filter((m) => m.mbid !== null);
+		const hits = matched.filter((m) => m.artist_mbid !== null);
 		if (hits.length === 0) return `Matched 0 / ${artistNames.length} artists.`;
 
 		const collectionName = `Imported from ${platformName}`;
@@ -84,7 +90,7 @@
 		if (!collectionId) return 'Could not create collection.';
 
 		for (const hit of hits) {
-			await addToCollection(collectionId, 'artist', hit.mbid!, hit.name, hit.slug ?? undefined);
+			await addToCollection(collectionId, 'artist', hit.artist_mbid!, hit.name, hit.artist_slug ?? undefined);
 		}
 		return `Matched ${hits.length} / ${artistNames.length} artists — saved to "${collectionName}".`;
 	}

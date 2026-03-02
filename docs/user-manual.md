@@ -42,7 +42,8 @@ BlackTape is a music discovery engine that indexes all music from open databases
     - [New & Rising](#new--rising)
     - [Curator Attribution](#curator-attribution)
 17. [Desktop-Only App](#desktop-only-app)
-18. [Troubleshooting](#troubleshooting)
+18. [Updates](#updates)
+19. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -785,6 +786,31 @@ BlackTape is a desktop-only application — there is no web version. All feature
 | Requires internet for artist pages | Yes* |
 
 *Artist pages fetch releases and links from MusicBrainz, which requires internet. Search works offline using the local database.
+
+---
+
+## Updates
+
+BlackTape checks for updates automatically a few seconds after launch. When an update is available, you'll see one of two notifications depending on the severity.
+
+### Normal Updates
+
+A small banner appears between the titlebar and the main content:
+- **Install Now** — downloads and installs the update, then restarts the app
+- **Later** — dismisses the banner for this session
+
+Normal updates are never forced. You can keep using the current version and install later.
+
+### Critical Updates
+
+Occasionally, an update is marked as critical — typically for security fixes or changes that affect your data. When this happens:
+
+- A full-screen overlay appears with a red "Critical Update Required" heading
+- The overlay blocks all interaction with the app
+- There is no "Later" button and no way to dismiss it
+- Click **Install Update** to download and install immediately
+
+Critical updates are rare. They exist to ensure your app stays secure and your data stays compatible.
 
 ---
 

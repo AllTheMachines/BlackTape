@@ -5,13 +5,14 @@
  * Must use .svelte.ts extension for rune support.
  */
 
-import type { LocalTrack, MusicFolder, ScanProgress, LibraryAlbum, AlbumCover } from './types';
+import type { LocalTrack, MusicFolder, ScanProgress, EnrichProgress, LibraryAlbum, AlbumCover } from './types';
 import {
 	getLibraryTracks,
 	getMusicFolders,
 	addMusicFolder,
 	scanMusicFolder,
-	getAlbumCovers
+	getAlbumCovers,
+	enrichLibrary
 } from './scanner';
 
 export const libraryState = $state({
@@ -21,6 +22,8 @@ export const libraryState = $state({
 	isScanning: false,
 	isLoading: false,
 	scanProgress: null as ScanProgress | null,
+	isEnriching: false,
+	enrichProgress: null as EnrichProgress | null,
 	isLoaded: false,
 	sortBy: 'artist' as 'artist' | 'album' | 'title' | 'added',
 	sortAsc: true
@@ -87,6 +90,31 @@ export async function scanFolder(path: string): Promise<void> {
 	} finally {
 		libraryState.isScanning = false;
 		libraryState.scanProgress = null;
+	}
+
+	// Auto-enrich: look up missing covers from MusicBrainz (non-blocking)
+	runEnrichment();
+}
+
+/**
+ * Run MusicBrainz enrichment for albums missing covers.
+ * Non-blocking — runs in the background and reloads covers when done.
+ */
+export async function runEnrichment(): Promise<void> {
+	libraryState.isEnriching = true;
+	libraryState.enrichProgress = null;
+	try {
+		await enrichLibrary((progress) => {
+			libraryState.enrichProgress = progress;
+		});
+		// Reload covers after enrichment finishes
+		const coversResult = await getAlbumCovers();
+		libraryState.coverMap = buildCoverMap(coversResult);
+	} catch (e) {
+		console.warn('Enrichment failed:', e);
+	} finally {
+		libraryState.isEnriching = false;
+		libraryState.enrichProgress = null;
 	}
 }
 

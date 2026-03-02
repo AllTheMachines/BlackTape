@@ -21,6 +21,7 @@ export interface LocalTrack {
 	file_modified: number;
 	created_at: string;
 	cover_art_base64: string | null;
+	mb_tags: string | null;
 }
 
 /** Mirrors the Rust `MusicFolder` struct from library/db.rs */
@@ -42,6 +43,15 @@ export interface AlbumCover {
 	album: string;
 	album_artist: string | null;
 	cover_art_base64: string | null;
+}
+
+/** Mirrors the Rust `EnrichProgress` struct from enrichment.rs */
+export interface EnrichProgress {
+	enriched: number;
+	total: number;
+	current_album: string;
+	current_artist: string;
+	found_cover: boolean;
 }
 
 /** Derived grouping for album display in the library browser */

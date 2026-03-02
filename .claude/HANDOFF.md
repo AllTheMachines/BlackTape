@@ -1,43 +1,34 @@
-# Work Handoff - 2026-03-02 (afternoon)
+# Handoff — Library Album Detail View Redesign
 
-## PRIORITY NEXT TASK
-**Auto-download database in Setup Wizard.** Steve says the current "download manually, decompress, place at path" flow is unacceptable. It must be: click "Download" → see progress bar → done. No manual steps.
+## What Was Done This Session
 
-Implementation needed:
-- Rust command in `src-tauri/src/lib.rs` that downloads `mercury.db.gz` from a URL, streams it to disk with progress events, then decompresses it to `mercury.db` in the app data dir
-- Update `SetupWizard.svelte` Step 2: replace manual instructions with a "Download Database" button + progress bar (like the AI models step already does)
-- The download URL needs to be hosted somewhere (GitHub release asset, or a direct URL Steve provides)
-- Progress should show bytes downloaded / total size
-- After download completes, auto-advance to next step
+### Library Expanded View — Redesigned to Match Release Page
+- Expanded album view now matches the artist release page hero layout:
+  - 220px cover art (was 160px)
+  - Large bold title (1.6rem, weight 700) with year + release type badges
+  - Artist name as clickable search link
+  - Track count + duration stats
+  - Play/Queue buttons matching release page accent style
+  - "TRACKLIST" section label below hero
+  - "← Back to library" button at top, visible and clickable
 
-Reference: The AI models download in Step 3 already has this pattern — `downloadModel()` with progress callback. Mirror that for the database.
+### Back Button Fix
+- Created dedicated `collapseAlbum()` that sets `expandedAlbumKey = null` + scrolls to top
+- Verified working via CDP
 
-## RESTORE DB FIRST
-Steve's real database has been moved to test first-time experience:
-```bash
-mv "C:/Users/User/AppData/Roaming/com.blacktape.app/mercury.db.bak" "C:/Users/User/AppData/Roaming/com.blacktape.app/mercury.db"
-mv "C:/Users/User/AppData/Roaming/com.blacktape.app/mercury.db-shm.bak" "C:/Users/User/AppData/Roaming/com.blacktape.app/mercury.db-shm" 2>/dev/null
-mv "C:/Users/User/AppData/Roaming/com.blacktape.app/mercury.db-wal.bak" "C:/Users/User/AppData/Roaming/com.blacktape.app/mercury.db-wal" 2>/dev/null
-# taste.db files too:
-find "C:/Users/User/AppData/Roaming/com.blacktape.app" -name "*.bak" -exec sh -c 'mv "$1" "${1%.bak}"' _ {} \;
-```
-Kill mercury.exe first if still running: `taskkill //F //IM mercury.exe`
+### Artist Tab Sort Fix
+- Added `localeCompare` sort by artist name (then album name) when artist tab is active
+- Was missing after previous refactor — showed same order as All tab
 
-## Completed This Session
-### 4 GitHub issues fixed:
-- **#80** — Player slides in/out with CSS transform (`Player.svelte` wrapper div)
-- **#79** — Reload button in `ControlBar.svelte` using `invalidateAll()`
-- **#71** — CoverPlaceholder pixelation: `image-rendering: auto`, GPU compositing, `front-500` sources
-- **#73** — Global `user-select: text` in `theme.css`
-- Removed film grain canvas from Player
-- Added retry to `fetchSafe()` in artist page loader
-- Deleted GitHub release v0.1.0-alpha
-- Built Tauri release: `src-tauri/target/release/bundle/nsis/BlackTape_0.1.0_x64-setup.exe`
+### CSS Cleanup
+- Removed duplicate `.expanded-close` CSS block (from intermediate edit)
+- Removed dead `.album-type-header`, `.album-cover-placeholder` rules
+- Old expanded classes (`.expanded-header`, `.expanded-cover-btn`, etc.) replaced with release-page-style classes (`.release-hero`, `.cover-art`, `.hero-info`, etc.)
 
-## Git Status
-- Multiple files modified (unstaged), not committed yet
-- Changes: Player.svelte, ControlBar.svelte, CoverPlaceholder.svelte, theme.css, +page.ts, ArtistCard.svelte, +layout.svelte, BUILD-LOG.md
+### Files Changed
+- `src/lib/components/LibraryBrowser.svelte` — expanded view rewrite + artist sort + CSS cleanup
 
-## Known Issues
-- Artist page releases fail on cold first launch (MusicBrainz fetch). Retry added but still intermittent.
-- App data path: `C:/Users/User/AppData/Roaming/com.blacktape.app/`
+## What's NOT Done Yet
+- BUILD-LOG.md not updated with session entries
+- No commit made — all changes still staged from previous sessions + this session
+- Steve should test back button with real mouse clicks

@@ -27,6 +27,7 @@
 	import { navProgress } from '$lib/nav-progress.svelte';
 	import Titlebar from '$lib/components/Titlebar.svelte';
 	import UpdateBanner from '$lib/components/UpdateBanner.svelte';
+	import CriticalUpdateModal from '$lib/components/CriticalUpdateModal.svelte';
 
 	let { children } = $props();
 
@@ -46,8 +47,10 @@
 		tauriMode = isTauri();
 
 		if (isTauri()) {
-			// Intercept target="_blank" clicks — WebView2 cannot open new windows.
-			// Without this, external link clicks silently hang and freeze the app.
+			// Intercept target="_blank" clicks — WebView2 handles them natively
+			// (opens in system browser) before JS can preventDefault. Without
+			// stripping the target attribute, the URL opens TWICE: once from
+			// WebView2's native new-window handler, once from shell.open().
 			const { open } = await import('@tauri-apps/plugin-shell');
 			document.addEventListener('click', (e) => {
 				const anchor = (e.target as HTMLElement)?.closest('a');
@@ -55,9 +58,13 @@
 				const href = anchor.getAttribute('href');
 				if (!href || !href.startsWith('http')) return;
 				if (anchor.target !== '_blank') return;
+				// Strip target BEFORE WebView2 processes the default action
+				anchor.removeAttribute('target');
 				e.preventDefault();
 				open(href).catch(() => {});
-			});
+				// Restore for future clicks (deferred so current event cycle is clean)
+				setTimeout(() => anchor.setAttribute('target', '_blank'), 0);
+			}, true); // capture phase — fires before bubble handlers
 
 			await loadAiSettings();
 			loadTasteProfile();    // fire-and-forget — populates tasteProfile state async
@@ -93,6 +100,9 @@
 			if (storedSpotify) {
 				setSpotifyConnected(storedSpotify);
 			}
+
+			// Detect if we just came back from an update
+			import('$lib/update.svelte').then(({ detectJustUpdated }) => detectJustUpdated());
 
 			// Check for app updates in the background (non-blocking, 3s delay)
 			setTimeout(async () => {
@@ -146,6 +156,7 @@
 {#if tauriMode}
 	<Titlebar />
 	<UpdateBanner />
+	<CriticalUpdateModal />
 {/if}
 
 {#if $navigating || (tauriMode && navProgress.active)}
@@ -234,9 +245,6 @@
 {/if}
 
 <footer class="site-footer">
-	<p class="affiliate-disclosure">
-		Some links on release pages are affiliate links. BlackTape may earn a small commission if you make a purchase — at no extra cost to you. This helps fund open infrastructure.
-	</p>
 	<nav class="footer-nav">
 		<a href="/about" class="footer-link">About</a>
 	</nav>
@@ -392,17 +400,7 @@
 		margin-top: auto;
 	}
 
-	.affiliate-disclosure {
-		font-size: 0.7rem;
-		color: var(--t-3);
-		max-width: 860px;
-		margin: 0 auto;
-		text-align: center;
-		line-height: 1.5;
-	}
-
 	.footer-nav {
-		margin-top: var(--space-sm, 0.5rem);
 		text-align: center;
 	}
 

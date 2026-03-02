@@ -52,5 +52,5 @@ if ($proc) {
         Write-Host "Monitor DPI check failed: $_"
     }
 } else {
-    Write-Host "mercury.exe not found"
+    Write-Host "blacktape.exe not found"
 }

@@ -1,5 +1,5 @@
 /**
- * BlackTape Press Screenshot Automation — v2 (revised)
+ * Mercury Press Screenshot Automation — v2 (revised)
  *
  * Launches the Tauri debug binary with CDP, connects Playwright,
  * takes all press shots for marketing. Uses the real live database
@@ -9,7 +9,7 @@
  *
  * Requirements:
  *   - Dev server running on http://localhost:5173 (npm run dev)
- *   - Tauri debug binary built at src-tauri/target/debug/mercury.exe
+ *   - Tauri debug binary built at src-tauri/target/debug/blacktape.exe
  *   - Real mercury.db in %APPDATA%/com.mercury.app/mercury.db
  *
  * Keepers (already done, not overwritten):
@@ -30,7 +30,7 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 const OUT = path.join(ROOT, 'press-screenshots', 'v2');
-const BINARY = path.join(ROOT, 'src-tauri', 'target', 'debug', 'mercury.exe');
+const BINARY = path.join(ROOT, 'src-tauri', 'target', 'debug', 'blacktape.exe');
 const CDP_PORT = 9223;
 const CDP_BASE = `http://127.0.0.1:${CDP_PORT}`;
 const http = createRequire(import.meta.url)('http');

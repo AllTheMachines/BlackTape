@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { libraryState, scanFolder, groupByAlbum, getSortedTracks } from '$lib/library';
+	import { libraryState, scanFolder, runEnrichment, groupByAlbum, getSortedTracks } from '$lib/library';
 	import { pickMusicFolder, refreshCovers } from '$lib/library/scanner';
 	import { loadLibrary } from '$lib/library/store.svelte';
 	import { removeMusicFolder } from '$lib/library/scanner';
@@ -56,6 +56,11 @@
 			? Math.round((libraryState.scanProgress.scanned / Math.max(libraryState.scanProgress.total, 1)) * 100)
 			: 0
 	);
+	let enrichPercent = $derived(
+		libraryState.enrichProgress
+			? Math.round((libraryState.enrichProgress.enriched / Math.max(libraryState.enrichProgress.total, 1)) * 100)
+			: 0
+	);
 </script>
 
 <svelte:head>
@@ -104,6 +109,9 @@
 			</div>
 			<div class="header-actions">
 				{#if hasLibrary}
+					<button class="btn btn-secondary" onclick={() => runEnrichment()} disabled={libraryState.isEnriching} title="Look up missing covers from MusicBrainz">
+						{libraryState.isEnriching ? 'Enriching...' : 'Enrich Covers'}
+					</button>
 					<button class="btn btn-secondary" onclick={handleRefreshCovers} disabled={isRefreshingCovers} title="Refresh cover art from embedded tags">
 						{isRefreshingCovers ? 'Refreshing...' : 'Refresh Covers'}
 					</button>
@@ -145,6 +153,28 @@
 				</div>
 				<div class="progress-info">
 					<span class="progress-count">Scanning...</span>
+				</div>
+			</div>
+		{/if}
+
+		<!-- Enrichment progress -->
+		{#if libraryState.isEnriching && libraryState.enrichProgress}
+			<div class="scan-progress">
+				<div class="progress-bar">
+					<div class="progress-fill enrich-fill" style="width: {enrichPercent}%"></div>
+				</div>
+				<div class="progress-info">
+					<span class="progress-count">Enriching covers {libraryState.enrichProgress.enriched} / {libraryState.enrichProgress.total}</span>
+					<span class="progress-file">{libraryState.enrichProgress.current_artist} — {libraryState.enrichProgress.current_album}</span>
+				</div>
+			</div>
+		{:else if libraryState.isEnriching}
+			<div class="scan-progress">
+				<div class="progress-bar">
+					<div class="progress-fill enrich-fill indeterminate"></div>
+				</div>
+				<div class="progress-info">
+					<span class="progress-count">Looking up covers on MusicBrainz...</span>
 				</div>
 			</div>
 		{/if}
@@ -355,6 +385,10 @@
 		text-overflow: ellipsis;
 		white-space: nowrap;
 		text-align: right;
+	}
+
+	.enrich-fill {
+		background: var(--acc, var(--progress-color));
 	}
 
 	/* Library content fills remaining space */

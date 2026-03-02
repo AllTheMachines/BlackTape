@@ -13,5 +13,5 @@ if ($p) {
     [WF]::SetForegroundWindow($p.MainWindowHandle) | Out-Null
     Write-Host "Foreground set for PID $($p.Id)"
 } else {
-    Write-Host "mercury.exe not found"
+    Write-Host "blacktape.exe not found"
 }

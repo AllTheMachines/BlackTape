@@ -893,15 +893,6 @@ pub fn export_play_history_to_path(path: String, json: String) -> Result<ExportR
     Ok(ExportResult { path, count })
 }
 
-// --- Batch artist matching ---
-
-#[derive(Debug, Serialize)]
-pub struct MatchResult {
-    pub name: String,
-    pub artist_mbid: Option<String>,
-    pub artist_slug: Option<String>,
-}
-
 // --- Scene Detection CRUD ---
 
 /// A row from the detected_scenes table.

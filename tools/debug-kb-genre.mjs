@@ -10,7 +10,7 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
-const BINARY = path.join(ROOT, 'src-tauri', 'target', 'debug', 'mercury.exe');
+const BINARY = path.join(ROOT, 'src-tauri', 'target', 'debug', 'blacktape.exe');
 const CDP_PORT = 9224;
 const CDP_BASE = `http://127.0.0.1:${CDP_PORT}`;
 const http = createRequire(import.meta.url)('http');

@@ -69,7 +69,7 @@ function pollCdp(timeoutMs) {
 // ---------------------------------------------------------------------------
 
 export async function setup(rootDir) {
-  const binaryPath = path.join(rootDir, 'src-tauri', 'target', 'debug', 'mercury.exe');
+  const binaryPath = path.join(rootDir, 'src-tauri', 'target', 'debug', 'blacktape.exe');
   if (!fs.existsSync(binaryPath)) {
     throw new Error(
       `Tauri binary not found: ${binaryPath}\n` +

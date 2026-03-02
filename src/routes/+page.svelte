@@ -5,28 +5,16 @@
 	import SetupWizard from '$lib/components/SetupWizard.svelte';
 
 	let uiState = $state<'checking' | 'wizard' | 'ready'>('checking');
-	let dbPath = $state('');
 
-	async function checkDatabase() {
+	async function checkSetup() {
 		if (!isTauri()) {
 			uiState = 'ready';
 			return;
 		}
 		try {
 			const { invoke } = await import('@tauri-apps/api/core');
-			const [dbResult, setupComplete] = await Promise.all([
-				invoke<{ exists: boolean; path: string; dir: string }>('check_database'),
-				invoke<string | null>('get_ai_setting', { key: 'setup_complete' })
-			]);
-
-			dbPath = dbResult.path;
-
-			// Existing user: no setup_complete row yet but DB already present — auto-graduate
-			if (setupComplete === null && dbResult.exists) {
-				await invoke('set_ai_setting', { key: 'setup_complete', value: '1' });
-				uiState = 'ready';
-				return;
-			}
+			const settings = await invoke<Record<string, string>>('get_all_ai_settings');
+			const setupComplete = settings['setup_complete'] ?? null;
 
 			// Setup already complete
 			if (setupComplete === '1') {
@@ -34,7 +22,15 @@
 				return;
 			}
 
-			// Show wizard
+			// Existing user upgrading — has other settings but no setup_complete flag.
+			// Auto-graduate them so they don't see the wizard again.
+			if (setupComplete === null && Object.keys(settings).length > 0) {
+				await invoke('set_ai_setting', { key: 'setup_complete', value: '1' });
+				uiState = 'ready';
+				return;
+			}
+
+			// Fresh user (no settings at all, or setup not complete) — show wizard
 			uiState = 'wizard';
 		} catch {
 			// Fallback — don't block the app
@@ -42,19 +38,12 @@
 		}
 	}
 
-	async function handleRetry() {
-		const { invoke } = await import('@tauri-apps/api/core');
-		const result: { exists: boolean; path: string; dir: string } =
-			await invoke('check_database');
-		dbPath = result.path;
-	}
-
 	function handleWizardComplete() {
 		uiState = 'ready';
 	}
 
 	$effect(() => {
-		checkDatabase();
+		checkSetup();
 	});
 </script>
 
@@ -68,7 +57,7 @@
 		<p>Loading...</p>
 	</div>
 {:else if uiState === 'wizard'}
-	<SetupWizard {dbPath} onRetry={handleRetry} onComplete={handleWizardComplete} />
+	<SetupWizard onComplete={handleWizardComplete} />
 {:else}
 	<div class="hero">
 		<img src="/logo.png" alt={PROJECT_NAME} class="logo-img" />

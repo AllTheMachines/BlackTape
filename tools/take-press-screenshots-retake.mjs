@@ -1,5 +1,5 @@
 /**
- * BlackTape Press Screenshot Retake — Artist page top-of-page captures
+ * Mercury Press Screenshot Retake — Artist page top-of-page captures
  *
  * Retakes 3 artist page shots with scroll position fixed to y=0 so the
  * artist name heading is not clipped.
@@ -9,8 +9,8 @@
  * Run: node tools/take-press-screenshots-retake.mjs
  *
  * Requirements:
- *   - Tauri debug binary at src-tauri/target/debug/mercury.exe
- *   - Real mercury.db in %APPDATA%/com.blacktape.app/mercury.db
+ *   - Tauri debug binary at src-tauri/target/debug/blacktape.exe
+ *   - Real mercury.db in %APPDATA%/com.mercury.app/mercury.db
  */
 
 import { chromium } from 'playwright';
@@ -23,7 +23,7 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 const OUT = path.join(ROOT, 'press-screenshots', 'v3');
-const BINARY = path.join(ROOT, 'src-tauri', 'target', 'debug', 'mercury.exe');
+const BINARY = path.join(ROOT, 'src-tauri', 'target', 'debug', 'blacktape.exe');
 const CDP_PORT = 9223;
 const CDP_BASE = `http://127.0.0.1:${CDP_PORT}`;
 const http = createRequire(import.meta.url)('http');

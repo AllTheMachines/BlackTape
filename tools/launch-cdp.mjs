@@ -1,5 +1,5 @@
 /**
- * launch-cdp.mjs — start Vite dev server + launch mercury.exe with CDP on port 9224
+ * launch-cdp.mjs — start Vite dev server + launch blacktape.exe with CDP on port 9224
  * Usage: node tools/launch-cdp.mjs
  */
 import { spawn, execSync } from 'child_process';
@@ -9,7 +9,7 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT     = path.join(__dirname, '..');
-const BINARY   = path.join(ROOT, 'src-tauri', 'target', 'debug', 'mercury.exe');
+const BINARY   = path.join(ROOT, 'src-tauri', 'target', 'debug', 'blacktape.exe');
 const CDP_PORT = 9224;
 const VITE_PORT = 5173;
 
@@ -48,17 +48,17 @@ if (viteAlready) {
   console.log('✓ Vite ready on port', VITE_PORT);
 }
 
-// ─── Kill any existing mercury.exe ───────────────────────────────────────────
+// ─── Kill any existing blacktape.exe ───────────────────────────────────────────
 
 try {
-  execSync('taskkill /f /im mercury.exe', { stdio: 'ignore' });
-  console.log('Killed existing mercury.exe');
+  execSync('taskkill /f /im blacktape.exe', { stdio: 'ignore' });
+  console.log('Killed existing blacktape.exe');
   await new Promise(r => setTimeout(r, 1500));
 } catch {}
 
-// ─── Launch mercury.exe with CDP ─────────────────────────────────────────────
+// ─── Launch blacktape.exe with CDP ─────────────────────────────────────────────
 
-console.log('Launching mercury.exe with CDP on port', CDP_PORT, '...');
+console.log('Launching blacktape.exe with CDP on port', CDP_PORT, '...');
 const proc = spawn(BINARY, [], {
   env: { ...process.env, WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: `--remote-debugging-port=${CDP_PORT}` },
   stdio: 'ignore',

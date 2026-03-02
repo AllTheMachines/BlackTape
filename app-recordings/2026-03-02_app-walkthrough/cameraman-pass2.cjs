@@ -1019,13 +1019,13 @@ async function main() {
 }
 
 async function killApp() {
-  console.log('Killing mercury.exe...');
+  console.log('Killing blacktape.exe...');
   try {
-    execSync('taskkill /f /im mercury.exe', { stdio: 'ignore' });
+    execSync('taskkill /f /im blacktape.exe', { stdio: 'ignore' });
     await wait(2000);
     console.log('App killed');
   } catch {
-    console.log('No mercury.exe process found');
+    console.log('No blacktape.exe process found');
   }
 }
 

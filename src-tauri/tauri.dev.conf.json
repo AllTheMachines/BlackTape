@@ -1,0 +1,24 @@
+{
+  "productName": "BlackTape DEV",
+  "identifier": "com.blacktape.dev",
+  "app": {
+    "windows": [{ "title": "BlackTape DEV" }]
+  },
+  "bundle": {
+    "icon": [
+      "icons-dev/32x32.png",
+      "icons-dev/128x128.png",
+      "icons-dev/128x128@2x.png",
+      "icons-dev/icon.icns",
+      "icons-dev/icon.ico"
+    ]
+  },
+  "version": "0.1.0",
+  "plugins": {
+    "updater": {
+      "endpoints": [
+        "https://github.com/AllTheMachines/BlackTape/releases/latest/download/latest.json"
+      ]
+    }
+  }
+}
