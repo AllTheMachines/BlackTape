@@ -11643,3 +11643,33 @@ Recorded a full 41-scene walkthrough of the app using the `/record-app` skill. T
 
 > **Commit 98da57d** (2026-03-02 11:03) — wip: auto-save
 > Files changed: 1
+
+> **Commit 7b664b1** (2026-03-02 11:16) — auto-save: 4 files @ 11:16
+> Files changed: 4
+
+## 2026-03-02 — Extended E2E Test Suite: 44 User Journey Tests
+
+Built a comprehensive extended test suite that connects to the running app via Playwright CDP and tests like a real user — clicking through pages, filling forms, navigating back/forward, and checking for JS errors.
+
+**What it covers (44 tests across 11 journeys):**
+
+- **Discovery loop:** Home → search → artist page → click tag → discover page
+- **Artist deep:** Tab switching, discography filters, sort toggles, embed panel
+- **Crate digging:** Dig button, tag/decade filters, click-through to artists
+- **Navigation stress:** Rapid 7-page sequence, back/forward 5 pages, header nav links, double-click
+- **Search edge cases:** Special chars, quotes, SQL injection, FTS5 operators, 200-char query, rapid re-search, type switching
+- **Console error sweep:** Every main route + 5 random artists — zero JS errors required
+- **Error resilience:** 404 routes, XSS params, unicode slugs, null bytes, fake embeds, empty rooms
+- **Settings/About:** Section rendering, feedback form fillability
+- **Keyboard:** Escape, Tab-through
+- **Refresh:** Filter state preservation, artist page reload
+- **Consistency:** Same artist name across search results and artist page
+
+**Result: 44/44 passed. Zero bugs found. Zero JS errors across all routes.**
+
+**Files added:**
+- `tools/test-suite/extended-manifest.mjs` — 44 test definitions organized by journey
+- `tools/test-suite/run-extended.mjs` — standalone runner that connects to existing CDP
+- `tools/test-suite/run.mjs` — updated with `--extended` and `--extended-only` flags
+
+**Key lesson:** First run had 9 failures — all test-side issues (wrong selectors, hardcoded fixture slugs). Artist cards are `<a class="artist-card">` with `.a-name` inside, not `a.artist-name`. Search uses `?type=` not `?mode=`. Tests now discover data dynamically from whatever DB is loaded.
