@@ -4,5 +4,8 @@
   "cdp_port": 9224,
   "viewport": { "width": 1920, "height": 1080 },
   "output_dir": "app-recordings",
-  "recording_mode": "ffmpeg"
+  "recording_mode": "ffmpeg",
+  "ffmpeg_input": "desktop",
+  "fullscreen_strategy": "both",
+  "maximize_selector": "button[aria-label=\"Maximize\"]"
 }
