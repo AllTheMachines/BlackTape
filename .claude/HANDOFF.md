@@ -1,53 +1,54 @@
-# Work Handoff - 2026-03-02 02:15
+# Work Handoff - 2026-03-02 08:55
 
 ## Current Task
-App video recording — Pass 3 script is READY. Dry run passed all 41 scenes. Need to run the actual recording.
+App video recording — Pass 3 COMPLETE. 41 clips recorded with window capture mode. Ready for Director review + Cutter post-production.
 
 ## Context
-Steve invoked `/record-app` for a full BlackTape walkthrough. Pass 1 & 2 failed (desktop/task-view leaked into FFmpeg captures). Pass 3 has two proven fixes:
-1. **Win32 SetWindowPos** instead of MinimizeAll/Tauri fullscreen — sets mercury window to 0,0 at 1920x1080 with HWND_TOPMOST
-2. **Primary monitor FFmpeg** — `-offset_x 0 -offset_y 0 -video_size 1920x1080` because second monitor at Y=-768 leaked into bare `-i desktop`
+Steve invoked `/record-app` for a full BlackTape walkthrough. Passes 1 & 2 failed (desktop/task-view leaked into FFmpeg captures). Pass 3 switched to **window capture mode** (`-i title=BlackTape`) so Steve can work in other apps. Recording is done — next steps are review and assembly.
 
-Steve redirected the script from the old 19-scene storyboard to a new approach: **30 artists + visual highlights**. The new script is modeled after `record-and-run.mjs` — hardcoded flow, no action interpreter.
+## Progress
+### Completed
+- `cameraman-pass3.cjs` — written, debugged, and successfully executed
+- `window-fullscreen.ps1` — Win32 API to set mercury to 1920x1080 (no TOPMOST)
+- **41/41 scenes recorded** — 61MB total, zero failures, zero 0-byte files
+- 14 press screenshots captured
+- record-app skill updated with all lessons learned
+- Bug found and fixed: gdigrab window capture produces odd dimensions (1904x1071) → libx264/yuv420p fails silently with 0 bytes. Fixed with `-vf "crop=trunc(iw/2)*2:trunc(ih/2)*2"`
 
-## What's Done
-- `cameraman-pass3.cjs` — fully written, dry run PASSED (41/41 scenes)
-- `window-fullscreen.ps1` — Win32 API to set mercury to 1920x1080 + TOPMOST (proven working)
-- Verify frame confirmed: clean 1920x1080 capture showing only the app
-- Playback selectors fixed: uses `platform-pill-spotify`, `.spotify-track-play`, `.play-btn`, `play-album-btn` (only tries first 3 artists then gives up)
+### Remaining
+- Director review of clips (checkpoint screenshots in takes/pass-3/)
+- Cutter post-production (assemble clips into final video)
+- Final delivery
 
-## Script Structure (41 scenes)
-- `00-app-launch` — navigate to /, press screenshot
-- `01` through `30` — all 30 artists from HYPERSPEED-RECORDING-BRIEF roster (scroll discography, click release, stats tab, overview tab)
-- `style-map-1/2/3` — 3 rounds of pan/zoom/click-node
-- `kb-shoegaze/post-punk/ambient/jazz` — 4 Knowledge Base genre explorations
-- `discover-tags` — tag cloud intersection filtering
-- `crate-dig` — random grid browsing
-- `player-bar-finale` — slow sweep across retro FX
+## Key Decisions
+- **Window capture (`-i title=BlackTape`) instead of desktop capture** — no TOPMOST, Steve can work in other apps
+- **Crop filter required** for even dimensions when encoding to h264
+- **Limitation discovered**: gdigrab `-i title=` captures what's visually on screen at the window's position, NOT the window's own buffer. Other windows overlapping the app WILL appear in the recording. Steve can work on his second monitor safely (Y=-768, above primary).
 
 ## Key Files
-- `app-recordings/2026-03-02_app-walkthrough/cameraman-pass3.cjs` — THE SCRIPT TO RUN
-- `app-recordings/2026-03-02_app-walkthrough/window-fullscreen.ps1` — Win32 fullscreen helper
-- `app-recordings/2026-03-02_app-walkthrough/storyboard.json` — OLD storyboard (not used by pass3)
-- `app-recordings/2026-03-02_app-walkthrough/manifest.json` — recording manifest
-- `D:/Projects/blacktapesite/HYPERSPEED-RECORDING-BRIEF.md` — the recording brief (artist roster, rules)
+- `app-recordings/2026-03-02_app-walkthrough/cameraman-pass3.cjs` — the recording script (fully working)
+- `app-recordings/2026-03-02_app-walkthrough/window-fullscreen.ps1` — Win32 fullscreen helper (no TOPMOST)
+- `app-recordings/2026-03-02_app-walkthrough/takes/pass-3/` — 41 clips + verify frames
+- `app-recordings/2026-03-02_app-walkthrough/press/` — 51 press screenshots
+- `C:/Users/User/.claude/commands/record-app.md` — updated skill with all lessons
+- `D:/Projects/blacktapesite/HYPERSPEED-RECORDING-BRIEF.md` — the recording brief (artist roster)
 
-## Lessons Learned
-- **`__TAURI__` global is NOT available via CDP** — `withGlobalTauri` not enabled in tauri.conf.json. `record-and-run.mjs`'s fullscreen code silently failed (optional chaining swallowed it).
-- **MinimizeAll() minimizes the target app too** — and re-maximizing via PowerShell triggers Windows task-view overlay
-- **Multi-monitor: FFmpeg `-i desktop` captures the entire virtual screen** — this machine has a second monitor at Y=-768 (1366x768 above primary 1920x1080). Must use `-offset_x 0 -offset_y 0 -video_size 1920x1080`.
-- **Win32 SetWindowPos works** — ShowWindow(SW_RESTORE) → SetForegroundWindow → SetWindowPos(HWND_TOPMOST, 0, 0, 1920, 1080) is the proven approach.
-- **`play-all-btn` doesn't exist on artist pages** — use `platform-pill-spotify`, `.spotify-track-play`, or `.play-btn` (player bar)
-- **`taskkill /f /im` has MSYS path issues** — use `powershell -Command "Stop-Process -Name mercury -Force"` instead
-- **FFmpeg `2>/dev/null` doesn't work on Windows** — use `stdio: ['ignore','ignore','ignore']` in execSync
-- **Leave the app in Cockpit layout** — Steve's explicit instruction, handled in finally block
+## Lessons Added to record-app Skill
+1. Window capture produces odd dimensions due to DWM invisible borders → must crop for h264
+2. Log FFmpeg stderr errors, not just frame progress — silent failures are devastating
+3. gdigrab `-i title=` captures screen content at window position, not window buffer
+4. All previous lessons from passes 1 & 2 (see skill file for full list)
+
+## Git Status
+- `BUILD-LOG.md` modified (auto-save hook)
+- 3 new untracked press screenshots (49-discover, 50-crate-dig, 51-player-bar)
+- Takes directory is gitignored
 
 ## Next Steps
-1. **Run the recording**: `node app-recordings/2026-03-02_app-walkthrough/cameraman-pass3.cjs` (no --dry flag)
-2. After recording, verify the first clip's frame
-3. Director review of clips
-4. Cutter post-production
-5. Final delivery
+1. **Review clips** — spot-check a few clips (extract frames from middle of artist scenes, style-map, KB)
+2. **Director review** — spawn Director agent to review checkpoint screenshots
+3. **Cutter post-production** — assemble 41 clips into final video
+4. **Final delivery** — output path, update manifest
 
 ## Resume Command
 After running `/clear`, run `/resume` to continue.
