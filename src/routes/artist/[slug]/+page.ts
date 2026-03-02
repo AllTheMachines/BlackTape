@@ -76,18 +76,17 @@ export const load: PageLoad = async ({ params, fetch }) => {
 	}
 	let relationships: ArtistRelationships = { members: [], influencedBy: [], influenced: [], labels: [] };
 
-	// Run links + releases fetches in parallel (independent of each other).
-	// Bio fetch runs after links since it needs the Wikipedia URL.
-	const [mbLinksResponse, mbReleasesResponse] = await Promise.all([
-		fetchSafe(
-			`https://musicbrainz.org/ws/2/artist/${artist.mbid}?inc=url-rels+artist-rels+label-rels&fmt=json`,
-			fetch, MB_TIMEOUT_MS
-		),
-		fetchSafe(
-			`https://musicbrainz.org/ws/2/release-group?artist=${artist.mbid}&inc=url-rels&type=album|single|ep&fmt=json&limit=50`,
-			fetch, MB_TIMEOUT_MS
-		)
-	]);
+	// Fetch links first, then releases with a 1.1s delay.
+	// MusicBrainz enforces a 1 req/sec rate limit — parallel requests get 503'd.
+	const mbLinksResponse = await fetchSafe(
+		`https://musicbrainz.org/ws/2/artist/${artist.mbid}?inc=url-rels+artist-rels+label-rels&fmt=json`,
+		fetch, MB_TIMEOUT_MS
+	);
+	await new Promise(r => setTimeout(r, 1100));
+	const mbReleasesResponse = await fetchSafe(
+		`https://musicbrainz.org/ws/2/release-group?artist=${artist.mbid}&inc=url-rels&type=album|single|ep&fmt=json&limit=50`,
+		fetch, MB_TIMEOUT_MS
+	);
 
 	try {
 		if (mbLinksResponse?.ok) {
