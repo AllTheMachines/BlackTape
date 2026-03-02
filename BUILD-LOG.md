@@ -11513,10 +11513,6 @@ Replaced the blurred-backdrop-always approach with a four-case system that uses 
 > **Commit 815c6dc** (2026-03-02 01:19) — wip: auto-save
 > Files changed: 2
 
-<!-- status -->
-Recording Pass 3 — 41-scene script ready (30 artists + style-map + KB + extras). Dry run passed. Fix: Win32 SetWindowPos + primary-monitor-only FFmpeg. Ready to record.
-<!-- /status -->
-
 > **Commit cd56e98** (2026-03-02 01:29) — wip: auto-save
 > Files changed: 13
 
@@ -11624,3 +11620,23 @@ Recording Pass 3 — 41-scene script ready (30 artists + style-map + KB + extras
 
 > **Commit dba2bf0** (2026-03-02 10:50) — wip: auto-save
 > Files changed: 2
+
+> **Commit 8b987b3** (2026-03-02 11:00) — wip: auto-save
+> Files changed: 2
+
+## 2026-03-02 — First App Walkthrough Video: CDP Renderer Capture
+
+Recorded a full 41-scene walkthrough of the app using the `/record-app` skill. The storyboard covered search, artist pages, release pages, the player bar, style map, keyboard shortcuts, and the design system — everything the app does right now.
+
+**The capture problem:** FFmpeg's `gdigrab` (Windows screen capture) grabs the screen region at the window's position, not the window itself. Other windows bleed through. Three passes failed — VS Code kept appearing over the app regardless of z-order hacks, `SetWindowPos` calls, or monitor isolation.
+
+**The solution:** CDP (Chrome DevTools Protocol) renderer capture. Instead of screen-grabbing, we capture directly from the Chromium renderer inside the Tauri WebView. `Page.captureScreenshot` with `optimizeForSpeed: true` runs at ~50ms/frame — completely independent of window z-order, other monitors, or desktop state. The cameraman script pipes JPEG frames at 15fps directly into FFmpeg's stdin.
+
+**Key technical details:**
+- Raw CDP `Page.captureScreenshot` (~20fps achievable) beat both Playwright's `page.screenshot` (~14fps) and CDP's `Page.startScreencast` (~3fps due to ack backpressure)
+- H.264 requires even dimensions — solved with `-vf "crop=trunc(iw/2)*2:trunc(ih/2)*2"`
+- Must suppress pipe errors when FFmpeg exits early: `proc.stdin.on('error', () => {})`
+
+**Pass 4 result:** 41 clips captured, 430MB total, 1904×1070, H.264 at 15fps. Director reviewed all 41 scenes — 37 approved, 4 excluded (blank keyboard-ambient scene, player-bar-finale error overlay, two style-map scenes showing wrong page). Cutter assembled the 37 approved scenes with crossfade transitions into the final video.
+
+**Final output:** `app-recordings/2026-03-02_app-walkthrough/final/app-walkthrough.mp4` — 5 minutes 25 seconds, 162MB, 4.2Mbps. First complete video record of the app in its current state.
