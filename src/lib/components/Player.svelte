@@ -26,29 +26,6 @@
 	let showQueue = $state(false);
 	let showExpanded = $state(false);
 
-	// ─── Retro FX: film grain canvas ────────────────────────────────────────────
-	let grainCanvas = $state<HTMLCanvasElement | null>(null);
-
-	$effect(() => {
-		if (!grainCanvas) return;
-		const ctx = grainCanvas.getContext('2d');
-		if (!ctx) return;
-		function draw() {
-			const w = grainCanvas!.width;
-			const h = grainCanvas!.height;
-			const id = ctx!.createImageData(w, h);
-			for (let i = 0; i < id.data.length; i += 4) {
-				const v = (Math.random() * 255) | 0;
-				id.data[i] = id.data[i + 1] = id.data[i + 2] = v;
-				id.data[i + 3] = 255;
-			}
-			ctx!.putImageData(id, 0, 0);
-		}
-		draw();
-		const t = setInterval(draw, 80);
-		return () => clearInterval(t);
-	});
-
 	// True when Spotify Connect is the active audio source.
 	const isSpotifyMode = $derived(streamingState.activeSource === 'spotify');
 	const spotifyRepeat = $derived(streamingState.spotifyTrack?.repeatState ?? 'off');
@@ -202,8 +179,6 @@
 	{/if}
 
 	<div class="player-bar">
-		<!-- Retro FX: film grain -->
-		<canvas bind:this={grainCanvas} class="grain-canvas" width="200" height="60" aria-hidden="true"></canvas>
 		<!-- Retro FX: pixel corner brackets -->
 		<div class="corner-bracket tl" aria-hidden="true"></div>
 		<div class="corner-bracket tr" aria-hidden="true"></div>
@@ -1066,16 +1041,6 @@
 	}
 
 	/* #2: Film Grain */
-	.grain-canvas {
-		position: absolute;
-		inset: 0;
-		width: 100%;
-		height: 100%;
-		opacity: 0.04;
-		pointer-events: none;
-		z-index: 0;
-	}
-
 	/* #3: VU Meter Bars */
 	.vu-meter {
 		display: flex;
