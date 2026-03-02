@@ -1,11 +1,11 @@
 /**
  * cameraman-pass4.cjs — Per-scene recording via CDP renderer capture
  *
- * PASS 4 — CDP screencast capture:
- *   - Captures frames directly from the Chromium renderer via page.screenshot()
+ * PASS 4 — CDP renderer capture:
+ *   - Captures frames via raw CDP Page.captureScreenshot (optimizeForSpeed)
  *   - Window does NOT need to be in foreground — captures behind other windows
  *   - No gdigrab, no screen capture, no z-order issues
- *   - ~20fps JPEG frames piped to FFmpeg via image2pipe
+ *   - ~12-15fps JPEG frames piped to FFmpeg via image2pipe
  *
  * Scenes:
  *   1x  app-launch (start playback on Slowdive)
@@ -36,8 +36,8 @@ const PRESS_DIR = path.join(SESSION, 'press');
 const MANIFEST  = path.join(SESSION, 'manifest.json');
 const FS_PS1    = path.join(SESSION, 'window-fullscreen.ps1');
 const DRY_RUN   = process.argv.includes('--dry');
-const TARGET_FPS = 20;
-const FRAME_MS   = Math.floor(1000 / TARGET_FPS); // ~50ms per frame
+const TARGET_FPS = 15;
+const FRAME_MS   = Math.floor(1000 / TARGET_FPS); // ~66ms per frame
 
 // --- Artist roster (from HYPERSPEED-RECORDING-BRIEF v4.0) --------------------
 
@@ -77,6 +77,7 @@ const ARTISTS = [
 // --- Helpers -----------------------------------------------------------------
 
 let page; // set after connect
+let cdp;  // raw CDP session for fast screenshots
 const wait = ms => new Promise(r => setTimeout(r, ms));
 
 async function nav(urlPath, settle = 3000) {
@@ -156,7 +157,8 @@ async function pressScreenshot(label) {
 
 // --- CDP renderer capture (replaces gdigrab) ---------------------------------
 //
-// Captures frames via page.screenshot() at ~20fps, pipes JPEG to FFmpeg.
+// Captures frames via raw CDP Page.captureScreenshot at ~12-15fps.
+// Uses optimizeForSpeed for fastest capture. Pipes JPEG to FFmpeg via image2pipe.
 // Works behind other windows — captures directly from the Chromium renderer.
 
 function startCapture(sceneName) {
@@ -184,15 +186,17 @@ function startCapture(sceneName) {
     if (code !== 0 && code !== null) console.warn(`  FFmpeg exited with code ${code}`);
   });
 
-  // Capture loop: take screenshots and pipe to FFmpeg
+  // Capture loop: raw CDP screenshots piped to FFmpeg
   const running = { value: true };
   const captureLoop = (async () => {
     while (running.value) {
       const t0 = Date.now();
       try {
-        const buf = await page.screenshot({ type: 'jpeg', quality: 85 });
+        const result = await cdp.send('Page.captureScreenshot', {
+          format: 'jpeg', quality: 60, optimizeForSpeed: true
+        });
         if (running.value && !proc.stdin.destroyed) {
-          proc.stdin.write(buf);
+          proc.stdin.write(Buffer.from(result.data, 'base64'));
           frameCount++;
         }
       } catch (e) {
@@ -286,7 +290,7 @@ async function main() {
   console.log(`\n+===================================================+`);
   console.log(`|  Cameraman Pass ${PASS_NUM} -- ${totalScenes} scenes${DRY_RUN ? ' (DRY RUN)' : ''}             |`);
   console.log(`|  ${ARTISTS.length} artists + style-map + KB + extras       |`);
-  console.log(`|  CDP renderer capture @ ${TARGET_FPS}fps (no foreground needed) |`);
+  console.log(`|  Raw CDP capture ~${TARGET_FPS}fps (no foreground needed)   |`);
   console.log(`+===================================================+\n`);
 
   // Launch app
@@ -321,6 +325,10 @@ async function main() {
   page.setDefaultTimeout(10000);
   await page.waitForFunction(() => document.readyState === 'complete', { timeout: 15000 });
   console.log('Page ready:', page.url());
+
+  // Create raw CDP session for fast screenshots
+  cdp = await page.context().newCDPSession(page);
+  console.log('CDP session ready');
 
   // Set window size (affects viewport dimensions for consistent capture)
   applyFullscreen();
@@ -618,6 +626,7 @@ async function main() {
     console.error(err.stack);
   } finally {
     restoreWindow();
+    try { await cdp.detach(); } catch {}
     try { await browser.close(); } catch {}
     await wait(1000);
     killApp();
