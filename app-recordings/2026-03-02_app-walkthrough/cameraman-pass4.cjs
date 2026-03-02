@@ -1,10 +1,11 @@
 /**
- * cameraman-pass4.cjs — Per-scene recording: artists + visual highlights
+ * cameraman-pass4.cjs — Per-scene recording via CDP renderer capture
  *
- * PASS 4 — Fixed capture method:
- *   - Desktop capture constrained to primary monitor (1920x1080)
- *   - bring-front.ps1 called before EVERY scene to ensure BlackTape is foreground
- *   - No crop filter needed (1920x1080 already even)
+ * PASS 4 — CDP screencast capture:
+ *   - Captures frames directly from the Chromium renderer via page.screenshot()
+ *   - Window does NOT need to be in foreground — captures behind other windows
+ *   - No gdigrab, no screen capture, no z-order issues
+ *   - ~20fps JPEG frames piped to FFmpeg via image2pipe
  *
  * Scenes:
  *   1x  app-launch (start playback on Slowdive)
@@ -14,9 +15,6 @@
  *   1x  discover-tags (tag cloud intersection filtering)
  *   1x  crate-dig (random grid browsing)
  *   1x  player-bar-finale (slow sweep across retro FX)
- *
- * Window: Win32 SetWindowPos(0, 0, 1920, 1080) — no TOPMOST
- * Capture: FFmpeg gdigrab desktop with -offset_x 0 -offset_y 0 -video_size 1920x1080
  *
  * Usage: node cameraman-pass4.cjs [--dry]
  */
@@ -37,8 +35,9 @@ const SS_DIR    = path.join(TAKES_DIR, 'screenshots');
 const PRESS_DIR = path.join(SESSION, 'press');
 const MANIFEST  = path.join(SESSION, 'manifest.json');
 const FS_PS1    = path.join(SESSION, 'window-fullscreen.ps1');
-const BF_PS1    = path.join(SESSION, 'bring-front.ps1');
 const DRY_RUN   = process.argv.includes('--dry');
+const TARGET_FPS = 20;
+const FRAME_MS   = Math.floor(1000 / TARGET_FPS); // ~50ms per frame
 
 // --- Artist roster (from HYPERSPEED-RECORDING-BRIEF v4.0) --------------------
 
@@ -54,7 +53,7 @@ const ARTISTS = [
   { name: 'Siouxsie and the Banshees',   slug: 'siouxsie-and-the-banshees' },
   { name: 'The Cure',                    slug: 'the-cure' },
   { name: 'The Birthday Party',          slug: 'the-birthday-party' },
-  { name: 'Gang of Four',                slug: 'gang-of-four' },
+  { name: 'Gang of Four',               slug: 'gang-of-four' },
   { name: 'The Fall',                    slug: 'the-fall-d5da1841' },
   { name: 'Aphex Twin',                  slug: 'aphex-twin' },
   { name: 'Boards of Canada',            slug: 'boards-of-canada-69158f97' },
@@ -79,15 +78,6 @@ const ARTISTS = [
 
 let page; // set after connect
 const wait = ms => new Promise(r => setTimeout(r, ms));
-
-function bringToFront() {
-  try {
-    execSync(`powershell -ExecutionPolicy Bypass -File "${BF_PS1}"`,
-      { timeout: 10000, encoding: 'utf-8' });
-  } catch (e) {
-    console.warn('  bring-front failed:', e.message.slice(0, 80));
-  }
-}
 
 async function nav(urlPath, settle = 3000) {
   console.log(`    nav -> ${urlPath}`);
@@ -164,41 +154,78 @@ async function pressScreenshot(label) {
   console.log(`    press/${idx}-${label}.png`);
 }
 
-// --- FFmpeg per-scene (FIXED: desktop capture, primary monitor only) ----------
+// --- CDP renderer capture (replaces gdigrab) ---------------------------------
+//
+// Captures frames via page.screenshot() at ~20fps, pipes JPEG to FFmpeg.
+// Works behind other windows — captures directly from the Chromium renderer.
 
-function startFFmpeg(sceneName) {
+function startCapture(sceneName) {
   if (DRY_RUN) return null;
-
-  // Bring BlackTape to foreground immediately before capture
-  bringToFront();
 
   const clipPath = path.join(TAKES_DIR, `${sceneName}.mp4`);
   console.log(`  REC ${path.basename(clipPath)}`);
+
   const proc = spawn('ffmpeg', [
-    '-y', '-f', 'gdigrab', '-framerate', '30',
-    '-offset_x', '0', '-offset_y', '0', '-video_size', '1920x1080',
-    '-i', 'desktop',
+    '-y',
+    '-f', 'image2pipe', '-framerate', String(TARGET_FPS),
+    '-i', 'pipe:0',
     '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '18', '-pix_fmt', 'yuv420p',
     clipPath
   ], { stdio: ['pipe', 'ignore', 'pipe'] });
+
+  let frameCount = 0;
   proc.stderr.on('data', d => {
     const line = d.toString();
-    if (line.includes('frame=')) process.stdout.write('\r  ' + line.trim().slice(0, 80));
+    if (line.includes('frame=')) process.stdout.write(`\r  ${line.trim().slice(0, 80)}`);
     else if (line.includes('Error') || line.includes('error') || line.includes('Invalid'))
       console.warn(`  FFmpeg: ${line.trim().slice(0, 120)}`);
   });
   proc.on('close', code => {
     if (code !== 0 && code !== null) console.warn(`  FFmpeg exited with code ${code}`);
   });
-  return { proc, clipPath };
+
+  // Capture loop: take screenshots and pipe to FFmpeg
+  const running = { value: true };
+  const captureLoop = (async () => {
+    while (running.value) {
+      const t0 = Date.now();
+      try {
+        const buf = await page.screenshot({ type: 'jpeg', quality: 85 });
+        if (running.value && !proc.stdin.destroyed) {
+          proc.stdin.write(buf);
+          frameCount++;
+        }
+      } catch (e) {
+        // Page might be navigating — skip frame
+      }
+      const elapsed = Date.now() - t0;
+      const sleepMs = Math.max(1, FRAME_MS - elapsed);
+      await wait(sleepMs);
+    }
+  })();
+
+  return { proc, clipPath, running, captureLoop, getFrames: () => frameCount };
 }
 
-function stopFFmpeg(ff) {
-  if (!ff?.proc) return Promise.resolve();
+async function stopCapture(handle) {
+  if (!handle) return;
+
+  // Stop the capture loop
+  handle.running.value = false;
+  await handle.captureLoop;
+
+  // Close FFmpeg stdin and wait for it to finish
   return new Promise(resolve => {
-    ff.proc.on('close', () => { console.log(''); resolve(); });
-    try { ff.proc.stdin.write('q'); ff.proc.stdin.end(); } catch {}
-    setTimeout(() => { try { ff.proc.kill('SIGKILL'); } catch {} resolve(); }, 5000);
+    const onClose = () => { console.log(`  ${handle.getFrames()} frames`); resolve(); };
+    handle.proc.on('close', onClose);
+    try {
+      handle.proc.stdin.end();
+    } catch {}
+    // Safety timeout
+    setTimeout(() => {
+      try { handle.proc.kill('SIGKILL'); } catch {}
+      resolve();
+    }, 8000);
   });
 }
 
@@ -206,14 +233,14 @@ function stopFFmpeg(ff) {
 
 async function scene(name, fn) {
   console.log(`\n=== Scene: ${name} ===`);
-  const ff = startFFmpeg(name);
-  if (ff) await wait(1500); // let FFmpeg start
+  const capture = startCapture(name);
+  if (capture) await wait(500); // brief settle for FFmpeg init
   try {
     await fn();
   } catch (e) {
     console.error(`  Scene "${name}" error: ${e.message.split('\n')[0]}`);
   }
-  await stopFFmpeg(ff);
+  await stopCapture(capture);
   console.log(`  OK ${name} done`);
 }
 
@@ -229,8 +256,6 @@ function applyFullscreen() {
     console.warn('PS1 failed, trying inline:', e.message);
     execSync(`powershell -Command "Add-Type -TypeDefinition 'using System; using System.Runtime.InteropServices; public class W { [DllImport(\\\"user32.dll\\\")] public static extern bool ShowWindow(IntPtr h, int c); [DllImport(\\\"user32.dll\\\")] public static extern bool SetForegroundWindow(IntPtr h); [DllImport(\\\"user32.dll\\\")] public static extern bool SetWindowPos(IntPtr h, IntPtr a, int x, int y, int w, int ht, uint f); }'; $p = Get-Process -Name mercury -EA SilentlyContinue | Select -First 1; if($p){ [W]::ShowWindow($p.MainWindowHandle, 9); Start-Sleep -MS 500; [W]::SetForegroundWindow($p.MainWindowHandle); [W]::SetWindowPos($p.MainWindowHandle, [IntPtr]::Zero, 0, 0, 1920, 1080, 0x0004) }"`, { stdio: 'ignore' });
   }
-  // Also bring to foreground after positioning
-  bringToFront();
 }
 
 function restoreWindow() {
@@ -243,18 +268,11 @@ function killApp() {
   try { execSync('powershell -Command "Stop-Process -Name mercury -Force -EA SilentlyContinue"', { stdio: 'ignore' }); } catch {}
 }
 
-function verifyFrame(label = 'verify') {
-  // Bring to front before verify capture too
-  bringToFront();
-  const p = path.join(TAKES_DIR, `${label}.png`);
-  try {
-    execSync(`ffmpeg -f gdigrab -framerate 1 -offset_x 0 -offset_y 0 -video_size 1920x1080 -i desktop -frames:v 1 -update 1 -y "${p}"`,
-      { timeout: 10000, stdio: ['ignore', 'ignore', 'ignore'] });
-    const sz = fs.statSync(p).size;
-    console.log(`  Verify frame: ${sz} bytes -> ${p}`);
-  } catch (e) {
-    console.warn('  Verify frame failed:', e.message);
-  }
+async function verifyCapture() {
+  const p = path.join(TAKES_DIR, 'verify-pre.png');
+  await page.screenshot({ path: p, fullPage: false });
+  const sz = fs.statSync(p).size;
+  console.log(`  Verify capture: ${sz} bytes -> ${p}`);
 }
 
 // --- Main --------------------------------------------------------------------
@@ -268,7 +286,7 @@ async function main() {
   console.log(`\n+===================================================+`);
   console.log(`|  Cameraman Pass ${PASS_NUM} -- ${totalScenes} scenes${DRY_RUN ? ' (DRY RUN)' : ''}             |`);
   console.log(`|  ${ARTISTS.length} artists + style-map + KB + extras       |`);
-  console.log(`|  FIXED: desktop capture, primary monitor only     |`);
+  console.log(`|  CDP renderer capture @ ${TARGET_FPS}fps (no foreground needed) |`);
   console.log(`+===================================================+\n`);
 
   // Launch app
@@ -304,11 +322,10 @@ async function main() {
   await page.waitForFunction(() => document.readyState === 'complete', { timeout: 15000 });
   console.log('Page ready:', page.url());
 
-  // Fullscreen + bring to front
+  // Set window size (affects viewport dimensions for consistent capture)
   applyFullscreen();
-  await page.bringToFront();
   await wait(2000);
-  verifyFrame('verify-pre');
+  await verifyCapture();
 
   try {
     // =======================================================================
@@ -578,6 +595,7 @@ async function main() {
     // =======================================================================
     console.log('\n\nALL SCENES COMPLETE');
 
+    // Extract a verify frame from the first clip
     const firstClip = path.join(TAKES_DIR, '00-app-launch.mp4');
     if (fs.existsSync(firstClip)) {
       try {
