@@ -11514,7 +11514,7 @@ Replaced the blurred-backdrop-always approach with a four-case system that uses 
 > Files changed: 2
 
 <!-- status -->
-Recording Pass 3 — app walkthrough. Pass 2 failed (MinimizeAll triggered task-view overlay). Pass 3 uses __TAURI__ fullscreen API (proven in record-and-run.mjs). Running now...
+Recording Pass 3 — 41-scene script ready (30 artists + style-map + KB + extras). Dry run passed. Fix: Win32 SetWindowPos + primary-monitor-only FFmpeg. Ready to record.
 <!-- /status -->
 
 > **Commit cd56e98** (2026-03-02 01:29) — wip: auto-save
@@ -11525,3 +11525,6 @@ Recording Pass 3 — app walkthrough. Pass 2 failed (MinimizeAll triggered task-
 
 > **Commit fc540d0** (2026-03-02 01:51) — wip: auto-save
 > Files changed: 2
+
+> **Commit 73217d9** (2026-03-02 02:16) — auto-save: 9 files @ 02:16
+> Files changed: 9

@@ -324,11 +324,17 @@ async function main() {
           await wait(1500);
         }
 
-        // Start playback on first artist (Slowdive) — keep playing forever
-        if (!playbackStarted) {
-          console.log('  → Starting playback');
-          let played = await click('[data-testid="play-all-btn"]');
-          if (!played) played = await click('[data-testid="play-album-btn"]');
+        // Start playback on first artist — keep playing forever
+        if (!playbackStarted && i < 3) {
+          console.log('  → Trying to start playback');
+          // Try 1: Spotify platform pill on artist page
+          let played = await click('[data-testid="platform-pill-spotify"]', 3000);
+          // Try 2: Any spotify track play button
+          if (!played) played = await click('.spotify-track-play', 3000);
+          // Try 3: Player bar play button (if a track is already loaded)
+          if (!played) played = await click('.play-btn', 2000);
+          // Try 4: Play album button on release page (if we clicked into one above)
+          if (!played) played = await click('[data-testid="play-album-btn"]', 2000);
           if (played) {
             playbackStarted = true;
             await wait(2500);
