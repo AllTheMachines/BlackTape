@@ -11609,3 +11609,6 @@ Recording Pass 3 — 41-scene script ready (30 artists + style-map + KB + extras
 
 > **Commit 6832450** (2026-03-02 09:48) — wip: auto-save
 > Files changed: 1
+
+> **Commit 71cad4a** (2026-03-02 10:16) — auto-save: 17 files @ 10:16
+> Files changed: 17
