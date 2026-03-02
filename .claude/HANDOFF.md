@@ -1,50 +1,45 @@
-# Work Handoff - 2026-03-02 12:00
+# Work Handoff - 2026-03-02 (afternoon)
 
 ## Current Task
-Extended E2E test suite complete. GitHub release created. Session wrapping up — sharing with friends.
+Pre-release polish for v0.1.0-alpha friends & family preview.
 
-## Context
-Steve asked for a comprehensive user-journey test suite to make the app bulletproof. Built 44 extended E2E tests using Playwright CDP that click through the real running app. All 44 passed — zero bugs, zero JS errors. Then built a release installer and created a GitHub pre-release (v0.1.0-alpha).
+## Completed This Session
+### 4 GitHub issues fixed:
+- **#80** — Player slides in/out with CSS transform instead of {#if} pop. `Player.svelte` wrapper div with `transform: translateY(100%)` ↔ `translateY(0)`, 0.3s ease.
+- **#79** — Reload button added to `ControlBar.svelte` (global toolbar). Uses `invalidateAll()`. Spinning icon while loading.
+- **#71** — CoverPlaceholder pixelation fix: `image-rendering: auto`, `will-change: transform` on backdrop, upgraded ArtistCard cover source from `front-250` to `front-500`.
+- **#73** — Global `user-select: text` added to body in `theme.css`.
 
-## Progress
-### Completed
-- Extended E2E test suite: 44 tests across 11 journey categories — all passing
-- `tools/test-suite/extended-manifest.mjs` — 44 test definitions
-- `tools/test-suite/run-extended.mjs` — standalone runner (`node tools/test-suite/run-extended.mjs --port 9224`)
-- `tools/test-suite/run.mjs` — updated with `--extended` and `--extended-only` flags
-- Tauri release build: `src-tauri/target/release/bundle/nsis/BlackTape_0.1.0_x64-setup.exe` (9.4MB)
-- GitHub pre-release: https://github.com/AllTheMachines/BlackTape/releases/tag/v0.1.0-alpha
-- BUILD-LOG.md updated with recording session + extended test suite entries
+### Other changes:
+- Removed film grain canvas from Player (Steve asked to remove the noise)
+- Added retry logic to `fetchSafe()` in artist page loader (cold-start network failures)
+- Deleted GitHub release v0.1.0-alpha (Steve's request)
+- Built fresh Tauri release: `src-tauri/target/release/bundle/nsis/BlackTape_0.1.0_x64-setup.exe`
 
-### Remaining
-- Steve wants to share with 3 friends (dragansilvana1@yahoo.com, Bernadette.bolch@web.de, starscape@gmx.de) — they're not on GitHub, so he'll upload the installer to Google Drive manually
-- Friends also need the database file to use the app (not bundled)
-- BUILD-LOG.md has minor unstaged changes (+3 lines)
-- Branch is 6 commits ahead of origin (pushed main, but auto-saves after)
+## In Progress
+- **First-time user experience testing** — DB has been moved to `.bak` to simulate clean install. Steve is testing the Setup Wizard.
+- **RESTORE DB AFTER TESTING:** `mv "C:/Users/User/AppData/Roaming/com.blacktape.app/mercury.db.bak" "C:/Users/User/AppData/Roaming/com.blacktape.app/mercury.db"` (also .shm, .wal, and taste.db files)
 
-## Key Decisions
-- Extended tests connect to existing running app via CDP (no fixture DB swap) — tests discover data dynamically
-- Artist cards are `<a class="artist-card">` with `.a-name` inside (not `a.artist-name`)
-- Search URL uses `?type=artist` not `?mode=artist`
-- Release is NSIS installer (Windows x64 only), marked as pre-release
-- GitHub repo is private — collaborator invites require GitHub usernames, not emails
+## Known Issues
+- Artist page releases fail to load on cold first launch (MusicBrainz fetch fails before WebView network is ready). Retry in `fetchSafe` added but Steve says still not working. Needs deeper investigation.
+- The release build (`mercury.exe`) needs `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS="--remote-debugging-port=9224"` env var for CDP.
 
-## Relevant Files
-- `tools/test-suite/extended-manifest.mjs` — 44 extended test definitions
-- `tools/test-suite/run-extended.mjs` — standalone extended test runner
-- `tools/test-suite/run.mjs` — updated main runner with --extended flags
-- `src-tauri/target/release/bundle/nsis/BlackTape_0.1.0_x64-setup.exe` — release installer
-- `app-recordings/2026-03-02_app-walkthrough/press/` — 66 screenshots (pass 4 best: files 52-66)
-- `app-recordings/2026-03-02_app-walkthrough/final/app-walkthrough.mp4` — 5m25s walkthrough video
+## Key File Paths
+- `src/lib/components/Player.svelte` — player bar with slide animation
+- `src/lib/components/ControlBar.svelte` — global toolbar with reload button
+- `src/lib/components/CoverPlaceholder.svelte` — generative cover art
+- `src/lib/styles/theme.css` — global styles
+- `src/routes/artist/[slug]/+page.ts` — artist page loader with fetchSafe retry
+- `src/lib/components/SetupWizard.svelte` — first-run onboarding wizard
+- App data: `C:/Users/User/AppData/Roaming/com.blacktape.app/`
 
 ## Git Status
-- BUILD-LOG.md modified (unstaged, +3 lines)
-- Branch 6 commits ahead of origin/main
+- Multiple files modified (unstaged): Player.svelte, ControlBar.svelte, CoverPlaceholder.svelte, theme.css, +page.ts, ArtistCard.svelte, +layout.svelte, BUILD-LOG.md
+- Not committed yet
 
 ## Next Steps
-1. Steve uploads installer + database to Google Drive, shares with 3 friends
-2. Optionally push remaining commits (`git push`)
-3. Whatever Steve wants to work on next
-
-## Resume Command
-After running `/clear`, run `/resume` to continue.
+1. Restore mercury.db after Steve finishes testing first-time experience
+2. Steve may want to improve the onboarding for friends
+3. Investigate cold-start MusicBrainz fetch failure more deeply
+4. Commit all changes
+5. Build new release for friends
