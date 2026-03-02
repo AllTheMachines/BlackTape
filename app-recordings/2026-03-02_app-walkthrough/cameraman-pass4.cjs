@@ -171,6 +171,7 @@ function startCapture(sceneName) {
     '-y',
     '-f', 'image2pipe', '-framerate', String(TARGET_FPS),
     '-i', 'pipe:0',
+    '-vf', 'crop=trunc(iw/2)*2:trunc(ih/2)*2',
     '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '18', '-pix_fmt', 'yuv420p',
     clipPath
   ], { stdio: ['pipe', 'ignore', 'pipe'] });
@@ -182,6 +183,7 @@ function startCapture(sceneName) {
     else if (line.includes('Error') || line.includes('error') || line.includes('Invalid'))
       console.warn(`  FFmpeg: ${line.trim().slice(0, 120)}`);
   });
+  proc.stdin.on('error', () => {}); // Suppress EPIPE if ffmpeg exits early
   proc.on('close', code => {
     if (code !== 0 && code !== null) console.warn(`  FFmpeg exited with code ${code}`);
   });
