@@ -4,6 +4,22 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-03-02 — Pre-release polish: 4 issues for friends & family alpha
+
+Preparing v0.1.0-alpha for sharing with friends. Tackled 4 GitHub issues that would make bad first impressions:
+
+**#80 — Player slides in/out instead of popping:** Replaced the `{#if}` conditional rendering with a CSS `transform: translateY(100%)` → `translateY(0)` transition. Player wrapper is always in the DOM, slides up smoothly when a track starts, slides back down when nothing is playing. 0.3s ease transition. No more jarring appear/disappear.
+
+**#79 — Reload button in ControlBar:** Added a small refresh icon button next to the back button in the global toolbar. Uses SvelteKit's `invalidateAll()` to re-run all data loaders. Spins while reloading. Always accessible — no need to navigate away when something feels off.
+
+**#71 — Cover art pixelation fix:** Three changes: (1) Added `image-rendering: auto` to CoverPlaceholder backdrop images to ensure high-quality interpolation. (2) Added `will-change: transform` to promote the backdrop to GPU compositing. (3) Upgraded ArtistCard composite cover source from `front-250` to `front-500` — the 250px thumbnails were too small for the 2×2 mosaic in cards.
+
+**#73 — All text selectable:** Added `user-select: text` to the global body rule in theme.css. Journalists and researchers can now select and copy any text in the app. Existing `user-select: none` on titlebar and SVG graphs still overrides correctly.
+
+All 199 core tests passing. Zero regressions.
+
+---
+
 ## Entry 2026-03-01 — All 9 Retro FX live in player bar + BlackTape branding in design system
 
 All 9 Retro FX ideas from the design system are now implemented in `Player.svelte`. They work together to give the player bar a subtle but unmistakable cassette-era aesthetic.
@@ -11699,4 +11715,7 @@ Built a comprehensive extended test suite that connects to the running app via P
 > Files changed: 2
 
 > **Commit b128647** (2026-03-02 12:26) — wip: auto-save
+> Files changed: 1
+
+> **Commit c20d113** (2026-03-02 12:27) — wip: auto-save
 > Files changed: 1

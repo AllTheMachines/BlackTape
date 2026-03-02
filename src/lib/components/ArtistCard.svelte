@@ -69,7 +69,7 @@
 			const data = await resp.json() as { 'release-groups': { id: string }[] };
 			return (data['release-groups'] ?? [])
 				.slice(0, 4)
-				.map(rg => `https://coverartarchive.org/release-group/${rg.id}/front-250`);
+				.map(rg => `https://coverartarchive.org/release-group/${rg.id}/front-500`);
 		} catch {
 			return [];
 		}

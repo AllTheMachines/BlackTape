@@ -1,8 +1,16 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { themeState } from '$lib/theme/engine.svelte';
 	import type { TemplateConfig } from '$lib/theme/templates';
+
+	let reloading = $state(false);
+
+	async function reloadPage() {
+		reloading = true;
+		await invalidateAll();
+		reloading = false;
+	}
 
 	interface Props {
 		currentTemplateId: string;
@@ -49,6 +57,12 @@
 				</svg>
 			</button>
 		{/if}
+		<button class="reload-btn" onclick={reloadPage} disabled={reloading} title="Reload page" aria-label="Reload page">
+			<svg class:spinning={reloading} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+				<polyline points="23 4 23 10 17 10" />
+				<path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+			</svg>
+		</button>
 		<form class="search-form" onsubmit={handleSearch}>
 			<label for="control-bar-search" class="sr-only">Search artists and tags</label>
 			<svg
@@ -178,6 +192,46 @@
 	.back-btn:hover {
 		color: var(--t-1);
 		background: var(--bg-5);
+	}
+
+	/* Reload */
+	.reload-btn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 26px;
+		height: 26px;
+		background: var(--bg-4);
+		border: 1px solid var(--b-2);
+		border-radius: var(--r);
+		color: var(--t-3);
+		cursor: pointer;
+		flex-shrink: 0;
+		transition: color 0.1s, background 0.1s;
+	}
+
+	.reload-btn:hover:not(:disabled) {
+		color: var(--t-1);
+		background: var(--bg-5);
+	}
+
+	.reload-btn:disabled {
+		opacity: 0.5;
+		cursor: default;
+	}
+
+	:global(.reload-btn svg) {
+		display: block;
+		flex-shrink: 0;
+	}
+
+	:global(.spinning) {
+		animation: spin-reload 0.6s linear infinite;
+	}
+
+	@keyframes spin-reload {
+		from { transform: rotate(0deg); }
+		to { transform: rotate(360deg); }
 	}
 
 	/* Search */

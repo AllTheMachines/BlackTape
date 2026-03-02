@@ -225,6 +225,7 @@
 		/* Sharp + dimmed by default — same-artist composite */
 		filter: brightness(0.45);
 		z-index: 0;
+		will-change: transform;
 	}
 
 	/* Cross-artist fallback: bleed past edges to hide blur soft borders */
@@ -245,6 +246,8 @@
 		height: 100%;
 		object-fit: cover;
 		display: block;
+		image-rendering: auto;
+		-webkit-image-rendering: auto;
 	}
 
 	/* Genre color tint — makes each placeholder feel intentional, not random */

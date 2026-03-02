@@ -131,6 +131,8 @@ body {
 	line-height: 1.5;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
+	user-select: text;
+	-webkit-user-select: text;
 }
 
 /* Base anchor styles */

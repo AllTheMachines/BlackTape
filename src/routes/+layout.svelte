@@ -103,7 +103,7 @@
 	});
 
 	$effect(() => {
-		showPlayer = isTauri() && playerState.currentTrack !== null;
+		showPlayer = isTauri() && (playerState.currentTrack !== null || streamingState.activeSource === 'spotify');
 	});
 
 	/** Reactively update theme when taste profile changes (Tauri only). */

@@ -53,6 +53,9 @@
 	const isSpotifyMode = $derived(streamingState.activeSource === 'spotify');
 	const spotifyRepeat = $derived(streamingState.spotifyTrack?.repeatState ?? 'off');
 
+	// Whether the player bar should be visible.
+	const playerVisible = $derived(!!(playerState.currentTrack || isSpotifyMode));
+
 	// Unified play state — Spotify or local.
 	const isPlaying = $derived(
 		isSpotifyMode
@@ -187,8 +190,8 @@
 	}
 </script>
 
-{#if playerState.currentTrack || isSpotifyMode}
-	{#if showExpanded}
+<div class="player-wrapper" class:visible={playerVisible} aria-hidden={!playerVisible}>
+	{#if playerVisible && showExpanded}
 		<div class="expanded-panel">
 			<NowPlayingDiscovery
 				artistName={isSpotifyMode
@@ -570,17 +573,28 @@
 			<Queue onclose={() => (showQueue = false)} />
 		{/if}
 	{/if}
-{/if}
+</div>
 
 <style>
-	.expanded-panel {
+	.player-wrapper {
 		position: fixed;
-		bottom: var(--player);
+		bottom: 0;
 		left: 0;
 		right: 0;
+		z-index: 200;
+		transform: translateY(100%);
+		transition: transform 0.3s ease;
+		pointer-events: none;
+	}
+
+	.player-wrapper.visible {
+		transform: translateY(0);
+		pointer-events: auto;
+	}
+
+	.expanded-panel {
 		background: var(--bg-2);
 		border-top: 1px solid var(--b-2);
-		z-index: 199;
 		animation: slide-up 0.2s ease-out;
 		max-height: 280px;
 		overflow-y: auto;
@@ -598,10 +612,6 @@
 	}
 
 	.player-bar {
-		position: fixed;
-		bottom: 0;
-		left: 0;
-		right: 0;
 		height: var(--player);
 		background: var(--bg-3);
 		border-top: 1px solid var(--b-2);
@@ -610,7 +620,7 @@
 		align-items: center;
 		padding: 0 14px;
 		gap: 12px;
-		z-index: 200;
+		position: relative;
 	}
 
 	/* Track info — left section */
