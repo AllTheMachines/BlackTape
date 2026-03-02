@@ -1,64 +1,50 @@
-# Work Handoff - 2026-03-02 11:30
+# Work Handoff - 2026-03-02 12:00
 
 ## Current Task
-App video recording — `/record-app` workflow COMPLETE. Final video delivered. Ready for Step 9 delivery summary or next work.
+Extended E2E test suite complete. GitHub release created. Session wrapping up — sharing with friends.
 
 ## Context
-Steve invoked `/record-app` for a full BlackTape walkthrough. Passes 1-3 failed due to FFmpeg gdigrab capture issues (multi-monitor bleed, VS Code z-order overlap). Pass 4 switched to CDP renderer capture (`Page.captureScreenshot`), which captures directly from the Chromium renderer — completely independent of window z-order. Director approved pass 4, Cutter assembled the final video.
+Steve asked for a comprehensive user-journey test suite to make the app bulletproof. Built 44 extended E2E tests using Playwright CDP that click through the real running app. All 44 passed — zero bugs, zero JS errors. Then built a release installer and created a GitHub pre-release (v0.1.0-alpha).
 
 ## Progress
 ### Completed
-- Researched window capture approaches (gdigrab limitations, OBS Windows.Graphics.Capture, CDP)
-- Benchmarked CDP capture methods: Playwright page.screenshot (~14fps), raw CDP captureScreenshot (~20fps), screencast (~3fps)
-- Created `cameraman-pass4.cjs` using raw CDP capture at 15fps, JPEG q60, piped to FFmpeg
-- Fixed H.264 even-dimension issue (added `-vf crop=trunc(iw/2)*2:trunc(ih/2)*2`)
-- Fixed pipe error handling (added `proc.stdin.on('error')` suppress)
-- **Pass 4 recorded**: 41 clips, 430MB total, 1904x1070, H.264, 15fps
-- Extracted checkpoint screenshots from all 41 clips
-- Updated manifest with pass 4 data
-- **Director review**: APPROVED — 37/41 scenes pass, 4 excluded (kb-ambient blank, player-bar-finale error, style-map-2/3 wrong page)
-- **Cutter post-production**: COMPLETE — 37 scenes assembled with crossfade transitions
-- **Final video**: `app-recordings/2026-03-02_app-walkthrough/final/app-walkthrough.mp4` — 5m25s, 162MB, 4.2Mbps
+- Extended E2E test suite: 44 tests across 11 journey categories — all passing
+- `tools/test-suite/extended-manifest.mjs` — 44 test definitions
+- `tools/test-suite/run-extended.mjs` — standalone runner (`node tools/test-suite/run-extended.mjs --port 9224`)
+- `tools/test-suite/run.mjs` — updated with `--extended` and `--extended-only` flags
+- Tauri release build: `src-tauri/target/release/bundle/nsis/BlackTape_0.1.0_x64-setup.exe` (9.4MB)
+- GitHub pre-release: https://github.com/AllTheMachines/BlackTape/releases/tag/v0.1.0-alpha
+- BUILD-LOG.md updated with recording session + extended test suite entries
 
 ### Remaining
-- BUILD-LOG.md needs updating with the full recording session summary
-- Optional: re-record the 4 excluded scenes if Steve wants them
-- The `/record-app` Step 9 (Delivery) summary was given inline — workflow is complete
+- Steve wants to share with 3 friends (dragansilvana1@yahoo.com, Bernadette.bolch@web.de, starscape@gmx.de) — they're not on GitHub, so he'll upload the installer to Google Drive manually
+- Friends also need the database file to use the app (not bundled)
+- BUILD-LOG.md has minor unstaged changes (+3 lines)
+- Branch is 6 commits ahead of origin (pushed main, but auto-saves after)
 
 ## Key Decisions
-- CDP renderer capture chosen over gdigrab — completely avoids window z-order issues on Windows
-- Raw CDP `Page.captureScreenshot` with `optimizeForSpeed: true` chosen as fastest method (~50ms/frame)
-- 15fps target chosen (achievable with CDP overhead)
-- JPEG q60 for capture frames (good balance of speed vs quality)
-- Director excluded 4 scenes rather than requesting another pass (lenient threshold, pass 4 was final allowed)
-- Crossfade transitions chosen for the walkthrough style
+- Extended tests connect to existing running app via CDP (no fixture DB swap) — tests discover data dynamically
+- Artist cards are `<a class="artist-card">` with `.a-name` inside (not `a.artist-name`)
+- Search URL uses `?type=artist` not `?mode=artist`
+- Release is NSIS installer (Windows x64 only), marked as pre-release
+- GitHub repo is private — collaborator invites require GitHub usernames, not emails
 
 ## Relevant Files
-- `app-recordings/2026-03-02_app-walkthrough/final/app-walkthrough.mp4` — FINAL VIDEO
-- `app-recordings/2026-03-02_app-walkthrough/manifest.json` — full session metadata
-- `app-recordings/2026-03-02_app-walkthrough/storyboard.json` — 41-scene storyboard v3
-- `app-recordings/2026-03-02_app-walkthrough/cut-spec.json` — Director's cut spec (37 scenes)
-- `app-recordings/2026-03-02_app-walkthrough/cameraman-pass4.cjs` — CDP capture script
-- `app-recordings/2026-03-02_app-walkthrough/takes/pass-4/` — 41 individual clip files
-- `app-recordings/2026-03-02_app-walkthrough/press/` — 66 press screenshots across all passes
+- `tools/test-suite/extended-manifest.mjs` — 44 extended test definitions
+- `tools/test-suite/run-extended.mjs` — standalone extended test runner
+- `tools/test-suite/run.mjs` — updated main runner with --extended flags
+- `src-tauri/target/release/bundle/nsis/BlackTape_0.1.0_x64-setup.exe` — release installer
+- `app-recordings/2026-03-02_app-walkthrough/press/` — 66 screenshots (pass 4 best: files 52-66)
+- `app-recordings/2026-03-02_app-walkthrough/final/app-walkthrough.mp4` — 5m25s walkthrough video
 
 ## Git Status
-- `BUILD-LOG.md` modified (not staged, +3 lines)
-- Recording files are in gitignored `takes/` and `final/` directories
-- Metadata files (manifest, storyboard, cut-spec) are committable
-
-## Lessons Learned This Session
-1. FFmpeg gdigrab `-i title=` captures screen at window position on Windows 10/11 — other windows bleed through
-2. No FFmpeg-native solution for true per-window background capture on Windows
-3. Raw CDP `Page.captureScreenshot` with `optimizeForSpeed: true` is fastest (~50ms/frame)
-4. CDP `Page.startScreencast` is much slower due to ack backpressure (~3fps)
-5. H.264 requires even dimensions — add `-vf "crop=trunc(iw/2)*2:trunc(ih/2)*2"` when viewport may be odd
-6. Must handle pipe errors when FFmpeg exits early — `proc.stdin.on('error', () => {})` prevents crash
+- BUILD-LOG.md modified (unstaged, +3 lines)
+- Branch 6 commits ahead of origin/main
 
 ## Next Steps
-1. Update BUILD-LOG.md with recording session summary
-2. Optionally commit metadata files (manifest, storyboard, cut-spec)
-3. Whatever Steve wants to work on next — the recording is done
+1. Steve uploads installer + database to Google Drive, shares with 3 friends
+2. Optionally push remaining commits (`git push`)
+3. Whatever Steve wants to work on next
 
 ## Resume Command
 After running `/clear`, run `/resume` to continue.
