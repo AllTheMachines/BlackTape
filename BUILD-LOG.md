@@ -11509,3 +11509,10 @@ Replaced the blurred-backdrop-always approach with a four-case system that uses 
 
 > **Commit eb1f223** (2026-03-02 01:16) — auto-save: 1 files @ 01:16
 > Files changed: 1
+
+> **Commit 815c6dc** (2026-03-02 01:19) — wip: auto-save
+> Files changed: 2
+
+<!-- status -->
+Recording Pass 2 — app walkthrough. Fixed: fullscreen + minimize other windows before FFmpeg. Updated cameraman skill with Section 2.5 (Window Prep) for all future projects.
+<!-- /status -->
