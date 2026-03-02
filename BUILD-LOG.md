@@ -4,6 +4,16 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-03-02 — Auto-download database in Setup Wizard
+
+The manual "download, decompress, place at path" flow for first-time setup was unacceptable. Steve was clear: click a button, see progress, done.
+
+**Implementation:** New `download_database` Rust command that downloads `mercury.db.gz` from a URL, streams to disk with progress events, then decompresses with `flate2`. Two-phase progress: "downloading" shows bytes/total with a progress bar, "decompressing" shows a shimmer animation with bytes written. The download URL lives in `config.ts` as `DATABASE_DOWNLOAD_URL`, pointing to the GitHub releases latest asset.
+
+Step 2 of the Setup Wizard now shows a "Download database" primary button and an "I have it already" secondary button (for users who placed the file manually). No more three-step instructions with manual decompression. The pattern mirrors the existing AI model download in Step 3.
+
+---
+
 ## Entry 2026-03-02 — Pre-release polish: 4 issues for friends & family alpha
 
 Preparing v0.1.0-alpha for sharing with friends. Tackled 4 GitHub issues that would make bad first impressions:
@@ -11766,4 +11776,7 @@ Built a comprehensive extended test suite that connects to the running app via P
 > Files changed: 1
 
 > **Commit 8b1bebe** (2026-03-02 13:08) — wip: auto-save
+> Files changed: 2
+
+> **Commit 275189b** (2026-03-02 13:10) — wip: auto-save
 > Files changed: 2

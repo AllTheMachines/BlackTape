@@ -1,8 +1,9 @@
 <script lang="ts">
-	import { PROJECT_NAME } from '$lib/config';
+	import { PROJECT_NAME, DATABASE_DOWNLOAD_URL } from '$lib/config';
 	import { aiState, saveAiSetting } from '$lib/ai/state.svelte';
 	import { MODELS, downloadModel, checkModelExists } from '$lib/ai/model-manager';
 	import type { DownloadProgressEvent } from '$lib/ai/model-manager';
+	import { Channel } from '@tauri-apps/api/core';
 
 	let props: {
 		dbPath: string;
@@ -13,6 +14,11 @@
 	let step = $state(1); // 1=Welcome, 2=Database, 3=AI Models, 4=Done
 	let dbChecking = $state(false);
 	let dbReady = $state(false);
+	let dbDownloading = $state(false);
+	let dbDownloadPhase = $state('');
+	let dbDownloaded = $state(0);
+	let dbTotal = $state(0);
+	let dbDownloadError = $state('');
 
 	let generationExists = $state(false);
 	let embeddingExists = $state(false);
@@ -36,6 +42,32 @@
 	async function goToDatabase() {
 		step = 2;
 		await checkDb();
+	}
+
+	async function handleDownloadDb() {
+		dbDownloading = true;
+		dbDownloadError = '';
+		dbDownloadPhase = 'downloading';
+		dbDownloaded = 0;
+		dbTotal = 0;
+		try {
+			const { invoke } = await import('@tauri-apps/api/core');
+			const channel = new Channel<{ phase: string; downloaded: number; total: number }>();
+			channel.onmessage = (msg) => {
+				dbDownloadPhase = msg.phase;
+				dbDownloaded = msg.downloaded;
+				dbTotal = msg.total;
+			};
+			await invoke('download_database', {
+				url: DATABASE_DOWNLOAD_URL,
+				onProgress: channel
+			});
+			dbDownloading = false;
+			dbReady = true;
+		} catch (err) {
+			dbDownloadError = err instanceof Error ? err.message : String(err);
+			dbDownloading = false;
+		}
 	}
 
 	async function goToAiModels() {
@@ -143,25 +175,44 @@
 				<h1>Download the database</h1>
 				<p class="step-desc">
 					The search index is a local SQLite database that powers all discovery.
-					It's not bundled with the app because of its size — download it separately.
+					It's not bundled with the app because of its size.
 				</p>
 
-				<div class="instructions">
-					<ol>
-						<li>Download <code>mercury.db.gz</code> from the <a href="https://github.com/AllTheMachines/Mercury/releases" target="_blank" rel="noopener noreferrer">releases page</a></li>
-						<li>Decompress the file to get <code>mercury.db</code></li>
-						<li>Place it at the path shown below</li>
-					</ol>
-				</div>
+				{#if dbDownloading}
+					<div class="download-progress">
+						{#if dbDownloadPhase === 'downloading'}
+							<p class="downloading-label">Downloading database...</p>
+							<div class="progress-bar">
+								<div
+									class="progress-fill"
+									style="width: {dbTotal > 0 ? Math.round((dbDownloaded / dbTotal) * 100) : 0}%"
+								></div>
+							</div>
+							<p class="progress-text">
+								{formatBytes(dbDownloaded)}{dbTotal > 0 ? ` / ${formatBytes(dbTotal)}` : ''}
+							</p>
+						{:else}
+							<p class="downloading-label">Decompressing database...</p>
+							<div class="progress-bar">
+								<div class="progress-fill decompressing"></div>
+							</div>
+							{#if dbDownloaded > 0}
+								<p class="progress-text">{formatBytes(dbDownloaded)} written</p>
+							{/if}
+						{/if}
+					</div>
+				{:else if dbDownloadError}
+					<p class="error-text">{dbDownloadError}</p>
+				{/if}
 
-				<div class="path-box">
-					<span class="path-label">Expected location</span>
-					<code class="path-value">{props.dbPath}</code>
+				<div class="step-actions">
+					<button class="primary-btn" onclick={handleDownloadDb} disabled={dbDownloading}>
+						{dbDownloadError ? 'Retry download' : 'Download database'}
+					</button>
+					<button class="secondary-btn" onclick={checkDb} disabled={dbChecking || dbDownloading}>
+						{dbChecking ? 'Checking...' : 'I have it already'}
+					</button>
 				</div>
-
-				<button class="secondary-btn" onclick={checkDb} disabled={dbChecking}>
-					{dbChecking ? 'Checking...' : 'Check Again'}
-				</button>
 			{/if}
 		</div>
 
@@ -476,6 +527,18 @@
 		height: 100%;
 		background: var(--acc);
 		transition: width 0.3s ease;
+	}
+
+	.progress-fill.decompressing {
+		width: 100%;
+		background: linear-gradient(90deg, transparent 0%, var(--acc) 50%, transparent 100%);
+		background-size: 200% 100%;
+		animation: shimmer 1.5s ease-in-out infinite;
+	}
+
+	@keyframes shimmer {
+		0% { background-position: 200% 0; }
+		100% { background-position: -200% 0; }
 	}
 
 	.progress-text {

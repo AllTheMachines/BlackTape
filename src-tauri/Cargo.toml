@@ -34,3 +34,4 @@ rsa = { version = "0.9", features = ["pem"] }
 rand = "0.8"
 tauri-plugin-oauth = "2"
 keyring = "3"
+flate2 = "1"
