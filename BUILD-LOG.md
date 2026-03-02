@@ -11909,3 +11909,6 @@ Completed the `mercury.exe` → `blacktape.exe` rename across the entire project
 6. Smoke test: `launch-cdp.mjs` successfully launches `blacktape.exe` with CDP on port 9224
 
 Zero `mercury.exe` references remain in tools, src, or app-recordings. Historical entries in BUILD-LOG.md and .planning/ left as-is (they're documentation of what happened).
+
+> **Commit 99adc21** (2026-03-03 00:57) — v0.3.0 — library redesign, updater overhaul, mercury-api, dev icons
+> Files changed: 86
