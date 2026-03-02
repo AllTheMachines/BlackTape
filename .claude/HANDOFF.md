@@ -1,45 +1,43 @@
 # Work Handoff - 2026-03-02 (afternoon)
 
-## Current Task
-Pre-release polish for v0.1.0-alpha friends & family preview.
+## PRIORITY NEXT TASK
+**Auto-download database in Setup Wizard.** Steve says the current "download manually, decompress, place at path" flow is unacceptable. It must be: click "Download" → see progress bar → done. No manual steps.
+
+Implementation needed:
+- Rust command in `src-tauri/src/lib.rs` that downloads `mercury.db.gz` from a URL, streams it to disk with progress events, then decompresses it to `mercury.db` in the app data dir
+- Update `SetupWizard.svelte` Step 2: replace manual instructions with a "Download Database" button + progress bar (like the AI models step already does)
+- The download URL needs to be hosted somewhere (GitHub release asset, or a direct URL Steve provides)
+- Progress should show bytes downloaded / total size
+- After download completes, auto-advance to next step
+
+Reference: The AI models download in Step 3 already has this pattern — `downloadModel()` with progress callback. Mirror that for the database.
+
+## RESTORE DB FIRST
+Steve's real database has been moved to test first-time experience:
+```bash
+mv "C:/Users/User/AppData/Roaming/com.blacktape.app/mercury.db.bak" "C:/Users/User/AppData/Roaming/com.blacktape.app/mercury.db"
+mv "C:/Users/User/AppData/Roaming/com.blacktape.app/mercury.db-shm.bak" "C:/Users/User/AppData/Roaming/com.blacktape.app/mercury.db-shm" 2>/dev/null
+mv "C:/Users/User/AppData/Roaming/com.blacktape.app/mercury.db-wal.bak" "C:/Users/User/AppData/Roaming/com.blacktape.app/mercury.db-wal" 2>/dev/null
+# taste.db files too:
+find "C:/Users/User/AppData/Roaming/com.blacktape.app" -name "*.bak" -exec sh -c 'mv "$1" "${1%.bak}"' _ {} \;
+```
+Kill mercury.exe first if still running: `taskkill //F //IM mercury.exe`
 
 ## Completed This Session
 ### 4 GitHub issues fixed:
-- **#80** — Player slides in/out with CSS transform instead of {#if} pop. `Player.svelte` wrapper div with `transform: translateY(100%)` ↔ `translateY(0)`, 0.3s ease.
-- **#79** — Reload button added to `ControlBar.svelte` (global toolbar). Uses `invalidateAll()`. Spinning icon while loading.
-- **#71** — CoverPlaceholder pixelation fix: `image-rendering: auto`, `will-change: transform` on backdrop, upgraded ArtistCard cover source from `front-250` to `front-500`.
-- **#73** — Global `user-select: text` added to body in `theme.css`.
-
-### Other changes:
-- Removed film grain canvas from Player (Steve asked to remove the noise)
-- Added retry logic to `fetchSafe()` in artist page loader (cold-start network failures)
-- Deleted GitHub release v0.1.0-alpha (Steve's request)
-- Built fresh Tauri release: `src-tauri/target/release/bundle/nsis/BlackTape_0.1.0_x64-setup.exe`
-
-## In Progress
-- **First-time user experience testing** — DB has been moved to `.bak` to simulate clean install. Steve is testing the Setup Wizard.
-- **RESTORE DB AFTER TESTING:** `mv "C:/Users/User/AppData/Roaming/com.blacktape.app/mercury.db.bak" "C:/Users/User/AppData/Roaming/com.blacktape.app/mercury.db"` (also .shm, .wal, and taste.db files)
-
-## Known Issues
-- Artist page releases fail to load on cold first launch (MusicBrainz fetch fails before WebView network is ready). Retry in `fetchSafe` added but Steve says still not working. Needs deeper investigation.
-- The release build (`mercury.exe`) needs `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS="--remote-debugging-port=9224"` env var for CDP.
-
-## Key File Paths
-- `src/lib/components/Player.svelte` — player bar with slide animation
-- `src/lib/components/ControlBar.svelte` — global toolbar with reload button
-- `src/lib/components/CoverPlaceholder.svelte` — generative cover art
-- `src/lib/styles/theme.css` — global styles
-- `src/routes/artist/[slug]/+page.ts` — artist page loader with fetchSafe retry
-- `src/lib/components/SetupWizard.svelte` — first-run onboarding wizard
-- App data: `C:/Users/User/AppData/Roaming/com.blacktape.app/`
+- **#80** — Player slides in/out with CSS transform (`Player.svelte` wrapper div)
+- **#79** — Reload button in `ControlBar.svelte` using `invalidateAll()`
+- **#71** — CoverPlaceholder pixelation: `image-rendering: auto`, GPU compositing, `front-500` sources
+- **#73** — Global `user-select: text` in `theme.css`
+- Removed film grain canvas from Player
+- Added retry to `fetchSafe()` in artist page loader
+- Deleted GitHub release v0.1.0-alpha
+- Built Tauri release: `src-tauri/target/release/bundle/nsis/BlackTape_0.1.0_x64-setup.exe`
 
 ## Git Status
-- Multiple files modified (unstaged): Player.svelte, ControlBar.svelte, CoverPlaceholder.svelte, theme.css, +page.ts, ArtistCard.svelte, +layout.svelte, BUILD-LOG.md
-- Not committed yet
+- Multiple files modified (unstaged), not committed yet
+- Changes: Player.svelte, ControlBar.svelte, CoverPlaceholder.svelte, theme.css, +page.ts, ArtistCard.svelte, +layout.svelte, BUILD-LOG.md
 
-## Next Steps
-1. Restore mercury.db after Steve finishes testing first-time experience
-2. Steve may want to improve the onboarding for friends
-3. Investigate cold-start MusicBrainz fetch failure more deeply
-4. Commit all changes
-5. Build new release for friends
+## Known Issues
+- Artist page releases fail on cold first launch (MusicBrainz fetch). Retry added but still intermittent.
+- App data path: `C:/Users/User/AppData/Roaming/com.blacktape.app/`
