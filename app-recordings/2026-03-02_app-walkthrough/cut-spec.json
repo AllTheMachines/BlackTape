@@ -1,0 +1,142 @@
+{
+  "scenes": [
+    {
+      "scene_name": "app-launch",
+      "trim_start": 0.5,
+      "trim_end": 0.3,
+      "speed_multiplier": 1.0
+    },
+    {
+      "scene_name": "artist-search",
+      "trim_start": 0.5,
+      "trim_end": 0.3,
+      "speed_multiplier": 1.0
+    },
+    {
+      "scene_name": "artist-page",
+      "trim_start": 0.5,
+      "trim_end": 0.3,
+      "speed_multiplier": 1.0
+    },
+    {
+      "scene_name": "artist-page-scroll",
+      "trim_start": 0.5,
+      "trim_end": 0.3,
+      "speed_multiplier": 1.0
+    },
+    {
+      "scene_name": "tag-search",
+      "trim_start": 0.5,
+      "trim_end": 0.3,
+      "speed_multiplier": 1.0
+    },
+    {
+      "scene_name": "discover-page",
+      "trim_start": 0.5,
+      "trim_end": 0.3,
+      "speed_multiplier": 1.0
+    },
+    {
+      "scene_name": "discover-tag-filter",
+      "trim_start": 0.5,
+      "trim_end": 0.3,
+      "speed_multiplier": 1.0
+    },
+    {
+      "scene_name": "style-map",
+      "trim_start": 0.1,
+      "trim_end": 0.3,
+      "speed_multiplier": 2.0
+    },
+    {
+      "scene_name": "style-map-hover",
+      "trim_start": 0.5,
+      "trim_end": 0.3,
+      "speed_multiplier": 1.0
+    },
+    {
+      "scene_name": "knowledge-base",
+      "trim_start": 0.1,
+      "trim_end": 0.3,
+      "speed_multiplier": 2.0
+    },
+    {
+      "scene_name": "genre-page",
+      "trim_start": 0.5,
+      "trim_end": 0.3,
+      "speed_multiplier": 1.0
+    },
+    {
+      "scene_name": "time-machine",
+      "trim_start": 0.5,
+      "trim_end": 0.3,
+      "speed_multiplier": 1.0
+    },
+    {
+      "scene_name": "crate-digging",
+      "trim_start": 0.5,
+      "trim_end": 0.3,
+      "speed_multiplier": 1.0
+    },
+    {
+      "scene_name": "library-page",
+      "trim_start": 0.1,
+      "trim_end": 0.3,
+      "speed_multiplier": 2.0
+    },
+    {
+      "scene_name": "player-bar",
+      "trim_start": 0.5,
+      "trim_end": 0.3,
+      "speed_multiplier": 1.0
+    },
+    {
+      "scene_name": "player-controls",
+      "trim_start": 0.5,
+      "trim_end": 0.3,
+      "speed_multiplier": 1.0
+    },
+    {
+      "scene_name": "settings-overview",
+      "trim_start": 0.5,
+      "trim_end": 0.3,
+      "speed_multiplier": 1.0
+    },
+    {
+      "scene_name": "layout-switch",
+      "trim_start": 0.5,
+      "trim_end": 0.3,
+      "speed_multiplier": 1.0
+    },
+    {
+      "scene_name": "final-overview",
+      "trim_start": 0.5,
+      "trim_end": 0.3,
+      "speed_multiplier": 1.0
+    }
+  ],
+  "concatenation_order": [
+    "app-launch",
+    "artist-search",
+    "artist-page",
+    "artist-page-scroll",
+    "tag-search",
+    "discover-page",
+    "discover-tag-filter",
+    "style-map",
+    "style-map-hover",
+    "knowledge-base",
+    "genre-page",
+    "time-machine",
+    "crate-digging",
+    "library-page",
+    "player-bar",
+    "player-controls",
+    "settings-overview",
+    "layout-switch",
+    "final-overview"
+  ],
+  "dead_air_threshold": 1.5,
+  "dead_air_replacement": 0.5,
+  "transition_style": "crossfade"
+}

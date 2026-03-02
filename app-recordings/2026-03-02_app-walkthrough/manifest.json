@@ -1,5 +1,5 @@
 {
-  "summary": "Recording session started",
+  "summary": "19-scene recording of full app walkthrough, 1 pass(es), Director approved",
   "brief": "Full app walkthrough",
   "feature_slug": "app-walkthrough",
   "date": "2026-03-02",
@@ -197,15 +197,15 @@
         "D:\\Projects\\BlackTape\\app-recordings\\2026-03-02_app-walkthrough\\takes\\pass-1\\screenshots\\layout-switch-checkpoint.png",
         "D:\\Projects\\BlackTape\\app-recordings\\2026-03-02_app-walkthrough\\takes\\pass-1\\screenshots\\final-overview-checkpoint.png"
       ],
-      "director_verdict": "pending",
+      "director_verdict": "approved",
       "revision_notes": null,
-      "cut_spec_path": null,
-      "ffmpeg_output_path": null
+      "cut_spec_path": "D:\\Projects\\BlackTape\\app-recordings\\2026-03-02_app-walkthrough\\cut-spec.json",
+      "ffmpeg_output_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/final/app-walkthrough.mp4"
     }
   ],
   "current_pass": 1,
-  "director_approved": false,
-  "final_output_path": null,
+  "director_approved": true,
+  "final_output_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/final/app-walkthrough.mp4",
   "press_screenshots": [
     "D:\\Projects\\BlackTape\\app-recordings\\2026-03-02_app-walkthrough\\press\\01-app-launch.png",
     "D:\\Projects\\BlackTape\\app-recordings\\2026-03-02_app-walkthrough\\press\\02-artist-page.png",
