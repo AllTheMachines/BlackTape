@@ -1,142 +1,274 @@
 {
   "scenes": [
     {
-      "scene_name": "app-launch",
+      "scene_name": "00-app-launch",
       "trim_start": 0.5,
       "trim_end": 0.3,
       "speed_multiplier": 1.0
     },
     {
-      "scene_name": "artist-search",
+      "scene_name": "01-artist-slowdive",
       "trim_start": 0.5,
       "trim_end": 0.3,
       "speed_multiplier": 1.0
     },
     {
-      "scene_name": "artist-page",
+      "scene_name": "02-artist-my-bloody-valentine",
       "trim_start": 0.5,
       "trim_end": 0.3,
       "speed_multiplier": 1.0
     },
     {
-      "scene_name": "artist-page-scroll",
+      "scene_name": "03-artist-cocteau-twins",
       "trim_start": 0.5,
       "trim_end": 0.3,
       "speed_multiplier": 1.0
     },
     {
-      "scene_name": "tag-search",
+      "scene_name": "04-artist-ride-3f575ecd",
       "trim_start": 0.5,
       "trim_end": 0.3,
       "speed_multiplier": 1.0
     },
     {
-      "scene_name": "discover-page",
+      "scene_name": "05-artist-mazzy-star",
       "trim_start": 0.5,
       "trim_end": 0.3,
       "speed_multiplier": 1.0
     },
     {
-      "scene_name": "discover-tag-filter",
+      "scene_name": "06-artist-beach-house",
       "trim_start": 0.5,
       "trim_end": 0.3,
       "speed_multiplier": 1.0
     },
     {
-      "scene_name": "style-map",
-      "trim_start": 0.1,
-      "trim_end": 0.3,
-      "speed_multiplier": 2.0
-    },
-    {
-      "scene_name": "style-map-hover",
+      "scene_name": "07-artist-joy-division",
       "trim_start": 0.5,
       "trim_end": 0.3,
       "speed_multiplier": 1.0
     },
     {
-      "scene_name": "knowledge-base",
-      "trim_start": 0.1,
-      "trim_end": 0.3,
-      "speed_multiplier": 2.0
-    },
-    {
-      "scene_name": "genre-page",
+      "scene_name": "08-artist-bauhaus-0688add2",
       "trim_start": 0.5,
       "trim_end": 0.3,
       "speed_multiplier": 1.0
     },
     {
-      "scene_name": "time-machine",
+      "scene_name": "09-artist-siouxsie-and-the-banshees",
       "trim_start": 0.5,
       "trim_end": 0.3,
       "speed_multiplier": 1.0
     },
     {
-      "scene_name": "crate-digging",
+      "scene_name": "10-artist-the-cure",
       "trim_start": 0.5,
       "trim_end": 0.3,
       "speed_multiplier": 1.0
     },
     {
-      "scene_name": "library-page",
-      "trim_start": 0.1,
-      "trim_end": 0.3,
-      "speed_multiplier": 2.0
-    },
-    {
-      "scene_name": "player-bar",
+      "scene_name": "11-artist-the-birthday-party",
       "trim_start": 0.5,
       "trim_end": 0.3,
       "speed_multiplier": 1.0
     },
     {
-      "scene_name": "player-controls",
+      "scene_name": "12-artist-gang-of-four",
       "trim_start": 0.5,
       "trim_end": 0.3,
       "speed_multiplier": 1.0
     },
     {
-      "scene_name": "settings-overview",
+      "scene_name": "13-artist-the-fall-d5da1841",
       "trim_start": 0.5,
       "trim_end": 0.3,
       "speed_multiplier": 1.0
     },
     {
-      "scene_name": "layout-switch",
+      "scene_name": "14-artist-aphex-twin",
       "trim_start": 0.5,
       "trim_end": 0.3,
       "speed_multiplier": 1.0
     },
     {
-      "scene_name": "final-overview",
+      "scene_name": "15-artist-boards-of-canada-69158f97",
+      "trim_start": 0.5,
+      "trim_end": 0.3,
+      "speed_multiplier": 1.0
+    },
+    {
+      "scene_name": "16-artist-massive-attack",
+      "trim_start": 0.5,
+      "trim_end": 0.3,
+      "speed_multiplier": 1.0
+    },
+    {
+      "scene_name": "17-artist-portishead",
+      "trim_start": 0.5,
+      "trim_end": 0.3,
+      "speed_multiplier": 1.0
+    },
+    {
+      "scene_name": "18-artist-brian-eno",
+      "trim_start": 0.5,
+      "trim_end": 0.3,
+      "speed_multiplier": 1.0
+    },
+    {
+      "scene_name": "19-artist-burial-9ddce51c",
+      "trim_start": 0.5,
+      "trim_end": 0.3,
+      "speed_multiplier": 1.0
+    },
+    {
+      "scene_name": "20-artist-kraftwerk",
+      "trim_start": 0.5,
+      "trim_end": 0.3,
+      "speed_multiplier": 1.0
+    },
+    {
+      "scene_name": "21-artist-mogwai-d700b3f5",
+      "trim_start": 0.5,
+      "trim_end": 0.3,
+      "speed_multiplier": 1.0
+    },
+    {
+      "scene_name": "22-artist-explosions-in-the-sky",
+      "trim_start": 0.5,
+      "trim_end": 0.3,
+      "speed_multiplier": 1.0
+    },
+    {
+      "scene_name": "23-artist-sigur-ros",
+      "trim_start": 0.5,
+      "trim_end": 0.3,
+      "speed_multiplier": 1.0
+    },
+    {
+      "scene_name": "24-artist-godspeed-you-black-emperor",
+      "trim_start": 0.5,
+      "trim_end": 0.3,
+      "speed_multiplier": 1.0
+    },
+    {
+      "scene_name": "25-artist-nick-cave-the-bad-seeds",
+      "trim_start": 0.5,
+      "trim_end": 0.3,
+      "speed_multiplier": 1.0
+    },
+    {
+      "scene_name": "26-artist-swans-3285dc48",
+      "trim_start": 0.5,
+      "trim_end": 0.3,
+      "speed_multiplier": 1.0
+    },
+    {
+      "scene_name": "27-artist-radiohead",
+      "trim_start": 0.5,
+      "trim_end": 0.3,
+      "speed_multiplier": 1.0
+    },
+    {
+      "scene_name": "28-artist-pixies",
+      "trim_start": 0.5,
+      "trim_end": 0.3,
+      "speed_multiplier": 1.0
+    },
+    {
+      "scene_name": "29-artist-pj-harvey",
+      "trim_start": 0.5,
+      "trim_end": 0.3,
+      "speed_multiplier": 1.0
+    },
+    {
+      "scene_name": "30-artist-talk-talk",
+      "trim_start": 0.5,
+      "trim_end": 0.3,
+      "speed_multiplier": 1.0
+    },
+    {
+      "scene_name": "crate-dig",
+      "trim_start": 0.5,
+      "trim_end": 0.3,
+      "speed_multiplier": 1.0
+    },
+    {
+      "scene_name": "discover-tags",
+      "trim_start": 0.5,
+      "trim_end": 0.3,
+      "speed_multiplier": 1.0
+    },
+    {
+      "scene_name": "kb-jazz",
+      "trim_start": 0.5,
+      "trim_end": 0.3,
+      "speed_multiplier": 1.0
+    },
+    {
+      "scene_name": "kb-post-punk",
+      "trim_start": 0.5,
+      "trim_end": 0.3,
+      "speed_multiplier": 1.0
+    },
+    {
+      "scene_name": "kb-shoegaze",
+      "trim_start": 0.5,
+      "trim_end": 0.3,
+      "speed_multiplier": 1.0
+    },
+    {
+      "scene_name": "style-map-1",
       "trim_start": 0.5,
       "trim_end": 0.3,
       "speed_multiplier": 1.0
     }
   ],
   "concatenation_order": [
-    "app-launch",
-    "artist-search",
-    "artist-page",
-    "artist-page-scroll",
-    "tag-search",
-    "discover-page",
-    "discover-tag-filter",
-    "style-map",
-    "style-map-hover",
-    "knowledge-base",
-    "genre-page",
-    "time-machine",
-    "crate-digging",
-    "library-page",
-    "player-bar",
-    "player-controls",
-    "settings-overview",
-    "layout-switch",
-    "final-overview"
+    "00-app-launch",
+    "01-artist-slowdive",
+    "02-artist-my-bloody-valentine",
+    "03-artist-cocteau-twins",
+    "04-artist-ride-3f575ecd",
+    "05-artist-mazzy-star",
+    "06-artist-beach-house",
+    "07-artist-joy-division",
+    "08-artist-bauhaus-0688add2",
+    "09-artist-siouxsie-and-the-banshees",
+    "10-artist-the-cure",
+    "11-artist-the-birthday-party",
+    "12-artist-gang-of-four",
+    "13-artist-the-fall-d5da1841",
+    "14-artist-aphex-twin",
+    "15-artist-boards-of-canada-69158f97",
+    "16-artist-massive-attack",
+    "17-artist-portishead",
+    "18-artist-brian-eno",
+    "19-artist-burial-9ddce51c",
+    "20-artist-kraftwerk",
+    "21-artist-mogwai-d700b3f5",
+    "22-artist-explosions-in-the-sky",
+    "23-artist-sigur-ros",
+    "24-artist-godspeed-you-black-emperor",
+    "25-artist-nick-cave-the-bad-seeds",
+    "26-artist-swans-3285dc48",
+    "27-artist-radiohead",
+    "28-artist-pixies",
+    "29-artist-pj-harvey",
+    "30-artist-talk-talk",
+    "crate-dig",
+    "discover-tags",
+    "kb-jazz",
+    "kb-post-punk",
+    "kb-shoegaze",
+    "style-map-1"
   ],
   "dead_air_threshold": 1.5,
   "dead_air_replacement": 0.5,
-  "transition_style": "crossfade"
+  "transition_style": "crossfade",
+  "excluded_scenes": [
+    "kb-ambient (blank content area - no genre content loaded)",
+    "player-bar-finale (error state - MusicBrainz unreachable, no player bar visible)",
+    "style-map-2 (navigated to Talk Talk artist page instead of style map)",
+    "style-map-3 (navigated to Talk Talk artist page scrolled instead of style map)"
+  ]
 }
