@@ -1193,7 +1193,8 @@
       ],
       "director_verdict": "approved",
       "revision_notes": null,
-      "cut_spec_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/cut-spec.json"
+      "cut_spec_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/cut-spec.json",
+      "ffmpeg_output_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/final/app-walkthrough.mp4"
     }
   ],
   "current_pass": 4,
