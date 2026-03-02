@@ -1,5 +1,5 @@
 {
-  "summary": "19-scene recording of full app walkthrough, 1 pass(es), Director approved",
+  "summary": "41-scene recording of full app walkthrough, revision requested after pass 3 -- all screenshots captured desktop instead of app window",
   "brief": "Full app walkthrough",
   "feature_slug": "app-walkthrough",
   "date": "2026-03-02",
@@ -15,7 +15,7 @@
     "output_dir": "app-recordings",
     "recording_mode": "ffmpeg"
   },
-  "storyboard_version": 1,
+  "storyboard_version": 3,
   "passes": [
     {
       "pass": 1,
@@ -390,165 +390,426 @@
     {
       "pass": 3,
       "started_at": "2026-03-02T00:46:30.821Z",
-      "completed_at": null,
-      "cameraman_status": "running",
+      "completed_at": "2026-03-02T02:15:00.000Z",
+      "cameraman_status": "complete",
       "scenes": [
         {
-          "scene_name": "app-launch",
-          "status": "pending",
-          "clip_path": null,
-          "checkpoint_screenshot_path": null,
+          "scene_name": "00-app-launch",
+          "status": "complete",
+          "clip_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/00-app-launch.mp4",
+          "checkpoint_screenshot_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/00-app-launch-checkpoint.png",
           "retry_count": 0,
           "failure_reason": null
         },
         {
-          "scene_name": "artist-search",
-          "status": "pending",
-          "clip_path": null,
-          "checkpoint_screenshot_path": null,
+          "scene_name": "01-artist-slowdive",
+          "status": "complete",
+          "clip_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/01-artist-slowdive.mp4",
+          "checkpoint_screenshot_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/01-artist-slowdive-checkpoint.png",
           "retry_count": 0,
           "failure_reason": null
         },
         {
-          "scene_name": "artist-page",
-          "status": "pending",
-          "clip_path": null,
-          "checkpoint_screenshot_path": null,
+          "scene_name": "02-artist-my-bloody-valentine",
+          "status": "complete",
+          "clip_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/02-artist-my-bloody-valentine.mp4",
+          "checkpoint_screenshot_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/02-artist-my-bloody-valentine-checkpoint.png",
           "retry_count": 0,
           "failure_reason": null
         },
         {
-          "scene_name": "artist-page-scroll",
-          "status": "pending",
-          "clip_path": null,
-          "checkpoint_screenshot_path": null,
+          "scene_name": "03-artist-cocteau-twins",
+          "status": "complete",
+          "clip_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/03-artist-cocteau-twins.mp4",
+          "checkpoint_screenshot_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/03-artist-cocteau-twins-checkpoint.png",
           "retry_count": 0,
           "failure_reason": null
         },
         {
-          "scene_name": "tag-search",
-          "status": "pending",
-          "clip_path": null,
-          "checkpoint_screenshot_path": null,
+          "scene_name": "04-artist-ride-3f575ecd",
+          "status": "complete",
+          "clip_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/04-artist-ride-3f575ecd.mp4",
+          "checkpoint_screenshot_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/04-artist-ride-3f575ecd-checkpoint.png",
           "retry_count": 0,
           "failure_reason": null
         },
         {
-          "scene_name": "discover-page",
-          "status": "pending",
-          "clip_path": null,
-          "checkpoint_screenshot_path": null,
+          "scene_name": "05-artist-mazzy-star",
+          "status": "complete",
+          "clip_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/05-artist-mazzy-star.mp4",
+          "checkpoint_screenshot_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/05-artist-mazzy-star-checkpoint.png",
           "retry_count": 0,
           "failure_reason": null
         },
         {
-          "scene_name": "discover-tag-filter",
-          "status": "pending",
-          "clip_path": null,
-          "checkpoint_screenshot_path": null,
+          "scene_name": "06-artist-beach-house",
+          "status": "complete",
+          "clip_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/06-artist-beach-house.mp4",
+          "checkpoint_screenshot_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/06-artist-beach-house-checkpoint.png",
           "retry_count": 0,
           "failure_reason": null
         },
         {
-          "scene_name": "style-map",
-          "status": "pending",
-          "clip_path": null,
-          "checkpoint_screenshot_path": null,
+          "scene_name": "07-artist-joy-division",
+          "status": "complete",
+          "clip_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/07-artist-joy-division.mp4",
+          "checkpoint_screenshot_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/07-artist-joy-division-checkpoint.png",
           "retry_count": 0,
           "failure_reason": null
         },
         {
-          "scene_name": "style-map-hover",
-          "status": "pending",
-          "clip_path": null,
-          "checkpoint_screenshot_path": null,
+          "scene_name": "08-artist-bauhaus-0688add2",
+          "status": "complete",
+          "clip_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/08-artist-bauhaus-0688add2.mp4",
+          "checkpoint_screenshot_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/08-artist-bauhaus-0688add2-checkpoint.png",
           "retry_count": 0,
           "failure_reason": null
         },
         {
-          "scene_name": "knowledge-base",
-          "status": "pending",
-          "clip_path": null,
-          "checkpoint_screenshot_path": null,
+          "scene_name": "09-artist-siouxsie-and-the-banshees",
+          "status": "complete",
+          "clip_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/09-artist-siouxsie-and-the-banshees.mp4",
+          "checkpoint_screenshot_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/09-artist-siouxsie-and-the-banshees-checkpoint.png",
           "retry_count": 0,
           "failure_reason": null
         },
         {
-          "scene_name": "genre-page",
-          "status": "pending",
-          "clip_path": null,
-          "checkpoint_screenshot_path": null,
+          "scene_name": "10-artist-the-cure",
+          "status": "complete",
+          "clip_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/10-artist-the-cure.mp4",
+          "checkpoint_screenshot_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/10-artist-the-cure-checkpoint.png",
           "retry_count": 0,
           "failure_reason": null
         },
         {
-          "scene_name": "time-machine",
-          "status": "pending",
-          "clip_path": null,
-          "checkpoint_screenshot_path": null,
+          "scene_name": "11-artist-the-birthday-party",
+          "status": "complete",
+          "clip_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/11-artist-the-birthday-party.mp4",
+          "checkpoint_screenshot_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/11-artist-the-birthday-party-checkpoint.png",
           "retry_count": 0,
           "failure_reason": null
         },
         {
-          "scene_name": "crate-digging",
-          "status": "pending",
-          "clip_path": null,
-          "checkpoint_screenshot_path": null,
+          "scene_name": "12-artist-gang-of-four",
+          "status": "complete",
+          "clip_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/12-artist-gang-of-four.mp4",
+          "checkpoint_screenshot_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/12-artist-gang-of-four-checkpoint.png",
           "retry_count": 0,
           "failure_reason": null
         },
         {
-          "scene_name": "library-page",
-          "status": "pending",
-          "clip_path": null,
-          "checkpoint_screenshot_path": null,
+          "scene_name": "13-artist-the-fall-d5da1841",
+          "status": "complete",
+          "clip_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/13-artist-the-fall-d5da1841.mp4",
+          "checkpoint_screenshot_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/13-artist-the-fall-d5da1841-checkpoint.png",
           "retry_count": 0,
           "failure_reason": null
         },
         {
-          "scene_name": "player-bar",
-          "status": "pending",
-          "clip_path": null,
-          "checkpoint_screenshot_path": null,
+          "scene_name": "14-artist-aphex-twin",
+          "status": "complete",
+          "clip_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/14-artist-aphex-twin.mp4",
+          "checkpoint_screenshot_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/14-artist-aphex-twin-checkpoint.png",
           "retry_count": 0,
           "failure_reason": null
         },
         {
-          "scene_name": "player-controls",
-          "status": "pending",
-          "clip_path": null,
-          "checkpoint_screenshot_path": null,
+          "scene_name": "15-artist-boards-of-canada-69158f97",
+          "status": "complete",
+          "clip_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/15-artist-boards-of-canada-69158f97.mp4",
+          "checkpoint_screenshot_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/15-artist-boards-of-canada-69158f97-checkpoint.png",
           "retry_count": 0,
           "failure_reason": null
         },
         {
-          "scene_name": "settings-overview",
-          "status": "pending",
-          "clip_path": null,
-          "checkpoint_screenshot_path": null,
+          "scene_name": "16-artist-massive-attack",
+          "status": "complete",
+          "clip_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/16-artist-massive-attack.mp4",
+          "checkpoint_screenshot_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/16-artist-massive-attack-checkpoint.png",
           "retry_count": 0,
           "failure_reason": null
         },
         {
-          "scene_name": "layout-switch",
-          "status": "pending",
-          "clip_path": null,
-          "checkpoint_screenshot_path": null,
+          "scene_name": "17-artist-portishead",
+          "status": "complete",
+          "clip_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/17-artist-portishead.mp4",
+          "checkpoint_screenshot_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/17-artist-portishead-checkpoint.png",
           "retry_count": 0,
           "failure_reason": null
         },
         {
-          "scene_name": "final-overview",
-          "status": "pending",
-          "clip_path": null,
-          "checkpoint_screenshot_path": null,
+          "scene_name": "18-artist-brian-eno",
+          "status": "complete",
+          "clip_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/18-artist-brian-eno.mp4",
+          "checkpoint_screenshot_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/18-artist-brian-eno-checkpoint.png",
+          "retry_count": 0,
+          "failure_reason": null
+        },
+        {
+          "scene_name": "19-artist-burial-9ddce51c",
+          "status": "complete",
+          "clip_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/19-artist-burial-9ddce51c.mp4",
+          "checkpoint_screenshot_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/19-artist-burial-9ddce51c-checkpoint.png",
+          "retry_count": 0,
+          "failure_reason": null
+        },
+        {
+          "scene_name": "20-artist-kraftwerk",
+          "status": "complete",
+          "clip_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/20-artist-kraftwerk.mp4",
+          "checkpoint_screenshot_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/20-artist-kraftwerk-checkpoint.png",
+          "retry_count": 0,
+          "failure_reason": null
+        },
+        {
+          "scene_name": "21-artist-mogwai-d700b3f5",
+          "status": "complete",
+          "clip_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/21-artist-mogwai-d700b3f5.mp4",
+          "checkpoint_screenshot_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/21-artist-mogwai-d700b3f5-checkpoint.png",
+          "retry_count": 0,
+          "failure_reason": null
+        },
+        {
+          "scene_name": "22-artist-explosions-in-the-sky",
+          "status": "complete",
+          "clip_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/22-artist-explosions-in-the-sky.mp4",
+          "checkpoint_screenshot_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/22-artist-explosions-in-the-sky-checkpoint.png",
+          "retry_count": 0,
+          "failure_reason": null
+        },
+        {
+          "scene_name": "23-artist-sigur-ros",
+          "status": "complete",
+          "clip_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/23-artist-sigur-ros.mp4",
+          "checkpoint_screenshot_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/23-artist-sigur-ros-checkpoint.png",
+          "retry_count": 0,
+          "failure_reason": null
+        },
+        {
+          "scene_name": "24-artist-godspeed-you-black-emperor",
+          "status": "complete",
+          "clip_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/24-artist-godspeed-you-black-emperor.mp4",
+          "checkpoint_screenshot_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/24-artist-godspeed-you-black-emperor-checkpoint.png",
+          "retry_count": 0,
+          "failure_reason": null
+        },
+        {
+          "scene_name": "25-artist-nick-cave-the-bad-seeds",
+          "status": "complete",
+          "clip_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/25-artist-nick-cave-the-bad-seeds.mp4",
+          "checkpoint_screenshot_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/25-artist-nick-cave-the-bad-seeds-checkpoint.png",
+          "retry_count": 0,
+          "failure_reason": null
+        },
+        {
+          "scene_name": "26-artist-swans-3285dc48",
+          "status": "complete",
+          "clip_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/26-artist-swans-3285dc48.mp4",
+          "checkpoint_screenshot_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/26-artist-swans-3285dc48-checkpoint.png",
+          "retry_count": 0,
+          "failure_reason": null
+        },
+        {
+          "scene_name": "27-artist-radiohead",
+          "status": "complete",
+          "clip_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/27-artist-radiohead.mp4",
+          "checkpoint_screenshot_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/27-artist-radiohead-checkpoint.png",
+          "retry_count": 0,
+          "failure_reason": null
+        },
+        {
+          "scene_name": "28-artist-pixies",
+          "status": "complete",
+          "clip_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/28-artist-pixies.mp4",
+          "checkpoint_screenshot_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/28-artist-pixies-checkpoint.png",
+          "retry_count": 0,
+          "failure_reason": null
+        },
+        {
+          "scene_name": "29-artist-pj-harvey",
+          "status": "complete",
+          "clip_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/29-artist-pj-harvey.mp4",
+          "checkpoint_screenshot_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/29-artist-pj-harvey-checkpoint.png",
+          "retry_count": 0,
+          "failure_reason": null
+        },
+        {
+          "scene_name": "30-artist-talk-talk",
+          "status": "complete",
+          "clip_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/30-artist-talk-talk.mp4",
+          "checkpoint_screenshot_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/30-artist-talk-talk-checkpoint.png",
+          "retry_count": 0,
+          "failure_reason": null
+        },
+        {
+          "scene_name": "crate-dig",
+          "status": "complete",
+          "clip_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/crate-dig.mp4",
+          "checkpoint_screenshot_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/crate-dig-checkpoint.png",
+          "retry_count": 0,
+          "failure_reason": null
+        },
+        {
+          "scene_name": "discover-tags",
+          "status": "complete",
+          "clip_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/discover-tags.mp4",
+          "checkpoint_screenshot_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/discover-tags-checkpoint.png",
+          "retry_count": 0,
+          "failure_reason": null
+        },
+        {
+          "scene_name": "kb-ambient",
+          "status": "complete",
+          "clip_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/kb-ambient.mp4",
+          "checkpoint_screenshot_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/kb-ambient-checkpoint.png",
+          "retry_count": 0,
+          "failure_reason": null
+        },
+        {
+          "scene_name": "kb-jazz",
+          "status": "complete",
+          "clip_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/kb-jazz.mp4",
+          "checkpoint_screenshot_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/kb-jazz-checkpoint.png",
+          "retry_count": 0,
+          "failure_reason": null
+        },
+        {
+          "scene_name": "kb-post-punk",
+          "status": "complete",
+          "clip_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/kb-post-punk.mp4",
+          "checkpoint_screenshot_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/kb-post-punk-checkpoint.png",
+          "retry_count": 0,
+          "failure_reason": null
+        },
+        {
+          "scene_name": "kb-shoegaze",
+          "status": "complete",
+          "clip_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/kb-shoegaze.mp4",
+          "checkpoint_screenshot_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/kb-shoegaze-checkpoint.png",
+          "retry_count": 0,
+          "failure_reason": null
+        },
+        {
+          "scene_name": "player-bar-finale",
+          "status": "complete",
+          "clip_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/player-bar-finale.mp4",
+          "checkpoint_screenshot_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/player-bar-finale-checkpoint.png",
+          "retry_count": 0,
+          "failure_reason": null
+        },
+        {
+          "scene_name": "style-map-1",
+          "status": "complete",
+          "clip_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/style-map-1.mp4",
+          "checkpoint_screenshot_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/style-map-1-checkpoint.png",
+          "retry_count": 0,
+          "failure_reason": null
+        },
+        {
+          "scene_name": "style-map-2",
+          "status": "complete",
+          "clip_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/style-map-2.mp4",
+          "checkpoint_screenshot_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/style-map-2-checkpoint.png",
+          "retry_count": 0,
+          "failure_reason": null
+        },
+        {
+          "scene_name": "style-map-3",
+          "status": "complete",
+          "clip_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/style-map-3.mp4",
+          "checkpoint_screenshot_path": "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/style-map-3-checkpoint.png",
           "retry_count": 0,
           "failure_reason": null
         }
       ],
-      "checkpoint_screenshots": [],
-      "director_verdict": "pending",
-      "revision_notes": null,
+      "checkpoint_screenshots": [
+        "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/00-app-launch-checkpoint.png",
+        "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/01-artist-slowdive-checkpoint.png",
+        "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/02-artist-my-bloody-valentine-checkpoint.png",
+        "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/03-artist-cocteau-twins-checkpoint.png",
+        "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/04-artist-ride-3f575ecd-checkpoint.png",
+        "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/05-artist-mazzy-star-checkpoint.png",
+        "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/06-artist-beach-house-checkpoint.png",
+        "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/07-artist-joy-division-checkpoint.png",
+        "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/08-artist-bauhaus-0688add2-checkpoint.png",
+        "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/09-artist-siouxsie-and-the-banshees-checkpoint.png",
+        "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/10-artist-the-cure-checkpoint.png",
+        "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/11-artist-the-birthday-party-checkpoint.png",
+        "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/12-artist-gang-of-four-checkpoint.png",
+        "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/13-artist-the-fall-d5da1841-checkpoint.png",
+        "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/14-artist-aphex-twin-checkpoint.png",
+        "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/15-artist-boards-of-canada-69158f97-checkpoint.png",
+        "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/16-artist-massive-attack-checkpoint.png",
+        "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/17-artist-portishead-checkpoint.png",
+        "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/18-artist-brian-eno-checkpoint.png",
+        "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/19-artist-burial-9ddce51c-checkpoint.png",
+        "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/20-artist-kraftwerk-checkpoint.png",
+        "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/21-artist-mogwai-d700b3f5-checkpoint.png",
+        "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/22-artist-explosions-in-the-sky-checkpoint.png",
+        "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/23-artist-sigur-ros-checkpoint.png",
+        "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/24-artist-godspeed-you-black-emperor-checkpoint.png",
+        "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/25-artist-nick-cave-the-bad-seeds-checkpoint.png",
+        "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/26-artist-swans-3285dc48-checkpoint.png",
+        "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/27-artist-radiohead-checkpoint.png",
+        "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/28-artist-pixies-checkpoint.png",
+        "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/29-artist-pj-harvey-checkpoint.png",
+        "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/30-artist-talk-talk-checkpoint.png",
+        "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/crate-dig-checkpoint.png",
+        "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/discover-tags-checkpoint.png",
+        "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/kb-ambient-checkpoint.png",
+        "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/kb-jazz-checkpoint.png",
+        "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/kb-post-punk-checkpoint.png",
+        "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/kb-shoegaze-checkpoint.png",
+        "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/player-bar-finale-checkpoint.png",
+        "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/style-map-1-checkpoint.png",
+        "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/style-map-2-checkpoint.png",
+        "D:/Projects/BlackTape/app-recordings/2026-03-02_app-walkthrough/takes/pass-3/screenshots/style-map-3-checkpoint.png"
+      ],
+      "director_verdict": "revision-requested",
+      "revision_notes": {
+        "summary": "All 41 screenshots capture the full desktop screen instead of the BlackTape app window. A VS Code window completely obscures the app main content area in every frame. Only the narrow left sidebar of the BlackTape app is visible. This is a Cameraman screenshot capture method bug -- it must use CDP page-level screenshots (Page.captureScreenshot) or ensure the Tauri window is in the foreground and unobscured before capturing. The storyboard itself is correct; the issue is entirely in how the checkpoint screenshots are being taken.",
+        "scene_issues": [
+          {
+            "scene_name": "00-app-launch",
+            "issue": "Screenshot shows VS Code editor covering the BlackTape main content area. Only the app sidebar is visible. The main interface with search bar and content area is completely hidden.",
+            "suggested_fix": "Needs app fix: Cameraman must use CDP Page.captureScreenshot instead of OS-level screen capture, or bring the Tauri window to foreground and minimize other windows before capturing."
+          },
+          {
+            "scene_name": "01-artist-slowdive",
+            "issue": "Screenshot shows VS Code covering the artist page content. No artist name, tags, or discography visible.",
+            "suggested_fix": "Needs app fix: same root cause as all other scenes -- screenshot method captures desktop instead of app window."
+          },
+          {
+            "scene_name": "style-map-1",
+            "issue": "Screenshot shows VS Code instead of the Style Map graph. No genre nodes or edges visible.",
+            "suggested_fix": "Needs app fix: same root cause -- screenshot capture method."
+          },
+          {
+            "scene_name": "crate-dig",
+            "issue": "Screenshot shows VS Code instead of Crate Digging results. No artist cards visible.",
+            "suggested_fix": "Needs app fix: same root cause -- screenshot capture method."
+          },
+          {
+            "scene_name": "discover-tags",
+            "issue": "Screenshot shows VS Code instead of Discover page. No tag cloud or results visible.",
+            "suggested_fix": "Needs app fix: same root cause -- screenshot capture method."
+          },
+          {
+            "scene_name": "kb-shoegaze",
+            "issue": "Screenshot shows VS Code instead of Knowledge Base shoegaze page. No genre description or related genres visible.",
+            "suggested_fix": "Needs app fix: same root cause -- screenshot capture method."
+          },
+          {
+            "scene_name": "player-bar-finale",
+            "issue": "Screenshot shows VS Code instead of player bar. No VU meters, transport controls, or cassette FX visible.",
+            "suggested_fix": "Needs app fix: same root cause -- screenshot capture method."
+          }
+        ],
+        "global_issues": [
+          "CRITICAL: The Cameraman is capturing full desktop screenshots instead of the Tauri app window content. A VS Code window is covering the BlackTape app in every single frame across all 41 scenes. The screenshot method must be changed to use CDP Page.captureScreenshot (which captures the WebView content directly regardless of window z-order) instead of OS-level screen capture.",
+          "All scene framing has been changed from full window to content area in the revised storyboard to signal the Cameraman should use page-level capture."
+        ]
+      },
       "cut_spec_path": null,
       "ffmpeg_output_path": null
     }
