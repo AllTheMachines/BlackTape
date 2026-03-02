@@ -158,12 +158,18 @@ function startFFmpeg(sceneName) {
   const proc = spawn('ffmpeg', [
     '-y', '-f', 'gdigrab', '-framerate', '30',
     '-i', 'title=BlackTape',
+    '-vf', 'crop=trunc(iw/2)*2:trunc(ih/2)*2',
     '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '18', '-pix_fmt', 'yuv420p',
     clipPath
   ], { stdio: ['pipe', 'ignore', 'pipe'] });
   proc.stderr.on('data', d => {
     const line = d.toString();
     if (line.includes('frame=')) process.stdout.write('\r  ' + line.trim().slice(0, 80));
+    else if (line.includes('Error') || line.includes('error') || line.includes('Invalid'))
+      console.warn(`  ⚠ FFmpeg: ${line.trim().slice(0, 120)}`);
+  });
+  proc.on('close', code => {
+    if (code !== 0 && code !== null) console.warn(`  ⚠ FFmpeg exited with code ${code}`);
   });
   return { proc, clipPath };
 }
