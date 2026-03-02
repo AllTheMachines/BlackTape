@@ -2,41 +2,23 @@ import { chromium } from 'playwright';
 const browser = await chromium.connectOverCDP('http://127.0.0.1:9224');
 const page = browser.contexts()[0].pages()[0];
 
-// Navigate to Radiohead
+// Test MB API from within WebView
+const result = await page.evaluate(async () => {
+  try {
+    const resp = await fetch('https://musicbrainz.org/ws/2/release-group?artist=a74b1b7f-71a5-4011-9441-d0b5e4122711&inc=url-rels&type=album|single|ep&fmt=json&limit=50', {
+      headers: { 'User-Agent': 'BlackTape/1.0', 'Accept': 'application/json' }
+    });
+    return `Status: ${resp.status}, OK: ${resp.ok}`;
+  } catch (e) {
+    return `Error: ${e.message}`;
+  }
+});
+console.log('MB API from WebView:', result);
+
+// Now try reload
 await page.goto('http://localhost:5173/artist/radiohead');
-await page.waitForTimeout(4000);
-
-console.log('URL:', page.url());
-
-const h1 = await page.evaluate(() => document.querySelector('h1')?.textContent?.trim());
-console.log('H1:', h1);
-
-const releaseCount = await page.evaluate(() => document.querySelectorAll('.releases-grid > *').length);
-console.log('Release cards:', releaseCount);
-
-const empty = await page.evaluate(() => {
-  const el = document.querySelector('.discography-empty-state, .no-releases-msg');
-  return el ? el.textContent?.trim() : 'none';
-});
-console.log('Empty state:', empty);
-
-const hasDiscography = await page.evaluate(() => {
-  return document.querySelector('.releases-grid') ? 'yes' : 'no';
-});
-console.log('Has releases grid:', hasDiscography);
-
-// Check for any error text
-const errorText = await page.evaluate(() => {
-  const all = document.body.innerText;
-  if (all.includes('error') || all.includes('Error')) return 'Found error text';
-  return 'No error text';
-});
-console.log(errorText);
-
-// Get the sections visible
-const headings = await page.evaluate(() => {
-  return Array.from(document.querySelectorAll('h1, h2')).map(h => h.textContent?.trim());
-});
-console.log('Headings:', headings);
+await page.waitForTimeout(5000);
+const releases = await page.evaluate(() => document.querySelectorAll('.releases-grid > *').length);
+console.log('Releases after fresh load:', releases);
 
 await browser.close();
