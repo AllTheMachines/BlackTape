@@ -11640,3 +11640,6 @@ Recorded a full 41-scene walkthrough of the app using the `/record-app` skill. T
 **Pass 4 result:** 41 clips captured, 430MB total, 1904×1070, H.264 at 15fps. Director reviewed all 41 scenes — 37 approved, 4 excluded (blank keyboard-ambient scene, player-bar-finale error overlay, two style-map scenes showing wrong page). Cutter assembled the 37 approved scenes with crossfade transitions into the final video.
 
 **Final output:** `app-recordings/2026-03-02_app-walkthrough/final/app-walkthrough.mp4` — 5 minutes 25 seconds, 162MB, 4.2Mbps. First complete video record of the app in its current state.
+
+> **Commit 98da57d** (2026-03-02 11:03) — wip: auto-save
+> Files changed: 1

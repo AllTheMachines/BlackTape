@@ -10,6 +10,8 @@
  *   node tools/test-suite/run.mjs --phase 6  — run only Phase 6 tests
  *   node tools/test-suite/run.mjs --code-only — skip browser tests
  *   node tools/test-suite/run.mjs --fast      — skip slow visual tests (style-map, etc.)
+ *   node tools/test-suite/run.mjs --extended  — also run extended user-journey tests
+ *   node tools/test-suite/run.mjs --extended-only — run ONLY extended tests (skip base)
  *
  * Exit codes: 0 = all passed, 1 = failures, 2 = setup error
  */
@@ -26,6 +28,8 @@ const args = process.argv.slice(2);
 const phaseFilter = args.includes('--phase') ? Number(args[args.indexOf('--phase') + 1]) : null;
 const codeOnly = args.includes('--code-only');
 const fast = args.includes('--fast');
+const extended = args.includes('--extended');
+const extendedOnly = args.includes('--extended-only');
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -77,11 +81,11 @@ async function runCargoTests() {
 async function main() {
   log('');
   log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  log(' Mercury Test Suite');
+  log(extendedOnly ? ' Mercury Extended Test Suite' : extended ? ' Mercury Test Suite + Extended' : ' Mercury Test Suite');
   log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
-  // Filter tests
-  let tests = ALL_TESTS.filter(t => {
+  // Filter tests (skip base tests when --extended-only)
+  let tests = extendedOnly ? [] : ALL_TESTS.filter(t => {
     if (phaseFilter && t.phase !== phaseFilter && t.phase !== 0) return false;
     if (codeOnly && t.method !== 'code') return false;
     if (fast && ['P6-05', 'P7-01', 'P7-02'].includes(t.id)) return false;
@@ -199,7 +203,62 @@ async function main() {
   }
 
   // ---------------------------------------------------------------------------
-  // 5. Skipped tests
+  // 5. Extended user-journey tests (--extended or --extended-only)
+  // ---------------------------------------------------------------------------
+
+  if ((extended || extendedOnly) && !codeOnly) {
+    header('Extended User Journey Tests (CDP)');
+
+    let extTests;
+    try {
+      const { EXTENDED_TESTS } = await import('./extended-manifest.mjs');
+      extTests = EXTENDED_TESTS;
+    } catch (e) {
+      log(` ⚠  Could not load extended manifest: ${e.message}`);
+      extTests = [];
+    }
+
+    if (extTests.length > 0) {
+      let setup, teardown, runTauriTest;
+      try {
+        ({ setup, teardown, runTauriTest } = await import('./runners/tauri.mjs'));
+      } catch (e) {
+        log(` ⚠  Could not load Tauri runner: ${e.message}`);
+        extTests.forEach(t => results.push({ ...t, passed: null, error: 'Runner unavailable' }));
+        extTests = [];
+      }
+
+      if (setup && extTests.length > 0) {
+        let page = null;
+        try {
+          const rootDir = path.resolve(import.meta.dirname, '../..');
+          page = await setup(rootDir);
+          log(` Running ${extTests.length} extended tests...\n`);
+          for (const test of extTests) {
+            const startMs = Date.now();
+            const result = await runTauriTest(test, page);
+            const elapsed = ((Date.now() - startMs) / 1000).toFixed(1);
+            const icon = result.passed ? PASS : FAIL;
+            log(` ${icon}  [${test.id}] ${test.desc} (${elapsed}s)`);
+            if (!result.passed && result.error) log(`       ${result.error}`);
+            results.push(result);
+          }
+        } catch (e) {
+          log(` ⚠  Extended runner failed: ${e.message}`);
+          extTests.forEach(t => {
+            if (!results.find(r => r.id === t.id)) {
+              results.push({ ...t, passed: null, error: e.message?.split('\n')[0] });
+            }
+          });
+        } finally {
+          if (teardown) await teardown().catch(() => {});
+        }
+      }
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // 6. Skipped tests
   // ---------------------------------------------------------------------------
 
   if (skipTests.length > 0) {
@@ -222,7 +281,7 @@ async function main() {
   // Group failures by phase
   const failedByPhase = {};
   for (const r of failed) {
-    const key = r.phase === 0 ? 'Build' : `Phase ${r.phase}`;
+    const key = r.phase === 99 ? `Extended (${r.area})` : r.phase === 0 ? 'Build' : `Phase ${r.phase}`;
     if (!failedByPhase[key]) failedByPhase[key] = [];
     failedByPhase[key].push(r);
   }
