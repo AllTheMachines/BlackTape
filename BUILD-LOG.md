@@ -11514,5 +11514,8 @@ Replaced the blurred-backdrop-always approach with a four-case system that uses 
 > Files changed: 2
 
 <!-- status -->
-Recording Pass 2 — app walkthrough. Fixed: fullscreen + minimize other windows before FFmpeg. Updated cameraman skill with Section 2.5 (Window Prep) for all future projects.
+Recording Pass 3 — app walkthrough. Pass 2 failed (MinimizeAll triggered task-view overlay). Pass 3 uses __TAURI__ fullscreen API (proven in record-and-run.mjs). Running now...
 <!-- /status -->
+
+> **Commit cd56e98** (2026-03-02 01:29) — wip: auto-save
+> Files changed: 13
