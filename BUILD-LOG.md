@@ -11673,3 +11673,6 @@ Built a comprehensive extended test suite that connects to the running app via P
 - `tools/test-suite/run.mjs` — updated with `--extended` and `--extended-only` flags
 
 **Key lesson:** First run had 9 failures — all test-side issues (wrong selectors, hardcoded fixture slugs). Artist cards are `<a class="artist-card">` with `.a-name` inside, not `a.artist-name`. Search uses `?type=` not `?mode=`. Tests now discover data dynamically from whatever DB is loaded.
+
+> **Commit a787b10** (2026-03-02 11:27) — wip: auto-save
+> Files changed: 2
