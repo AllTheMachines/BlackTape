@@ -12183,3 +12183,9 @@ Zero `mercury.exe` references remain in tools, src, or app-recordings. Historica
 
 > **Commit dfe48a5c** (2026-03-03 20:27) — wip: auto-save
 > Files changed: 1
+
+> **Commit 4265cf03** (2026-03-03 20:32) — wip: auto-save
+> Files changed: 2
+
+> **Commit fa4368c8** (2026-03-03 20:36) — docs: start milestone v1.7 The Rabbit Hole
+> Files changed: 2
