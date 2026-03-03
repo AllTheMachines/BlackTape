@@ -1,385 +1,448 @@
-# Pitfalls Research
+# Domain Pitfalls
 
-**Domain:** Multi-source streaming integration into an existing Tauri 2.0 / Svelte 5 desktop app (Spotify, YouTube, SoundCloud, Bandcamp)
-**Researched:** 2026-02-26
-**Confidence:** HIGH for Spotify/YouTube/Tauri-specific issues (multiple verified sources including official Spotify docs, live Tauri GitHub issues, and February 2026 Spotify policy changes). MEDIUM for SoundCloud/Bandcamp (official docs + community reports, no Tauri-specific issues found). MEDIUM for Spotify ToS implications (policy is actively changing as of this writing — verified against current official docs).
+**Domain:** Discovery redesign — unified click-through exploration, geographic map, tag-based similarity, live data caching added to existing Tauri 2.0 desktop music search engine
+**Researched:** 2026-03-03
+**Confidence:** HIGH for DB size growth and API rate limits (verified against Cloudflare D1 docs, MusicBrainz official rate limit docs, and Wikidata SPARQL limits). HIGH for Leaflet rendering performance (multiple verified benchmarks and library comparisons). MEDIUM for SvelteKit navigation memory issues (GitHub issues confirmed but exact thresholds not benchmarked for this app). MEDIUM for Wikidata geocoding coverage (known ~77K bands + ~238K musicians total in Wikidata, but P740 coverage percentage unverified). LOW for migration UX impact (no direct precedent for this specific app, reasoning from general feature-flag best practices).
 
 ---
 
 ## Critical Pitfalls
 
-### Pitfall 1: Spotify Web Playback SDK Requires Widevine CDM — Does Not Work in WebView2
+Mistakes that cause rewrites, blocked milestones, or data distribution failures.
+
+### Pitfall 1: Similar Artists Table Blows Past Cloudflare D1 Storage Limit
 
 **What goes wrong:**
-The Spotify Web Playback SDK uses Encrypted Media Extensions (EME) to decrypt Widevine-protected audio. When the SDK calls `navigator.requestMediaKeySystemAccess()`, WebView2 supports the EME API call (it is Chromium-based), but the actual Widevine Content Decryption Module is not available in the same way it is in a full Chrome or Edge browser. The result is a "Failed to initialize player" error after the SDK appears to load correctly. This is the same failure mode documented for Electron since 2018 in spotify/web-playback-sdk#41, and it remains unresolved for any desktop WebView wrapper.
+The discovery index lives on Cloudflare D1, accessed via HttpProvider at `api.blacktape.org`. D1 free plan allows 500MB per database. The current schema (2.6M artists, 26M+ artist_tags, 100K+ tags, 4K genres, 10K co-occurrence edges) is already a significant portion of that budget. Adding a `similar_artists` table with top-20 similar artists per artist creates 2.6M x 20 = 52 million rows. At a conservative ~20 bytes per row (two INTEGER foreign keys + one REAL similarity score), that's ~1GB of raw data before indexes. With indexes on both `artist_id` and `similar_artist_id` (needed for bidirectional lookup), the table alone exceeds the 500MB free limit. Even on D1's paid plan (10GB max), this table plus indexes plus the existing data could approach 2-3GB.
+
+The torrent-distributed DB file also grows. The full MusicBrainz import currently produces a ~778MB uncompressed DB (365MB compressed). Adding 52M rows of similarity data could push the compressed download past 500MB -- a significant barrier for first-time users on limited connections.
 
 **Why it happens:**
-Chrome and Edge ship with Widevine CDM as a proprietary binary that is activated for those specific browser products. WebView2 — even though it is Edge-based — does not expose Widevine for arbitrary third-party web content in the same way. Spotify's SDK does not just check whether `navigator.requestMediaKeySystemAccess` exists; it checks whether the CDM can actually decrypt content. Developers test the SDK in a real Chrome browser where it works, then discover the failure only after implementing the entire integration.
+The similar artists computation is conceptually simple (for each artist, find top-N by tag overlap). The math seems small -- "just 20 rows per artist." But 2.6M artists x 20 = 52M rows, and database storage is not just the raw data but includes B-tree page overhead, index structures, and SQLite's variable-length integer encoding.
 
-**How to avoid:**
-Do not use the Spotify Web Playback SDK in BlackTape. Use the Spotify Embed Player instead: `https://open.spotify.com/embed/artist/{id}?theme=0`. The embed iframe runs in a sandboxed Spotify context, handles its own DRM negotiation internally, and does not expose this failure mode. The tradeoff is loss of programmatic control (no play/pause from parent JS), but this is the only approach that reliably works in a desktop WebView.
+**Consequences:**
+- D1 free plan: database stops accepting writes. Pipeline uploads fail silently or with 500 errors.
+- Torrent distribution: download size doubles or triples. New users on slow connections abandon the setup.
+- Pipeline runtime: computing 52M similarity scores across 26M tag associations is computationally expensive -- could take hours on a single machine.
 
-The existing `spotifyEmbedUrl()` function in `src/lib/embeds/spotify.ts` is already on the correct path. Do not add a second Spotify integration path using the SDK.
+**Prevention:**
+1. **Cap similar artists at top-10, not top-20.** 10 is sufficient for discovery navigation (the Rabbit Hole only needs "here are some related artists to click"). This halves the table to 26M rows.
+2. **Only compute for artists with >= 3 tags.** Artists with 0-2 tags produce low-quality similarity scores. Estimate how many artists this excludes -- if 60% of the 2.6M have < 3 tags, the table drops to ~10M rows.
+3. **Use compact storage.** Store only `(artist_id INTEGER, similar_id INTEGER, rank INTEGER)` -- no float scores. The rank (1-10) is sufficient for ordering. Each row is ~12 bytes. With the tag-count filter, total ~120MB.
+4. **Measure before committing.** Build the table on the 10K sample first, extrapolate the size, then decide on cutoffs. Run `SELECT page_count * page_size FROM pragma_page_count(), pragma_page_size()` after building.
+5. **Consider D1 paid plan budget.** $0.75/GB-month on Workers Paid. If the table is 500MB, that's ~$0.38/month. Not free, but not expensive.
 
-**Warning signs:**
-- Any plan or code that imports or loads `https://sdk.scdn.co/spotify-player.js`
-- `Spotify.Player` initialization returning `initialization_error` or `account_error`
-- Console deprecation warning about `requestMediaKeySystemAccess` in cross-origin iframes
-- DRM errors in DevTools → Media tab
+**Detection:**
+- Pipeline build script should report table size after creation.
+- D1 dashboard shows storage usage -- set an alert at 80% capacity.
+- If the pipeline upload to D1 starts failing with 413 or storage errors, this is the cause.
 
 **Phase to address:**
-Before any Spotify work begins. Record this as an explicit architecture decision: embed iframe only, SDK not used.
+Pipeline work phase -- before the similar artists table is designed. The storage impact must be measured on a sample before committing to a schema.
 
 ---
 
-### Pitfall 2: YouTube IFrame Error 153 in Tauri Production Builds
+### Pitfall 2: Replacing Four Working Discovery Views Creates a UX Regression Window
 
 **What goes wrong:**
-YouTube's IFrame Player API requires a valid HTTP `Referer` header to verify the embedding origin. In Tauri production builds on Windows, the app is served from `http://tauri.localhost`. This custom protocol origin does not generate a valid Referer that YouTube accepts. YouTube returns Error 153 ("Video player configuration error") and the player renders blank. In development (`npm run tauri dev`), Tauri proxies to Vite at `http://localhost:5173` — a real HTTP URL — so the embed works. The failure is invisible until a production build is tested.
+Style Map, Knowledge Base, Time Machine, and Crate Dig are separate pages with established routes (`/style-map`, `/kb`, `/time-machine`, `/crate`). The plan is to keep the code but remove the navigation links. If the Rabbit Hole is incomplete or buggy when the old views are hidden, users lose four discovery tools and gain one broken replacement. The research doc says "code stays as fallback" but doesn't specify when the old views stop being accessible.
 
-This is a confirmed, live issue: Tauri GitHub #14422 (closed December 2025 with a workaround reference, not a Tauri-side fix).
+This is especially dangerous because v1.6 was just shipped. If v1.7 ships with a half-working Rabbit Hole and hidden old views, the first public users (if any arrive during this window) see a discovery engine with fewer working features than the version before it.
 
 **Why it happens:**
-YouTube requires API clients to identify themselves through the `Referer` header. Custom URL schemes (`tauri://`, `http://tauri.localhost`) do not satisfy this requirement because they are not recognized HTTP origins. Using `youtube-nocookie.com` embed URLs (already in the codebase) does not resolve this — the issue is at the protocol level, not the domain level.
+The old views feel redundant once the new design exists in the developer's head. There's a temptation to hide them early to avoid maintaining "dead" code paths. But the Rabbit Hole depends on pipeline data (similar artists table, geocoded cities) that doesn't exist yet. The new view is not functional until the data layer is complete.
 
-**How to avoid:**
-Two viable approaches:
+**Consequences:**
+- Discovery section of the app has fewer functional tools during development.
+- If the similar artists pipeline fails or is delayed, the Rabbit Hole has no "similar artists" navigation -- its core loop is broken.
+- Users who discovered the app through the Style Map or KB (existing features) find them gone.
 
-**Option A (recommended for BlackTape):** Implement the Error 153 fallback in the IFrame API `onError` handler. When YouTube fires error code 153, replace the player with a "Watch on YouTube" button linking to the video URL. This is low-effort, always works, and the user gets a clear action instead of a blank player. The embed works for users where it works; those where it fails get a direct link.
+**Prevention:**
+1. **Keep old views accessible until the Rabbit Hole is feature-complete.** Don't hide nav links to old views in Phase 1. Hide them only in the final phase after the Rabbit Hole passes a "parity checklist" (see below).
+2. **Build the Rabbit Hole as a NEW route (`/rabbit-hole` or `/discover-v2`).** Don't replace `/discover` until the new view works end-to-end. This is the cheapest possible feature flag -- two different routes.
+3. **Parity checklist before switchover:**
+   - [ ] Can enter via search (artist or genre name)
+   - [ ] Can enter via random
+   - [ ] Similar artists load for 90%+ of artists viewed
+   - [ ] Genre page shows artists, subgenres, neighboring genres
+   - [ ] Every page has 3+ clickable departure points (no dead ends)
+   - [ ] History trail persists across sessions
+   - [ ] Back/forward navigation works
+   - [ ] Performance is acceptable (page transitions < 500ms)
+4. **Add a "Classic Discovery" link in Settings or footer.** Even after switchover, let users access the old views if they prefer. This costs nothing and eliminates regression complaints.
 
-**Option B:** Use `tauri-plugin-localhost` to serve the app from real `http://127.0.0.1:PORT` in production. This fixes YouTube but breaks Tauri IPC unless you explicitly add a remote capability in `capabilities/` granting that URL IPC access. This is a more invasive change with security surface implications and is not worth it for YouTube alone.
-
-Never rely solely on development testing for YouTube embeds. Every YouTube embed implementation must be smoke-tested in a production build (`npm run tauri build` → install → verify) before the phase is marked complete.
-
-**Warning signs:**
-- YouTube embeds work in `npm run tauri dev` but show a grey spinner or generic error in a production install
-- `onError` fires with code `153`
-- Console errors referencing `origin` or `referer` validation from YouTube
+**Detection:**
+- If any Rabbit Hole page renders with zero similar artists, zero related genres, or no clickable links, the switchover is premature.
+- Manual test: can a new user with no history spend 10 minutes clicking through without hitting a dead end?
 
 **Phase to address:**
-YouTube embed implementation phase. The Error 153 fallback must be implemented as part of the initial work, not as a bug fix.
+First phase (Rabbit Hole UI) and final phase (switchover). The parity checklist must be explicit in the plan.
 
 ---
 
-### Pitfall 3: Spotify OAuth — `localhost` as redirect_uri Is Now Rejected
+### Pitfall 3: Leaflet World Map With Hundreds of Thousands of Pins Crashes WebView2
 
 **What goes wrong:**
-Since November 27, 2025, Spotify's OAuth no longer accepts `http://localhost:*` as a valid redirect URI. Any OAuth flow that registers `http://localhost:PORT/callback` gets `INVALID_CLIENT: Insecure redirect URI`. This breaks the common Tauri desktop app pattern of spinning up a local HTTP server on localhost to catch the OAuth callback.
+The World Map will show artist locations on a Leaflet map. If Wikidata geocoding returns locations for even 10% of 2.6M artists, that's 260,000 pins. Standard Leaflet DOM markers break at ~1,000 markers (each marker is a separate DOM element). Even Leaflet.markercluster, which is already in the codebase (used by SceneMap), starts degrading past 50,000-100,000 markers. WebView2's rendering performance is generally lower than a full Chrome browser -- the performance cliff arrives sooner.
+
+Loading all pin data at once (even without rendering) can exhaust available memory. 260K markers with lat/lng/name/artist_id is ~30-50MB of JSON. In WebView2, this competes with the Svelte runtime, DOM, and any loaded embeds for the process's memory budget.
 
 **Why it happens:**
-Spotify's February 2025 security changes enforced RFC 8252's distinction between `localhost` (a DNS hostname, not safe) and `127.0.0.1` (a loopback IP literal, allowed over HTTP). The deadline for all apps was November 27, 2025. Developers who registered callback URIs before this date may have existing configs using `localhost`, which stopped working after enforcement.
+The SceneMap component currently handles ~4,000 genre location pins with basic Leaflet markers. This works fine at that scale. The natural assumption is "just add more pins." But the relationship between pin count and performance is not linear -- it's roughly O(n) for initial load but O(n log n) for pan/zoom clustering operations, and DOM rendering is O(n) with a very high constant factor.
 
-**How to avoid:**
-Two approaches, both valid:
+**Consequences:**
+- Map freezes on load. User sees a white rectangle.
+- Pan/zoom stutters at 2-5 FPS. Map feels broken.
+- Memory pressure causes WebView2 to crash or Tauri to show a "page unresponsive" dialog.
 
-**Option A:** Use `http://127.0.0.1/callback` as the redirect URI. Register this in the Spotify developer dashboard. Spotify allows dynamic ports on loopback IP literals — register without a port, supply the port at runtime. BlackTape spins up a temporary HTTP server on `127.0.0.1:PORT`, completes the OAuth flow, then shuts it down. The auth code arrives via that server.
+**Prevention:**
+1. **Use Supercluster, not Leaflet.markercluster.** Supercluster handles clustering in a Web Worker (off main thread), supports millions of points, and query time per viewport is < 1ms. Load time for 500K points is 1-2 seconds (benchmarked by Mapbox).
+2. **Viewport-only rendering.** Only render markers visible in the current map viewport. As the user pans/zooms, load markers for the new viewport from the clustered index. Never render all markers at once.
+3. **Zoom-level data tiers.** At low zoom (world view), show only country or city-level clusters with counts. At medium zoom, show individual city dots. At high zoom (city level), show individual artist pins. This is the Google Maps semantic zoom pattern described in the research doc.
+4. **Canvas rendering instead of DOM markers.** Use `L.canvas()` as the renderer for individual markers. Canvas draws to a single element rather than creating one DOM element per marker.
+5. **Pre-cluster in the pipeline.** Compute cluster centroids at each zoom level (z3 through z14) during the data pipeline, store as a separate table. The frontend loads pre-clustered data at the appropriate zoom level rather than running clustering at runtime.
+6. **Start with genre/scene pins only.** The existing genre location data (~4K points with lat/lng) works today. Start the World Map with genres, add artist pins only after geocoding coverage is measured and Supercluster is integrated.
 
-**Option B (cleaner for desktop):** Use a custom deep-link protocol via `tauri-plugin-deep-link`. Register `blacktape://callback` as the redirect URI in the Spotify developer dashboard. Tauri handles the protocol, delivers the URL to the app, and no temporary HTTP server is needed. This is the pattern recommended by Tauri's own OAuth documentation and avoids any port conflict concerns.
-
-Either way: never register `http://localhost` as a redirect URI in any new Spotify app configuration.
-
-**Warning signs:**
-- OAuth flow opens the Spotify login page but returns `INVALID_CLIENT: Insecure redirect URI`
-- Any redirect URI in config containing the string `localhost` (not `127.0.0.1`)
-- OAuth works in one network environment but fails in another
+**Detection:**
+- Map load time > 3 seconds on a mid-range machine.
+- FPS drops below 15 during pan/zoom (use Performance panel in DevTools).
+- Memory usage spikes above 500MB when the map is open.
 
 **Phase to address:**
-Spotify OAuth phase, before any implementation. The redirect URI approach must be decided and registered in the Spotify developer dashboard before writing code.
+World Map implementation phase. Supercluster must be integrated before artist pin data is loaded. Test with synthetic data (random 100K lat/lng points) before real data arrives.
 
 ---
 
-### Pitfall 4: Spotify Quota Mode — A Bundled client_id Cannot Scale Beyond 5 Users
+### Pitfall 4: Wikidata SPARQL Geocoding Has a 60-Second Timeout and Will Not Cover 2.6M Artists
 
 **What goes wrong:**
-The plan to bundle a single Spotify `client_id` in the open-source app hits a hard wall: as of February 11, 2026, Spotify's Development Mode limits each Client ID to **5 authorized users**. User #6 attempting to authenticate with the same client_id gets an error. Extended quota mode (unlimited users) requires Spotify's formal approval and is now limited to legally registered businesses with 250,000+ monthly active users. BlackTape will not qualify.
+The plan is to geocode artist cities via Wikidata SPARQL using MBIDs. Two problems:
 
-This is a confirmed policy change: Spotify's February 2026 developer announcement, effective for new apps February 11, 2026 and existing apps from March 9, 2026.
+**Coverage gap:** Wikidata has ~77K bands and ~238K musicians (~315K total music entities). BlackTape has 2.6M artists. Even with perfect MBID matching, Wikidata covers at most ~12% of the catalog. Many Wikidata music entities lack P740 (place of origin) or any location property -- the actual geocoding coverage could be 5-8% of the 2.6M catalog, or ~130K-208K artists with locations.
+
+**Query limits:** Wikidata SPARQL has a hard 60-second timeout. A single query fetching origin cities for all MBIDs will timeout long before completion. Rate limiting allows 60 seconds of compute time per minute per IP+UserAgent. Querying 2.6M MBIDs one-by-one at 60s/minute throughput would take months.
 
 **Why it happens:**
-The intent of bundling a shared client_id is to make onboarding simpler — users do not need to create a Spotify developer account. But the 5-user dev mode cap makes this approach non-viable for any software distributed publicly.
+The genre geocoding already in the pipeline used Wikidata successfully for ~4K genres. The assumption is that the same approach scales to millions of artists. It does not -- genre geocoding was a small, well-defined dataset. Artist geocoding is orders of magnitude larger and hits coverage gaps.
 
-**How to avoid:**
-Require each user to provide their own Spotify client_id. The Spotify developer dashboard is free; creating an app takes approximately 2 minutes. BlackTape's onboarding should include step-by-step instructions with screenshots. Each user's client_id is entered once in Settings → Streaming and stored in Tauri's secure store.
+**Consequences:**
+- World Map shows pins for only ~5-12% of artists. Users search for their favorite niche artist, no pin appears.
+- Pipeline geocoding step takes days or weeks to complete.
+- Wikidata may throttle or ban the IP if the query pattern is too aggressive.
 
-Separate concern: PKCE flow with a public `client_id` (no `client_secret`) is cryptographically sound. The `client_id` is not sensitive and can appear in source code or docs. What cannot be in source code is a `client_secret`. Use PKCE, never Client Credentials flow.
+**Prevention:**
+1. **Accept the coverage gap as a feature, not a bug.** The World Map shows geographic scenes and clusters, not every individual artist. 130K-208K pins is enough to show meaningful geographic patterns.
+2. **Batch queries by MBID chunks.** Wikidata SPARQL supports `VALUES` clauses with up to ~10K items. Query in batches of 5,000 MBIDs per request. With 60s timeout and well-structured queries, each batch should complete in 5-20 seconds.
+3. **Query by Wikidata's MusicBrainz ID property (P434).** Instead of looking up by MBID string matching, use `?item wdt:P434 ?mbid . ?item wdt:P740 ?origin .` -- this uses Wikidata's existing MB-linked entities.
+4. **Prioritize popular artists.** Sort MBIDs by tag count (proxy for popularity) and geocode the top 500K first. Most users will search for artists who exist in Wikidata.
+5. **Cache results in the pipeline.** Once an MBID is geocoded (or confirmed missing), store the result. Don't re-query on pipeline rebuilds. Only query new MBIDs.
+6. **Fallback to country centroid.** For artists without city-level geocoding, place the pin at the country's centroid (already have `country` in the artists table). Less precise but ensures every artist with a country has some geographic presence.
+7. **Run geocoding as a separate, resumable pipeline step.** Not part of the main import. A script that can be interrupted and resumed, tracking progress in a checkpoint file.
 
-**Warning signs:**
-- Any config file, `.env`, or bundled constant containing a Spotify `client_id` that is not per-user
-- Any plan to commit `client_secret` to source (PKCE requires no secret — if you have a secret in scope, you are on the wrong flow)
-- Spotify auth works for the developer but fails for a test user
+**Detection:**
+- SPARQL queries returning HTTP 429 (rate limited) or 403 (banned).
+- Geocoding coverage report: how many artists got locations vs. how many were queried.
+- World Map looking empty for specific regions (e.g., no pins in South America might indicate coverage bias toward Western artists in Wikidata).
 
 **Phase to address:**
-Spotify OAuth architecture phase. The per-user client_id requirement shapes the entire onboarding UX design.
+Pipeline phase. Geocoding must run before the World Map UI is built. Measure coverage on a 50K-artist sample before committing to full pipeline run.
 
 ---
 
-### Pitfall 5: Existing Local Player and Streaming Embeds Will Compete — Audio Plays Simultaneously
+### Pitfall 5: MusicBrainz API 1 req/sec Rate Limit Makes Live Track/Release Fetching Unbearable for Discovery Browsing
 
 **What goes wrong:**
-BlackTape already has a local file player: `audio.svelte.ts`, `playerState`, `queueState`. Adding streaming embed players (Spotify iframe, YouTube IFrame, SoundCloud widget, Bandcamp iframe) creates multiple audio sources that can play at the same time. The existing `playerState.isPlaying` only tracks the local file player. Scenario: a local track is playing, the user navigates to an artist page, clicks the SoundCloud embed — both play simultaneously.
+The Rabbit Hole shows tracks and releases for each artist visited. Currently, releases are fetched live from MusicBrainz API at 1 request/second. In the existing artist page, this is acceptable -- the user visits one artist, waits 1-3 seconds for releases to load. In the Rabbit Hole, the user clicks through 5-10 artists per minute. Each click triggers MB API calls for releases, links, and potentially cover art. The 1 req/sec limit means:
 
-Streaming embeds run in their own sandboxed iframe context. They are not `<audio>` elements that the parent page controls directly.
+- Releases for artist A: 1 request, 1 second
+- Links for artist A: 1 request, 1 second wait
+- Releases for artist B (clicked 3 seconds later): 1 request, still waiting
+
+If the user clicks faster than the API can respond, requests queue up. After 3-4 rapid clicks, the user is waiting 4-8 seconds for data that should feel instant. The "rabbit hole flow state" described in the research doc requires near-zero interaction cost. A 4-8 second wait after every click destroys flow.
 
 **Why it happens:**
-The local player was designed as a single-source audio system. Streaming embeds are independent autonomous contexts. No coordination layer exists between them. This gap is easy to miss because in testing you usually test one source at a time.
+The existing artist page was designed for one-at-a-time browsing. The 1 req/sec limit was acceptable because users don't rapidly click between artist pages. The Rabbit Hole changes the interaction model from "visit and stay" to "click through rapidly." The rate limit doesn't change but the usage pattern does.
 
-**How to avoid:**
-Implement a global `activeSource` state before any streaming source is added:
+**Consequences:**
+- Users experience the Rabbit Hole as sluggish and unresponsive.
+- Rapid clicking queues up stale requests for artists the user has already navigated past.
+- MusicBrainz may block the IP if the rate limiter fails (their threshold is ~300 requests per second from one IP before blocking, but they explicitly state 1/sec as the requirement).
 
-```typescript
-type AudioSource = 'local' | 'spotify' | 'youtube' | 'soundcloud' | 'bandcamp' | null;
-export const activeSource = $state({ current: null as AudioSource });
-```
+**Prevention:**
+1. **Cache aggressively in local SQLite.** After fetching releases/links for an artist, store them in `taste.db` (or a new `cache.db`). Set a TTL of 30 days. On second visit, skip the API entirely. This is already mentioned in the research doc but must be the first thing built, not an optimization.
+2. **Prefetch the next-likely-click.** When the user lands on an artist page, start prefetching releases for the top 3 similar artists (the ones most likely to be clicked next). Use an idle callback or a low-priority fetch queue. This front-loads the wait before the user clicks.
+3. **Show the page immediately with local data.** Artist name, tags, country, similar artists, genres -- all local. Show these instantly. Releases and links load asynchronously with a subtle loading indicator. The page is usable before the MB data arrives.
+4. **Cancel stale requests.** When the user navigates away from an artist, cancel any in-flight MB requests for that artist. Use `AbortController`. Don't waste rate budget on data the user will never see.
+5. **Request batching with `inc=` parameter.** MusicBrainz supports `inc=url-rels+release-groups` in a single request. Combine releases and links into one API call instead of two. This halves the request count per artist visit.
+6. **Implement a proper rate limiter.** A module-level queue that enforces exactly 1 request per second with a configurable queue depth. Requests beyond the queue depth are dropped or deferred.
 
-Rules:
-- When a streaming embed starts playing, set `activeSource.current` and pause the local audio element (`audio.pause()`).
-- When the local player resumes, set `activeSource.current = 'local'` and send pause signals to any open embeds.
-- Each embed container watches `activeSource` and calls its pause API when another source becomes active.
-
-Pause APIs available:
-- SoundCloud Widget API: `widget.pause()` via `SC.Widget(iframe)` — full programmatic control
-- YouTube IFrame API: `player.pauseVideo()` — available when `enablejsapi=1` is in the embed URL
-- Spotify embed iframe: no external control API — destroying and recreating the iframe is the only way to stop it
-- Bandcamp embed iframe: no external control API — same as Spotify
-
-For Spotify and Bandcamp, the practical approach is to unmount the iframe when another source becomes active and remount when selected again.
-
-**Warning signs:**
-- Playing a local file then clicking a SoundCloud embed results in both playing simultaneously
-- Navigating away from a page with an embed results in audio continuing from the unmounted component (ghost audio)
-- `playerState.isPlaying` is true while a streaming embed is also active
+**Detection:**
+- Time from click to releases appearing. If > 3 seconds average, caching is insufficient.
+- MB API returning HTTP 503 (rate limited). This means the rate limiter is broken.
+- Network panel showing multiple MB requests in flight simultaneously.
 
 **Phase to address:**
-The `activeSource` coordination state must be implemented first, before any individual streaming service integration. It cannot be retrofitted without touching every service implementation.
+Caching infrastructure phase -- must be built BEFORE the Rabbit Hole UI. The Rabbit Hole's flow state depends on cached data. Without caching, the Rabbit Hole feels worse than the current single-artist page.
 
 ---
 
 ## Moderate Pitfalls
 
-### Pitfall 6: Spotify Token Refresh Race Condition — PKCE Rotation Invalidates Old Tokens Immediately
+### Pitfall 6: SvelteKit Navigation History Accumulates Memory Without Bound
 
 **What goes wrong:**
-Spotify's PKCE flow uses refresh token rotation: each refresh issues a new access token AND a new refresh token, and the old refresh token is immediately invalidated. If two API calls fire concurrently when a token is near expiry (both detect `expires_at` has passed, both attempt a refresh), the second refresh uses an already-invalidated refresh token and receives a 400 error. The user appears to be logged out mid-session.
+The Rabbit Hole's core loop is rapid page navigation: click artist -> click genre -> click similar artist -> click genre -> click similar artist. Each SvelteKit client-side navigation creates new component instances, loads new data, and adds entries to the browser history stack. After 50-100 navigations in a single session, the accumulated component state, DOM snapshots (if SvelteKit's snapshot feature is used), and in-memory data from all previous pages can consume hundreds of MB.
 
-**How to avoid:**
-Implement a single-flight token refresh: use a module-level Promise that, if already in progress, is returned to subsequent callers rather than starting a new refresh. Only one refresh can be in flight at a time.
+SvelteKit GitHub issue #12405 confirms increasing memory usage after multiple navigations that does not decrease. This is not a dramatic memory leak but a gradual accumulation that compounds in a "rabbit hole" usage pattern where users navigate far more aggressively than typical web browsing.
 
-Store the refresh token in Tauri's secure store (not `localStorage` and not Svelte `$state`). `localStorage` is accessible to any injected JavaScript. Svelte reactive state gets serialized by dev tools and may appear in logs. The access token can be in memory (it expires in 1 hour). The refresh token must be in secure persistent storage.
+**Why it happens:**
+SvelteKit's client-side router retains data for back-navigation performance. Each page's load data persists in memory. For normal web browsing (5-20 page navigations per session), this is fine. For the Rabbit Hole (50-200+ navigations per session), the accumulation becomes significant.
+
+**Prevention:**
+1. **Limit in-memory history depth.** Keep only the last 20-30 page states in memory. Older states are evicted. If the user navigates back beyond the retained window, reload the data.
+2. **Lightweight page data.** Each Rabbit Hole page should load minimal data: artist name, tags, similar artists (all from local DB, not API). Release data loaded lazily and not retained in navigation history.
+3. **Monitor memory in development.** Add a dev-only memory reporter (Performance.memory API) visible in the UI. If memory exceeds 300MB, something is accumulating.
+4. **Avoid storing fetched MB API data in SvelteKit load functions.** Keep API responses in a module-level cache (singleton map), not in the page's data. This way, navigating back doesn't duplicate the data -- it reads from the same cache.
+5. **Test with a "marathon session" scenario.** Click through 100 artists in sequence, measure memory. This should be a standard test case.
+
+**Detection:**
+- Task Manager showing memory climbing steadily during extended browsing.
+- WebView2 "page unresponsive" after long sessions.
+- Performance degradation (page transitions slowing) after many navigations.
+
+**Phase to address:**
+Rabbit Hole UI implementation phase. The navigation architecture must account for deep history from the start.
 
 ---
 
-### Pitfall 7: Bandcamp Embeds Are Not Universal — Artist Controls Streaming Per-Release
+### Pitfall 7: Decade Filtering Shows Empty Results for Most Genres Before 1950
 
 **What goes wrong:**
-Not all Bandcamp releases are embeddable. Artists can disable streaming for individual tracks or entire releases. Some artists restrict embeds to specific allowlisted domains via Bandcamp Pro "exclusive embeds." When streaming is disabled, the embed iframe loads but shows no playable audio. MusicBrainz provides a Bandcamp URL at the artist level, not the release level — you cannot know in advance whether any given release has embeds enabled.
+The decade filter (60s, 70s, 80s, 90s, etc.) is context-dependent -- only shows decades with data. The `begin_year` column in the artists table records when an artist was formed/born. Most MusicBrainz data has good `begin_year` coverage for post-1960 artists but sparse coverage for earlier periods. Additionally, many artists have NULL `begin_year` (date unknown). When decade filtering is applied:
 
-Additionally, Bandcamp imposes per-track streaming limits for free accounts. Tracks may stop streaming after N plays from a given IP, showing a "buy to unlock" state.
+- "80s" works well -- thousands of artists with `begin_year` between 1980-1989.
+- "60s" works for major genres but many niche genres show zero results.
+- Any decade before the 1960s shows almost nothing for non-classical genres.
+- Artists with NULL `begin_year` disappear entirely from filtered results.
 
-**How to avoid:**
-Treat Bandcamp embeds as "try and fallback." Load the embed iframe with a reasonable timeout. If no playable audio state is detected within ~5 seconds, collapse the embed section and show "Visit on Bandcamp" with a direct link. Do not use any Bandcamp API to pre-check embeddability — the Bandcamp API is deprecated and not publicly accessible.
+**Why it happens:**
+MusicBrainz has ~2.6M artists but `begin_year` coverage is not uniform. Modern artists (post-1990) have good coverage. Historical artists have patchy coverage. The decade filter implicitly excludes NULL years.
 
-For the source URL: use the artist's Bandcamp page URL (artist-level) and let Bandcamp's own player surface whatever is streamable. Do not attempt release-specific embed URLs.
+**Prevention:**
+1. **Show decade buttons only for decades that have data in the current context.** If viewing a genre page and no artists in that genre have `begin_year` in the 1960s, don't show the "60s" button. This prevents empty-result frustration.
+2. **Count NULL-year artists separately.** Show a "Year unknown" option alongside decade buttons. This surfaces the ~30-40% of artists without dates.
+3. **Use range queries with an index.** Ensure `begin_year` has an index for efficient filtering. On 2.6M rows, unindexed `WHERE begin_year BETWEEN 1980 AND 1989` scans the full table.
+4. **Precompute decade counts per genre.** In the pipeline, build a `genre_decade_counts` table: `(genre_id, decade, artist_count)`. The UI reads this to decide which decade buttons to show, without running a COUNT query per decade on every page load.
+
+**Detection:**
+- Decade buttons appearing for decades with zero results.
+- Performance: decade filter queries taking > 200ms on the full dataset.
+- User confusion: "Where did all the artists go?" when a decade is selected.
+
+**Phase to address:**
+Decade filtering implementation phase. The precomputation should happen in the pipeline phase alongside similar artists.
 
 ---
 
-### Pitfall 8: SoundCloud Widget postMessage Can Fail When Multiple Iframes Are Present
+### Pitfall 8: AI Companion Context Passing Creates Latency Spikes and Stale Responses
 
 **What goes wrong:**
-The SoundCloud HTML5 Widget API uses `window.postMessage` between the parent page and the widget iframe. This is standard and generally works correctly. However, a known issue (soundcloud/soundcloud-javascript#15) causes "Failed to execute 'postMessage' on 'DOMWindow'" errors when another iframe is also present on the same page. If an artist page shows a Spotify embed iframe AND a SoundCloud widget simultaneously, the postMessage routing can conflict.
+The AI companion is "persistent" and "knows your current page context." This means every page navigation must update the AI's context. Two failure modes:
 
-**How to avoid:**
-Show only one streaming embed at a time on the artist page (the selected service, based on user priority). Do not render all four service iframes simultaneously. Use the user's service priority order to determine which embed to show; let the user switch sources explicitly via source buttons. This avoids the multi-iframe postMessage conflict and also solves the simultaneous audio problem from Pitfall 5.
+**Latency:** If the AI re-processes context on every navigation, clicking through 5 artists in 10 seconds sends 5 context updates. The local LLM (Qwen2.5 3B via llama-server) takes 2-5 seconds per inference. By the time the AI responds about artist #1, the user is on artist #5. The response is stale.
 
-When using the SoundCloud Widget JS API for pause/play control, bind `SC.Widget(iframe)` explicitly to the specific iframe element, not to a string selector that might match multiple iframes.
+**Context size:** If the context includes the user's full exploration history (last 20 artists, their tags, their genres), the prompt grows with each navigation. At 50+ navigations, the context window could exceed the model's limit (Qwen2.5 3B has ~32K tokens).
+
+**Why it happens:**
+The AI companion is designed as a conversational sidebar. Conversational AI expects the user to stay on one topic for multiple exchanges. The Rabbit Hole interaction pattern is the opposite -- the user's "topic" (current artist/genre) changes every few seconds.
+
+**Prevention:**
+1. **Debounce context updates.** Don't send context to the AI on every navigation. Wait 3-5 seconds after the last navigation before updating. If the user is clicking rapidly, skip intermediate pages.
+2. **Lightweight context, not full history.** The AI only needs: current page type (artist/genre), current entity name, current tags (top 5), and the user's recent question. Not the full trail.
+3. **Lazy initialization.** Don't update the AI context unless the AI panel is open AND the user has interacted with it. If the user is browsing without asking the AI anything, don't waste compute.
+4. **Streaming responses with cancellation.** If the AI is generating a response and the user navigates away, cancel the in-flight generation. Use the existing llama-server's `/completion` endpoint with streaming and abort.
+5. **Pre-canned responses for common queries.** "What's this genre about?" can be answered from the genre's `description` field without any AI call. Only route to the LLM for questions that genuinely need inference.
+
+**Detection:**
+- AI responses appearing after the user has already left the page they asked about.
+- AI panel showing a loading spinner for > 5 seconds during rapid browsing.
+- llama-server process consuming 100% CPU during passive browsing (context updates firing too often).
+
+**Phase to address:**
+AI companion implementation phase. The debounce/lazy pattern must be designed before the UI, not retrofitted.
 
 ---
 
-### Pitfall 9: Tauri CSP Is Currently Null — Adding It Later Will Break All Embeds
+### Pitfall 9: Cache Storage Grows Unbounded and Eventually Fills the User's Disk
 
 **What goes wrong:**
-`tauri.conf.json` currently has `"csp": null`, meaning Tauri injects no Content Security Policy. All embed iframes work freely. If CSP is ever added (for security hardening), the default Tauri CSP blocks all `frame-src` from third-party origins. Every embed iframe — Spotify, YouTube, SoundCloud, Bandcamp — breaks instantly. The Spotify Web Playback SDK (if ever revisited) also requires `script-src` for `sdk.scdn.co`.
+The caching strategy is "first fetch slow, instant after." Cached data includes MB releases, links, cover art URLs, Wikipedia bios, and potentially track lists. Over time, a power user exploring hundreds of artists per week accumulates cached data:
 
-**How to avoid:**
-Do not add CSP without also adding the required `frame-src` and `script-src` entries. If CSP is introduced, the minimum required additions are:
+- Releases per artist: ~5-20 releases, ~500 bytes per release = ~5-10KB per artist
+- Links per artist: ~5-15 links, ~200 bytes per link = ~1-3KB per artist
+- Bio per artist: ~500-2000 bytes
+- Total per artist: ~7-15KB
 
-```
-frame-src https://open.spotify.com https://www.youtube-nocookie.com https://w.soundcloud.com https://*.bandcamp.com;
-```
+After exploring 10,000 artists: ~70-150MB of cached data. After a year of active use: potentially 500MB-1GB in `taste.db` or `cache.db`. On machines with small SSDs (128GB or 256GB), this is noticeable.
 
-Keep `"csp": null` for now — embeds are central to the product, and null CSP is appropriate while no server-side secrets are handled in the WebView. Document the required additions so if CSP is added in future it does not silently break everything.
+**Why it happens:**
+Caches without eviction policies grow monotonically. Every new artist visit adds data. No data is ever removed. The user doesn't know or control the cache size.
+
+**Prevention:**
+1. **Implement an LRU eviction policy.** Track `last_accessed` timestamp on each cached record. When cache size exceeds a threshold (default 200MB), evict oldest-accessed records.
+2. **Separate cache from taste data.** Don't put cache records in `taste.db` (which has irreplaceable user data like favorites, collections, play history). Use a dedicated `cache.db` that can be safely deleted without data loss.
+3. **Show cache size in Settings.** "Cache: 142MB -- [Clear Cache]" button. Users can manage their own storage.
+4. **TTL on cached data.** MusicBrainz data changes (new releases, updated links). Cache records older than 30-90 days should be refreshed on next access.
+5. **Don't cache cover art binaries.** Cache only the URL, not the image data. Let the browser's HTTP cache handle image caching. This prevents the biggest storage consumer from landing in SQLite.
+
+**Detection:**
+- `cache.db` file size growing steadily over weeks.
+- User reports of disk space usage.
+- SQLite VACUUM showing significant space reclamation (indicates fragmentation from never-evicted data).
+
+**Phase to address:**
+Caching infrastructure phase. The eviction policy must be part of the initial cache design, not added after users complain about disk space.
 
 ---
 
-### Pitfall 10: MusicBrainz Artist URLs Are Artist-Level — Track Resolution Is Not Possible Without Spotify API Access
+### Pitfall 10: History Trail Persistence Creates Privacy Exposure
 
 **What goes wrong:**
-MusicBrainz provides URLs like `https://open.spotify.com/artist/4Z8W4fKeB5YxbusRsdQVPb`. These are artist-level pages, not track or album pages. Mapping a specific MusicBrainz release to a Spotify album ID requires the Spotify Search API (`GET /search?type=album&q=...`), which is a Web API endpoint. As of the February 2026 changes, Spotify Web API access in development mode is restricted — and in any case requires valid OAuth tokens for the current user's account.
+The "Continue" feature stores the user's full exploration trail -- every artist and genre page visited, in order, with timestamps. This is stored in `taste.db` (local SQLite). If someone else uses the machine, or if the DB file is copied/shared, the exploration history reveals the user's music interests with high granularity. This may seem harmless for music, but consider:
 
-**How to avoid:**
-Design streaming at the artist level, not the track level. "Play from Spotify" opens the Spotify artist embed, which shows the artist's popular tracks. For track-specific playback, the user interacts with the Spotify embed's own UI. This matches what the existing `spotifyEmbedUrl()` function already does correctly.
+- Exploring politically sensitive music (protest punk, dissident rap)
+- Exploring culturally sensitive genres (explicit content, controversial scenes)
+- The trail reveals temporal patterns (when the user was at the computer and what they were doing)
 
-Do not plan a "find this specific track on Spotify by MusicBrainz release ID" resolution flow — it requires Spotify API calls that depend on auth, quota mode, and rate limits. Accept the artist-level UX.
+The existing play_history table already has this exposure, but it only records played tracks. The exploration trail records every click, including genres and artists the user looked at but didn't listen to -- a broader behavioral fingerprint.
+
+**Why it happens:**
+The trail is a feature, not a bug -- it enables "pick up where you left off." The privacy implication is easy to overlook because music exploration feels inherently innocuous.
+
+**Prevention:**
+1. **Respect the existing Private Mode.** The app already has a `private_mode` setting (in playback preferences). When private mode is on, don't record the exploration trail.
+2. **Auto-trim old trail entries.** Keep only the last 30 days of trail. Older entries are automatically deleted. This limits the temporal fingerprint.
+3. **"Clear exploration history" in Settings.** Alongside the existing "Clear play history" button, add trail clearing.
+4. **Store trail in the same `private_mode`-respecting path as play history.** Don't create a separate privacy toggle -- the user's existing privacy choice should apply.
+
+**Detection:**
+- Trail data growing without bound.
+- No way to clear the trail in the UI.
+- Trail recording when private mode is enabled.
+
+**Phase to address:**
+History trail implementation phase. Privacy controls must be present in the initial implementation.
 
 ---
 
-### Pitfall 11: Spotify Developer Policy — Open Source Distribution Creates Real Risks
+## Minor Pitfalls
+
+### Pitfall 11: Tag-Based Similarity Produces Misleading Results for Broad Tags
 
 **What goes wrong:**
-Spotify's Developer Terms (v10, effective May 2025) state that Security Codes (client_id, client_secret) "must be embedded in your SDA in a secure manner not accessible by third parties" and that you cannot "sell, transfer, sublicense or otherwise disclose your account or Security Codes to any other party." Publishing a public Git repository with a bundled Spotify client_id and secret is arguably a violation of the "not accessible by third parties" requirement.
+Two artists both tagged "rock" and "alternative" have high tag overlap but may sound nothing alike. The tag similarity algorithm is biased by the tag rarity weighting (niche tags contribute more), but if two artists share only broad tags (low uniqueness), the similarity score is inflated. The result: the Rabbit Hole suggests "similar artists" that don't feel similar.
 
-The PKCE flow requires no `client_secret` — so for PKCE-only implementations, the client_id alone is in the code. The client_id is a public identifier (analogous to an OAuth app ID) and is generally considered safe to expose. This is community consensus and is how all public PKCE-based Spotify integrations work. The risk is low for client_id alone in PKCE flow.
-
-The real risk: if a `client_secret` accidentally ends up in source code (from a developer testing Client Credentials flow and committing the result), the app could be terminated and the developer account flagged.
-
-Additionally, if the bundled client_id is used by many users and somehow attracts Spotify's attention, Spotify can terminate the client_id at any time without notice, breaking Spotify integration for all users instantly. With the per-user client_id model (Pitfall 4), this risk is distributed.
-
-**How to avoid:**
-- Use PKCE only — no `client_secret` anywhere
-- Per-user client_id (each user creates their own Spotify app) — distributes termination risk
-- If a single developer client_id is ever used for development/testing, ensure it is in `.env.local` (gitignored), never committed
-- Add a pre-commit hook check for Spotify client credential patterns in source files
+**Prevention:**
+- Weight similarity by tag rarity (already planned). Tags with artist_count > 10,000 contribute near-zero to the similarity score.
+- Require a minimum of 2 shared tags for a similarity edge.
+- Consider a threshold: if the best similarity score for an artist is below X, show "No similar artists found" rather than misleading suggestions.
+- Test with well-known artists and verify the similar artists list makes intuitive sense (Radiohead's similar artists should include Sigur Ros, not Green Day).
 
 ---
 
-## Technical Debt Patterns
+### Pitfall 12: Context Sidebar Competes With Content on Narrow Windows
 
-| Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
-|----------|-------------------|----------------|-----------------|
-| Bundled shared Spotify client_id | Simpler user onboarding | Breaks at user #6; ToS grey area; single point of failure | Never for public release |
-| No active-source coordination (just implement one service at a time) | Faster first implementation | Ghost audio; simultaneous playback; impossible to retrofit cleanly | Never — build coordination layer first |
-| Only test YouTube in dev (not production builds) | Faster iteration | Error 153 ships to all users silently | Never — always smoke test production build |
-| Spotify access token in localStorage | Zero-friction implementation | Token readable by any injected JS | Never — use Tauri secure store |
-| `csp: null` stays as-is | All embeds work freely | Any XSS has no CSP mitigation | Acceptable for now; document what to add if CSP ever enabled |
-| Load all 4 service iframes simultaneously on artist page | All options visible immediately | Performance hit; postMessage conflicts; simultaneous audio | Never — lazy-load, one active iframe at a time |
+**What goes wrong:**
+The context sidebar sits between the nav sidebar and the main content area. On 1280px-wide displays (common laptop resolution), the nav sidebar is ~200px, the context sidebar would be ~250px, leaving only ~830px for the main content. On 1024px, it's even worse -- ~574px for content, which is cramped for the Rabbit Hole's artist cards and genre lists.
 
----
-
-## Integration Gotchas
-
-| Integration | Common Mistake | Correct Approach |
-|-------------|----------------|------------------|
-| Spotify OAuth | `http://localhost:PORT` as redirect_uri | `http://127.0.0.1/callback` or `blacktape://callback` via deep-link plugin |
-| Spotify OAuth | Committing `client_secret` to source | PKCE flow — no client_secret needed or used |
-| Spotify OAuth | Single bundled client_id for all users | Per-user client_id, entered in Settings onboarding |
-| Spotify Web Playback SDK | Implementing full SDK integration | Widevine CDM not available in WebView2 — use embed iframe only |
-| YouTube iframe | Only testing in `npm run tauri dev` | Always test in production build; Error 153 only manifests in production |
-| YouTube iframe | Assuming `youtube-nocookie.com` avoids Error 153 | It does not; the issue is at the Referer/protocol level, not the domain |
-| SoundCloud widget | Multiple SC iframes on same page | One active iframe at a time; destroy others when switching sources |
-| Bandcamp embed | Assuming all Bandcamp artists allow embedding | "Try and fallback" — detect no-audio state and show direct link |
-| Token refresh | Two concurrent API calls both attempt refresh | Single-flight mutex on refresh — second caller waits for in-progress refresh |
-| Audio coordination | Adding pause calls as an afterthought | activeSource state must be the architectural foundation, not a patch |
+**Prevention:**
+- Make the context sidebar collapsible (not always visible). A toggle button or auto-hide below a width breakpoint.
+- Consider an overlay panel that appears on hover/click rather than a permanent sidebar.
+- Set a minimum content width of 800px. If the window is narrower, the context sidebar collapses automatically.
+- Test on 1280x720 resolution specifically (common for laptops and external monitors).
 
 ---
 
-## Performance Traps
+### Pitfall 13: "Random" Entry Point Produces Uninteresting Results
 
-| Trap | Symptoms | Prevention | When It Breaks |
-|------|----------|------------|----------------|
-| Loading all 4 service iframes on artist page load | Slow page; 4 network requests; postMessage conflicts | Lazy-load: only load the iframe for the user's top-priority service; load others on demand | Immediately on any artist page |
-| Polling for SoundCloud play state | CPU and battery drain | Use SoundCloud Widget API event callbacks (`SC.Widget.Events.PLAY`) | Immediately |
-| Checking Spotify token expiry on every function call | Redundant comparisons; missed race condition | Check locally against stored `expires_at`; refresh only within 60 seconds of expiry | At scale |
-| Attempting to detect Bandcamp embed failure via timing | Race conditions; false positives on slow connections | Use iframe `load` event + DOM content inspection; not a fixed timeout | Varies by network |
+**What goes wrong:**
+The "Random" button picks a random artist from 2.6M. Most of the long tail consists of artists with 1-2 tags, no releases on major platforms, and no streaming links. The user clicks "Random," sees an artist with no description, no playable music, and two tags. They click "Random" again. Same thing. After 3-4 underwhelming randoms, they stop using the feature.
 
----
-
-## Security Mistakes
-
-| Mistake | Risk | Prevention |
-|---------|------|------------|
-| Spotify access token in localStorage | Readable by any injected JS; survives browser sessions | Store in memory only (1-hour lifespan anyway); use Tauri secure store for refresh token |
-| Spotify refresh token in Svelte `$state` | Reactive state serializes to dev tools; may appear in logs | Never put tokens in reactive state; keep refresh token in Tauri secure store (`tauri-plugin-store`) |
-| Spotify `client_secret` in source code | Account termination if repo is public | PKCE flow — no secret required. If accidentally committed, rotate the Spotify app immediately |
-| Loading iframe content from user-supplied URLs | SSRF / open redirect in iframe context | Only load iframes from Spotify/YouTube/SoundCloud/Bandcamp domains; validate URL origin before constructing embed URL |
+**Prevention:**
+- Filter random selection to artists with >= 3 tags AND at least one streaming link (Bandcamp/Spotify/YouTube URL in MB data). This subset is much smaller but produces better results.
+- Alternatively, weight random selection by uniqueness score. Higher-uniqueness artists are more interesting discoveries.
+- Provide a "Random in [genre]" option alongside pure random. Constrained randomness produces more relevant results.
+- Show a quick-loading preview (name, tags, country) before committing to the full page load. If the preview looks empty, auto-skip to the next random.
 
 ---
 
-## UX Pitfalls
+## Phase-Specific Warnings
 
-| Pitfall | User Impact | Better Approach |
-|---------|-------------|-----------------|
-| Spotify onboarding asks for "Client ID" with no explanation | User abandons setup | Guided onboarding: step-by-step with screenshots of Spotify developer dashboard; explain what the client_id is and that it is free |
-| YouTube player blank with no explanation when Error 153 occurs | User thinks the app is broken | Catch Error 153 in IFrame API `onError`, replace player area with "Watch on YouTube" button |
-| Bandcamp embed loads but no audio available | User thinks embed is broken | 5-second load timeout: if no playable content, show "Not available via embed — visit Bandcamp" with direct link |
-| Two audio sources playing simultaneously | Confusing, jarring | Active-source coordination: new source automatically pauses previous source |
-| Service badge on player bar shows wrong service | "Playing from Spotify" while SoundCloud is audible | Player badge must be derived from the same `activeSource` state that controls pause/play |
-| No indication Spotify Premium is required | Non-premium user authenticates successfully but gets no audio from embed | Detect account type after auth; show "Spotify Premium required for full playback" message before showing the embed for playback |
-| Incremental source appearance (sources appear one by one as resolution runs) | Confusing — user sees state flickering | Resolve all available sources before rendering; show a loading state, then all sources at once |
+| Phase Topic | Likely Pitfall | Severity | Mitigation |
+|-------------|---------------|----------|------------|
+| Pipeline: similar artists | DB size explosion (P1) | CRITICAL | Measure on sample, cap at top-10, filter by tag count >= 3 |
+| Pipeline: Wikidata geocoding | Timeout + low coverage (P4) | CRITICAL | Batch queries, accept 5-12% coverage, country centroid fallback |
+| Rabbit Hole UI | Dead ends from missing data (P2) | CRITICAL | Keep old views until parity checklist passes |
+| Rabbit Hole UI | Memory accumulation (P6) | MODERATE | Limit in-memory history, cache in singleton map not page data |
+| World Map | Rendering crash at scale (P3) | CRITICAL | Supercluster + canvas renderer + viewport-only loading |
+| Caching layer | Rate limit queuing (P5) | CRITICAL | Build cache BEFORE Rabbit Hole UI, cancel stale requests |
+| Caching layer | Unbounded growth (P9) | MODERATE | LRU eviction, separate cache.db, TTL |
+| History trail | Privacy exposure (P10) | MODERATE | Respect private mode, auto-trim, clear button |
+| AI companion | Stale responses (P8) | MODERATE | Debounce context updates, lazy init, cancel in-flight |
+| Decade filtering | Empty results (P7) | MODERATE | Precompute counts, show only populated decades |
+| Context sidebar | Narrow window cramping (P12) | MINOR | Collapsible, auto-hide below breakpoint |
+| Random entry | Uninteresting results (P13) | MINOR | Filter by tag count + streaming link availability |
+
+---
+
+## Integration Risk Matrix
+
+| New Feature | Depends On | If Dependency Fails | Risk Level |
+|-------------|-----------|---------------------|------------|
+| Rabbit Hole navigation | Similar artists table | Core loop has no "similar artists" links -- major dead end | HIGH |
+| World Map pins | Wikidata geocoding | Map shows only genre pins (4K), not artist pins | MEDIUM (degraded but functional) |
+| "Continue" button | History trail storage | Feature doesn't work, but rest of Rabbit Hole is fine | LOW |
+| AI companion | llama-server running | AI panel hidden (already conditional on AI connected) | LOW |
+| Track display | MB API cache | First-visit artists load slowly but still work | LOW |
+| Decade filter | `begin_year` data quality | Some decades empty or misleading | LOW |
 
 ---
 
 ## "Looks Done But Isn't" Checklist
 
-- [ ] **Spotify OAuth:** Works in a production build (not just `npm run tauri dev`)? Redirect callback intercepted correctly?
-- [ ] **Spotify redirect_uri:** Registered URI uses `127.0.0.1` or custom protocol — never `localhost`?
-- [ ] **Spotify client_id:** Per-user (not bundled)? No `client_secret` anywhere in source or build artifacts?
-- [ ] **YouTube embeds:** Tested in a production `.msi` install? Error 153 fallback renders a "Watch on YouTube" button?
-- [ ] **Audio conflict:** Played a local file, then clicked a streaming embed — only one plays?
-- [ ] **Ghost audio:** Navigated away from an artist page while an embed was playing — audio stopped?
-- [ ] **Spotify token storage:** Refresh token in Tauri secure store (not localStorage or Svelte state)?
-- [ ] **Bandcamp streaming disabled:** Tested with an artist whose Bandcamp has streaming disabled — fallback renders correctly?
-- [ ] **PKCE only:** `npm run build` artifact contains no `client_secret` string?
-- [ ] **CSP documented:** If `csp: null` is ever changed, required `frame-src` entries are documented in a comment in `tauri.conf.json`?
-
----
-
-## Recovery Strategies
-
-| Pitfall | Recovery Cost | Recovery Steps |
-|---------|---------------|----------------|
-| Spotify SDK (Widevine fails) discovered after implementation | HIGH — full rearchitecture | Replace SDK with `open.spotify.com/embed/*` iframe; remove SDK loading code and state management; re-implement around embed |
-| YouTube Error 153 ships without fallback | LOW — add fallback only | Add `onError` handler with code 153 detection; render "Watch on YouTube" button; ship as patch |
-| `localhost` redirect_uri rejected after deployment | MEDIUM — Spotify dashboard update + app config change | Update registered URI in Spotify dashboard to `127.0.0.1` or custom protocol; update app config; ship patch |
-| Bundled client_id hits 5-user limit | HIGH — UX rethink required | Implement per-user client_id entry flow; communicate to existing users; ship update |
-| Simultaneous audio discovered after multiple services ship | MEDIUM — architectural retrofit | Add `activeSource` state; wire pause calls into each service component; regression-test all services |
-| Spotify client_id terminated by Spotify | MEDIUM (per-user model) or HIGH (shared model) | Per-user: only that user needs a new client_id. Shared: all users broken simultaneously — ship app update with onboarding for per-user setup |
-
----
-
-## Pitfall-to-Phase Mapping
-
-| Pitfall | Prevention Phase | Verification |
-|---------|------------------|--------------|
-| Spotify SDK Widevine failure (P1) | Spotify architecture decision — first action | Architecture decision recorded: embed iframe only, no SDK |
-| YouTube Error 153 (P2) | YouTube embed implementation | Production build tested; Error 153 fallback renders correctly |
-| Spotify OAuth localhost rejection (P3) | Spotify OAuth implementation | Auth flow completes in production build; redirect URI is `127.0.0.1` or deep-link |
-| Spotify client_id quota (P4) | Spotify onboarding UX design | Onboarding UI prompts user for their own client_id; no bundled ID in source |
-| Audio conflict (P5) | Streaming coordination foundation — before any service | Local track + SoundCloud embed tested; only one plays |
-| Token refresh race condition (P6) | Spotify token management | Two concurrent API calls during expiry simulated; only one refresh fires |
-| Bandcamp unavailability (P7) | Bandcamp embed implementation | Artist with streaming disabled tested; fallback link renders |
-| SoundCloud postMessage conflict (P8) | SoundCloud embed implementation | Only one iframe active at a time; widget API binds to correct element |
-| CSP breaking embeds (P9) | Only if CSP is ever added | Smoke test all embeds after any CSP change |
-| Artist-level URL limitation (P10) | Spotify embed implementation | Embed shows artist page; no Spotify Search API calls in codebase |
-| ToS / client_secret risk (P11) | Spotify OAuth architecture | Pre-commit check for credential patterns; PKCE confirmed as sole auth method |
+- [ ] **Similar artists table size:** Measured on full dataset? Under 500MB? D1 storage confirmed sufficient?
+- [ ] **Rabbit Hole dead ends:** Visited 20 random artists -- every page has 3+ clickable links?
+- [ ] **World Map load time:** Opens in < 3 seconds with production data? Pan/zoom at 30+ FPS?
+- [ ] **Rate limit compliance:** Network panel shows <= 1 MB request per second during rapid browsing?
+- [ ] **Cache eviction:** After 10,000 artist visits, cache.db is under 200MB? Old entries evicted?
+- [ ] **Memory stability:** After 100 consecutive navigations, WebView2 memory is under 500MB?
+- [ ] **History trail privacy:** Private mode on -- trail is not recorded? "Clear trail" button works?
+- [ ] **Old views accessible:** Style Map, KB, Time Machine, Crate Dig still reachable via direct URL?
+- [ ] **Decade filter accuracy:** Only populated decades shown? "Year unknown" option present?
+- [ ] **AI companion latency:** During rapid browsing, AI doesn't generate responses for already-left pages?
 
 ---
 
 ## Sources
 
-- [Spotify Web Playback SDK GitHub #41 — "Failed to initialize player" in Electron](https://github.com/spotify/web-playback-sdk/issues/41)
-- [Spotify Web Playback SDK GitHub #7 — Electron/desktop support discussion](https://github.com/spotify/web-playback-sdk/issues/7)
-- [Spotify Web Playback SDK GitHub #2 — Platform does not support requestMediaKeySystemAccess](https://github.com/spotify/web-playback-sdk/issues/2)
-- [Spotify developer blog — Increasing security requirements (Feb 2025)](https://developer.spotify.com/blog/2025-02-12-increasing-the-security-requirements-for-integrating-with-spotify)
-- [Spotify developer blog — OAuth Migration reminder (Oct 2025)](https://developer.spotify.com/blog/2025-10-14-reminder-oauth-migration-27-nov-2025)
-- [Spotify developer blog — Update on developer access (Feb 2026)](https://developer.spotify.com/blog/2026-02-06-update-on-developer-access-and-platform-security)
-- [Spotify docs — Redirect URIs](https://developer.spotify.com/documentation/web-api/concepts/redirect_uri)
-- [Spotify docs — Quota modes (5-user dev limit, 250k MAU for extended access)](https://developer.spotify.com/documentation/web-api/concepts/quota-modes)
-- [Spotify docs — Web API Changelog February 2026 (restricted endpoints)](https://developer.spotify.com/documentation/web-api/references/changes/february-2026)
-- [Spotify docs — Web Playback SDK (supported browsers, EME, HTTPS requirements)](https://developer.spotify.com/documentation/web-playback-sdk)
-- [Spotify Developer Terms v10 (Security Code requirements, distribution)](https://developer.spotify.com/terms)
-- [TechCrunch — Spotify changes dev mode API Feb 2026 (5-user cap, Premium requirement)](https://techcrunch.com/2026/02/06/spotify-changes-developer-mode-api-to-require-premium-accounts-limits-test-users/)
-- [Tauri GitHub #14422 — YouTube IFrame Error 153 in production (tauri:// protocol)](https://github.com/tauri-apps/tauri/issues/14422)
-- [Simon Willison's TIL — YouTube Error 153 cause (Referer policy)](https://simonwillison.net/2025/Dec/1/youtube-embed-153-error/)
-- [CORS Proxy blog — YouTube Error 153 in WebView environments](https://corsproxy.io/blog/fix-youtube-error-150-153-webview/)
-- [Tauri docs — CSP](https://v2.tauri.app/security/csp/)
-- [Tauri docs — Deep Linking plugin (custom protocol OAuth)](https://v2.tauri.app/plugin/deep-linking/)
-- [SoundCloud Widget API docs](https://developers.soundcloud.com/docs/api/html5-widget)
-- [SoundCloud JavaScript GitHub #15 — postMessage conflict with multiple iframes](https://github.com/soundcloud/soundcloud-javascript/issues/15)
-- [Bandcamp help — Streaming limits](https://get.bandcamp.help/hc/en-us/articles/23020694060183-What-are-streaming-limits-on-Bandcamp)
-- [Bandcamp help — Creating an embedded player](https://get.bandcamp.help/hc/en-us/articles/23020711574423-How-do-I-create-a-Bandcamp-embedded-player)
-- [Spotify community — DRM requires secure context (HTTPS)](https://community.spotify.com/t5/Spotify-for-Developers/DRM-might-not-be-available-from-unsecure-contexts/td-p/5972536)
-- [Spotify community — INVALID_CLIENT with custom URI schemes](https://community.spotify.com/t5/Spotify-for-Developers/INVALID-CLIENT-Insecure-redirect-URI-using-custom-URI/td-p/6919036)
-- Direct codebase review: `src/lib/embeds/spotify.ts`, `src/lib/embeds/youtube.ts`, `src/lib/player/state.svelte.ts`, `src/lib/player/queue.svelte.ts`, `src-tauri/tauri.conf.json`, `src-tauri/capabilities/default.json`
+- [Cloudflare D1 Limits -- 500MB free, 10GB max per database](https://developers.cloudflare.com/d1/platform/limits/)
+- [Cloudflare D1 Pricing -- $0.75/GB-month storage](https://developers.cloudflare.com/d1/platform/pricing/)
+- [MusicBrainz API Rate Limiting -- 1 request per second, IP blocking for abuse](https://musicbrainz.org/doc/MusicBrainz_API/Rate_Limiting)
+- [Wikidata SPARQL Query Limits -- 60-second timeout, 60s compute/minute/user](https://www.wikidata.org/wiki/Wikidata:SPARQL_query_service/query_limits)
+- [Wikidata SPARQL Query Optimization](https://www.wikidata.org/wiki/Wikidata:SPARQL_query_service/query_optimization)
+- [Wikidata music band gazetteer -- ~77K bands, ~238K musicians in Wikidata](https://www.textjuicer.com/2019/08/building-a-gazetteer-of-music-bands-using-wikidata/)
+- [Supercluster -- clustering millions of points on a map (Mapbox)](https://blog.mapbox.com/clustering-millions-of-points-on-a-map-with-supercluster-272046ec5c97)
+- [Leaflet markercluster vs Supercluster performance comparison](https://github.com/AndrejGajdos/leaflet-markercluster-vs-supercluster)
+- [Leaflet performance with large marker counts](https://medium.com/@silvajohnny777/optimizing-leaflet-performance-with-a-large-number-of-markers-0dea18c2ec99)
+- [Handling millions of points with Leaflet without crashing](https://alfiankan.medium.com/handle-millions-of-location-points-with-leaflet-without-breaking-the-browser-f69709a50861)
+- [Canvas-based high performance map rendering](https://chairnerd.seatgeek.com/high-performance-map-interactions-using-html5-canvas/)
+- [SvelteKit memory increase after multiple navigations -- GitHub #12405](https://github.com/sveltejs/kit/issues/12405)
+- [SvelteKit memory leak investigation -- GitHub #9427](https://github.com/sveltejs/kit/issues/9427)
+- [SQLite performance tuning for large databases](https://phiresky.github.io/blog/2020/sqlite-performance-tuning/)
+- [SQLite optimizations for high performance (PowerSync)](https://www.powersync.com/blog/sqlite-optimizations-for-ultra-high-performance)
+- [Feature flags for migration risk mitigation (LaunchDarkly)](https://launchdarkly.com/blog/feature-flagging-to-mitigate-risk-in-database-migration/)
+- Direct codebase review: `src/lib/db/provider.ts`, `src/lib/db/http-provider.ts`, `src/lib/db/queries.ts`, `src-tauri/src/ai/taste_db.rs`, `src/lib/taste/history.ts`, `pipeline/import.js`, `ARCHITECTURE.md`, `docs/discovery-redesign-research.md`
 
 ---
-*Pitfalls research for: Multi-source streaming integration (Spotify, YouTube, SoundCloud, Bandcamp) added to existing Tauri 2.0 + Svelte 5 desktop app (BlackTape / Mercury v1.6)*
-*Researched: 2026-02-26*
+*Pitfalls research for: Discovery redesign (v1.7 "The Rabbit Hole") -- unified click-through exploration, geographic map, tag-based similarity, live data caching added to existing Tauri 2.0 + Svelte 5 desktop app (BlackTape)*
+*Researched: 2026-03-03*

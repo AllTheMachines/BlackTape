@@ -12198,3 +12198,6 @@ Zero `mercury.exe` references remain in tools, src, or app-recordings. Historica
 
 > **Commit 8c78823b** (2026-03-03 20:45) — wip: auto-save
 > Files changed: 1
+
+> **Commit 0dfec8a0** (2026-03-03 20:46) — auto-save: 2 files @ 20:46
+> Files changed: 2
