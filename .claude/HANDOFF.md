@@ -1,52 +1,55 @@
-# Work Handoff — 2026-03-03 01:00
+# Work Handoff — 2026-03-03 ~14:00
 
 ## Current Task
-v0.3.0 released — session complete.
+Multiple housekeeping items completed; discovery redesign research delivered for Steve's review.
 
-## What Was Done This Session
+## Context
+Steve is preparing BlackTape for wider distribution (friends via Google Drive) and thinking ahead about internationalization and redesigning the core discovery views (Style Map, Knowledge Base, Time Machine, Crate Dig).
 
-### Pre-Release Smoke Test
-- Built `tools/smoke-test.mjs` — CDP-based smoke test that checks all pages load, no JS errors, key elements present
-- 13/14 tests passed, 0 console errors across all navigation (home, library, settings)
-- One "fail" was lazy-loaded album covers (not a real issue)
-- Also created/deleted `tools/_inspect-dom.mjs` during debugging (not committed)
+## Progress
+### Completed
+- **i18n issue created** — #86: Japanese, Spanish, Portuguese (BR), Korean as high-priority languages
+- **v0.3.0 installer rebuilt** with cassette icon (old Mercury "M" logo was baked into the previous build)
+  - Signed with rsign2 (`-W` flag for no-password key)
+  - Uploaded to GitHub release, replaced old assets
+  - `latest.json` updated with new signature for auto-updater
+- **Discovery redesign issue created** — #88: Redesign graph-based discovery views
+- **Full research doc written** — `docs/discovery-redesign-research.md` with exemplars (Every Noise at Once, Radio Garden, Radiooooo, Musicmap, Outer Wilds), design concepts (unified map, fog of war, constellation metaphor, wander mode), and flow-state psychology
+- **MusicBrainz genre coverage audited** — found that MB's official ~1,900 curated genre list is NOT imported, only ~2,200 user-voted artist tags. Issue #88 comment references this gap.
 
-### Test Manifest Updates
-- Fixed 6 failing tests in `tools/test-suite/manifest.mjs`:
-  - P3-01: TauriProvider → HttpProvider (file was renamed)
-  - P15-02: mercury_db.rs tests → skipped (file deleted in v0.3.0)
-  - P25-17/18/19/21: Old two-pane library layout testids → new card grid + release-hero layout
-- All 196 tests now passing
+### Remaining
+- Steve needs to review `docs/discovery-redesign-research.md` and pick a direction for discovery redesign
+- MusicBrainz genre import gap needs its own issue or to be folded into redesign work
+- 30 commits ahead of origin — not pushed
 
-### v0.3.0 Release
-- Committed: `99adc21` — "v0.3.0 — library redesign, updater overhaul, mercury-api, dev icons" (86 files, +5702/-1454)
-- Built: `BlackTape_0.3.0_x64-setup.exe` (9.3 MB)
-- Signed: rsign2 → base64-encoded sig in latest.json
-- Released: https://github.com/AllTheMachines/BlackTape/releases/tag/v0.3.0
-- Pushed to main
-
-### What's NOT Done
-- BUILD-LOG.md not updated with this session's entries (only the auto-commit hook line)
-- Test screenshots (`test-critical-update.png`, `test-normal-update.png`) still in working tree, unstaged
+## Key Decisions
+- High-priority i18n languages: Japanese, Spanish, Portuguese (BR), Korean
+- v0.3.0 release rebuilt in-place (not bumped to v0.3.1) — same version, new installer with correct icon
+- Signing workaround: Tauri's built-in signer fails with password prompt, use `rsign sign -W -s /tmp/blacktape-decoded.key` (key must be base64-decoded from `~/.tauri/blacktape.key` first)
 
 ## Relevant Files
-- `tools/smoke-test.mjs` — new pre-release smoke test (committed)
-- `tools/test-suite/manifest.mjs` — updated test expectations (committed)
-- `tools/sign-build.bat` — signing workflow script (committed previously)
-- `src-tauri/target/release/bundle/nsis/BlackTape_0.3.0_x64-setup.exe` — release binary
-- `src-tauri/target/release/bundle/nsis/BlackTape_0.3.0_x64-setup.exe.sig` — signature file
+- `docs/discovery-redesign-research.md` — full research doc for discovery redesign (NEW)
+- `src-tauri/target/release/bundle/nsis/latest.json` — updated with v0.3.0 signature
+- `src-tauri/target/release/bundle/nsis/BlackTape_0.3.0_x64-setup.exe` — rebuilt with cassette icon
+- `pipeline/import.js` — MusicBrainz import pipeline (doesn't import official genre list)
+- `pipeline/build-genre-data.mjs` — Wikidata genre encyclopedia builder
+- `pipeline/build-tag-stats.mjs` — tag statistics + co-occurrence + uniqueness scoring
+
+## Issues Created This Session
+- **#86** — i18n: Add Japanese, Spanish, Portuguese, and Korean localization
+- **#88** — Redesign graph-based discovery views (Style Map, Knowledge Base, Time Machine, Crate Dig)
 
 ## Git Status
 ```
- M BUILD-LOG.md  (auto-hook addition only)
+Branch main, 30 commits ahead of origin (not pushed)
+Only uncommitted change: BUILD-LOG.md (auto-save hook)
 ```
-Unstaged: `test-critical-update.png`, `test-normal-update.png` (test artifacts, can be deleted)
 
-## Key Info for Next Session
-- v0.3.0 is live on GitHub — updater will notify v0.2.0 users automatically
-- Signing workflow: rsign2 (not Tauri CLI — it hangs on Windows)
-- Signature must be base64-encoded for latest.json (not raw minisign text)
-- Key at `~/.tauri/blacktape.key`, no password
+## Next Steps
+1. Steve reviews `docs/discovery-redesign-research.md` and decides direction
+2. Create separate issue for MusicBrainz genre import gap (or fold into redesign)
+3. Consider pushing the 30 local commits to origin
+4. When ready to implement discovery redesign, start with `/gsd:plan-phase` or similar
 
 ## Resume Command
 After running `/clear`, run `/resume` to continue.
