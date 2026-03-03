@@ -4,6 +4,30 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-03-03 — Discovery Redesign Direction Decided
+
+Long design conversation about issue #88. The d3-force graph views (Style Map, Knowledge Base, Time Machine, Crate Dig) are getting killed. They look cool but aren't practical. Replaced by:
+
+**The Rabbit Hole** — click-through artist/genre exploration with three entry points: Search, Continue (history trail), or Random. Every page is a launchpad — artist name, tags, similar artists, similar genres, all clickable. Click anything → fresh page, new directions. Wikipedia rabbit hole energy applied to music.
+
+**World Map** — geographic discovery via Leaflet map, separate tab. Click cities → scenes, genres, artists. Cross-linked with Rabbit Hole.
+
+Key decisions:
+- Lists over graphs. Accessible > pretty.
+- Track names shown inline, click to reveal playback sources. No heavy embeds by default.
+- Cache after first fetch (loading spinner on first visit, instant after).
+- Context sidebar in the dead space between nav and content — genre info, related items, all clickable.
+- AI chat as persistent companion (only if connected), knows your page context.
+- Decades row instead of year text input, context-dependent.
+- Tag-based artist similarity > MB relationship data (sonic similarity > factual relationships).
+- Need pipeline work: precompute similar artists from tag overlap, geocode artist cities from Wikidata.
+
+> Steve: "That floating web connection thing looks nice but it's not really practical. Lists are a little bit boring but much more accessible."
+
+Research doc updated: `docs/discovery-redesign-research.md`. Will become a milestone when ready to build.
+
+---
+
 ## Entry 2026-03-03 — Library Genre Tags from Discovery DB
 
 Library enrichment now fetches genre tags from our own discovery database (`api.blacktape.org`) before falling back to MusicBrainz. Artist-level tags from our DB are community-curated and vote-weighted — higher quality than per-album MB release-group tags, and they return instantly (no 1.1s rate limit).
@@ -12155,4 +12179,7 @@ Zero `mercury.exe` references remain in tools, src, or app-recordings. Historica
 > Files changed: 1
 
 > **Commit 7b6255ef** (2026-03-03 20:23) — wip: auto-save
+> Files changed: 1
+
+> **Commit dfe48a5c** (2026-03-03 20:27) — wip: auto-save
 > Files changed: 1

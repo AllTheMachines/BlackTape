@@ -154,12 +154,131 @@ Successful exploration interfaces use spatial metaphors that activate the brain'
 
 ---
 
+## Direction Decision (2026-03-03 conversation)
+
+The research above explored spatial/visual metaphors (constellation maps, fog of war, semantic zoom). After discussion, the decision is: **kill the fancy graph stuff, make it practical, make everything clickable.**
+
+The d3-force graphs look cool but aren't usable. Lists are more accessible. The rabbit hole metaphor beats the map metaphor for this product.
+
+### What replaces the four views
+
+Style Map, Knowledge Base, Time Machine, Crate Dig all go away (code stays as fallback). Replaced by:
+
+**The Rabbit Hole** — one unified discovery flow with three entry points:
+1. **Search** — type an artist, genre, or album name
+2. **Continue** — pick up where you left off (history trail)
+3. **Random** — throw me somewhere I've never been
+
+All three land you in the same click-through exploration loop.
+
+**World Map** — separate tab/mode. Geographic discovery via a Leaflet map. Click cities to see scenes, genres, artists. Always has a way to jump into the Rabbit Hole from any point.
+
+Both modes are always cross-linked — you can switch between them at any time.
+
+### The Rabbit Hole — core loop
+
+When you land on an artist page in the Rabbit Hole:
+- Artist name, tags/genres (all clickable), short description
+- Navigation directions: similar artists, similar genres, neighboring artists, neighboring genres
+- Below: paginated list of tracks from similar artists (track names only — click to reveal playback sources)
+- Click anything → new page, completely fresh results, new directions out
+- Back button works like browser history — your exploration trail
+
+When you land on a genre page:
+- Genre name, description, sub-genres, neighboring genres (all clickable)
+- Artists in this genre (paginated)
+- Same pattern — everything is a new launchpad
+
+**Every page is a departure point.** No dead ends.
+
+### First-time onboarding
+
+New user with no data: pick a favorite artist, album, or genre. That's your starting node. From there, radiate outward. Can also choose "just show me random stuff."
+
+### Context sidebar (#3)
+
+The dead space between the nav sidebar and content area becomes a context panel:
+- Current genre info, neighboring genres, sub-genres
+- Short descriptions (not paragraphs — space-dependent)
+- All clickable into the Rabbit Hole
+- For newly discovered artists: quick overview, links to YouTube, link to full artist page
+
+### AI chat companion (#6)
+
+Persistent panel (only visible if AI is connected — local model installed or API key set):
+- Knows your current page context
+- Ask "what's this genre about" or "find me something heavier"
+- Responds with clickable links into the same discovery flow
+- Not a separate page — lives alongside everything else
+
+### Decade filtering (#5)
+
+No year text input. Row of decade buttons (60s, 70s, 80s, 90s, 00s, 10s, 20s). Click to expand into individual years. Only shows decades/years that have data on the current page. Context-dependent everywhere.
+
+### Music always present
+
+Every page with artists or genres should have music. Track names shown immediately (lightweight data). Click a track to reveal where it can be played (Bandcamp, Spotify, YouTube embeds).
+
+**Loading strategy:** Cache after first fetch. First visit to an artist is slow (live MB fetch) with a loading spinner. Every visit after is instant from cache. Lazy loading as you scroll is also worth prototyping — show names/tags immediately (all local), music trickles in as it loads.
+
+### History trail ("Continue")
+
+Browser-style back/forward through your exploration path. Not bookmarks — a literal trail of everywhere you went. Pick up where you left off next session.
+
+---
+
+## Data Reality (2026-03-03 audit)
+
+What the discovery DB actually has to build on:
+
+### Strong
+| Data | Count | Notes |
+|------|-------|-------|
+| Artists | 2.6M | MusicBrainz, with name/slug/country/begin_year |
+| Artist-tag associations | 26M+ | Community-curated, vote-weighted |
+| Unique tags | 100K+ | From MB derived tables |
+| Tag co-occurrence pairs | 10K | Computed (shared_artists >= 5) |
+| Genres | 4,086 | Wikidata (2,992) + MB backfill (1,099) |
+| Genre relationships | ~2,900 | subgenre, influenced_by, scene_of |
+| Genre locations | Yes | City lat/lng from Wikidata + Nominatim |
+| Uniqueness scores | Yes | Precomputed per artist, niche = higher |
+
+### Missing / Needs work
+| Data | Status | Path forward |
+|------|--------|-------------|
+| Similar artists | Not indexed | Build from tag overlap — artists sharing rare tags ranked by co-occurrence weight. Better for discovery than MB's factual relationships (band members, producers) |
+| Artist city-level location | Only country codes | Wikidata SPARQL for artist hometown/origin via MBID. Same pattern as genre geocoding. Won't cover all 2.6M but covers well-known artists |
+| Tracks / releases | Not indexed, fetched live | MB API, 1 req/sec rate limit. Cache after first fetch |
+| Artist descriptions | Not indexed, fetched live | Wikipedia/Wikidata, cacheable |
+
+### Key insight
+
+Tag-based similarity is actually better for discovery than explicit "similar artists" data. Two artists sharing "shoegaze; dreampop; lo-fi" tells you about sonic similarity. MB relationships are mostly factual (band members, collaborators, labels) — useful context but not taste-based.
+
+---
+
+## Pipeline work needed for the redesign
+
+1. **Precompute similar artists table** — for each artist, find top N artists with highest tag overlap (weighted by tag rarity). Store in DB. This is the backbone of the Rabbit Hole.
+2. **Artist city geocoding** — Wikidata SPARQL query for artist origin cities. Add `origin_city`, `origin_lat`, `origin_lng` columns to artists table. Enables World Map.
+3. **Track/release caching layer** — first fetch from MB is slow, cache in local DB for instant subsequent access.
+
+---
+
+## Open questions
+
+- How many "similar artists" per artist is enough? 10? 20? 50?
+- Should the similar artists computation run in the pipeline (precomputed, static) or at query time (dynamic, slower)?
+- World Map: scene pins vs artist pins vs both? (Depends on geocoding coverage)
+- How does the personal library connect to the Rabbit Hole? Same clickable approach for browsing your own collection?
+- What does the Rabbit Hole look like on first load with zero history and zero library? Just the three entry points?
+
+---
+
 ## Technical Notes
 
 Current stack: d3-force v3.0.0, SVG rendering, Leaflet for geographic maps, Svelte 5 runes for state. All graph components use async chunked simulation (30-tick RAF chunks).
 
-For unified map, consider:
-- Canvas/WebGL rendering for thousands of nodes (SVG won't scale)
-- Spatial indexing for semantic zoom (quadtree or R-tree)
-- Pre-computed layouts stored in DB (avoid runtime force simulation for large graphs)
-- Tile-based loading (only render visible region at current zoom)
+The graph rendering stack (d3-force, SVG) is no longer needed for the redesign. Leaflet stays for World Map. The Rabbit Hole is standard Svelte pages with list rendering — no special visualization library needed.
+
+Code for the old views (StyleMap, GenreGraph, GenreGraphEvolution, SceneMap) stays in the codebase as fallback.
