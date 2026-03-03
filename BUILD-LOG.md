@@ -11912,3 +11912,6 @@ Zero `mercury.exe` references remain in tools, src, or app-recordings. Historica
 
 > **Commit 99adc21** (2026-03-03 00:57) — v0.3.0 — library redesign, updater overhaul, mercury-api, dev icons
 > Files changed: 86
+
+> **Commit f54e397** (2026-03-03 00:58) — wip: auto-save
+> Files changed: 3
