@@ -1,537 +1,462 @@
-# Feature Research
+# Feature Landscape: Discovery Redesign (v1.7 — The Rabbit Hole)
 
-**Domain:** BlackTape v1.6 — Multi-source streaming playback integration (Spotify, YouTube, SoundCloud, Bandcamp)
-**Researched:** 2026-02-26
-**Confidence:** HIGH for embed/iframe features, MEDIUM-HIGH for Spotify OAuth flow, HIGH for Spotify policy constraints
+**Domain:** Click-through music exploration, geographic discovery, contextual sidebars, AI-assisted exploration, temporal filtering
+**Researched:** 2026-03-03
+**Confidence:** HIGH for UX patterns and flow mechanics, MEDIUM for geographic discovery scope (depends on geocoding coverage), HIGH for sidebar/AI companion patterns
 
 ---
 
 ## Context
 
-This is a subsequent-milestone research file. BlackTape already has: full music search (2.8M artists),
-artist profiles with click-to-load embed players (Bandcamp/Spotify/SoundCloud/YouTube iframes), queue
-management (TrackRow on all surfaces), Settings page with a streaming preference UI stub (single dropdown),
-and link categorization that extracts platform URLs from MusicBrainz artist data.
+BlackTape v1.6 shipped multi-source streaming (Spotify Connect, YouTube/SoundCloud/Bandcamp embeds, source switcher, queue management). The app has 2.8M artists with tags, 4,086 genres with relationships, and uniqueness scoring. Four discovery views exist (Style Map, Knowledge Base, Time Machine, Crate Dig) but all use d3-force graph visualizations that look impressive and are useless for actual discovery. They are disconnected dead-end pages.
 
-The app is **Tauri 2.0 desktop only — Windows uses WebView2 (Chromium-based)**. $0 infrastructure.
-No server. All data stays local.
+v1.7 replaces all four with two unified surfaces: **The Rabbit Hole** (click-through exploration) and **World Map** (geographic discovery), plus supporting features: context sidebar, AI companion, decade filtering, and pipeline work (similar artists, geocoding, caching).
 
-The milestone goal: wire up true streaming integration so clicking Play on an artist actually plays music,
-with service priority set once and applied automatically.
-
-### Critical Constraint Discovered During Research
-
-**Spotify's February 2026 policy change is a project-level blocker.**
-
-As of February 11, 2026 (effective March 9, 2026 for existing apps):
-- Development Mode Client IDs are limited to **5 authorized users total**
-- Premium subscription required for all developers
-- Spotify only accepts applications from **legally registered organizations** (not individuals)
-- Web Playback SDK requires Widevine DRM + Premium account — this has additional WebView2 compatibility questions
-
-A bundled Client ID distributed with an open source desktop app would expose those 5 user slots to
-the entire userbase, effectively bricking the integration for all but 5 users. This is not a solvable
-problem within Spotify's current policy framework without extended API access (requires 250K MAU +
-registered organization).
-
-**Consequence: Spotify playback integration must scope to the iframe embed only (no Web Playback SDK),
-and the "guided onboarding" for v1.6 is not Spotify Premium playback — it is Spotify embed play (which
-works logged-in for full tracks, shows 30s previews when logged out). Users experience Spotify through
-the existing embed iframe, which already works today.**
+The design decision is already made: kill fancy graphs, make everything clickable, make lists not force-directed nodes. This research is about what those features need on day one, what can wait, and what would ruin them.
 
 ---
 
-## Feature Landscape
+## Feature Area 1: The Rabbit Hole (Click-Through Exploration)
 
-### Area 1: Spotify Integration
+### What Makes Rabbit Holes Addictive (Research Findings)
 
-#### What Users Expect (Table Stakes)
+University of Pennsylvania research on 480,000 Wikipedia users identified three curiosity styles that drive rabbit hole behavior:
 
-| Feature | Why Expected | Complexity | Notes |
-|---------|--------------|------------|-------|
-| Spotify content loads and plays | If Spotify links exist for an artist, clicking Play should play | MEDIUM | Already works via iframe embed today — click-to-load trigger reveals the embed |
-| Full track play for Premium users | Spotify Premium users expect full tracks, not 30s previews | LOW (for iframe) / BLOCKED (for SDK) | Iframe embed: if user is logged into Spotify in WebView2, full tracks play automatically. No extra auth needed. |
-| 30s preview for free/logged-out users | Non-Premium users get a taste, not nothing | LOW | Iframe embed delivers this by default — no code needed |
-| "Sign in to Spotify" prompt is visible | When a preview is playing, users expect to see how to get more | LOW | Spotify iframe handles this natively inside the iframe — no custom UI needed |
-| No developer portal steps | Users expect to click a button, not configure an app | N/A | This is a key Spotify iframe advantage: zero setup for users |
+1. **Busybody** -- wide jumps across unrelated topics (serendipity-driven)
+2. **Hunter** -- methodical deepening within a topic (expertise-driven)
+3. **Dancer** -- fluid associative movement between related topics (flow-driven)
 
-#### What BlackTape Can Realistically Deliver
+All three styles require the same infrastructure: **every page must contain multiple departure points**. The mechanism is high information scent (evocative descriptions, not taxonomic labels) + low interaction cost (one click per step) + dopamine from learning (each page teaches something new). Variable ratio reinforcement -- unpredictable rewards trigger dopamine during anticipation, not just receipt -- is why record stores work and why "just one more click" sustains for hours.
 
-| Feature | Value Proposition | Complexity | Notes |
-|---------|-------------------|------------|-------|
-| Click-to-load Spotify embed (existing) | Already built — triggers iframe load on first click | DONE | `revealEmbed()` pattern already in EmbedPlayer.svelte |
-| Auto-load Spotify embed when it is preferred service | Skip the click-to-load when Spotify is the priority service | LOW | Remove click gate for the preferred platform only |
-| Service priority badge on Spotify embed | Small "Spotify" label above or below the embed | LOW | Visual anchor confirming which service is playing |
-| Spotify iframe play tracking (70% rule) | Record that user listened to Spotify content, same as SoundCloud | MEDIUM | Spotify iframe does not expose progress events like SoundCloud Widget API does — LOW confidence this is achievable; SoundCloud is the only one with an accessible event API |
+Information Foraging Theory (Xerox PARC) explains why some links get clicked and others don't: users follow "information scent" -- signals that predict value of following a path. "Japanese ambient electronic" has weak scent. "The sound of 3AM in a Tokyo convenience store" has strong scent. Genre descriptions must be evocative, not encyclopedic.
 
-#### Anti-Features (Spotify)
+Every Noise at Once proved that near-zero interaction cost is the single most important factor. Click a genre name, hear a sample instantly. The 6,291 genres were navigable because each click cost nothing. Now frozen (Glenn McDonald laid off from Spotify, December 2023), the niche it served is empty.
 
-| Feature | Why Requested | Why Problematic | Alternative |
-|---------|---------------|-----------------|-------------|
-| Spotify Web Playback SDK integration | Full in-app Premium streaming with programmatic control | Requires Widevine DRM. In WebView2 on Windows, Widevine is available but requires the user to have Edge's Widevine CDM — not guaranteed. More critically: bundled Client ID hits 5-user cap immediately. Extended access requires 250K MAU + legal organization. | Spotify iframe embed already delivers full Premium playback for logged-in users without any SDK or developer dashboard work. |
-| Guided Spotify PKCE OAuth for playback | "Connect Spotify" step-by-step onboarding for Web Playback SDK | BLOCKED: the 5-user Development Mode cap makes this unusable in a distributed app. Each PKCE authorization counts toward the cap. | Defer until Spotify extended API access can be applied for (requires organization status + user scale). The existing import OAuth (for taste import) already exists but uses a user-supplied Client ID to avoid the cap. |
-| Bundled Client ID for PKCE | Ship a Client ID in the app binary so users don't configure anything | Violates Spotify ToS — sharing Client IDs is explicitly prohibited. Also: 5-user cap applies per Client ID. | User-supplied Client ID (as in existing import flow) or skip Web Playback SDK entirely. |
-| Spotify search by artist name | Look up what tracks Spotify has for an artist | Requires Web API with extended access. Search endpoints are restricted in Development Mode. | Use MusicBrainz-sourced Spotify URLs (already extracted from MB relationship data). |
+### Table Stakes
 
----
+Features the Rabbit Hole must have on day one. Missing any of these and it feels broken.
 
-### Area 2: YouTube Integration
+| Feature | Why Expected | Complexity | Depends On |
+|---------|--------------|------------|------------|
+| Click any tag/genre to see artists with that tag | This is the fundamental unit of exploration -- tags are departure points | LOW | Existing tag-click navigation (already built in v1.4) |
+| Click any artist name to see their page with tags and related content | Artist pages are the other fundamental unit | LOW | Existing artist page (already built) |
+| Similar artists list on every artist page | "If I like this, show me more" is the core rabbit hole mechanic | HIGH (pipeline) | **Precomputed similar_artists table from tag overlap** -- this is the backbone |
+| Back/forward navigation through exploration trail | Browser-style history is how users don't get lost | LOW | SvelteKit client-side routing already provides this |
+| "Random" entry point (land somewhere unexpected) | Serendipity for users with no starting point; the Busybody path | LOW | Random artist query (already exists in Crate Dig logic) |
+| "Search" entry point (type an artist/genre/tag) | Directed entry for users who know what they want; the Hunter path | DONE | Existing FTS5 search with autocomplete |
+| "Continue" entry point (resume from history) | Session persistence; the "I was here yesterday" path | MEDIUM | Store exploration trail in localStorage or taste.db |
+| No dead ends -- every page has 5+ departure links | Dead ends break flow state. Every page must radiate outward. | MEDIUM | Requires sufficient similar artist / genre relationship data |
+| Genre pages with artist lists and neighboring genres | Genre is the other axis of exploration (alongside artist) | LOW-MEDIUM | Existing genre data (4,086 genres, 2,900 relationships) |
+| Page loads feel instant (<200ms perceived) | Flow state breaks if you wait. Wikipedia rabbit holes work because pages load instantly. | MEDIUM | Local SQLite queries are fast; live MB API fetches for tracks are slow. Separate concerns: show local data immediately, load remote data progressively. |
 
-#### Table Stakes (Users Expect These)
+### Differentiators
 
-| Feature | Why Expected | Complexity | Notes |
-|---------|--------------|------------|-------|
-| YouTube content plays in-app | If an artist has a YouTube channel or videos, they expect playback | MEDIUM | YouTube IFrame API — already partially built (click-to-load iframe in EmbedPlayer.svelte) |
-| Fallback to open-in-browser | If the iframe fails, open YouTube in browser | LOW | `isYoutubeChannel()` already in youtube.ts — channel URLs open externally |
-| 16:9 aspect ratio preserved | Video content needs correct proportions | DONE | `.video-wrap` with 56.25% padding-bottom already in EmbedPlayer.svelte |
-| No autoplay on page load | Auto-playing video is aggressive | DONE | Click-to-load trigger prevents autoplay |
+Features that elevate the Rabbit Hole from functional to compelling.
 
-#### Differentiators (YouTube)
+| Feature | Value Proposition | Complexity | When to Add |
+|---------|-------------------|------------|-------------|
+| Music on every page | Track names visible immediately, click to reveal playback sources. Hearing music within seconds of arriving changes the experience from "browsing a database" to "exploring music." | MEDIUM | Day one if possible, otherwise fast-follow. Depends on track/release caching. |
+| Evocative genre descriptions (not encyclopedic) | Information scent. "Berlin minimal techno of the late 2000s" vs "A subgenre of techno." Strong scent drives clicks. | MEDIUM (content) | Day one for genres with existing descriptions; ongoing enrichment |
+| Tag rarity indicator on departure links | "21 artists share this tag" vs "14,000 artists share this tag" -- signals how niche the next step is. Rewards the Busybody who wants obscurity. | LOW | Day one |
+| History trail visualization ("Continue" mode) | Show the literal path: Artist A -> Genre B -> Artist C -> Tag D. Users see their exploration as a narrative, not a list. Inspired by Outer Wilds Ship Log. | MEDIUM | v1.7.x -- nice to have, not table stakes |
+| "Wander" mode (StumbleUpon for music) | One-button random exploration with auto-advance. Each stop plays something, shows departure options, and auto-moves after 30-60s if no interaction. | MEDIUM | v1.7.x -- requires music-on-every-page first |
+| Fog of war on personal discovery scope | Track which genres/tags/artists a user has visited. Unvisited areas are dimmer. Creates a personal "how much have I explored?" metric without gamification. | MEDIUM | v1.8+ -- requires taste.db tracking infrastructure |
+| Cross-links to World Map | "This artist is from Berlin -- see Berlin on the map" inline link | LOW | Day one (if World Map ships simultaneously) |
 
-| Feature | Value Proposition | Complexity | Notes |
-|---------|-------------------|------------|-------|
-| Track-level resolution: music video lookup | For a given track title + artist name, find the matching YouTube video | HIGH | Requires YouTube Data API v3 with quota. Free tier: 10,000 units/day. Each search costs 100 units. This is 100 searches/day per app — inadequate for large usage. Alternatively, use MusicBrainz-sourced YouTube URLs (already extracted). |
-| Auto-load YouTube when preferred service | Skip click gate if YouTube is priority service | LOW | Same pattern as Spotify auto-load |
-| Audio-only mode for YouTube | Skip video rendering, play audio only | LOW | `?vq=tiny` parameter reduces video quality; audio-only is not officially supported by YouTube iframe |
-| YouTube channel browse on artist page | Show artist's full YouTube channel content | MEDIUM | Embed the channel page as an iframe (`youtube.com/c/artistname`) — already handled by `isYoutubeChannel()` fallback |
+### Anti-Features
 
-#### Anti-Features (YouTube)
+Features to explicitly NOT build for the Rabbit Hole.
 
-| Feature | Why Requested | Why Problematic | Alternative |
-|---------|---------------|-----------------|-------------|
-| YouTube Data API for artist search/resolution | Automatically find YouTube content for every artist | API quota makes this unscalable at app level (100 searches/day free). YouTube API key bundled in app binary is a security issue. | Use MusicBrainz-sourced YouTube URLs only. Resolution is "does MusicBrainz have a YouTube link for this artist?" — not a lookup. |
-| Download or extract YouTube audio | Users want local files | Violates YouTube ToS. DMCA exposure. | Never. Link out. |
-| YouTube Music integration | Separate from YouTube — has its own player and API | YouTube Music does not have a public embeddable player or open API. Separate product, different URL scheme. | Treat music.youtube.com URLs as external links only (already handled in `labelFromUrl` as "YouTube Music"). |
+| Anti-Feature | Why Tempting | Why It Would Ruin It | What to Do Instead |
+|--------------|-------------|----------------------|-------------------|
+| Algorithmic "recommended for you" ranking | Spotify does it, users expect it | BlackTape's value is that uniqueness is rewarded, not popularity. Algorithmic ranking kills niche discovery by definition -- it optimizes for engagement, not exploration. | Rank by tag rarity / uniqueness score. Niche artists appear first, not popular ones. |
+| Infinite scroll of artists | Seems like it sustains browsing | Scroll fatigue is real. Infinite scroll removes landmarks and makes users lose their place. IxDF research: "infinite scroll's seemingly endless stream often creates usability problems." It works for social feeds; it fails for exploration where the user needs to make choices. | Paginated lists (12-20 per page) with clear "load more" or page numbers. Each page is a decision point, not a stream. |
+| Play count / popularity indicators | "2.3M plays" -- standard in streaming apps | Popularity metrics bias discovery toward already-popular artists. This directly contradicts "uniqueness is rewarded." Showing play counts makes users skip niche artists. | Show uniqueness score instead: "Niche: 94/100" signals rarity, not popularity |
+| Follow / like / bookmark on exploration pages | Social proof, engagement metrics | These are retention mechanics, not discovery mechanics. Adding social actions to the rabbit hole turns it from "exploring" into "curating" -- different brain mode entirely. | The Rabbit Hole is for exploring. Collections/shelves (already built) are for saving. Keep them separate. |
+| Autoplay audio on page navigation | Every Noise did it, seems essential | Autoplay is hostile in a desktop app where the user may have other audio playing. ENAO was a web page with a specific context. In a persistent desktop app, autoplay interrupts. | Show prominent "Play" affordance on each page. Let the user control when audio starts. |
+| Collaborative filtering ("users who liked X also liked Y") | Standard recommendation technique | Requires server infrastructure and user behavior aggregation. $0 infrastructure constraint. Also: collaborative filtering amplifies popularity bias. | Tag-based similarity is computable locally and actually better for niche discovery because rare tag overlap is a stronger signal than user co-listening. |
 
 ---
 
-### Area 3: SoundCloud Integration
+## Feature Area 2: World Map (Geographic Discovery)
 
-#### Table Stakes (Users Expect These)
+### How Geographic Music Discovery Works (Research Findings)
 
-| Feature | Why Expected | Complexity | Notes |
-|---------|--------------|------------|-------|
-| SoundCloud content plays in-app | If an artist has SoundCloud, clicking their embed should play | MEDIUM | SoundCloud oEmbed already implemented — fetched server-side in artist page load function |
-| Artist profile page (not just individual tracks) | SoundCloud artist pages show all their tracks | DONE | `isSoundcloudArtist()` + oEmbed fetching already exists |
-| Progress/listen tracking works | 70% completion triggers listening history entry | DONE | SoundCloud Widget API hook already wired in EmbedPlayer.svelte |
+Radio Garden proved that a spatial metaphor does all the teaching. Green dots on a globe are universally understood. Spin, tap, hear. No onboarding needed because spinning a globe is innate. The key insight: **the spatial relationship between action and outcome must be immediate and obvious**. Moving the map changes what you hear/see.
 
-#### Differentiators (SoundCloud)
+Radiooooo added a temporal axis (country + decade + mood) with just three dimensions. The constraint is the feature -- limiting choice to space, time, and mood reduces cognitive load to near zero.
 
-| Feature | Value Proposition | Complexity | Notes |
-|---------|-------------------|------------|-------|
-| Track-level SoundCloud embed | Embed a specific track, not just the artist page | MEDIUM | oEmbed with a track URL (not artist page URL). Needs track URL from MusicBrainz (MB relationship type: "streaming"). |
-| SoundCloud auto-load for preferred service | Remove click-to-load gate when SoundCloud is priority | LOW | Same pattern as other services |
-| SoundCloud Widget API play/pause control | Programmatic control for queue integration | MEDIUM | SC.Widget() API supports `play()`, `pause()`, `seekTo()`. Already loading Widget API in EmbedPlayer. Integration is feasible. |
+Spotify's Musical Map of the World (built with Carto) proved that geographic music visualization works at scale. But it was a marketing exercise, not a discovery tool -- view-only, no click-through.
 
-#### SoundCloud Relevance to BlackTape's Values
+Leaflet.markercluster handles 10,000-50,000 markers on a map by grouping nearby markers into clusters that expand on zoom. This is the proven pattern for geographic data at BlackTape's scale. At the city level, clusters show "47 artists in Berlin" and zoom reveals individual pins.
 
-SoundCloud is particularly important for BlackTape's indie/underground focus: it hosts vast amounts of
-independent music that has no Bandcamp or Spotify presence. Artists on labels like Vakant, Ocha Records,
-or experimental/ambient scenes frequently have SoundCloud as their primary or only streaming presence.
-The oEmbed integration already works — this area is about making it first-class.
+### Table Stakes
 
-#### Anti-Features (SoundCloud)
+| Feature | Why Expected | Complexity | Depends On |
+|---------|--------------|------------|------------|
+| Interactive world map with artist/scene pins | This is the feature. If it's not interactive, it's a static image. | MEDIUM | Leaflet (already in codebase for SceneMap), **geocoded artist cities from Wikidata pipeline** |
+| Click a city to see artists from that city | The fundamental interaction: geographic -> musical | LOW (once data exists) | Artist city geocoding pipeline |
+| Cluster markers at zoom levels | 2.6M artists can't each have a pin. Clusters at country/city level. | LOW | Leaflet.markercluster plugin |
+| Zoom from world -> continent -> country -> city | Progressive disclosure of detail as you zoom | LOW | Standard Leaflet zoom behavior + marker clustering |
+| Genre filtering on the map | "Show me only ambient artists" -- map becomes genre-specific | MEDIUM | Cross-reference genre tags with geocoded artists |
+| Cross-link to Rabbit Hole | Click an artist pin -> their Rabbit Hole page | LOW | URL linking between routes |
 
-| Feature | Why Requested | Why Problematic | Alternative |
-|---------|---------------|-----------------|-------------|
-| SoundCloud API key for search | Find SoundCloud content for artists without MB links | SoundCloud public API has been effectively closed to new registrations since 2021. Getting an API key is no longer reliably possible. | Use MusicBrainz-sourced SoundCloud URLs only. |
-| SoundCloud Go+ integration | Play tracks behind SoundCloud's paywall | No public API or embed support for subscriber-only content. | Not feasible. Subscriber content stays gated. |
+### Differentiators
 
----
+| Feature | Value Proposition | Complexity | When to Add |
+|---------|-------------------|------------|-------------|
+| Genre heat map overlay | Color regions by genre density -- "where is shoegaze concentrated?" Visual answer to a question that's hard to Google. | HIGH | v1.8+ -- requires dense geocoding data |
+| Decade filter on map | "Show me Berlin in the 1990s" -- temporal + geographic intersection | LOW (UI), MEDIUM (query) | v1.7 if decade filtering ships simultaneously |
+| Scene boundaries on map | Genres with location data (scene_of relationship) drawn as shaded regions | MEDIUM | v1.7 day one if genre locations already in DB (they are -- from Wikidata) |
+| Audio preview on hover/click | Hover over a city, hear a representative track from that scene | HIGH | v1.8+ -- requires precomputed representative tracks per city |
+| "Travel" mode (auto-pan between cities) | Like Radio Garden's "Balloon Ride" -- automated tour | MEDIUM | v1.8+ -- fun feature, not essential |
 
-### Area 4: Bandcamp Integration
+### Anti-Features
 
-#### Table Stakes (Users Expect These)
+| Anti-Feature | Why Tempting | Why It Would Ruin It | What to Do Instead |
+|--------------|-------------|----------------------|-------------------|
+| 3D globe (like Radio Garden) | Looks spectacular | WebView2 + WebGL performance is unpredictable. 3D globe is harder to interact with on desktop (no touch gestures). Radio Garden works because it's the entire product; BlackTape's map is one feature among many. | Flat 2D map (Leaflet). Proven, fast, accessible. |
+| Real-time streaming integration on map | "Click a pin, music plays from that city" | Audio infrastructure on the map adds massive complexity. The map's job is navigation, not playback. | Map pins link to artist pages or Rabbit Hole entries where playback already works. |
+| User location / "artists near me" | Personalization via geography | Requires geolocation API permission. Privacy concern. Desktop app asking "where are you?" feels wrong. | Let users explore the map manually. Their city isn't special -- every city is. |
+| Pin for every artist (no clustering) | "Complete" representation | 2.6M pins would crash any browser. Even 100K is sluggish. | Marker clustering (Leaflet.markercluster) is mandatory. Show clusters at high zoom levels, individual pins only at city zoom. |
 
-| Feature | Why Expected | Complexity | Notes |
-|---------|--------------|------------|-------|
-| Bandcamp content plays in-app | BlackTape's primary value alignment is with independent music | MEDIUM | **Major finding:** Bandcamp now supports a `url=` parameter in EmbeddedPlayer, removing the need for album/track IDs. Format: `https://bandcamp.com/EmbeddedPlayer/url=https%3A%2F%2Fartist.bandcamp.com%2Falbum%2Falbum-name/size=large/bgcol=1d1d1d/linkcol=ffffff/minimal=true/transparent=true/` |
-| Album tracklist playable in order | A Bandcamp album embed should play all tracks | LOW | The `url=` parameter with an album URL plays the entire album with tracklist |
-| Individual track embed | Embed a specific track | LOW | Same `url=` parameter with a track URL |
-| No API key required | Artists don't expect their fans to configure Bandcamp credentials | DONE | Bandcamp embedding is public — no auth, no API key needed |
+### Data Reality for World Map
 
-#### What Changed: The `url=` Parameter
+The pipeline needs to geocode artist cities from Wikidata. Current state:
 
-Previously, Bandcamp embeds required an album ID and track ID that are not present in MusicBrainz URLs.
-This meant Bandcamp was "external link only" in the existing codebase (see `bandcamp.ts`).
+- **Genre locations**: Already have lat/lng for genres with scene_of relationships (from Wikidata + Nominatim)
+- **Artist locations**: Only have country codes (2-letter ISO from MusicBrainz). City-level data requires Wikidata SPARQL queries matching on MBID.
+- **Coverage estimate**: Well-known artists (maybe 100K-300K of 2.8M) will have Wikidata entries with hometown data. The long tail won't. This is fine -- the map should represent what's known, not pretend to be complete.
+- **Scene pins**: 4,086 genres, many with location data. These can anchor the map even before artist-level geocoding is complete.
 
-Bandcamp added a new `url=` parameter to the EmbeddedPlayer that accepts a URL-encoded Bandcamp URL
-directly. This means any `artist.bandcamp.com/album/album-name` URL from MusicBrainz can be embedded
-without scraping or API calls.
-
-**This unblocks Bandcamp embed support for v1.6.**
-
-Format:
-```
-https://bandcamp.com/EmbeddedPlayer/url={ENCODED_URL}/size=large/bgcol=1d1d1d/linkcol=ffffff/minimal=true/transparent=true/
-```
-
-Parameters:
-- `size`: `small`, `medium`, `large`
-- `bgcol`: hex without # (use dark backgrounds — 1d1d1d matches app theme)
-- `linkcol`: hex without # (amber accent — d4a017 or similar)
-- `minimal`: `true` removes artwork, `false` shows artwork
-- `transparent`: `true` for transparent background
-
-#### Differentiators (Bandcamp)
-
-| Feature | Value Proposition | Complexity | Notes |
-|---------|-------------------|------------|-------|
-| Bandcamp-first embed for indie artists | Prioritize Bandcamp when available — aligns with project values | DONE | PLATFORM_PRIORITY already puts Bandcamp first |
-| Album-level embed on release pages | Release page "Play Album" wires up a Bandcamp embed for that release | MEDIUM | Requires release page to use release URL (from MusicBrainz purchase links) to construct embed |
-| Free/name-your-price detection | Bandcamp tracks marked free in MusicBrainz can be labeled accordingly | LOW | MB `download for free` relationship type already categorized as `streaming` in categorize.ts |
-| Dark theme alignment | Bandcamp embed bg color matches BlackTape dark theme | LOW | Pass `bgcol=1d1d1d` (matches --bg-1) and `linkcol` matching amber accent |
-
-#### Bandcamp Relevance to BlackTape's Values
-
-Bandcamp is the canonical platform for independent music. Steve's label background (Vakant, Kwik Snax)
-means the artists most likely to be featured in BlackTape's discovery flows release on Bandcamp. This
-is where the "uniqueness is rewarded" philosophy intersects most directly with actual playback:
-underground artists have Bandcamp pages, not Spotify profiles.
-
-#### Anti-Features (Bandcamp)
-
-| Feature | Why Requested | Why Problematic | Alternative |
-|---------|---------------|-----------------|-------------|
-| Bandcamp API integration | Search Bandcamp for artist content | Bandcamp's public API has been extremely limited since Songtradr acquisition concerns. No reliable public search API. | Use MusicBrainz-sourced Bandcamp URLs only. |
-| "Buy on Bandcamp" direct in-app purchase | Users want to buy without leaving the app | Bandcamp's checkout requires their website — no in-app purchase API exists. | "Buy on Bandcamp" external link (already in BuyOnBar.svelte). |
-| Bandcamp scraping for track IDs (old approach) | Get album/track IDs not in MusicBrainz | Brittle, against ToS, breaks on Bandcamp HTML changes. | `url=` parameter approach eliminates the need for IDs entirely. |
+**Start with scene/genre pins (already have data) + artist country-level aggregation (already have country codes). City-level artist pins are the pipeline stretch goal.**
 
 ---
 
-### Area 5: Service Resolution
+## Feature Area 3: Context Sidebar
 
-This is the connective tissue — how the app determines which services have content for a given artist
-and which to use first.
+### How Contextual Sidebars Work (Research Findings)
 
-#### How Service Resolution Works in BlackTape
+UX Planet's sidebar research establishes the pattern: contextual sidebars show relevant options based on the current page or action. Content changes dynamically as the user navigates. The inspector panel pattern (280-320px width) provides contextual details with smart show/hide behavior.
 
-**Current state:** MusicBrainz artist data includes relationship URLs. The `categorize.ts` `detectPlatform()`
-function already extracts Spotify, YouTube, SoundCloud, and Bandcamp URLs from these relationships.
-The `PlatformLinks` type (`{ bandcamp: string[], spotify: string[], soundcloud: string[], youtube: string[] }`)
-is already populated per artist.
+The key principle from multiple sources: **sidebars supplement, they don't compete with main content**. The sidebar should feel like a helpful margin note, not a second page demanding attention.
 
-**Resolution strategy:** The system already knows which services have content — it's in `PlatformLinks`.
-There is no need for secondary lookups, artist name searches, or ISRC matching. Resolution = "does the
-MusicBrainz record for this artist contain a URL for this platform?"
+For music discovery specifically, the sidebar solves the "I want more context without leaving my current exploration" problem. On Wikipedia, this is the infobox. On maps, it's the info panel that appears when you click a pin. The pattern is: **select something in the main view, get context in the sidebar without a full page navigation**.
 
-**When MusicBrainz has no link:** The platform shows as unavailable. Users can always open the platform
-in their browser to search manually. There is no fallback search against Spotify/YouTube/SoundCloud APIs
-(this would require API keys and quotas).
+### Table Stakes
 
-#### Table Stakes (Service Resolution)
+| Feature | Why Expected | Complexity | Depends On |
+|---------|--------------|------------|------------|
+| Genre info when browsing a genre | Name, short description, sub-genres, related genres -- all clickable | LOW | Existing genre data in DB |
+| Artist summary when hovering/selecting an artist in a list | Quick overview without full page navigation | LOW-MEDIUM | Existing artist data; AI summaries (already built) |
+| All sidebar items are clickable into the Rabbit Hole | The sidebar is a departure point, not a dead end | LOW | URL linking |
+| Sidebar collapses or hides when not useful | Empty sidebar is wasted space. Hide when there's nothing contextual to show. | LOW | Conditional rendering based on current route/context |
+| Responsive to current page | Changes content when user navigates | LOW | Svelte reactive state derived from current route/page data |
 
-| Feature | Why Expected | Complexity | Notes |
-|---------|--------------|------------|-------|
-| Available services are clearly shown | Users want to know what's playable before clicking | LOW | Show platform badges/buttons only for platforms that have URLs in PlatformLinks |
-| Priority order is respected | User set a preference — it should be honored | LOW | PLATFORM_PRIORITY already exists; `streamingPref.platform` already reorders it |
-| Unavailable services are not shown | Don't show a YouTube button if there's no YouTube link | DONE | EmbedPlayer already filters by `urls.length > 0` |
-| First available service loads automatically (or with one click) | Users expect a single Play action, not choosing a platform | MEDIUM | Auto-select first available service from ordered priority list |
+### Differentiators
 
-#### Differentiators (Service Resolution)
+| Feature | Value Proposition | Complexity | When to Add |
+|---------|-------------------|------------|-------------|
+| "Related genres" with scent-rich descriptions | Sub-genres and neighboring genres with evocative one-liners, not just names | MEDIUM (content) | Day one with whatever description data exists; improve over time |
+| Tag cloud for current context | Visual representation of the tag space around the current artist/genre | LOW | Day one -- derived from existing tag data |
+| Quick-play affordance in sidebar | Preview a similar artist without navigating away from current page | HIGH | v1.8+ -- requires embed management complexity |
+| Breadcrumb trail in sidebar | "You came here from: Shoegaze -> My Bloody Valentine -> Noise Pop" | LOW | Day one -- read from navigation history |
 
-| Feature | Value Proposition | Complexity | Notes |
-|---------|-------------------|------------|-------|
-| Source switcher buttons on artist page | After initial play, user can switch to a different available service | LOW | Small button group: "Playing: Bandcamp — Also on: [SC] [YT]" |
-| Drag-to-reorder priority in Settings | Intuitive priority management, borrowed from Parachord | MEDIUM | Replaces the existing platform dropdown. Svelte 5 drag API or a simple up/down button approach. |
-| "Available on N services" count on artist card | Discover cards show service availability at a glance | LOW | Count non-empty platform arrays in PlatformLinks |
+### Anti-Features
 
-#### Anti-Features (Service Resolution)
-
-| Feature | Why Requested | Why Problematic | Alternative |
-|---------|---------------|-----------------|-------------|
-| Cross-platform artist search to find content | "If MusicBrainz has no Spotify link, search Spotify for the artist name" | Requires API keys. Name search is unreliable (common artist names, wrong region results). Creates false matches. | Only use MusicBrainz-sourced URLs. If a link is missing, the right fix is adding it to MusicBrainz. |
-| ISRC-based track matching | Match tracks across services via ISRC codes | ISRC lookup APIs require service-specific auth. ISRC data in MusicBrainz is incomplete. High complexity for marginal gain. | Use release-level URLs from MusicBrainz, which are already per-platform. |
-| Real-time availability checking | Ping each service to verify a URL still resolves | Network overhead on every artist page load. Unreliable for privacy (leaks browsing to service CDNs). | Accept that some links may be stale. Dead domain filtering (already built for artist links) handles the worst cases. |
+| Anti-Feature | Why Tempting | Why It Would Ruin It | What to Do Instead |
+|--------------|-------------|----------------------|-------------------|
+| Always-visible sidebar consuming space | "More information is always better" | On narrow screens (or when exploring artists, not genres), the sidebar is noise. Research: sidebars should use smart show/hide behaviors. | Show sidebar when there's contextual content; collapse to a thin strip or hide entirely when navigating artist pages where the main content is rich enough. |
+| Social features in sidebar (followers, activity) | Fill space with community signals | Community features were deliberately removed from UI in v1.6. The sidebar is for discovery context, not social proof. | Genre info, related items, descriptions only. |
+| Long-form content in sidebar | Full Wikipedia articles, lengthy genre histories | Sidebar width (280-320px) can't hold readable paragraphs. Long text in sidebars creates scroll-within-scroll, which is a UX anti-pattern. | 2-3 sentence summaries. "Read more" links to full genre page. |
+| Persistent sidebar across all routes | "Consistency" | Settings, About, Library, Search -- these pages don't need a context sidebar. It would just be empty or show stale data. | Sidebar only on discovery-related routes (Rabbit Hole, World Map, genre pages, artist pages). |
 
 ---
 
-### Area 6: Service Priority UI (Settings)
+## Feature Area 4: AI Companion
 
-#### Current State
+### How AI Chat Sidebars Work (Research Findings)
 
-The Settings page has a `<select>` dropdown for "Preferred Platform" with 4 options (Bandcamp, Spotify,
-SoundCloud, YouTube, or No preference). This works but does not allow specifying a full ordered priority
-list — only "what to show first."
+Microsoft's Copilot UX guidance identifies three AI integration patterns:
 
-#### What v1.6 Needs
+1. **Immersive** -- AI is the entire canvas (ChatGPT style)
+2. **In-app focus** -- AI assists within existing workflow (GitHub Copilot)
+3. **Sidebar/assistive** -- continuous access without obstructing main content
 
-| Feature | Why Expected | Complexity | Notes |
-|---------|--------------|------------|-------|
-| Full ordered list (not just "first") | Users want to say "Bandcamp first, SoundCloud second, YouTube third, skip Spotify" | MEDIUM | Replaces dropdown with ordered list |
-| Drag-to-reorder | Intuitive for a priority list | MEDIUM | Svelte 5 drag events or simple up/down arrows (up/down arrows are more accessible and simpler to implement reliably) |
-| "Enable/disable" per service | Turn off services you don't use | LOW | Checkbox or toggle per service in the ordered list |
-| Priority persists across sessions | Set once, always applied | DONE | `saveStreamingPreference()` pattern exists, needs extending to array instead of single string |
+BlackTape's AI companion is pattern 3: sidebar/assistive. The 2025-2026 evolution shows a shift away from chat-first designs toward "dynamic blocks" -- UI elements that appear based on AI analysis of context. But for BlackTape, chat is appropriate because the queries are conversational ("find me something heavier," "what's this genre about?").
 
-#### Anti-Features (Settings)
+Key design principle from CopilotKit research: the AI should generate **actionable output** (clickable links, navigable results), not just text. "Here are 5 artists you might like" should be 5 clickable links that enter the Rabbit Hole, not a text list.
 
-| Feature | Why Requested | Why Problematic | Alternative |
-|---------|---------------|-----------------|-------------|
-| Per-artist service override | "I always want Bandcamp for Burial but Spotify for Daft Punk" | High complexity, poor UX (requires per-artist config memory). Edge case. | Global priority is sufficient. Source switcher on artist page handles one-off needs. |
-| Service connection status in Settings | "Show me if I'm connected to Spotify" | Spotify iframe does not surface login state to parent page. No way to detect if user is logged in to Spotify in WebView2 without the SDK. | Source switcher and embed show Spotify's own login prompt when needed. |
+Microsoft's approach with governor mechanisms (show AI content at reduced opacity until reviewed) builds trust. For music discovery, this translates to: AI suggestions should be visually distinct from database-sourced results so users know what's AI-generated vs. what's from the catalog.
 
----
+### Table Stakes
 
-### Area 7: Player Bar Service Badge
+| Feature | Why Expected | Complexity | Depends On |
+|---------|--------------|------------|------------|
+| Only visible when AI is connected | Users without local AI model or API key should never see an empty chat panel | LOW | Existing `getAiProvider()` null check |
+| Knows current page context | "Tell me about this artist" should work without typing the artist name | LOW | Pass current route/page data to AI prompt |
+| Responses contain clickable artist/genre links | AI output that links into the Rabbit Hole, not just text | MEDIUM | Parse AI responses, resolve artist names to slugs via FTS5 lookup |
+| Persistent across navigation | The chat doesn't reset when you click to a new page | LOW | Store conversation state in a Svelte store or context |
+| Clearly labeled as AI-generated | Every AI response must be visually marked as AI | LOW | Already established pattern from ArtistSummary component |
 
-#### What Users Expect
+### Differentiators
 
-| Feature | Why Expected | Complexity | Notes |
-|---------|--------------|------------|-------|
-| Visual indicator of active service | "Am I listening to the Spotify embed or Bandcamp?" | LOW | Small badge/chip on player bar, e.g. "via Bandcamp" |
-| Service name or icon | Platform is identified at a glance | LOW | Text label is more accessible than icon-only (icon requires tooltip) |
-| Badge updates when source switches | Switching service should update the badge | LOW | Reactive derived from playerState |
+| Feature | Value Proposition | Complexity | When to Add |
+|---------|-------------------|------------|-------------|
+| Contextual prompts / suggested questions | "Ask about this genre" / "Find something similar but darker" -- pre-filled query suggestions based on current page | LOW | Day one -- reduces blank-input anxiety |
+| Taste-aware responses | AI knows the user's taste profile and personalizes suggestions | LOW | Already built -- taste profile feeds into AI prompts (see Explore page) |
+| Conversational refinement | "Show me something heavier" -> "Even heavier" -> "Now something from Japan" -- multi-turn context | MEDIUM | Already built in Explore page (refinementCount, conversationHistory) |
+| AI-initiated suggestions | When arriving at a genre page, AI proactively offers "Want me to find the most unique artists in this genre?" | MEDIUM | v1.7.x -- requires detecting idle state + appropriate trigger |
 
-#### Design Note
+### Anti-Features
 
-The Player.svelte currently shows track info (title, artist, album) in the left section of the player bar.
-The service badge fits naturally in that section, below the track metadata, in a muted style so it does not
-compete with the track title.
-
-Format: `via Bandcamp` or `via SoundCloud` — not an icon, a text label. Consistent with the project's
-typographic aesthetic.
-
-#### Anti-Features (Player Bar)
-
-| Feature | Why Requested | Why Problematic | Alternative |
-|---------|---------------|-----------------|-------------|
-| Service logo/icon in player bar | Brand recognition | Requires trademark permission for Spotify/Bandcamp/YouTube/SoundCloud logos. Text label avoids trademark issues. | "via {ServiceName}" text label |
-| Platform-specific color theming when playing | Green player bar for Spotify, orange for SoundCloud | Distracting. Conflicts with BlackTape's OKLCH taste theming. | Neutral badge, consistent with existing player bar aesthetic |
+| Anti-Feature | Why Tempting | Why It Would Ruin It | What to Do Instead |
+|--------------|-------------|----------------------|-------------------|
+| AI as primary discovery mechanism | "Let AI find all music for you" | Defeats the purpose of exploration. The rabbit hole is about the user's curiosity driving navigation, not an AI doing it for them. AI should assist, not replace. | AI is a companion -- answers questions, suggests directions, but the user clicks. |
+| Voice interaction | "Hey BlackTape, play something ambient" | Desktop app, Tauri/WebView2 -- voice requires microphone permissions, speech recognition, and is socially awkward in shared spaces. High complexity, low value for a discovery tool. | Text input only. |
+| AI-generated playlists | "Generate a 2-hour ambient playlist" | Playlist generation is a Spotify feature. BlackTape's value is exploration, not consumption. Playlists are endpoints; the rabbit hole is the journey. | AI suggests starting points: "Try starting with Grouper, then follow the ambient folk tag." |
+| Always-on AI streaming suggestions | AI continuously suggests artists as you browse | Interrupts flow state. Unsolicited suggestions feel like ads. Microsoft's own research says governor mechanisms (user-initiated) build more trust than proactive AI. | AI only responds when asked. Suggested questions are visible but passive. |
 
 ---
 
-### Area 8: Album Playback from Release Pages
+## Feature Area 5: Decade Filtering
 
-#### Current State
+### How Temporal Filtering Works (Research Findings)
 
-The release page has `handlePlayAlbum()` and `handleQueueAlbum()` stub functions that do nothing.
-The comment explains: "Stub: Play Album requires matching MusicBrainz release tracks to local library files."
+Filter UI research identifies chip filters as the optimal pattern for small, discrete sets: "Chip filters blend compact design with an accessible interface that gives users a simplified way to sort content through selectable elements." Decades (60s, 70s, 80s, 90s, 00s, 10s, 20s) are a perfect fit -- 7 items, visually compact, mutually exclusive or multi-selectable.
 
-**That reasoning is outdated for v1.6.** The v1.6 approach does not require local file matching.
-Album playback from release pages uses streaming embeds, not local files.
+Radiooooo proved that the country + decade combination is powerful: two-axis navigation (space x time) with minimal cognitive load. The decade row should work the same way -- click a decade, the current view filters to that era.
 
-#### What "Play Album" Actually Means in v1.6
+Rate Your Music's decade/year filtering in their chart system is the closest functional equivalent: browse top charts by decade or year, with community ratings determining rankings. The key: decade is the coarse filter, year is the fine filter. Progressive disclosure -- click a decade to expand into individual years.
 
-There are two distinct interpretations:
+### Table Stakes
 
-**Interpretation A: Embed the album's Bandcamp/SoundCloud player on the release page**
-The release page has a `links` array (`ReleaseGroup.links: ReleaseLink[]`). These include Bandcamp and
-SoundCloud URLs for the specific release. Using the `url=` Bandcamp EmbeddedPlayer approach, the release
-page can render a Bandcamp embed for that album directly. This plays the full album in track order.
+| Feature | Why Expected | Complexity | Depends On |
+|---------|--------------|------------|------------|
+| Row of clickable decade chips (60s-20s) | The fundamental UI -- replaces the year text input | LOW | Artist begin_year data (already in DB) |
+| Selecting a decade filters the current view | Artists in the Rabbit Hole filtered to that era; map filtered to that era | MEDIUM | SQL WHERE clause on begin_year BETWEEN decade_start AND decade_end |
+| Only show decades with data for current context | "Jazz in the 20s" -- if no jazz artists have begin_year in 2020-2029, don't show 20s chip | MEDIUM | Pre-query to count artists per decade for current tag/genre filter |
+| Click decade to expand into individual years | 90s -> 1990, 1991, ... 1999 -- progressive disclosure | LOW | Expand/collapse UI within the decade row |
+| Clear/reset filter | One click to remove decade filter | LOW | Standard chip deselect pattern |
+| Works across Rabbit Hole and World Map | Decade filter applies to both discovery surfaces | LOW | Shared filter state in a Svelte store |
 
-This is the simplest implementation and aligns with BlackTape's embed-first approach. The "Play Album"
-button reveals the Bandcamp embed (or preferred service embed) for this release.
+### Differentiators
 
-**Interpretation B: Populate the queue with individual tracks from the tracklist, then resolve each via Spotify/YouTube**
-The release page already shows the tracklist from MusicBrainz. Populating the queue with these tracks
-requires resolving each track title to a streamable URL on the preferred service. This requires:
-- For Spotify: Web API search (Development Mode limited)
-- For YouTube: YouTube Data API search (quota limited)
-- For SoundCloud: no API for track search
-- For Bandcamp: the album embed already handles this
+| Feature | Value Proposition | Complexity | When to Add |
+|---------|-------------------|------------|-------------|
+| Decade chip shows artist count | "90s (4,230)" -- signals density before clicking | LOW | Day one -- fast SQL count query |
+| Visual density indicator (opacity or size) | Decades with more artists are visually heavier -- spatial encoding of data density | LOW | Day one -- CSS opacity based on count |
+| Multi-decade selection | Select 70s + 80s together for "classic era" browsing | LOW | Allow multiple active chips |
+| Animated transition when filtering | Content smoothly filters rather than hard-cutting | LOW | Svelte transition directives |
 
-**Recommendation: Interpretation A for v1.6.** Embed the album player (Bandcamp `url=` embed, SoundCloud
-oEmbed, or Spotify album embed) on the release page. The "Play Album" button reveals that embed.
-Queue population (Interpretation B) is a v1.7+ feature requiring service API integration.
+### Anti-Features
 
-#### Table Stakes (Album Playback)
+| Anti-Feature | Why Tempting | Why It Would Ruin It | What to Do Instead |
+|--------------|-------------|----------------------|-------------------|
+| Continuous timeline slider | "More precise than decades" | Timeline sliders are imprecise on desktop (hard to hit exact years), add visual complexity, and don't communicate data density. Chips are faster and clearer. | Decade chips with year expansion. Click 90s to see 1990-1999. |
+| Decade filter permanently visible on all pages | "Consistency" | Decade filtering is irrelevant on Settings, About, Library, etc. Visible everywhere means visual noise everywhere. | Show only on discovery routes (Rabbit Hole, World Map, Discover). |
+| Filter by exact year as primary interaction | Text input for year, dropdown, etc. | Exact years are rarely how people think about music eras. "80s music" is a concept; "1984 music" is trivia. Year-level is a secondary refinement within a decade. | Decades primary, years as expansion within decade. |
 
-| Feature | Why Expected | Complexity | Notes |
-|---------|--------------|------------|-------|
-| Release page shows a play button | Users see tracklist and expect to play the album | LOW | Button already rendered, stub already present |
-| "Play Album" reveals the best available embed | Bandcamp first if available, then fallback chain | MEDIUM | Determine which services have a URL for this release from `release.links`, apply priority |
-| Track count and total duration visible | Users want to know what they're committing to | DONE | Already shown from MusicBrainz tracklist data |
+---
 
-#### Differentiators (Album Playback)
+## Feature Area 6: Pipeline Work (Similar Artists, Geocoding, Caching)
 
-| Feature | Value Proposition | Complexity | Notes |
-|---------|-------------------|------------|-------|
-| Bandcamp "Play Album" with dark theme embed | The album embed on the release page uses matching bgcol/linkcol | LOW | CSS vars mapped to Bandcamp embed parameters |
-| "Open on Bandcamp" button alongside embed | Some users prefer the full Bandcamp experience | DONE | Already in BuyOnBar.svelte |
-| Queue All Tracks (v1.7 candidate) | Populate the internal queue with all tracks for gapless cross-service playback | HIGH | Requires track-to-service resolution. Defer. |
+These aren't user-facing features but they are dependencies that gate the features above.
+
+### Similar Artists Precomputation
+
+| Requirement | Status | Complexity | Notes |
+|-------------|--------|------------|-------|
+| Build similar_artists table from tag overlap | NOT STARTED | HIGH | This is the single most important pipeline task for v1.7. Without it, the Rabbit Hole has no "similar artists" and exploration dead-ends at every artist page. |
+| Weight by tag rarity (IDF-like weighting) | NOT STARTED | MEDIUM | Two artists sharing "shoegaze" (100 artists) is a weaker signal than sharing "zeuhl" (8 artists). Inverse tag frequency weighting is critical for niche-first similarity. |
+| Top N similar per artist | NOT STARTED | LOW (schema) | 10-20 similar artists per artist is sufficient. More than 20 adds DB bloat without UX value. |
+| Bidirectional or unidirectional? | DECISION NEEDED | -- | If A is similar to B, is B automatically similar to A? Yes for tag overlap (symmetric). Store only one direction to halve table size, query both directions. |
+
+**Open question from research doc: "How many similar artists per artist is enough?"** Answer: 10-15 is the sweet spot. Wikipedia articles average 20-30 internal links. But Wikipedia links are heterogeneous (some navigate, some define). Similar artists are homogeneous -- all serve the same purpose. 10-15 provides enough choice without overwhelming. The Rabbit Hole also has genre/tag departure points, so similar artists don't carry the entire load.
+
+### Artist City Geocoding
+
+| Requirement | Status | Complexity | Notes |
+|-------------|--------|------------|-------|
+| Wikidata SPARQL for artist origin cities via MBID | NOT STARTED | MEDIUM | Same pattern as existing genre geocoding. Batch query, store lat/lng. |
+| Coverage estimate | -- | -- | Expect 100K-300K artists with Wikidata hometown data. Long tail will remain country-only. |
+| Fallback to country centroid for map | NOT STARTED | LOW | Artists with only country code get a country-level pin, clustered at country centroid coordinates. |
+
+### Track/Release Caching
+
+| Requirement | Status | Complexity | Notes |
+|-------------|--------|------------|-------|
+| Cache MB API responses in taste.db | NOT STARTED | MEDIUM | First fetch from MusicBrainz API is 1-2s (rate limited). Cache in local SQLite for instant subsequent access. |
+| Progressive loading pattern | NOT STARTED | LOW | Show artist name + tags (local, instant) while tracks load from MB API. Never block navigation on remote data. |
+| Cache invalidation strategy | DECISION NEEDED | LOW | MB data changes slowly. 30-day cache is fine. Stale data is better than slow data for flow state. |
 
 ---
 
 ## Feature Dependencies
 
 ```
-Service Priority UI (Settings)
-    └──persists to──> streamingPref (already exists, needs to become an ordered array)
-    └──drives──> EmbedPlayer platform ordering (already reads streamingPref)
-    └──drives──> Source switcher on artist page
+Similar Artists Pipeline (CRITICAL PATH)
+    |-- enables --> Rabbit Hole "similar artists" lists
+    |-- enables --> "No dead ends" (every artist page has outbound links)
+    |-- data: tag_overlap weighted by inverse tag frequency
 
-Bandcamp Embed [UNLOCKED by url= parameter]
-    └──requires──> Bandcamp URL from PlatformLinks.bandcamp (already extracted from MusicBrainz)
-    └──enables──> Album playback on release pages (use release.links Bandcamp URL)
-    └──requires updating──> bandcamp.ts (currently "external link only" — add embed URL generator)
-    └──requires updating──> EmbedPlayer.svelte (replace ExternalLink with embed iframe for Bandcamp)
+Artist Geocoding Pipeline
+    |-- enables --> World Map individual artist pins
+    |-- fallback --> Country-level aggregation (already have country codes)
+    |-- data: Wikidata SPARQL batch query
 
-Album Playback on Release Pages
-    └──requires──> Bandcamp embed support (Interpretation A)
-    └──requires──> Release page has streaming links (already in release.links)
-    └──blocked on local file matching──> NO (this assumption was wrong — embed approach works directly)
+Track/Release Caching
+    |-- enables --> Music on every page (progressive loading)
+    |-- enables --> Fast revisits (instant after first load)
 
-Service Badge on Player Bar
-    └──requires──> playerState to know which service provided the current track
-    └──requires──> Queue.svelte / queue.svelte to tag each track with its source service
-    └──derives from──> which embed was loaded when user played
+Rabbit Hole
+    |-- requires --> Similar Artists Pipeline (or it's just tag-click navigation, which already exists)
+    |-- requires --> Back/forward navigation (SvelteKit provides this)
+    |-- enhanced by --> Track/Release Caching (music on pages)
+    |-- enhanced by --> Context Sidebar (genre info alongside exploration)
+    |-- enhanced by --> Decade Filtering (temporal axis on exploration)
 
-Source Switcher on Artist Page
-    └──requires──> PlatformLinks for artist (already fetched)
-    └──requires──> Knowing which embed is currently active (new state)
-    └──enhances──> EmbedPlayer (swap active platform)
+World Map
+    |-- requires --> Leaflet (already in codebase)
+    |-- requires --> Leaflet.markercluster (new dependency)
+    |-- requires --> Artist Geocoding Pipeline (or falls back to genre/scene pins only)
+    |-- enhanced by --> Decade Filtering (temporal axis on map)
+    |-- cross-links with --> Rabbit Hole (click map pin -> artist page)
 
-SoundCloud Widget API controls
-    └──already built in──> EmbedPlayer.svelte (hookSoundCloudWidget)
-    └──extends to──> programmatic play/pause via SC.Widget()
+Context Sidebar
+    |-- requires --> Route-aware reactive state
+    |-- displays --> Genre info, related genres, tag context, breadcrumb trail
+    |-- enhanced by --> AI Companion (chat in sidebar area)
 
-Spotify iframe embed (already works)
-    └──enhancement needed──> auto-load when priority (remove click gate for preferred service)
-    └──blocked──> Web Playback SDK (Spotify policy, Widevine, 5-user cap)
+AI Companion
+    |-- requires --> AI provider connected (local model or API key)
+    |-- requires --> Current page context passed to prompts
+    |-- requires --> Response parsing to resolve artist names -> slugs
+    |-- builds on --> Existing Explore page AI integration (prompts, conversation history)
+
+Decade Filtering
+    |-- requires --> begin_year data on artists (already in DB)
+    |-- applies to --> Rabbit Hole artist lists, World Map pins, Discover page
+    |-- UI: chip filter row, context-dependent visibility
 ```
 
-### Dependency Notes
+### Critical Path
 
-- **Bandcamp embed unblocked.** The `url=` parameter discovery changes the scope significantly. `bandcamp.ts`
-  needs a `bandcampEmbedUrl(url: string): string` function, and EmbedPlayer.svelte needs to render an iframe
-  for Bandcamp instead of ExternalLink. This is a LOW-MEDIUM complexity change, not a HIGH one.
-
-- **Spotify scope is narrower than planned.** The February 2026 policy changes mean the "guided onboarding"
-  for Spotify in v1.6 is not PKCE OAuth for the Web Playback SDK — it is UX clarity around what the Spotify
-  iframe provides (full tracks if logged in, 30s if not). The connect flow is: "Log in to Spotify in the
-  app, then click Play — you'll get full tracks."
-
-- **Service priority state needs upgrade.** The existing `streamingPref.platform` is a single string.
-  v1.6 needs it to be an ordered array with per-service enable/disable. This is a schema migration in
-  localStorage preferences — careful not to break existing saved preferences.
-
-- **Player bar service badge requires new state.** The player queue currently stores `PlayerTrack` objects
-  with title/artist/album/url/duration. A `source?: PlatformType` field needs to be added so the player
-  bar knows which service provided the track.
-
-- **Release page album playback depends on release having streaming links.** Some releases in MusicBrainz
-  have no streaming links at all (particularly older releases). The "Play Album" button should be hidden
-  when no streaming links exist for the release.
+The Similar Artists Pipeline is the single highest-priority dependency. Without it, the Rabbit Hole is just the existing tag-click navigation with a new coat of paint. Similar artists are the rabbit hole -- they are the "one more click" that keeps users exploring. Everything else is enhancement; this is the engine.
 
 ---
 
-## MVP Definition for v1.6
+## MVP Recommendation
 
-### Launch With (v1.6 Core — "The Playback Milestone")
+### Day One (v1.7 Core)
 
-Minimum viable v1.6: clicking Play on an artist actually plays something.
+Ship these together -- they form the minimum viable rabbit hole:
 
-- [ ] **Bandcamp embed support** — Add `bandcampEmbedUrl()` using `url=` parameter. Update EmbedPlayer to
-  render Bandcamp iframe. This is the highest-value single change: enables Bandcamp playback for indie/underground
-  artists who are the core BlackTape audience.
+1. **Similar Artists Pipeline** -- precompute tag-overlap similarity, store top 15 per artist, weighted by inverse tag frequency. This is the foundation for everything.
 
-- [ ] **Auto-load preferred service** — When priority service has content, load its embed without requiring
-  a click. Remove click gate for the preferred platform only. Other platforms remain click-to-load.
+2. **Rabbit Hole page** -- unified discovery route with three entry points (Search, Continue, Random). Artist pages show: name, tags (clickable), similar artists (clickable), genres (clickable). Genre pages show: name, description, sub-genres (clickable), artists in genre (paginated, clickable). Every page is a departure point.
 
-- [ ] **Drag-to-reorder service priority** — Replace the single dropdown in Settings > Streaming with an
-  ordered list. Save as array to localStorage. Persist across sessions.
+3. **Decade filtering** -- row of decade chips on the Rabbit Hole. Filters current view. Shows data density per decade. Expand to years on click.
 
-- [ ] **Source switcher on artist page** — After loading one embed, show small buttons for other available
-  services: "Also on: [SC] [YT]". Clicking switches the active embed.
+4. **Context sidebar** -- genre info panel that updates when browsing genres. Shows sub-genres, neighboring genres, short description. All clickable. Hides when no contextual info applies.
 
-- [ ] **Player bar service badge** — "via Bandcamp" / "via Spotify" text label in the track-info section
-  of the player bar. Derived from which embed was loaded when the track started.
+5. **World Map (genre/scene pins)** -- Leaflet map with genre location pins from existing Wikidata data. Click a pin to see the genre page or jump to Rabbit Hole. This ships even without artist-level geocoding because genre locations already exist.
 
-- [ ] **Album playback from release pages** — "Play Album" button reveals the best available streaming embed
-  for that release (Bandcamp first via `url=` parameter, SoundCloud oEmbed second, Spotify embed third).
-  Hide button when no streaming links exist for the release.
+### Fast-Follow (v1.7.x)
 
-- [ ] **SoundCloud upgrade** — Ensure SoundCloud plays reliably as first-class service (it already has the
-  most complete integration). Test Widget API play/pause control works for queue integration.
+6. **AI Companion** -- persistent chat in sidebar area, context-aware, clickable responses. Requires AI to be connected. Builds on existing Explore page infrastructure.
 
-### Add After Validation (v1.6.x)
+7. **Track/release caching** -- progressive loading of music on Rabbit Hole pages. Show local data immediately, stream in remote MB API data, cache for next time.
 
-- [ ] **Spotify UX guidance** — Inline tooltip or callout on artist pages: "For full tracks, log in to Spotify
-  in BlackTape." Triggered when Spotify is the active service and the user is likely seeing 30s previews.
+8. **World Map artist pins** -- artist city geocoding from Wikidata. Adds individual artist pins with clustering. Requires pipeline work.
 
-- [ ] **YouTube auto-open fallback** — When YouTube is the preferred service but the artist only has a channel
-  URL (not a video URL), add a clear "Watch on YouTube" CTA instead of an empty state.
+### Defer (v1.8+)
 
-- [ ] **Bandcamp dark theme parameters** — Fine-tune `bgcol` and `linkcol` to match current theme tokens
-  dynamically (uses CSS vars — need to read them in JS to pass to the embed URL).
-
-### Future Consideration (v1.7+)
-
-- [ ] **Queue-level track resolution** — Populate the queue with individual tracks from a release tracklist,
-  resolved to YouTube/Spotify URLs via their respective APIs. High complexity, requires API quotas.
-
-- [ ] **Spotify extended access** — If BlackTape reaches organization status + 250K MAU, apply for Spotify
-  extended API access and then add the Web Playback SDK with true PKCE OAuth onboarding.
-
-- [ ] **SoundCloud track-level embed** — Embed specific tracks (not just artist pages) when MusicBrainz has
-  individual track SoundCloud URLs.
+9. **History trail visualization** (Outer Wilds Ship Log style exploration graph)
+10. **Wander mode** (automated random exploration with audio)
+11. **Fog of war** (personal discovery tracking)
+12. **Genre heat map overlay on World Map**
+13. **Audio preview on map hover**
 
 ---
 
-## Feature Prioritization Matrix
+## What Would Ruin It
 
-| Feature | User Value | Implementation Cost | Priority |
-|---------|------------|---------------------|----------|
-| Bandcamp embed (url= parameter) | HIGH (core audience) | LOW (new function + EmbedPlayer update) | P1 |
-| Auto-load preferred service | HIGH | LOW | P1 |
-| Drag-to-reorder priority in Settings | HIGH | MEDIUM | P1 |
-| Album playback on release pages | HIGH | MEDIUM (depends on Bandcamp embed) | P1 |
-| Source switcher on artist page | MEDIUM | LOW | P1 |
-| Player bar service badge | MEDIUM | LOW | P1 |
-| SoundCloud first-class QA | MEDIUM | LOW (already mostly built) | P1 |
-| Spotify UX guidance ("log in for full tracks") | MEDIUM | LOW | P2 |
-| YouTube open-in-browser clarity | LOW | LOW | P2 |
-| Bandcamp dynamic dark theme embed params | LOW | LOW | P2 |
-| Spotify Web Playback SDK | HIGH (if feasible) | HIGH + BLOCKED | Deferred (policy blocker) |
-| Cross-service track resolution (queue) | HIGH | VERY HIGH | Deferred (v1.7) |
+These are the decisions that would make the Rabbit Hole fail. Not "suboptimal" -- actually broken.
 
-**Priority key:**
-- P1: Ship in v1.6 core milestone
-- P2: Ship in v1.6 if P1 is stable; otherwise v1.6.x patch
-- P3: Nice to have, future milestone
-- Deferred: Architectural or policy blocker, not feasible in v1.6
+1. **Shipping without similar artists data.** Without precomputed similarity, every artist page dead-ends at its tags. Tags connect to the Discover page, which already exists. The Rabbit Hole's unique value IS the click-through loop of "artist -> similar artists -> new artist -> their similar artists -> ..." Remove that and you've rebuilt what v1.4 already has.
+
+2. **Making any interaction cost more than one click.** Modals, confirmations, "are you sure?", two-step navigation (click artist name, then click "explore") -- any friction breaks flow state. One click = one navigation. Always.
+
+3. **Slow page transitions.** The perceived load time must be <200ms for local data. If the similar artists query takes 500ms, users will stop clicking. SQLite queries should be pre-optimized with proper indexes on the similar_artists table.
+
+4. **Dead ends.** If any artist page shows zero similar artists and zero related genres, the exploration stops. Fallback strategy: if similar artists aren't available for a rare artist, show "artists with the same tags" as a less-precise but never-empty alternative.
+
+5. **Treating the World Map and Rabbit Hole as separate products.** They must be cross-linked. Clicking a map pin should enter the Rabbit Hole. Seeing "Berlin" on an artist page should link to Berlin on the map. If they feel like different apps, users won't use both.
+
+6. **Adding social/engagement mechanics to the discovery flow.** Likes, follows, activity feeds, recommendations-from-friends -- these shift the brain from exploration mode to social mode. The Rabbit Hole is a solo experience. The user vs. the universe of music. Keep it that way.
 
 ---
 
-## Competitor Feature Analysis
+## Real-World Reference Analysis
 
-| Feature | Parachord | BlackTape v1.5 | BlackTape v1.6 Target |
-|---------|-----------|----------------|----------------------|
-| Service priority ordering | Drag-to-reorder resolver order | Single-service dropdown | Drag-to-reorder ordered array |
-| Service resolution method | Plugin resolver chain, tries each until match | MusicBrainz URLs only | MusicBrainz URLs only (same) |
-| Source indicator | Small resolver badge on track | None | "via {Service}" in player bar |
-| Auth flow | Per-service OAuth (complex, multi-step) | No auth for playback | No auth for Spotify embed (login is in-app Spotify session) |
-| Album playback | Full album queue via resolver | Stubs only | Embed the album's streaming player |
-| Spotify | Full Web Playback SDK | Embed iframe only | Embed iframe only (policy-constrained) |
-| SoundCloud | Resolver plugin | oEmbed + Widget API hooks | Same + first-class priority |
-| Bandcamp | No (complex embed — needed album IDs) | External link only | Full embed via url= parameter |
-| YouTube | Channel resolver | Click-to-load iframe | Same + auto-load when preferred |
+### Every Noise at Once (Frozen since Dec 2023)
+**What worked:** Zero-friction click-to-hear. 6,291 genres navigable because each click cost nothing. Scatter plot positioning encoded information (down=organic, up=mechanical, left=dense, right=bouncy).
+**What failed:** The scatter plot was unreadable at scale -- 6,000 overlapping text labels. No hierarchy. No progressive disclosure. Finding a specific genre required Ctrl+F, not navigation.
+**Lesson for BlackTape:** Keep interaction cost at zero. But use lists, not scatter plots. Lists are scannable; scatter plots are not.
 
-**BlackTape's advantage over Parachord in this domain:**
-- Discovery-first architecture means service resolution is secondary, not primary
-- No OAuth friction for users (no app registration, no redirect URI confusion)
-- Bandcamp embed now achievable without ID extraction (url= parameter)
-- Values alignment: Bandcamp first is not just UX preference, it's a philosophical statement
+### Radio Garden
+**What worked:** Globe metaphor is universally understood. Instant audio on tap. "Balloon Ride" random exploration removes decision paralysis.
+**What failed:** Discovery depth is shallow -- you hear one station per city. No way to drill down. No taste-based filtering.
+**Lesson for BlackTape:** The map should be an entry point to depth (the Rabbit Hole), not depth itself. Geographic + depth, not geographic instead of depth.
+
+### Musicmap.info
+**What worked:** Semantic zoom -- super-genre "buildings" at macro, subgenre "streets" at micro. The cityscape metaphor is memorable.
+**What failed:** Read-only. No audio. No click-through to artists. A beautiful infographic, not a discovery tool.
+**Lesson for BlackTape:** Every visual element must be interactive. If it's on screen, it should be clickable.
+
+### Spotify Artist Radio / Apple Music Discovery Station
+**What worked:** Low-effort discovery -- start from one artist, hear related music with zero work.
+**What failed:** User has no agency. The algorithm picks everything. There's no "I want to go left instead of right" -- it's a one-dimensional stream.
+**Lesson for BlackTape:** The Rabbit Hole must offer choice at every step. Multiple departure options, not a single stream. The user drives, not the algorithm.
+
+### Bandcamp Discovery
+**What worked:** Tag combination filtering (experimental + bagpipes). Curation through editorial daily posts. Community context.
+**What failed:** Discovery is separated from the catalog. You browse discovery, find something, then navigate to the artist page. Two-step process.
+**Lesson for BlackTape:** Discovery and catalog should be the same surface. The Rabbit Hole IS the catalog browsed through exploration.
+
+### Rate Your Music Genre Pages
+**What worked:** Hierarchical genre taxonomy (1,780 genres). Decade/year filtering on charts. Community-driven rankings. Descriptor filtering (mood, theme, form).
+**What failed:** Dense, information-heavy UI that prioritizes completeness over browsability. No audio. Academic tone.
+**Lesson for BlackTape:** Genre pages need personality, not just data. Evocative descriptions, not taxonomic completeness. Audio presence, not chart positions.
 
 ---
 
 ## Sources
 
-- [Spotify Developer Policy — February 2026 Update](https://developer.spotify.com/blog/2026-02-06-update-on-developer-access-and-platform-security) — 5-user Development Mode cap, Premium requirement, organization-only applications. Confidence: HIGH.
-- [TechCrunch — Spotify API Changes February 2026](https://techcrunch.com/2026/02/06/spotify-changes-developer-mode-api-to-require-premium-accounts-limits-test-users/) — Confirms 5-user limit and Premium requirement. Confidence: HIGH.
-- [Spotify Web Playback SDK — Getting Started](https://developer.spotify.com/documentation/web-playback-sdk/tutorials/getting-started) — Requires Spotify Premium account. Requires `encrypted-media` allow attribute. Confidence: HIGH.
-- [Spotify Embed Documentation](https://developer.spotify.com/documentation/embeds) — iframe embed, no auth required for rendering; full tracks for Premium users logged in; 30s previews for free/logged-out users. Confidence: HIGH.
-- [Spotify Community — 30s Preview Behavior](https://community.spotify.com/t5/Spotify-for-Developers/30-second-preview-showing-when-try-to-embed-playlist/td-p/5655204) — Confirmed: embed plays full tracks when user is logged in with Premium in the same browser. Confidence: HIGH.
-- [Spotify Web Playback SDK + Electron Issue #7](https://github.com/spotify/web-playback-sdk/issues/7) — SDK requires Widevine CDM. Electron (and by extension Tauri/WebView2) requires specific setup. Confidence: MEDIUM.
-- [Bandcamp — EmbeddedPlayer url= parameter](https://github.com/bluesky-social/social-app/pull/6761) — Confirmed Bandcamp added `url=` parameter to EmbeddedPlayer, enabling embeds from URL-encoded Bandcamp page URLs without needing album/track IDs. Confidence: HIGH.
-- [Bandcamp Help — Creating Embedded Players](https://get.bandcamp.help/hc/en-us/articles/23020711574423) — Official documentation for embed parameters (size, bgcol, linkcol, minimal, transparent). Confidence: HIGH.
-- [SoundCloud Widget API](https://developers.soundcloud.com/docs/api/html5-widget) — SC.Widget() provides play, pause, seekTo, getPosition, and event binding. Confidence: HIGH.
-- [SoundCloud oEmbed API](https://developers.soundcloud.com/docs/oembed) — oEmbed endpoint returns embed HTML for artist pages and tracks. Confidence: HIGH.
-- [YouTube IFrame Player API](https://developers.google.com/youtube/iframe_api_reference) — No auth required for embeds. Programmatic control via IFrame API JS. Confidence: HIGH.
-- [Spotify Redirect URI Policy — localhost deprecated](https://developer.spotify.com/blog/2025-02-12-increasing-the-security-requirements-for-integrating-with-spotify) — As of November 2025, `localhost` aliases removed. Loopback `127.0.0.1` still works. Confidence: HIGH.
-- [Spotify Extended Access Criteria Update](https://developer.spotify.com/blog/2025-04-15-updating-the-criteria-for-web-api-extended-access) — 250K MAU + registered organization required for extended access as of May 2025. Confidence: HIGH.
-- Existing codebase analysis: `src/lib/embeds/`, `src/lib/components/EmbedPlayer.svelte`, `src/routes/settings/+page.svelte`, `src/lib/theme/preferences.svelte`. Confidence: HIGH (direct code inspection).
+- [Every Noise at Once -- Wikipedia](https://en.wikipedia.org/wiki/Every_Noise_at_Once) -- History, frozen status (Dec 2023), 6,291 genres. Confidence: HIGH.
+- [Every Noise at Once -- Building Beats 2026](https://buildingbeats.org/toolbox/every-noise-at-once) -- Zero-friction discovery, simplicity over algorithmic recommendations. Confidence: HIGH.
+- [Radio Garden -- IXD@Pratt Design Critique](https://ixd.prattsi.org/2026/02/design-critique-radio-garden-ios-app/) -- Globe metaphor, instant audio, 40,000+ stations. Confidence: HIGH.
+- [Radio Garden -- Wikipedia](https://en.wikipedia.org/wiki/Radio_Garden) -- Studio Puckey design, MIT collaboration. Confidence: HIGH.
+- [Musicmap -- Fast Company](https://www.fastcompany.com/3062814/this-interactive-map-of-music-genres-will-take-up-the-rest-of-your-da) -- Cityscape metaphor, semantic zoom, genre genealogy. Confidence: HIGH.
+- [Wikipedia Rabbit Holes -- Nature](https://www.nature.com/articles/d41586-024-03454-7) -- Three curiosity styles (busybody, hunter, dancer), 480K user study. Confidence: HIGH.
+- [Wikipedia Rabbit Holes -- The Conversation](https://theconversation.com/going-down-a-wikipedia-rabbit-hole-science-says-youre-one-of-these-three-types-242018) -- Dale Zhou / UPenn research, browsing patterns. Confidence: HIGH.
+- [Information Foraging -- Wikipedia](https://en.wikipedia.org/wiki/Information_foraging) -- PARC theory, information scent concept. Confidence: HIGH.
+- [Infinite Scrolling -- IxDF](https://ixdf.org/literature/topics/infinite-scrolling) -- Scroll fatigue, usability problems with endless content. Confidence: HIGH.
+- [Spotify Recommendation System -- Music Tomorrow](https://www.music-tomorrow.com/blog/how-spotify-recommendation-system-works-complete-guide) -- Collaborative filtering, content-based analysis. Confidence: HIGH.
+- [Bandcamp Discover Tag Combination -- Bandcamp Blog](https://blog.bandcamp.com/2024/04/25/new-in-discover-search-and-filter-by-combining-tags/) -- Multi-tag filtering, dark mode. Confidence: HIGH.
+- [Apple Music Discovery Station -- MacRumors](https://www.macrumors.com/2023/08/07/apple-music-discovery-station/) -- Algorithmic personalization, no user agency. Confidence: HIGH.
+- [Rate Your Music Discovery -- rateyourmusic.com](https://rateyourmusic.com/discover) -- Descriptor filtering, decade charts, 1,780 genres. Confidence: HIGH.
+- [Sidebar UX -- UX Planet](https://uxplanet.org/best-ux-practices-for-designing-a-sidebar-9174ee0ecaa2) -- 240-300px width, contextual design, smart show/hide. Confidence: HIGH.
+- [Side Panels -- UX Planet](https://uxplanet.org/designing-side-panels-that-add-value-to-your-websites-ux-fc44211fa8e1) -- Inspector panel pattern, 280-320px. Confidence: HIGH.
+- [AI Copilot UX -- Microsoft Learn](https://learn.microsoft.com/en-us/microsoft-cloud/dev/copilot/isv/ux-guidance) -- Sidebar/assistive pattern, dynamic blocks, governor mechanisms. Confidence: HIGH.
+- [Generative UI -- CopilotKit](https://www.copilotkit.ai/generative-ui) -- Agent-powered interfaces, actionable AI output. Confidence: MEDIUM.
+- [Leaflet.markercluster -- GitHub](https://github.com/Leaflet/Leaflet.markercluster) -- 10K-50K markers, chunked loading, spiderfying. Confidence: HIGH.
+- [Leaflet 2.0 Alpha](https://leafletjs.com/2025/05/18/leaflet-2.0.0-alpha.html) -- Leaflet 2.0.0-alpha.1 released August 2025. Confidence: HIGH.
+- [Breadcrumbs UX -- NN/g](https://www.nngroup.com/articles/breadcrumbs/) -- Path-based navigation, wayfinding. Confidence: HIGH.
+- [Filter UI Patterns -- BricxLabs](https://bricxlabs.com/blogs/universal-search-and-filters-ui) -- Chip filters, checkbox filters, calendar filters. Confidence: HIGH.
+- Existing codebase analysis: `src/routes/`, `src/lib/db/queries.ts`, `src/lib/taste/`, `src/lib/components/`, `docs/discovery-redesign-research.md`. Confidence: HIGH (direct code inspection).
 
 ---
-*Feature research for: BlackTape v1.6 — Multi-source streaming playback*
-*Researched: 2026-02-26*
+*Feature research for: BlackTape v1.7 -- The Rabbit Hole (Discovery Redesign)*
+*Researched: 2026-03-03*
