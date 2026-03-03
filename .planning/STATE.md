@@ -1,29 +1,31 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.6
-milestone_name: The Playback Milestone
-status: complete
-last_updated: "2026-02-27T12:30:00Z"
+milestone: v1.7
+milestone_name: The Rabbit Hole
+status: defining_requirements
+last_updated: "2026-03-03T00:00:00Z"
 progress:
-  total_phases: 5
-  completed_phases: 5
-  total_plans: 13
-  completed_plans: 13
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-02-27 after v1.6)
+See: .planning/PROJECT.md (updated 2026-03-03 after v1.7 start)
 
 **Core value:** Uniqueness is rewarded — the more niche you are, the more discoverable you become.
-**Current focus:** v1.6 complete — planning next milestone
+**Current focus:** v1.7 The Rabbit Hole — discovery redesign
 
 ## Current Position
 
-Phase: ALL COMPLETE — v1.6 milestone shipped 2026-02-27
-Status: Milestone complete — ready for `/gsd:new-milestone`
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-03 — Milestone v1.7 started
 
 ## Accumulated Context
 
@@ -36,12 +38,21 @@ Status: Milestone complete — ready for `/gsd:new-milestone`
 - Cloudflare Worker KV prefix pattern: `type:${Date.now()}:${identifier}`
 - Tauri origins: `tauri://localhost` and `http://tauri.localhost` must both be in CORS allowedOrigins
 
+### Discovery Redesign Context (v1.7)
+
+- Research doc: `docs/discovery-redesign-research.md` — full design conversation captured
+- Data audit: 2.6M artists, 26M+ tag associations, 4,086 genres, 10K tag co-occurrence pairs
+- Similar artists: build from tag overlap (sonic similarity > factual MB relationships)
+- Artist locations: country codes only — need Wikidata SPARQL for city-level geocoding
+- Track data: not indexed, fetched live from MB (1 req/sec) — cache after first fetch
+- Old graph views (StyleMap, GenreGraph, etc.) code stays as fallback
+
 ### Blockers/Concerns
 
-None — all v1.6 work complete.
+None.
 
 ## Session Continuity
 
-Last session: 2026-02-27
-Stopped at: v1.6 milestone complete and archived
+Last session: 2026-03-03
+Stopped at: v1.7 milestone requirements definition
 Resume file: None

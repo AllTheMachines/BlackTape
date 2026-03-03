@@ -61,7 +61,16 @@ Uniqueness is rewarded — the more niche you are, the more discoverable you bec
 
 ### Active
 
-<!-- v1.7 — TBD, defined during /gsd:new-milestone -->
+<!-- v1.7 — The Rabbit Hole (discovery redesign) -->
+
+- [ ] Rabbit Hole — unified click-through discovery replacing Style Map, KB, Time Machine, Crate Dig
+- [ ] World Map — geographic discovery via Leaflet, cross-linked with Rabbit Hole
+- [ ] Context sidebar — genre/artist info panel in nav-content gap
+- [ ] AI companion — persistent contextual chat alongside discovery (if AI connected)
+- [ ] Decade filtering — replaces year text input, context-dependent
+- [ ] Similar artists from tag overlap — precomputed in pipeline
+- [ ] Artist city geocoding from Wikidata — enables World Map pins
+- [ ] Track/release caching — first fetch slow, instant after
 
 ### Out of Scope
 
@@ -143,5 +152,17 @@ Pre-project research (2026-02-14) saved in ControlCenter:
 | Cloudflare Worker for artist claims (v1.6) | Keeps artist claim backend at $0 infra cost; KV storage + Resend email; CORS covers tauri://localhost | ✓ Good |
 | Community features hidden not deleted (v1.6) | Code preserved in $lib/comms/ — only render paths removed; allows revival in v1.7+ if desired | ✓ Good |
 
+## Current Milestone: v1.7 The Rabbit Hole
+
+**Goal:** Replace four disconnected graph-based discovery views with a unified, practical click-through exploration experience.
+
+**Target features:**
+- Rabbit Hole — click-through artist/genre exploration with search, continue, and random entry points
+- World Map — geographic discovery via Leaflet map, cross-linked with Rabbit Hole
+- Context sidebar — genre info, related items, descriptions in the nav-content gap
+- AI companion — persistent contextual chat (only visible if AI connected)
+- Decade filtering — row of clickable decades, context-dependent, replaces year text input
+- Pipeline: precompute similar artists (tag overlap), geocode artist cities (Wikidata), cache tracks/releases
+
 ---
-*Last updated: 2026-02-27 after v1.6 milestone — The Playback Milestone*
+*Last updated: 2026-03-03 after v1.7 milestone started — The Rabbit Hole*
