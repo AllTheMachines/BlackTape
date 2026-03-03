@@ -26,13 +26,18 @@ export const TABLES = {
 
   tag: [
     'id', 'name', 'ref_count'
+  ],
+
+  // MusicBrainz canonical genre list (~1,900 curated genres)
+  genre: [
+    'id', 'gid', 'name', 'comment', 'edits_pending', 'last_updated'
   ]
 };
 
 // Which archive each table comes from
 export const TABLE_ARCHIVES = {
   'mbdump.tar.bz2': [
-    'artist', 'artist_type', 'area'
+    'artist', 'artist_type', 'area', 'genre'
   ],
   'mbdump-derived.tar.bz2': [
     'artist_tag', 'tag'

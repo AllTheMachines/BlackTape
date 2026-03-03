@@ -14,7 +14,7 @@
 import { createRequire } from 'module';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 
 const require = createRequire(import.meta.url);
 const Database = require('better-sqlite3');
@@ -22,6 +22,7 @@ const Database = require('better-sqlite3');
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DB_PATH = join(__dirname, 'data', 'mercury.db');
 const SCHEMA_PATH = join(__dirname, 'lib', 'schema.sql');
+const MB_GENRE_PATH = join(__dirname, 'data', 'extracted', 'genre');
 
 const WIKIDATA_SPARQL_URL = 'https://query.wikidata.org/sparql';
 const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search';
@@ -78,6 +79,45 @@ function slugify(name, wikidataId = '') {
 /** Sleep for ms milliseconds */
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
+ * Normalize a genre name for matching against MusicBrainz canonical names.
+ * Strips trailing " music", " genre", " style" (Wikidata uses "rock music", MB uses "rock").
+ */
+function normalizeName(name) {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/\s+(music|genre|style)$/i, '');
+}
+
+/**
+ * Load the MusicBrainz canonical genre list from the extracted dump file.
+ * Returns a Map<lowercase_name, canonical_name> for matching.
+ * The file is tab-separated with columns: id, gid, name, comment, edits_pending, last_updated
+ */
+function loadMbGenres() {
+  if (!existsSync(MB_GENRE_PATH)) {
+    console.warn('[Phase G] MB genre file not found at', MB_GENRE_PATH);
+    console.warn('[Phase G] Run "node pipeline/import.js" to extract it from mbdump.tar.bz2');
+    return new Map();
+  }
+
+  const content = readFileSync(MB_GENRE_PATH, 'utf-8');
+  const lookup = new Map(); // lowercase name -> canonical name
+
+  for (const line of content.split('\n')) {
+    if (!line) continue;
+    const parts = line.split('\t');
+    const name = parts[2]; // column index 2 = name
+    if (name && name !== '\\N') {
+      lookup.set(name.toLowerCase(), name);
+    }
+  }
+
+  console.log(`[Phase G] Loaded ${lookup.size} MusicBrainz canonical genres`);
+  return lookup;
 }
 
 // --- Wikidata fetch ---
@@ -152,7 +192,7 @@ async function fetchWikidataScenes() {
  * Process SPARQL bindings, deduplicate genres, build slug map, and insert into DB.
  * Returns arrays of parent-child pairs and influenced-by pairs for relationship inserts.
  */
-function insertGenres(db, bindings) {
+function insertGenres(db, bindings, mbGenreLookup) {
   // Deduplicate: one row per unique genre Wikidata ID
   const genreMap = new Map(); // wikidataId -> { name, label, inceptionYear, originCity, ...}
 
@@ -232,8 +272,13 @@ function insertGenres(db, bindings) {
       // origin_city stores P495 (country/region of origin) for display only.
       const type = 'genre';
 
-      // mb_tag: lowercase slug of name (bridge to artist_tags)
-      const mbTag = baseSlug || null;
+      // mb_tag: space-separated name matching artist_tags.tag format
+      // Try normalized name first (strips " music"/" genre"), then raw lowercase
+      const normalized = normalizeName(entry.name);
+      const mbTag = mbGenreLookup.get(normalized)?.toLowerCase()
+                 ?? mbGenreLookup.get(entry.name.toLowerCase())?.toLowerCase()
+                 ?? entry.name.toLowerCase()
+                 ?? null;
 
       // wikipedia_title: use name for runtime Wikipedia summary lookup
       const wikipediaTitle = entry.name;
@@ -318,7 +363,7 @@ function insertRelationships(db, wdIdToDbId, parentPairs, influencePairs) {
  * Uses INSERT OR IGNORE so slug collisions with existing genres are skipped.
  * origin_city stores the city label (or country as fallback) for geocodeScenes() to fill.
  */
-function insertScenes(db, bindings) {
+function insertScenes(db, bindings, mbGenreLookup) {
   // Deduplicate by Wikidata ID
   const sceneMap = new Map();
 
@@ -366,6 +411,13 @@ function insertScenes(db, bindings) {
         ? `${baseSlug}-${entry.wdId.slice(1, 9)}`
         : baseSlug;
 
+      // mb_tag: space-separated name matching artist_tags.tag format
+      const normalized = normalizeName(entry.name);
+      const mbTag = mbGenreLookup.get(normalized)?.toLowerCase()
+                 ?? mbGenreLookup.get(entry.name.toLowerCase())?.toLowerCase()
+                 ?? entry.name.toLowerCase()
+                 ?? null;
+
       insertScene.run({
         slug,
         name: entry.name,
@@ -374,7 +426,7 @@ function insertScenes(db, bindings) {
         wikipediaTitle: entry.name,
         inceptionYear: entry.inceptionYear,
         originCity: entry.originCity,
-        mbTag: baseSlug || null
+        mbTag
       });
     }
   });
@@ -449,6 +501,49 @@ async function geocodeScenes(db) {
   console.log(`[Phase G] Geocoding complete: ${geocoded} found, ${failed} not found.`);
 }
 
+// --- MB genre backfill ---
+
+/**
+ * Insert MusicBrainz canonical genres that weren't matched by any Wikidata entry.
+ * These won't have Wikidata enrichment (no inception_year, origin_city, relationships)
+ * but they will have working artist_tags bridges via mb_tag.
+ */
+function insertUnmatchedMbGenres(db, mbGenreLookup, matchedMbNames) {
+  const insertGenre = db.prepare(`
+    INSERT OR IGNORE INTO genres
+      (slug, name, type, wikidata_id, wikipedia_title, inception_year, origin_city, mb_tag)
+    VALUES
+      (@slug, @name, @type, @wikidataId, @wikipediaTitle, @inceptionYear, @originCity, @mbTag)
+  `);
+
+  let inserted = 0;
+
+  const insertMany = db.transaction(() => {
+    for (const [lowerName, canonicalName] of mbGenreLookup) {
+      if (matchedMbNames.has(lowerName)) continue;
+
+      const slug = slugify(canonicalName);
+      if (!slug) continue;
+
+      insertGenre.run({
+        slug,
+        name: canonicalName,
+        type: 'genre',
+        wikidataId: null,
+        wikipediaTitle: canonicalName,
+        inceptionYear: null,
+        originCity: null,
+        mbTag: lowerName // already lowercase — matches artist_tags.tag format
+      });
+      inserted++;
+    }
+  });
+
+  insertMany();
+  console.log(`[Phase G] Inserted ${inserted} additional MusicBrainz-only genres`);
+  return inserted;
+}
+
 // --- Main ---
 
 async function main() {
@@ -459,29 +554,43 @@ async function main() {
   const schema = readFileSync(SCHEMA_PATH, 'utf8');
   db.exec(schema);
 
+  // Step 0: Load MusicBrainz canonical genre list for name matching
+  const mbGenreLookup = loadMbGenres();
+
   // Step 1: Fetch from Wikidata
   const bindings = await fetchWikidataGenres();
 
-  if (bindings.length === 0) {
-    console.warn('[Phase G] No genre data received from Wikidata. Exiting cleanly.');
+  if (bindings.length === 0 && mbGenreLookup.size === 0) {
+    console.warn('[Phase G] No genre data from Wikidata or MusicBrainz. Exiting cleanly.');
     db.close();
     process.exit(0);
   }
 
-  // Step 2: Insert genres
-  const { genreCount, wdIdToDbId, parentPairs, influencePairs } = insertGenres(db, bindings);
+  // Step 2: Insert Wikidata genres (with fixed mb_tag using MB name matching)
+  const { genreCount, wdIdToDbId, parentPairs, influencePairs } = insertGenres(db, bindings, mbGenreLookup);
 
   // Step 3: Insert relationships
   const relCount = insertRelationships(db, wdIdToDbId, parentPairs, influencePairs);
 
-  console.log(`[Phase G] Inserted ${genreCount} genres (${relCount} relationships)`);
+  console.log(`[Phase G] Inserted ${genreCount} Wikidata genres (${relCount} relationships)`);
 
   // Step 4: Fetch and insert local music scenes (Q1640824)
   const sceneBindings = await fetchWikidataScenes();
-  const sceneCount = insertScenes(db, sceneBindings);
+  const sceneCount = insertScenes(db, sceneBindings, mbGenreLookup);
   console.log(`[Phase G] Inserted ${sceneCount} scenes`);
 
-  // Step 5: Geocode scene cities (fills origin_lat/origin_lng via Nominatim)
+  // Step 5: Insert unmatched MB genres (no Wikidata enrichment, but working artist bridges)
+  if (mbGenreLookup.size > 0) {
+    // Collect which MB names were matched by Wikidata entries
+    const matchedMbNames = new Set();
+    const allGenres = db.prepare('SELECT mb_tag FROM genres WHERE mb_tag IS NOT NULL').all();
+    for (const row of allGenres) {
+      matchedMbNames.add(row.mb_tag);
+    }
+    insertUnmatchedMbGenres(db, mbGenreLookup, matchedMbNames);
+  }
+
+  // Step 6: Geocode scene cities (fills origin_lat/origin_lng via Nominatim)
   await geocodeScenes(db);
 
   db.close();
