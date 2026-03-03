@@ -292,15 +292,15 @@ pub fn get_cover_for_album(conn: &Connection, album: &str, artist: &str) -> Resu
     Ok(result)
 }
 
-/// Get all unique (album, artist) pairs that have no cover art and no MB cache entry yet.
-/// These are the candidates for MusicBrainz enrichment.
+/// Get all unique (album, artist) pairs that need enrichment:
+/// either missing cover art or missing genre tags, and not already in the MB cache.
 pub fn get_albums_needing_enrichment(conn: &Connection) -> Result<Vec<(String, String)>, String> {
     let mut stmt = conn
         .prepare(
             "SELECT DISTINCT lt.album, COALESCE(lt.album_artist, lt.artist)
              FROM local_tracks lt
              WHERE lt.album IS NOT NULL
-               AND lt.cover_art_base64 IS NULL
+               AND (lt.cover_art_base64 IS NULL OR lt.mb_tags IS NULL)
                AND NOT EXISTS (
                    SELECT 1 FROM mb_album_cache mc
                    WHERE mc.album = lt.album

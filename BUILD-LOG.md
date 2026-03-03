@@ -4,6 +4,22 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-03-03 — Library Genre Tags from Discovery DB
+
+Library enrichment now fetches genre tags from our own discovery database (`api.blacktape.org`) before falling back to MusicBrainz. Artist-level tags from our DB are community-curated and vote-weighted — higher quality than per-album MB release-group tags, and they return instantly (no 1.1s rate limit).
+
+**Flow change per album:**
+- **Before:** MB API (release-group search) → extract tags + MBID → CAA cover art
+- **After:** Our API (artist tags, instant) → store tags → MB API (release-group for MBID only) → CAA cover art
+
+MB API is still hit for every album (needed for the release-group MBID → Cover Art Archive lookup), but tags are only extracted from MB as a fallback when our API has no match for the artist.
+
+**Also widened** the enrichment query to include albums missing tags (not just covers), so albums enriched before the API existed will get re-enriched for tags on next run.
+
+**Files changed:** `enrichment.rs` (discovery DB lookup + restructured loop), `library/db.rs` (widened `get_albums_needing_enrichment` query).
+
+---
+
 ## Entry 2026-03-03 — Fix Genre↔Tag Data Bridge + Import MB Official Genres
 
 The Knowledge Base, Style Map, and genre discovery were broken because `genres.mb_tag` stored URL slugs (`hip-hop`, `hardcore-punk`) while `artist_tags.tag` stores space-separated names (`hip hop`, `hardcore punk`). Only 72 out of ~2,900 genres matched — the ones without spaces like `rock`, `jazz`, `grunge`.
@@ -12097,4 +12113,7 @@ Zero `mercury.exe` references remain in tools, src, or app-recordings. Historica
 > Files changed: 1
 
 > **Commit e4ead637** (2026-03-03 19:10) — wip: auto-save
+> Files changed: 1
+
+> **Commit db9db691** (2026-03-03 19:16) — auto-save: 1 files @ 19:16
 > Files changed: 1
