@@ -4,6 +4,27 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-03-03 — Fix Genre↔Tag Data Bridge + Import MB Official Genres
+
+The Knowledge Base, Style Map, and genre discovery were broken because `genres.mb_tag` stored URL slugs (`hip-hop`, `hardcore-punk`) while `artist_tags.tag` stores space-separated names (`hip hop`, `hardcore punk`). Only 72 out of ~2,900 genres matched — the ones without spaces like `rock`, `jazz`, `grunge`.
+
+**Root cause:** `build-genre-data.mjs` was using `slugify()` for `mb_tag` instead of the actual tag name.
+
+**The fix:**
+- Changed `mb_tag` to store lowercase space-form names that match `artist_tags.tag` exactly
+- Added name normalization (strips trailing " music"/" genre"/" style" from Wikidata names) to maximize matches against MusicBrainz's canonical genre list
+- Added MB genre table extraction to the import pipeline (`tables.js`)
+- Loaded the ~2,100 MusicBrainz canonical genres as a matching lookup
+- After inserting Wikidata genres, backfill any unmatched MB genres (no Wikidata enrichment, but working artist bridges)
+
+**Also fixed:** Wikidata stores "hip-hop" (hyphenated) while MB/artist_tags use "hip hop" (spaces). Added a dehyphenation fallback in the matching chain so hyphens don't prevent matches.
+
+**Results on 10K-artist sample:** Genre↔tag_stats matches went from 72 → 293 (4x). All common genres (rock, hip hop, electronic, metal, punk, jazz, folk, indie rock, hardcore punk, drum and bass) now correctly bridge to artists. Total genre count: 4,086 (2,992 Wikidata + 1,099 MB-only backfill). On the full dataset the match count will be significantly higher since there are 672 tags in the sample vs 100K+ tags in the full DB.
+
+**No frontend/query changes needed** — once `mb_tag` stores the correct format, all existing queries (`getGenreKeyArtists`, `getStarterGenreGraph`, Discover/Style Map links) work automatically.
+
+---
+
 ## Entry 2026-03-02 — Auto-Updater Verified End-to-End
 
 The updater finally works. The full flow was tested: dev build (v0.1.0) detects v0.2.0 on GitHub → downloads 9.3MB installer → verifies signature → runs NSIS installer → app restarts with new version.
@@ -12038,3 +12059,6 @@ Zero `mercury.exe` references remain in tools, src, or app-recordings. Historica
 
 > **Commit 2d49d79** (2026-03-03 17:54) — wip: auto-save
 > Files changed: 1
+
+> **Commit ca8eb50** (2026-03-03 18:16) — auto-save: 3 files @ 18:16
+> Files changed: 3

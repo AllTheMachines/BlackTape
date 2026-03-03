@@ -273,9 +273,11 @@ function insertGenres(db, bindings, mbGenreLookup) {
       const type = 'genre';
 
       // mb_tag: space-separated name matching artist_tags.tag format
-      // Try normalized name first (strips " music"/" genre"), then raw lowercase
+      // Try normalized, dehyphenated, then raw lowercase — first MB match wins
       const normalized = normalizeName(entry.name);
+      const dehyphenated = normalized.replace(/-/g, ' ');
       const mbTag = mbGenreLookup.get(normalized)?.toLowerCase()
+                 ?? mbGenreLookup.get(dehyphenated)?.toLowerCase()
                  ?? mbGenreLookup.get(entry.name.toLowerCase())?.toLowerCase()
                  ?? entry.name.toLowerCase()
                  ?? null;
@@ -413,7 +415,9 @@ function insertScenes(db, bindings, mbGenreLookup) {
 
       // mb_tag: space-separated name matching artist_tags.tag format
       const normalized = normalizeName(entry.name);
+      const dehyphenated = normalized.replace(/-/g, ' ');
       const mbTag = mbGenreLookup.get(normalized)?.toLowerCase()
+                 ?? mbGenreLookup.get(dehyphenated)?.toLowerCase()
                  ?? mbGenreLookup.get(entry.name.toLowerCase())?.toLowerCase()
                  ?? entry.name.toLowerCase()
                  ?? null;
