@@ -1,8 +1,8 @@
 # Stack Research
 
-**Domain:** v1.6 The Playback Milestone — multi-source streaming integration into existing Tauri 2.0 desktop app
-**Researched:** 2026-02-26
-**Confidence:** HIGH (Tauri platform facts, Spotify security changes), MEDIUM (SDK integration specifics in Tauri context), LOW (Spotify Web Playback SDK origin requirements for tauri.localhost — unconfirmed in official docs)
+**Domain:** v1.7 The Rabbit Hole -- unified discovery redesign for existing Tauri 2.0 desktop music search engine
+**Researched:** 2026-03-03
+**Confidence:** HIGH (SvelteKit navigation patterns, SQLite tag similarity, Leaflet clustering), MEDIUM (Wikidata SPARQL geocoding coverage for artists), LOW (exact Wikidata query timeout behavior at scale)
 
 ---
 
@@ -12,249 +12,326 @@ This is a subsequent-milestone document. Everything below is already installed a
 
 | Already Present | Version | Notes |
 |-----------------|---------|-------|
-| `tauri-plugin-oauth` (Rust) | `"2"` in Cargo.toml | **Already installed.** Spawns localhost server for OAuth callbacks. |
-| `@fabianlars/tauri-plugin-oauth` (npm) | `^2.0.0` | **Already installed.** TypeScript bindings for the Rust plugin. |
-| `rsa` (Rust) | `0.9` | Already installed for AP HTTP signatures. RSA keypair generation available. |
-| `reqwest` (Rust) | `^0.12` | HTTP client. Already used for AI model downloads + AP delivery. |
-| `serde` + `serde_json` (Rust) | `^1` | JSON serialization. Already used throughout. |
-| `@tauri-apps/api` | `^2.10.1` | Tauri IPC. Already in use. |
-| `@tauri-apps/plugin-sql` | `^2.3.2` | SQLite. Already used for taste.db and mercury.db. |
-| `src/lib/embeds/spotify.ts` | — | Already converts Spotify URLs to embed iframe URLs. |
-| `src/lib/embeds/youtube.ts` | — | Already converts YouTube URLs to nocookie embed URLs. |
-| `src/lib/embeds/soundcloud.ts` | — | Already constructs SoundCloud oEmbed URLs. |
-| `src/lib/embeds/bandcamp.ts` | — | Already handles Bandcamp URL detection. |
-| `src/lib/player/` | — | Complete player module: `playback.svelte.ts`, `queue.svelte.ts`, `state.svelte.ts`, `audio.svelte.ts`. |
+| SvelteKit (Svelte 5) | `^5.49.2` | Runes, snippets, `$derived`, `$state`, `$effect` |
+| Tauri 2.0 | `^2.10.0` | Rust backend, WebView2, IPC |
+| `@tauri-apps/plugin-sql` | `^2.3.2` | SQLite for mercury.db + taste.db |
+| `leaflet` | `^1.9.4` | Already used in `SceneMap.svelte` (dynamic import) |
+| `@types/leaflet` | `^1.9.21` | TypeScript types for Leaflet |
+| `paneforge` | `^1.0.2` | Resizable panel layout (three-pane in `PanelLayout.svelte`) |
+| `d3-force` | `^3.0.0` | Graph visualizations (being retired for Rabbit Hole, code stays) |
+| `idb` | `^8.0.3` | IndexedDB wrapper (used for Nostr keypair storage) |
+| `better-sqlite3` | in pipeline | Pipeline uses this for offline DB building |
+| `$app/navigation` | SvelteKit | `goto()`, `invalidateAll()` already in use |
+| `history.back()` | DOM API | Already in layout back button |
+| AI engine | llama.cpp sidecar | Qwen2.5 3B + Nomic Embed, taste.db for embeddings |
+| reqwest | `^0.12` Rust | HTTP client in Rust backend |
+| Cloudflare Workers | D1 API | Artist claim backend, discovery DB API |
+| `src/lib/embeds/` | -- | Spotify, YouTube, SoundCloud, Bandcamp embed handling |
+| `src/lib/player/` | -- | Complete player module with queue management |
 
 ---
 
-## Critical Platform Facts (Read Before Any Integration Work)
+## New Stack Additions for v1.7
 
-### Windows Uses `http://tauri.localhost` — This Matters Enormously
+### 1. Tag-Based Artist Similarity (Pipeline)
 
-On Windows, Tauri 2.0 serves the app's WebView2 content at `http://tauri.localhost`. This is a real HTTP origin (not a custom protocol). This has two major consequences:
+**Technology:** Pure SQL in `better-sqlite3` pipeline -- no new dependencies
 
-1. **YouTube IFrame API: Works on Windows, fails on macOS/Linux.** YouTube IFrame Error 153 (the "no valid HTTP Referer" failure) only affects macOS/Linux where Tauri uses `tauri://localhost`. On Windows, `http://tauri.localhost` satisfies YouTube's origin validation. Since BlackTape is Windows-only (NSIS installer, no other targets), YouTube IFrame is not blocked by the Tauri protocol — this is a non-issue for this project. Source: [Tauri GitHub issue #14422](https://github.com/tauri-apps/tauri/issues/14422), confirmed closed December 2025.
+**Algorithm: TF-IDF Weighted Jaccard**
 
-2. **Spotify Web Playback SDK origin:** Whether Spotify accepts `http://tauri.localhost` as an allowed origin in the developer dashboard is not confirmed in official docs. This must be validated during implementation. If Spotify rejects it, the embed iframe approach (already working via `spotifyEmbedUrl()`) is the fallback. Do not block the phase on this — test it in the first implementation spike.
+Use TF-IDF weighted Jaccard similarity, not raw Jaccard or simple co-occurrence. Rationale:
 
-3. **CSP is already null** in `tauri.conf.json`. No CSP changes are needed for loading third-party scripts.
+- **Raw Jaccard** (`|A intersection B| / |A union B|`) treats all tags equally. Two artists sharing "rock" and "electronic" (common tags applied to 500K+ artists) score the same as two sharing "shoegaze" and "dreampop" (niche tags on ~2K artists each). This is useless for discovery.
+- **Simple co-occurrence count** has the same problem -- dominated by popular tags.
+- **TF-IDF weighted Jaccard** weights each tag by `log(N / df)` where N = total artists and df = number of artists with that tag. Sharing a rare tag like "witch house" contributes far more than sharing "rock." This aligns with BlackTape's core value: uniqueness is rewarded.
 
-### Spotify OAuth Security Changes (November 2025 — Enforced Now)
+**Implementation approach (all in SQL + pipeline JS):**
 
-As of November 27, 2025, Spotify enforces stricter redirect URI rules. This affects all new and migrated apps:
+```sql
+-- Step 1: Precompute IDF weights (already have tag_stats with artist_count)
+-- IDF = ln(total_artists / artist_count) for each tag
 
-- `http://localhost` — **BLOCKED.** Localhost hostname aliases are no longer accepted.
-- `http://127.0.0.1:PORT` — **ALLOWED.** Loopback IP literals are explicitly exempt from the HTTPS requirement.
-- `https://` redirect URIs — Allowed (but no server to redirect to in a desktop app).
-- Custom URI schemes (e.g., `myapp://callback`) — **Status unclear.** Not explicitly documented as allowed or blocked for new apps; community reports are mixed.
+-- Step 2: For each artist pair sharing tags, compute weighted similarity:
+-- weighted_jaccard = SUM(min(w_a, w_b)) / SUM(max(w_a, w_b))
+-- where w = tag_count * idf_weight for each shared tag
 
-**Implication:** `tauri-plugin-oauth` spawns a temporary localhost server for OAuth. The redirect URI must be registered as `http://127.0.0.1:<PORT>` (not `http://localhost:<PORT>`) in the Spotify developer dashboard. The plugin supports dynamic port assignment, but the registered URI must use the exact IP literal. Source: [Spotify redirect URI docs](https://developer.spotify.com/documentation/web-api/concepts/redirect_uri), [community confirmation](https://github.com/charlie86/spotifyr/issues/224).
+-- Step 3: Store top 20 similar artists per artist
+CREATE TABLE IF NOT EXISTS similar_artists (
+  artist_id INTEGER NOT NULL,
+  similar_id INTEGER NOT NULL,
+  score REAL NOT NULL,
+  shared_tags TEXT,  -- comma-separated shared tags for display
+  PRIMARY KEY (artist_id, similar_id)
+);
+CREATE INDEX IF NOT EXISTS idx_similar_artist ON similar_artists(artist_id, score DESC);
+```
+
+**Why 20 per artist:** The Rabbit Hole shows 5-10 similar artists per page. 20 gives enough depth for pagination and randomization without bloating the DB. At 2.6M artists, even if only 500K have enough tags for meaningful similarity, that is 10M rows -- roughly 200-400MB. Acceptable for a desktop app DB.
+
+**Performance note:** The pairwise comparison across 2.6M artists is O(n^2) if done naively. The pipeline must filter: only compare artists with >= 3 tags, and only consider pairs that share at least 1 tag (use the existing `artist_tags` join). This brings it down to millions of pairs, not trillions. Batch in transactions of 50K rows. Expected pipeline runtime: 10-30 minutes on the full dataset.
+
+**Confidence:** HIGH -- this is standard information retrieval math, runs in existing SQLite pipeline, no new dependencies.
+
+| Technology | Version | Purpose | Why Recommended |
+|------------|---------|---------|-----------------|
+| SQL in `better-sqlite3` | (existing) | Precompute TF-IDF weighted Jaccard similarity | Zero new dependencies; runs in existing pipeline; IDF weighting critical for niche-first discovery |
 
 ---
 
-## New Stack Additions for v1.6
+### 2. Leaflet Marker Clustering (World Map)
 
-### 1. Spotify Web Playback SDK
+**Technology:** `leaflet.markercluster` v1.5.3 + `@types/leaflet.markercluster` v1.5.6
 
-**Verdict: Load via CDN script tag. No npm package for the SDK itself.**
+The World Map needs to display thousands of artist/scene pins that cluster when zoomed out and expand when zoomed in. Leaflet.markercluster is THE standard plugin for this -- maintained by the Leaflet organization itself, compatible with Leaflet 1.9.x.
 
-Spotify does not publish the Web Playback SDK to npm. It is loaded as a CDN script injected into the page:
+**Why this specific plugin:**
+- Official Leaflet ecosystem plugin (not a random fork)
+- Handles 50K+ markers with smooth animated clustering
+- Spiderfying for overlapping markers at close zoom
+- Custom cluster icons (can style with BlackTape's amber/dark theme)
+- Stable at 1.5.3 (last release 2022, but Leaflet 1.x itself is equally stable -- both are mature, not abandoned)
 
-```
-https://sdk.scdn.co/spotify-player.js
-```
-
-The SDK calls `window.onSpotifyWebPlaybackSDKReady()` when loaded. Initialize inside that callback.
-
-| Addition | Version | Purpose | Why |
-|----------|---------|---------|-----|
-| `@types/spotify-web-playback-sdk` (npm, dev) | `^0.1.19` | TypeScript types for the SDK global | SDK is not on npm but types are; needed for `window.Spotify.Player` type safety |
-
-**Initialization pattern for Svelte 5:**
+**Integration with existing SceneMap.svelte:**
+The existing `SceneMap.svelte` already does dynamic `import('leaflet')` (correct for SSR avoidance in Tauri). The World Map component will follow the same pattern and additionally import markercluster:
 
 ```typescript
-// In a Svelte component's $effect or onMount
-function loadSpotifySDK(accessToken: string) {
-  window.onSpotifyWebPlaybackSDKReady = () => {
-    const player = new window.Spotify.Player({
-      name: 'BlackTape',
-      getOAuthToken: (cb) => { cb(accessToken); },
-      volume: 0.5
-    });
-    player.addListener('ready', ({ device_id }) => { /* store device_id */ });
-    player.addListener('player_state_changed', (state) => { /* update UI */ });
-    player.connect();
-  };
-  const script = document.createElement('script');
-  script.src = 'https://sdk.scdn.co/spotify-player.js';
-  document.body.appendChild(script);
+const L = (await import('leaflet')).default;
+await import('leaflet.markercluster');
+// L.markerClusterGroup() is now available on L
+```
+
+**CSS loading:** The existing pattern loads Leaflet CSS via a dynamically inserted `<link>` tag. MarkerCluster needs two additional CSS files (`MarkerCluster.css` and `MarkerCluster.Default.css`). Override `MarkerCluster.Default.css` with custom dark-theme cluster styles instead of loading the default blue/green.
+
+| Technology | Version | Purpose | Why Recommended |
+|------------|---------|---------|-----------------|
+| `leaflet.markercluster` | `1.5.3` | Cluster city/artist pins on World Map | Official Leaflet plugin; handles 50K+ markers; animated cluster/expand |
+| `@types/leaflet.markercluster` | `1.5.6` | TypeScript types for markercluster | DefinitelyTyped maintained; matches 1.5.x |
+
+**Confidence:** HIGH -- Leaflet.markercluster is the de facto standard. Version 1.5.3 with Leaflet 1.9.4 is a well-tested combination.
+
+---
+
+### 3. Wikidata SPARQL for Artist City Geocoding (Pipeline)
+
+**Technology:** HTTP fetch to `https://query.wikidata.org/sparql` -- no new dependencies
+
+The pipeline already queries Wikidata SPARQL for genre data (`build-genre-data.mjs`). The same pattern extends to artist geocoding. Key Wikidata properties:
+
+| Property | Description | Use |
+|----------|-------------|-----|
+| `P434` | MusicBrainz artist ID | Join Wikidata items to our artist MBIDs |
+| `P19` | Place of birth | Primary source for artist origin city |
+| `P740` | Location of formation | For bands (formed in city X) |
+| `P625` | Coordinate location | Get lat/lng from the city entity |
+
+**SPARQL query pattern:**
+
+```sparql
+SELECT ?mbid ?cityLabel ?lat ?lng WHERE {
+  ?item wdt:P434 ?mbid .          # Has MusicBrainz artist ID
+  { ?item wdt:P19 ?city }         # Place of birth
+  UNION
+  { ?item wdt:P740 ?city }        # OR location of formation
+  ?city wdt:P625 ?coords .        # City has coordinates
+  BIND(geof:latitude(?coords) AS ?lat)
+  BIND(geof:longitude(?coords) AS ?lng)
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "en" }
 }
 ```
 
-**Requirement:** Spotify Premium account required. The SDK emits `account_error` for non-premium users. Plan for a graceful degradation: if account error fires, fall back to the existing Spotify embed iframe (spotifyEmbedUrl()) which works for non-premium browsing.
+**Critical constraints:**
+- **Wikidata SPARQL has a 60-second query timeout.** A single query for all 2.6M artists will fail. Must batch.
+- **Rate limit:** Be polite. The existing pipeline uses `USER_AGENT` and delays. Follow the same pattern.
+- **Coverage:** Not all 2.6M artists have Wikidata entries. Estimate ~200K-400K artists have P434 on Wikidata. Of those, maybe 60-80% have P19 or P740 with geocoded cities. Expected yield: ~150K-300K artists with city-level coordinates.
+- **Batching strategy:** Query in batches of 500-1000 MBIDs using `VALUES ?mbid { "mbid1" "mbid2" ... }` clause. Process all 2.6M MBIDs in ~3000-5000 batches with 2-second delays between requests. Total pipeline time: ~2-3 hours.
 
-**Unknown: origin whitelisting.** Whether `http://tauri.localhost` must be added to the Spotify app's allowed origins list in the developer dashboard is not confirmed in official docs. Validate in implementation spike. If blocked, the embed iframe is the fallback path.
+**Schema addition:**
+
+```sql
+-- Add to artists table (migration in pipeline)
+ALTER TABLE artists ADD COLUMN origin_city TEXT;
+ALTER TABLE artists ADD COLUMN origin_lat REAL;
+ALTER TABLE artists ADD COLUMN origin_lng REAL;
+```
+
+**Why not Nominatim (like genre geocoding)?** The genre pipeline uses Nominatim to geocode scene city names. For artists, Wikidata gives us coordinates directly via P625 on the birth city entity. No need for a second geocoding step. Simpler and avoids Nominatim's 1 req/sec rate limit on 300K lookups.
+
+**Confidence:** MEDIUM -- the SPARQL query pattern is well-documented and the existing pipeline proves it works. Coverage estimate is uncertain; could be higher or lower. Pipeline should log coverage stats.
+
+| Technology | Version | Purpose | Why Recommended |
+|------------|---------|---------|-----------------|
+| Wikidata SPARQL endpoint | N/A (HTTP API) | Geocode artist origin cities via MBID lookup | Already proven in genre pipeline; direct coordinates via P625; no new dependencies |
 
 ---
 
-### 2. Spotify PKCE OAuth — Using Already-Installed tauri-plugin-oauth
+### 4. SvelteKit Navigation for Rabbit Hole (Click-Through Exploration)
 
-**Both Rust and npm packages are already in the project.** No new installs needed for the OAuth flow mechanism.
+**Technology:** Standard SvelteKit routing + `goto()` + `pushState()` -- no new dependencies
 
-The PKCE flow using `tauri-plugin-oauth`:
+The Rabbit Hole is an infinite click-through experience where every artist/genre page is a departure point. The navigation pattern is:
 
-1. App generates PKCE `code_verifier` and `code_challenge` in TypeScript (using Web Crypto API — no library needed).
-2. `tauri-plugin-oauth` starts a temporary server via `start()` → returns a random port.
-3. Open the Spotify authorization URL in the system browser using `tauri-plugin-shell`'s `open()`.
-   - Auth URL: `https://accounts.spotify.com/authorize?response_type=code&client_id=<ID>&redirect_uri=http%3A%2F%2F127.0.0.1%3A<PORT>&code_challenge_method=S256&code_challenge=<CHALLENGE>&scope=streaming%20user-read-email%20user-read-private`
-4. Spotify redirects to `http://127.0.0.1:<PORT>/?code=<CODE>`. The plugin catches this.
-5. App exchanges code for tokens via `reqwest` (Rust) or `fetch` (TypeScript).
-6. Store tokens (see Token Storage below).
-
-**Redirect URI registration rule (enforced since Nov 2025):** Register `http://127.0.0.1` without port in the Spotify dashboard. Spotify allows dynamic port appending for loopback addresses — you register `http://127.0.0.1` and can pass any port at runtime. Source: [Spotify redirect URI docs](https://developer.spotify.com/documentation/web-api/concepts/redirect_uri).
-
-**Bundled client_id:** Since BlackTape ships a client_id in the binary, the PKCE flow (no client_secret required) is the correct approach. PKCE was designed for public clients that cannot safely store a secret. The client_id being visible is acceptable — PKCE ensures the token exchange is secure even without a secret.
-
-**Scope needed for Web Playback SDK:** `streaming user-read-email user-read-private`. The `streaming` scope is mandatory for SDK playback. Source: [Spotify Web Playback SDK docs](https://developer.spotify.com/documentation/web-playback-sdk).
-
----
-
-### 3. YouTube IFrame Player API
-
-**Verdict: Load via CDN. No npm package. Works on Windows without modifications.**
-
-The YouTube IFrame Player API loads from:
-```
-https://www.youtube.com/iframe_api
-```
-
-This is the standard YouTube-provided script (free, no API key for basic embedding). The `youtube-nocookie.com` embed domain (already used in `youtube.ts`) is preferable for privacy.
-
-**On Windows Tauri: works without any workaround.** The `http://tauri.localhost` origin is HTTP-compatible and satisfies YouTube's origin check. The Error 153 issue is macOS/Linux-only. No changes needed. Source: [Tauri issue #14422](https://github.com/tauri-apps/tauri/issues/14422).
-
-**No new npm packages needed.** The existing `youtubeEmbedUrl()` function already produces valid embed URLs. The IFrame Player API is only needed if programmatic control (play/pause/seek) is required. For basic embedding, iframes alone are sufficient.
-
-| If programmatic YouTube control needed | Addition | Why |
-|----------------------------------------|----------|-----|
-| IFrame Player API (CDN only) | `https://www.youtube.com/iframe_api` | Load via script injection, same pattern as Spotify SDK |
-
-**Fallback strategy for channel pages (not embeddable):** Already implemented — `isYoutubeChannel()` in `youtube.ts` detects channels. For those, open in browser via `tauri-plugin-shell` `open()`. The shell plugin is already installed.
-
----
-
-### 4. SoundCloud Widget API
-
-**Verdict: CDN-only. No npm package exists from SoundCloud.**
-
-SoundCloud Widget API script:
-```
-https://w.soundcloud.com/player/api.js
-```
-
-This is the official SoundCloud-provided script. It is not published to npm. Load via dynamic script injection (same pattern as Spotify SDK).
-
-**Key methods after loading:**
-
-```typescript
-// After script loads, get widget reference from an iframe
-const widget = SC.Widget(iframeElement);
-widget.play();
-widget.pause();
-widget.getDuration((duration) => { /* ... */ });
-widget.getCurrentSound((sound) => { /* title, id, ... */ });
-widget.bind(SC.Widget.Events.PLAY, () => { /* ... */ });
-```
-
-**Integration approach for Svelte 5:** The existing `soundcloud.ts` already constructs oEmbed API URLs. The embed iframe comes from the oEmbed response HTML. To add Widget API control, inject the CDN script after the iframe is rendered, then wrap it with `SC.Widget(iframe)`.
-
-**No new npm packages needed.** The CDN script provides the `SC` global.
-
----
-
-### 5. Bandcamp Embed Player
-
-**Verdict: Pure iframe. No JavaScript API. No npm package. No restrictions detected.**
-
-Bandcamp embedding uses a direct iframe URL format:
-```
-https://bandcamp.com/EmbeddedPlayer/album=<ID>/size=large/bgcol=000000/linkcol=ffffff/tracklist=true/transparent=true/
-```
-
-Or for tracks:
-```
-https://bandcamp.com/EmbeddedPlayer/track=<ID>/size=large/transparent=true/
-```
-
-Bandcamp does not provide a programmatic JavaScript API for their embed player. The iframe is the complete integration surface. There is no `play()`, `pause()`, or `seek()` control available from outside the iframe — Bandcamp does not expose postMessage events.
-
-**Implication for service resolution:** Bandcamp can be detected and embedded, but cannot be programmatically controlled. The "service badge" can show "Playing from Bandcamp" but synchronized playback (e.g., listening rooms) cannot control Bandcamp timing. This is an acceptable limitation given Bandcamp's indie-first audience alignment.
-
-**No new packages needed.** Extend existing `bandcamp.ts` to produce `bandcamp.com/EmbeddedPlayer/` URLs from detected Bandcamp release or track URLs.
-
----
-
-### 6. Token Storage for OAuth Credentials
-
-**Recommendation: tauri-plugin-store for now, with a plan to migrate to keyring.**
-
-The options:
-
-| Option | Security | Complexity | Platform Support | Status |
-|--------|----------|------------|-----------------|--------|
-| `tauri-plugin-store` (already known) | None — plaintext JSON in AppData | Zero | All | Stable |
-| `tauri-plugin-stronghold` | Encrypted vault | High — requires password setup UI | All except Android | **Deprecated; removed in Tauri v3** |
-| `tauri-plugin-keyring` | OS credential manager | Medium — community plugin | Windows (Credential Manager), macOS (Keychain), Linux (keyring) | Community; not official |
-
-**Decision: Use `tauri-plugin-store` for v1.6, store tokens with a session-scoped lifetime.**
+**Architecture decision: Use standard SvelteKit `goto()` navigation, NOT shallow routing.**
 
 Rationale:
+- **Shallow routing** (`pushState` from `$app/navigation`) is designed for modals and overlays -- rendering another page's content inside the current page without navigating. The Rabbit Hole is full page navigation, not overlays.
+- **`goto()`** already works correctly with SvelteKit's routing. Each click creates a real history entry. Back/forward buttons work natively. No custom history stack needed.
+- The existing layout already has a `history.back()` button in `+layout.svelte`.
 
-1. Stronghold is deprecated and will be removed in Tauri v3. Do not add a dependency on a dead plugin.
-2. `tauri-plugin-keyring` is a community plugin with uncertain Windows reliability (developer notes say "something's sus on Windows").
-3. The Spotify access token expires in 1 hour. The refresh token is the sensitive long-lived credential. Storing in `tauri-plugin-store` (plaintext AppData file) is the same security posture as every major desktop music app (Spotify desktop app, etc.) — acceptable for a music discovery tool.
-4. `tauri-plugin-store` is already understood and can be added cleanly.
+**Rabbit Hole navigation pattern:**
 
-**Future migration path:** If security requirements increase, swap storage backend to `tauri-plugin-keyring` without changing the OAuth flow logic. The interface is the same — read/write a key.
+```
+/rabbit-hole                    -- Entry page (search, continue, random)
+/rabbit-hole/artist/[slug]      -- Artist page within rabbit hole context
+/rabbit-hole/genre/[slug]       -- Genre page within rabbit hole context
+```
 
-| Addition | Version | Purpose | Why |
-|----------|---------|---------|-----|
-| `@tauri-apps/plugin-store` (npm) | `^2.x` | Persistent key-value store for OAuth tokens + service preferences | Already in ecosystem; simple; known to work; stronghold deprecated |
-| `tauri-plugin-store` (Rust) | `"2"` | Rust-side companion to the npm plugin | Needed to enable store from Tauri backend if needed |
+**Why separate routes from `/artist/[slug]`?** The Rabbit Hole artist page has different content than the main artist page: no full discography, no stats tab, no claim form. It shows: name, tags, description, similar artists, similar genres, and a track list from similar artists. A different `+page.svelte` with a different `+page.ts` load function. The context sidebar and AI companion are specific to the Rabbit Hole layout.
+
+**History trail ("Continue" feature):**
+
+Store the exploration trail in a Svelte store backed by `localStorage`:
+
+```typescript
+// src/lib/discovery/history.svelte.ts
+interface TrailEntry {
+  type: 'artist' | 'genre';
+  slug: string;
+  name: string;
+  timestamp: number;
+}
+
+// Persists across sessions via localStorage
+// Max 200 entries, FIFO eviction
+// Renders as the "Continue" list on the entry page
+```
+
+No new library needed. `$state` with `localStorage` persistence is the existing pattern (used by queue, streaming prefs, taste profile).
+
+**Confidence:** HIGH -- uses only existing SvelteKit APIs. The routing pattern is standard.
+
+| Technology | Version | Purpose | Why Recommended |
+|------------|---------|---------|-----------------|
+| SvelteKit `goto()` | (existing) | Page-to-page navigation with browser history | Native history support; no custom stack needed |
+| `localStorage` | (DOM API) | Persist exploration trail across sessions | Already used for queue, prefs; simple FIFO buffer |
 
 ---
 
-## New Stack Additions Summary
+### 5. Context Sidebar (Right Panel)
 
-| Addition | Layer | Install | Already Present? |
-|----------|-------|---------|-----------------|
-| `@types/spotify-web-playback-sdk` | npm (devDep) | `npm install -D @types/spotify-web-playback-sdk` | No |
-| `@tauri-apps/plugin-store` | npm | `npm install @tauri-apps/plugin-store` | No |
-| `tauri-plugin-store` | Rust (Cargo.toml) | `tauri-plugin-store = "2"` | No |
-| Spotify Web Playback SDK | CDN (runtime load) | `https://sdk.scdn.co/spotify-player.js` | No |
-| YouTube IFrame API | CDN (optional) | `https://www.youtube.com/iframe_api` | No |
-| SoundCloud Widget API | CDN (runtime load) | `https://w.soundcloud.com/player/api.js` | No |
-| `tauri-plugin-oauth` (Rust) | Rust | Already in Cargo.toml | **Yes** |
-| `@fabianlars/tauri-plugin-oauth` | npm | Already in package.json | **Yes** |
+**Technology:** Existing `paneforge` v1.0.2 -- no new dependencies
 
-**Net new npm production dependencies: 1** (`@tauri-apps/plugin-store`)
-**Net new npm dev dependencies: 1** (`@types/spotify-web-playback-sdk`)
-**Net new Rust dependencies: 1** (`tauri-plugin-store`)
-**CDN scripts loaded at runtime: 3** (Spotify SDK, SoundCloud Widget API, YouTube IFrame API if programmatic control added)
+The existing `PanelLayout.svelte` already implements a three-pane layout with collapsible left sidebar, main content, and collapsible right sidebar. The context sidebar IS the right pane. It already accepts a `context` snippet:
+
+```svelte
+<PanelLayout template="cockpit">
+  {#snippet sidebar()}...{/snippet}
+  {#snippet context()}
+    <!-- THIS IS WHERE CONTEXT SIDEBAR CONTENT GOES -->
+    <ContextSidebar {currentPage} />
+  {/snippet}
+  Content here
+</PanelLayout>
+```
+
+The right pane already has:
+- Collapsible with expand/collapse buttons
+- `autoSaveId` for persisting pane sizes
+- `minSize` and `defaultSize` configuration
+- Styled with the existing dark theme CSS custom properties
+
+**What is actually needed:** A new `ContextSidebar.svelte` component (pure Svelte, no library) that receives the current page context and renders genre info, related items, descriptions. This is a UI component, not a stack decision.
+
+**Confidence:** HIGH -- infrastructure already exists. Only needs a content component.
+
+---
+
+### 6. AI Companion (Persistent Chat Panel)
+
+**Technology:** Existing AI engine + Svelte store -- no new dependencies
+
+The AI companion is not a separate system. It reuses the existing AI infrastructure:
+- `$lib/ai/engine.ts` -- `getAiProvider()`, prompt/completion interface
+- `$lib/ai/prompts.ts` -- prompt templates with injection guards
+- `$lib/ai/state.svelte.ts` -- AI readiness state
+- taste.db Rust backend -- caching via `artist_summaries` table pattern
+
+**Companion architecture:**
+
+```
+ContextSidebar (right pane)
+  |-- ContextInfo (genre info, related items)
+  |-- AiCompanionChat (only if AI connected)
+       |-- Message history (Svelte $state, sessionStorage)
+       |-- Input field
+       |-- Uses getAiProvider().complete() with page context
+```
+
+The chat history lives in `sessionStorage` (cleared on app close -- not persistent across sessions). The AI receives the current page context (artist name, tags, genre name) injected into the system prompt.
+
+**Why sessionStorage, not localStorage?** AI conversation context is ephemeral -- it makes sense tied to the current exploration session, not persisted forever. The history trail (Continue feature) handles cross-session persistence for navigation.
+
+**Confidence:** HIGH -- reuses existing AI engine with a new UI component. No new libraries.
+
+---
+
+### 7. Track/Release Caching Layer
+
+**Technology:** Rust-side SQLite cache in taste.db -- no new dependencies
+
+The existing release/link API endpoints (`/api/artist/[mbid]/releases`, `/api/artist/[mbid]/links`) fetch from MusicBrainz with rate limiting (1100ms). Currently they use Cloudflare Cache API (only works when deployed to CF Workers, which this is not -- it is a Tauri desktop app). The `platform?.caches` check silently fails in Tauri, so every page visit re-fetches from MB.
+
+**Solution: Cache in taste.db via Tauri Rust commands.**
+
+The pattern already exists: `mb_album_cache` in library.db caches MB album lookups for the local library scanner. Extend taste.db with:
+
+```sql
+CREATE TABLE IF NOT EXISTS mb_release_cache (
+  artist_mbid TEXT NOT NULL,
+  response_json TEXT NOT NULL,
+  cached_at INTEGER NOT NULL DEFAULT (unixepoch()),
+  PRIMARY KEY (artist_mbid)
+);
+
+CREATE TABLE IF NOT EXISTS mb_link_cache (
+  artist_mbid TEXT NOT NULL,
+  response_json TEXT NOT NULL,
+  cached_at INTEGER NOT NULL DEFAULT (unixepoch()),
+  PRIMARY KEY (artist_mbid)
+);
+```
+
+**Cache strategy:**
+- **TTL:** 7 days (releases/links don't change frequently)
+- **Eviction:** On fetch, check `cached_at`. If > 7 days, re-fetch and update. Otherwise return cached JSON.
+- **Flow:** Frontend calls Rust command `get_cached_releases(mbid)` -> Rust checks cache -> if miss, frontend fetches from MB API -> calls `cache_releases(mbid, json)` -> Rust stores.
+
+**Why Rust/taste.db, not frontend-only?** The existing taste.db is the established place for user-specific cached data (artist summaries, embeddings, taste profile). Keeping caches here means they survive app updates and are backed up with the rest of the user's data.
+
+**Confidence:** HIGH -- follows the exact same pattern as `mb_album_cache` and `artist_summaries`.
+
+---
+
+### 8. Decade Filtering UI
+
+**Technology:** Pure Svelte component -- no new dependencies
+
+A row of clickable decade buttons (60s, 70s, 80s, 90s, 00s, 10s, 20s) that filter content. Click a decade to expand into individual years. This is a pure UI component.
+
+The existing Discover page already has era filtering via URL params (`goto(buildUrl({ era: newEra }))`). The decade component wraps this existing pattern with a better UI.
+
+**Confidence:** HIGH -- pure Svelte, no library needed.
 
 ---
 
 ## Installation
 
 ```bash
-# npm additions
-npm install @tauri-apps/plugin-store
-npm install -D @types/spotify-web-playback-sdk
-
-# Cargo.toml addition (src-tauri/Cargo.toml [dependencies] section)
-# tauri-plugin-store = "2"
-
-# No other packages needed. CDN scripts are loaded dynamically at runtime.
+# Only TWO new packages needed (everything else is already installed)
+npm install leaflet.markercluster
+npm install -D @types/leaflet.markercluster
 ```
+
+That is it. Two packages total. Everything else reuses existing infrastructure.
 
 ---
 
@@ -262,70 +339,34 @@ npm install -D @types/spotify-web-playback-sdk
 
 | Recommended | Alternative | Why Not |
 |-------------|-------------|---------|
-| CDN script load (Spotify SDK) | npm wrapper like `use-spotify-web-playback-sdk` | React-specific wrappers; Svelte 5 doesn't benefit. The SDK itself is not on npm — all wrappers ultimately load the CDN script. |
-| `tauri-plugin-store` (token storage) | `tauri-plugin-stronghold` | **Deprecated; removed in Tauri v3.** Do not add a dependency on a dead plugin. |
-| `tauri-plugin-store` (token storage) | `tauri-plugin-keyring` | Community plugin; Windows reliability uncertain; adds dependency on unvetted crate for v1.6 scope. |
-| Existing `tauri-plugin-oauth` (already installed) | Custom deep-link handler | `tauri-plugin-oauth` is already in the project. Custom schemes for OAuth redirects have unclear status with Spotify's new 2025 rules. |
-| `http://127.0.0.1:<PORT>` redirect URI | `http://localhost:<PORT>` | `localhost` as hostname is explicitly blocked by Spotify since November 2025. Only IPv4/IPv6 loopback literals work. |
-| Pure iframe embed (Bandcamp) | JavaScript API control | Bandcamp provides no external JS API for their embed player. Iframe is the only integration surface. |
-| `youtube-nocookie.com` (already used) | `youtube.com` | Privacy-friendly; already implemented in `youtube.ts`. No reason to change. |
+| TF-IDF weighted Jaccard (SQL) | Cosine similarity on embedding vectors (sqlite-vec) | Embeddings require AI model to be running. Tag similarity works for ALL users, even without AI installed. Pipeline precomputation means zero runtime cost. |
+| TF-IDF weighted Jaccard (SQL) | Raw Jaccard similarity | Raw Jaccard is dominated by common tags. Two artists sharing "rock" would score similarly to two sharing "witch house" -- useless for niche-first discovery. |
+| TF-IDF weighted Jaccard (SQL) | MinHash approximation | MinHash is for when pairwise comparison is infeasible (billions of items). With filtering (>= 3 tags, shared-tag join), the artist comparison space is ~millions, not trillions. Exact computation is tractable in the pipeline. |
+| `leaflet.markercluster` | `supercluster` (Mapbox) | Supercluster is for Mapbox GL JS, not Leaflet. Would require replacing the entire mapping stack. Leaflet.markercluster is the native solution. |
+| `leaflet.markercluster` | Custom clustering logic | Reinventing marker clustering is weeks of work for an inferior result. The plugin handles edge cases (spiderfying, animation, chunk loading) that are hard to get right. |
+| Standard SvelteKit routing | Custom history stack with shallow routing | SvelteKit's built-in routing already handles history entries correctly. A custom stack adds complexity for no benefit. `goto()` + browser back/forward is the right pattern. |
+| Standard SvelteKit routing | Single-page with component swapping | Loses URL sharing, browser history, and SvelteKit's load functions. Would fight the framework instead of using it. |
+| Wikidata SPARQL direct (P625 coordinates) | Nominatim geocoding from artist "area" name | Wikidata gives coordinates directly on the city entity. Nominatim would require a separate geocoding step at 1 req/sec on ~300K lookups = 83+ hours. Wikidata batching does it in ~2-3 hours. |
+| Wikidata SPARQL batched | Wikidata full dump download | The full Wikidata dump is 100GB+. We only need ~300K entries. SPARQL batching is dramatically more efficient for this use case. |
+| taste.db Rust cache | Frontend Cache API / Service Worker | This is a Tauri desktop app, not a web app. Service Workers work in WebView2 but add complexity. Rust-side SQLite cache is simpler, proven (mb_album_cache pattern), and persists correctly. |
+| taste.db Rust cache | `idb` (IndexedDB) | idb is already installed but only used for Nostr keypair storage. All other caching goes through taste.db. Adding a second caching layer in IndexedDB creates inconsistency. Stay with the established pattern. |
+| `sessionStorage` for AI chat | `localStorage` for AI chat | Chat context is ephemeral to the exploration session. Persisting it forever wastes space and creates stale context. The history trail (Continue) handles cross-session persistence for navigation. |
+| `paneforge` (existing) | Custom CSS split panes | PaneForge is already installed, integrated in PanelLayout, and working. The right pane already supports the context snippet. No reason to replace it. |
 
 ---
 
-## What NOT to Add
+## What NOT to Use
 
 | Avoid | Why | Use Instead |
 |-------|-----|-------------|
-| `tauri-plugin-stronghold` | Deprecated; will be removed in Tauri v3. Adding it now creates a forced migration later. | `tauri-plugin-store` |
-| `tauri-plugin-localhost` | Serves the app's SPA assets on localhost — not what we need. Adding it complicates Tauri IPC. Only relevant for macOS/Linux YouTube fix; this is Windows-only. | Not needed |
-| React Spotify wrappers (`react-spotify-web-playback`, etc.) | React-specific; incompatible with Svelte | Load SDK directly via CDN script injection |
-| `spotify-web-sdk` (npm) | This is a Spotify Web API wrapper, not the Web Playback SDK. Different product. | `@spotify/web-api-ts-sdk` if Web API needed in future |
-| SoundCloud oEmbed in the frontend | `soundcloud.ts` already constructs oEmbed URLs; oEmbed fetches must be server-side (CORS restriction). The existing server-side load function handles this. | Existing `soundcloudOembedUrl()` pattern |
-
----
-
-## Stack Patterns by Integration
-
-**Spotify Web Playback SDK initialization (Svelte 5 component):**
-- Load script on component mount via `$effect` or `onMount`
-- Register `window.onSpotifyWebPlaybackSDKReady` before appending script
-- Access token comes from tauri-plugin-store (refreshed before expiry)
-- Device ID from `ready` event → store in player state for Spotify Web API playback control
-- On `account_error` event → fall back to Spotify embed iframe
-
-**Spotify PKCE OAuth flow:**
-- Generate `code_verifier` (43-128 char random string) + `code_challenge` (SHA-256 of verifier, base64url-encoded) in TypeScript using `crypto.subtle`
-- `start()` from `@fabianlars/tauri-plugin-oauth` → get dynamic port
-- Build auth URL with `redirect_uri=http%3A%2F%2F127.0.0.1%3A<PORT>`
-- Open URL with `open()` from `@tauri-apps/plugin-shell`
-- `onUrl()` callback catches the redirect, extract `code` from URL query params
-- Exchange code + verifier for tokens via `fetch` to Spotify token endpoint
-- Store `access_token` + `refresh_token` + `expires_at` in plugin-store
-
-**SoundCloud Widget API (Svelte 5 component):**
-- Render iframe with src from existing oEmbed HTML response
-- Inject `https://w.soundcloud.com/player/api.js` via script tag
-- On script load: `const widget = SC.Widget(iframeRef)`
-- Bind events: `widget.bind(SC.Widget.Events.PLAY, handler)`
-- Expose `play()`, `pause()` through the player state module
-
-**YouTube IFrame (Windows, already works):**
-- Existing `youtubeEmbedUrl()` produces `youtube-nocookie.com/embed/<id>` URLs
-- Drop into `<iframe>` — works without modification on Windows
-- For programmatic control (optional): inject `iframe_api` script, use `YT.Player` constructor
-- For channel URLs: `isYoutubeChannel()` → `open()` in system browser
-
-**Bandcamp (iframe only):**
-- Extend `bandcamp.ts` to extract album/track IDs from Bandcamp URLs
-- Produce `https://bandcamp.com/EmbeddedPlayer/album=<ID>/...` URLs
-- Render as iframe — no JS integration possible
-- Playback state cannot be tracked (no postMessage API)
-
-**Service resolution per-artist:**
-- Existing `categorize.ts` already groups links by platform (streaming, social, etc.)
-- Service resolution reads available platform links for each artist
-- Priority order stored in plugin-store as a JSON array: `["spotify", "youtube", "soundcloud", "bandcamp"]`
-- Drag-to-reorder in Settings → write updated order to store
+| `leaflet-supercluster` / Mapbox GL JS | Wrong mapping library. BlackTape uses Leaflet, not Mapbox. | `leaflet.markercluster` (native Leaflet plugin) |
+| Any new JS similarity library (e.g. `ml-distance`) | Adds runtime dependency for something that should be precomputed in the pipeline. | Pure SQL computation at pipeline time |
+| `svelte-navigator` or `svelte-routing` | SvelteKit has its own router. Adding a second router creates conflicts. | SvelteKit `goto()` + standard routes |
+| Custom infinite scroll library | The Rabbit Hole pages are discrete, not infinite scroll. Each click is a new page load. | Standard SvelteKit page navigation |
+| D3 for the World Map | D3 is being retired from active use (the graph views are going away). Leaflet handles maps. | Leaflet + markercluster |
+| `react-leaflet-markercluster` | React wrapper. This is Svelte. | `leaflet.markercluster` (vanilla JS, works with any framework) |
+| External geocoding APIs (Google Maps, Mapbox) | Costs money. Wikidata is free and already proven in this pipeline. | Wikidata SPARQL |
+| A full graph database (Neo4j, etc.) for similar artists | Massive overkill. The similar_artists table in SQLite handles this perfectly. | SQLite table with precomputed scores |
 
 ---
 
@@ -333,43 +374,46 @@ npm install -D @types/spotify-web-playback-sdk
 
 | Package | Compatible With | Notes |
 |---------|-----------------|-------|
-| `@types/spotify-web-playback-sdk@0.1.19` | TypeScript 5.x | Last updated Nov 2023; types are stable; SDK API has not changed significantly |
-| `@tauri-apps/plugin-store@2.x` | Tauri 2.0, `@tauri-apps/api@^2.10.1` | Tauri official plugin; version-locked to Tauri 2.x |
-| `tauri-plugin-store@2` (Rust) | Tauri 2.0 | Matches npm companion version |
-| `@fabianlars/tauri-plugin-oauth@2.0.0` (already installed) | Tauri 2.0 | Already verified working in project |
-| Spotify Web Playback SDK (CDN) | WebView2 (Chromium-based) | WebView2 supports EME (required for DRM audio); confirmed working in Chromium-based environments |
-| SoundCloud Widget API (CDN) | Any modern WebView | No special requirements |
-| YouTube IFrame API (CDN) | `http://tauri.localhost` on Windows | Works on Windows; Error 153 only affects macOS/Linux (not applicable here) |
+| `leaflet.markercluster@1.5.3` | `leaflet@1.9.4` | Tested and stable. Both are mature 1.x releases. |
+| `@types/leaflet.markercluster@1.5.6` | `@types/leaflet@1.9.21` | Types extend L.MarkerClusterGroup from leaflet types. |
+| `paneforge@1.0.2` | `svelte@5.49.2` | PaneForge 1.0 was built for Svelte 5. Already working. |
+| `better-sqlite3` (pipeline) | Node.js 18+ | Already in use. Pipeline additions are pure SQL. |
 
 ---
 
-## Open Questions (Validate in Implementation Spike)
+## Stack Summary by Feature
 
-1. **Spotify Web Playback SDK and `http://tauri.localhost` origin:** Does Spotify require this origin to be registered in the developer dashboard? Test by initializing the SDK — if it fails with an `initialization_error`, add the origin to the app's allowed domains in the Spotify developer dashboard. The origin to register would be `http://tauri.localhost`.
+| Feature | New Dependencies | New DB Tables | Pipeline Work | Frontend Work |
+|---------|-----------------|---------------|---------------|---------------|
+| Similar Artists | None | `similar_artists` | TF-IDF weighted Jaccard computation | Display on artist pages |
+| World Map | `leaflet.markercluster` + types | None (uses `origin_lat/lng` on artists) | Wikidata geocoding | New WorldMap.svelte component |
+| Artist Geocoding | None | `origin_city/lat/lng` columns on `artists` | Wikidata SPARQL batch queries | None (consumed by World Map) |
+| Rabbit Hole Nav | None | None | None | New routes + ContextSidebar component |
+| Context Sidebar | None | None | None | New ContextSidebar.svelte using existing paneforge |
+| AI Companion | None | None | None | New AiCompanionChat.svelte using existing AI engine |
+| Track/Release Cache | None | `mb_release_cache`, `mb_link_cache` in taste.db | None | Rust cache commands + frontend integration |
+| Decade Filtering | None | None | None | New DecadeFilter.svelte component |
 
-2. **Spotify developer dashboard app status:** BlackTape ships with a bundled `client_id`. The app will need Spotify's "extended quota mode" approval if it grows beyond 25 active users in development mode. The April 2025 changes made extended access harder to get — verify that the use case (discovery tool embedding the official SDK) qualifies. Source: [Spotify extended access update](https://developer.spotify.com/blog/2025-04-15-updating-the-criteria-for-web-api-extended-access).
-
-3. **Spotify token refresh timing:** Access tokens expire in 1 hour. Implement proactive refresh (check `expires_at` before SDK `getOAuthToken` callback fires). The SDK's `getOAuthToken` callback is called each time the SDK needs a fresh token — implement the refresh there.
+**Total new npm packages: 2** (`leaflet.markercluster` + `@types/leaflet.markercluster`)
+**Total new DB tables: 3** (`similar_artists` in mercury.db, `mb_release_cache` + `mb_link_cache` in taste.db)
+**Total new DB columns: 3** (`origin_city`, `origin_lat`, `origin_lng` on `artists`)
 
 ---
 
 ## Sources
 
-- [Spotify Web Playback SDK docs](https://developer.spotify.com/documentation/web-playback-sdk) — Script URL, initialization pattern, Premium requirement. MEDIUM confidence (docs current but Tauri-specific behavior unconfirmed).
-- [Spotify getting started tutorial](https://developer.spotify.com/documentation/web-playback-sdk/tutorials/getting-started) — `https://sdk.scdn.co/spotify-player.js` script URL, initialization callback pattern. HIGH confidence.
-- [Spotify redirect URI docs](https://developer.spotify.com/documentation/web-api/concepts/redirect_uri) — Loopback IP (`127.0.0.1`) allowed; `localhost` hostname blocked. HIGH confidence (official docs).
-- [Spotify security requirements blog (Feb 2025)](https://developer.spotify.com/blog/2025-02-12-increasing-the-security-requirements-for-integrating-with-spotify) — Timeline of changes; loopback exemption for desktop apps. HIGH confidence (official Spotify announcement).
-- [Spotify extended access update (Apr 2025)](https://developer.spotify.com/blog/2025-04-15-updating-the-criteria-for-web-api-extended-access) — Extended quota mode tightened; Web Playback SDK not directly affected. HIGH confidence.
-- [GitHub: spotifyr issue #224 — localhost blocked](https://github.com/charlie86/spotifyr/issues/224) — Community confirmation that `localhost` fails, `127.0.0.1` works after April 2025. MEDIUM confidence (community, single issue).
-- [Tauri GitHub issue #14422 — YouTube IFrame Error 153](https://github.com/tauri-apps/tauri/issues/14422) — Windows uses `http://tauri.localhost` (HTTP origin); Error 153 only affects macOS/Linux. HIGH confidence (Tauri team confirmed, closed December 2025).
-- [FabianLars/tauri-plugin-oauth GitHub](https://github.com/FabianLars/tauri-plugin-oauth) — Plugin API (`start()`, `onUrl()`, `cancel()`); v2.0.0 for Tauri v2; npm package `@fabianlars/tauri-plugin-oauth`. HIGH confidence (official repo).
-- [Tauri community discussion #7846 — secure storage](https://github.com/orgs/tauri-apps/discussions/7846) — Stronghold deprecated, to be removed in Tauri v3; keyring plugin recommended as alternative. HIGH confidence (Tauri maintainer stated deprecation).
-- [SoundCloud Widget API docs](https://developers.soundcloud.com/docs/api/html5-widget) — CDN URL `https://w.soundcloud.com/player/api.js`; no npm package; key methods. HIGH confidence (official SoundCloud docs).
-- [Bandcamp EmbeddedPlayer URL format](https://get.bandcamp.help/hc/en-us/articles/23020711574423-How-do-I-create-a-Bandcamp-embedded-player) — iframe URL structure; no external JS API available. HIGH confidence (official Bandcamp help).
-- [Tauri plugin stronghold docs](https://v2.tauri.app/plugin/stronghold/) — Still documented for v2 but deprecated in v3 per maintainer comment. MEDIUM confidence (docs exist but deprecation from discussion).
-- Existing codebase inspection — `Cargo.toml`, `package.json`, `tauri.conf.json`, `src/lib/embeds/`, `src/lib/player/`. HIGH confidence (direct code read).
+- [SvelteKit Shallow Routing docs](https://svelte.dev/docs/kit/shallow-routing) -- confirmed pushState/replaceState API for modal patterns (not needed for Rabbit Hole; standard goto() is correct)
+- [SvelteKit $app/navigation docs](https://svelte.dev/docs/kit/$app-navigation) -- confirmed goto() with replaceState, keepFocus, noScroll options
+- [Wikidata Property P434](https://www.wikidata.org/wiki/Property:P434) -- MusicBrainz artist ID property, confirmed for SPARQL joins
+- [Wikidata MusicBrainz example queries](https://wiki.musicbrainz.org/User:Reosarevok/Wikidata_Example_Queries) -- real SPARQL patterns combining P434 with geographic properties
+- [Wikidata SPARQL query limits](https://www.wikidata.org/wiki/Wikidata:SPARQL_query_service/query_limits) -- 60-second hard timeout, batching required
+- [Leaflet.markercluster GitHub](https://github.com/Leaflet/Leaflet.markercluster) -- official Leaflet plugin, v1.5.3
+- [@types/leaflet.markercluster npm](https://www.npmjs.com/package/@types/leaflet.markercluster) -- v1.5.6, DefinitelyTyped maintained
+- [PaneForge GitHub](https://github.com/svecosystem/paneforge) -- v1.0.0+ for Svelte 5
+- [Ben Frederickson: Distance Metrics for Fun and Profit](https://www.benfrederickson.com/distance-metrics/) -- TF-IDF weighting for tag-based similarity (MEDIUM confidence -- blog post, but math is standard IR)
+- [Jaccard Similarity with TF-IDF in music recommendation](https://arxiv.org/pdf/1704.03844) -- academic validation of TF-IDF weighted tag similarity for music (MEDIUM confidence -- 2017 paper, approach is well-established)
+- Existing codebase: `pipeline/import.js`, `pipeline/build-genre-data.mjs`, `src/lib/components/SceneMap.svelte`, `src/lib/components/PanelLayout.svelte`, `src-tauri/src/library/db.rs` -- verified existing patterns for caching, Wikidata SPARQL, Leaflet dynamic import, and panel layout
 
 ---
-
-*Stack research for: BlackTape (Mercury) v1.6 — The Playback Milestone (Spotify, YouTube, SoundCloud, Bandcamp streaming integration)*
-*Researched: 2026-02-26*
+*Stack research for: v1.7 The Rabbit Hole -- Discovery Redesign*
+*Researched: 2026-03-03*
