@@ -172,6 +172,8 @@
 		border-radius: var(--r);
 		width: 420px;
 		max-width: calc(100vw - 2rem);
+		max-height: calc(100vh - 4rem);
+		overflow-y: auto;
 		padding: 1.5rem;
 		display: flex;
 		flex-direction: column;
