@@ -35,6 +35,7 @@
 	let tauriMode = $state(false);
 	let canGoBack = $derived($page.url.pathname !== '/');
 	let isEmbed = $derived($page.url.pathname.startsWith('/embed'));
+	let isRabbitHole = $derived($page.url.pathname.startsWith('/rabbit-hole'));
 
 	/** All templates for ControlBar — built-ins + user templates */
 	let allTemplateConfigs = $derived([
@@ -151,6 +152,20 @@
 
 {#if isEmbed}
 	{@render children()}
+{:else if isRabbitHole}
+
+{#if tauriMode}
+	<Titlebar />
+	<UpdateBanner />
+	<CriticalUpdateModal />
+{/if}
+
+{@render children()}
+
+{#if isTauri()}
+	<Player />
+{/if}
+
 {:else}
 
 {#if tauriMode}
@@ -180,10 +195,7 @@
 	{#if tauriMode}
 		<nav class="nav-links">
 			<a href="/discover" class="nav-link">Discover</a>
-			<a href="/style-map" class="nav-link">Style Map</a>
-			<a href="/kb" class="nav-link" class:active={$page.url.pathname.startsWith('/kb')}>Knowledge Base</a>
-			<a href="/time-machine" class="nav-link" class:active={$page.url.pathname.startsWith('/time-machine')}>Time Machine</a>
-			<a href="/crate" class="nav-link">Dig</a>
+			<a href="/rabbit-hole" class="nav-link" class:active={$page.url.pathname.startsWith('/rabbit-hole')}>Rabbit Hole</a>
 			<a href="/library" class="nav-link">Library</a>
 			<a href="/explore" class="nav-link">Explore</a>
 			<a href="/profile" class="nav-link" class:active={$page.url.pathname === '/profile'}>Profile</a>
