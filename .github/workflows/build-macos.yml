@@ -83,10 +83,17 @@ jobs:
           path: src-tauri/target/release/bundle/dmg/*.dmg
           retention-days: 14
 
+      - name: Upload update bundle artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: BlackTape-macOS-updater
+          path: |
+            src-tauri/target/release/bundle/macos/*.app.tar.gz
+            src-tauri/target/release/bundle/macos/*.app.tar.gz.sig
+          retention-days: 14
+
       - name: Update latest.json with macOS entry
-        if: ${{ env.TAURI_SIGNING_PRIVATE_KEY != '' }}
         env:
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Find the update bundle and its signature
