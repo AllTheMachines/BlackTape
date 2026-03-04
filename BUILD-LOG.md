@@ -4,6 +4,23 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-03-04 — Phase 35 Plan 03: Rabbit Hole Landing Page
+
+Phase 35 plan 03 complete. Built the Rabbit Hole entry point — the first thing users see when they navigate to `/rabbit-hole`.
+
+**Landing page (`src/routes/rabbit-hole/+page.svelte`):**
+Centered layout: tagline, search input, Random button. The search queries both `searchArtistsAutocomplete` and `searchTagsAutocomplete` in parallel with a 200ms debounce. Results surface in two grouped sections — Artists first, then Genres & Tags. Clicking an artist pushes to trail and navigates to `/rabbit-hole/artist/[slug]`. Clicking a tag pushes to trail and navigates to `/rabbit-hole/tag/[slug]`. Both navigations use `keepFocus: true, noScroll: true` to stay in-frame.
+
+**Random button:**
+Single button calls `getRandomArtist()`, gets a tagged artist, pushes to trail, navigates. Loading state ("Finding...") while fetching. Silent failure if DB returns null.
+
+**Load function (`src/routes/rabbit-hole/+page.ts`):**
+Minimal `PageLoad` returning `{}`. No server data needed — all search happens client-side through the DB provider on input events.
+
+All 196 code tests pass. `npm run check` 0 errors.
+
+---
+
 ## Entry 2026-03-04 — Phase 35 Plan 02: Rabbit Hole Route Wiring
 
 Phase 35 plan 02 complete. Wired the Rabbit Hole route tree into the app — the architectural gate that makes the immersive experience work.
@@ -12835,3 +12852,12 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 
 > **Commit b97f8504** (2026-03-04 15:09) — feat(35-02): LeftSidebar cleanup + Rabbit Hole sub-layout
 > Files changed: 3
+
+> **Commit ad21fa11** (2026-03-04 15:11) — docs(35-02): complete Rabbit Hole route wiring plan — isRabbitHole bypass + sub-layout
+> Files changed: 4
+
+> **Commit 7e0e8c4f** (2026-03-04 15:13) — feat(35-03): add Rabbit Hole landing page load function
+> Files changed: 1
+
+> **Commit cae4c6e2** (2026-03-04 15:13) — feat(35-03): build Rabbit Hole landing page with search + Random
+> Files changed: 1
