@@ -4,6 +4,28 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-03-04 — Phase 36 Plan 03: Leaflet Map Implementation
+
+Phase 36 plan 03 complete. Replaced the stub `+page.svelte` with the full Leaflet map — CartoDB Dark Matter tiles, markerClusterGroup with amber divIcon bubbles, and precision-tier opacity for pins.
+
+**Changes to `src/routes/world-map/+page.svelte`:**
+- CSS injection in `onMount` before `L.map()`: Leaflet base CSS + both MarkerCluster CSS files (structural + visual), guarded by `data-*` attribute checks to prevent duplicate injection on revisit
+- Map initialized with CartoDB Dark Matter tiles (`cartocdn.com/dark_all`) — dark charcoal aesthetic, no API key required
+- `markerClusterGroup` with amber `divIcon` bubbles (`.wm-cluster` class, `#c4a55a` background, black text, 36×36px)
+- Precision-tier opacity constants: `city: 1.0`, `region: 0.6`, `country: 0.3` — faded country-centroid pins signal approximate location
+- `circleMarker` for each `GeocodedArtist` — radius 6, amber fill/stroke, opacity from precision tier
+- `_artistData` stored on each marker for Plan 05 (artist panel click handler)
+- `map.invalidateSize()` after marker population — resolves deferred CSS layout calculation (Pitfall 1)
+- `onDestroy(() => { map?.remove(); map = null; })` — prevents "Map container is already initialized" error on revisit
+
+Key decision: Import order is critical — `leaflet` must be imported before `leaflet.markercluster`. Markercluster patches `L` as a side effect; importing in the wrong order breaks `L.markerClusterGroup`.
+
+Key decision: Both `MarkerCluster.css` and `MarkerCluster.Default.css` injected at runtime. Structural CSS handles cluster grouping positions; Default CSS handles the visual styling. Missing either one breaks cluster rendering.
+
+`npm run check` 0 errors, 20 warnings (all pre-existing, none from new file).
+
+---
+
 ## Entry 2026-03-04 — Phase 36 Plan 01: World Map Route Scaffold
 
 Phase 36 plan 01 complete. Installed `leaflet.markercluster` and created the three `src/routes/world-map/` scaffold files that all subsequent plans build on.
@@ -13012,4 +13034,7 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 > Files changed: 3
 
 > **Commit 85519a05** (2026-03-04 16:26) — docs(36-02): complete World Map layout bypass plan
+> Files changed: 4
+
+> **Commit d872f73c** (2026-03-04 16:26) — docs(36-01): complete world-map route scaffold plan
 > Files changed: 4
