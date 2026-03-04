@@ -12588,3 +12588,18 @@ Zero `mercury.exe` references remain in tools, src, or app-recordings. Historica
 
 > **Commit c8719730** (2026-03-04 12:46) — wip: auto-save
 > Files changed: 1
+
+> **Commit 64eef4b4** (2026-03-04 12:46) — auto-save: 1 files @ 12:46
+> Files changed: 1
+
+> **Commit c9b5f5ae** (2026-03-04 12:57) — docs(34): research phase pipeline foundation
+> Files changed: 1
+
+> **Commit 372a7372** (2026-03-04 12:58) — docs(34): add research and validation strategy
+> Files changed: 1
+
+> **Commit 1f5e7904** (2026-03-04 13:06) — docs(34): create phase plan — pipeline foundation (similar artists, geocoding, track cache, query functions)
+> Files changed: 5
+
+> **Commit 2679f78a** (2026-03-04 13:13) — fix(34): revise plans based on checker feedback
+> Files changed: 3
