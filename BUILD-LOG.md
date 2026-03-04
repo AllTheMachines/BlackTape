@@ -13638,3 +13638,6 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 
 > **Commit e210e0ef** (2026-03-04 23:28) — fix: correct llama.cpp macOS asset format (tar.gz, not zip)
 > Files changed: 1
+
+> **Commit ea4cd4b2** (2026-03-04 23:37) — docs: build log entry for macOS DMG pipeline success
+> Files changed: 1
