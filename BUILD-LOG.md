@@ -4,6 +4,22 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-03-04 — Phase 35 Wave 1: Rabbit Hole Data Layer
+
+Phase 35 plan 01 complete. Built the pure data layer that all Rabbit Hole UI plans depend on — no UI coupling, just query functions and a trail store.
+
+**Five new query functions in queries.ts:**
+- `searchTagsAutocomplete` — tag prefix search against `tag_stats`, ordered by `artist_count`. Used by the unified landing search when a user types a tag name.
+- `getRandomArtist` — rowid-based random selection (same O(1) pattern as `getCrateDigArtists`). Requires at least one tag — no untagged artists land in Rabbit Hole.
+- `getRandomArtistByTag` — count-then-offset random within a tag. Used as the "Continue" fallback when no precomputed similar artists exist for the current artist.
+- `getRelatedTags` — reads `tag_cooccurrence` table with CASE WHEN to always return the "other" tag regardless of column order. Used by genre/tag pages.
+- `getArtistsByTagRandom` — offset-based window into a tag's artist list. Avoids `ORDER BY RANDOM()` on large result sets by picking a random starting offset within the artist count.
+
+**New trail store (`src/lib/rabbit-hole/trail.svelte.ts`):**
+Svelte 5 `$state` module tracking visited artists and tag pages. Mirrors the `queue.svelte.ts` localStorage persistence pattern exactly. Cap of 20 items. `jumpToTrailIndex` moves the active pointer without truncating forward history — browser-history energy, not stack. Wave 2 plans can import directly.
+
+---
+
 ## Entry 2026-03-03 — Discovery Redesign Direction Decided
 
 Long design conversation about issue #88. The d3-force graph views (Style Map, Knowledge Base, Time Machine, Crate Dig) are getting killed. They look cool but aren't practical. Replaced by:
@@ -12778,3 +12794,12 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 
 > **Commit c08236e0** (2026-03-04 14:57) — docs(35): create rabbit hole phase plan — 5 plans, 2 waves
 > Files changed: 6
+
+> **Commit 30811269** (2026-03-04 14:59) — wip: auto-save
+> Files changed: 1
+
+> **Commit 89fd8962** (2026-03-04 15:03) — feat(35-01): add five Rabbit Hole query functions to queries.ts
+> Files changed: 1
+
+> **Commit d8e30954** (2026-03-04 15:04) — feat(35-01): create rabbit-hole trail store (trail.svelte.ts)
+> Files changed: 1

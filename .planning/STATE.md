@@ -3,31 +3,16 @@ gsd_state_version: 1.0
 milestone: v1.7
 milestone_name: The Rabbit Hole
 status: in_progress
-stopped_at: Phase 35 context gathered
-last_updated: "2026-03-04T13:40:04.488Z"
-last_activity: 2026-03-04 — 34-04 query functions (getSimilarArtists + getGeocodedArtists) complete
+stopped_at: Completed 35-01-PLAN.md (Rabbit Hole data layer — 5 query functions + trail store)
+last_updated: "2026-03-04T14:05:11Z"
+last_activity: 2026-03-04 — 35-01 five query functions + trail.svelte.ts complete
 progress:
-  total_phases: 3
+  total_phases: 1
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
----
-
----
-gsd_state_version: 1.0
-milestone: v1.7
-milestone_name: The Rabbit Hole
-status: in_progress
-stopped_at: Completed 34-04-PLAN.md (query functions — getSimilarArtists + getGeocodedArtists)
-last_updated: "2026-03-04T12:42:00Z"
-last_activity: 2026-03-04 — 34-04 query functions (getSimilarArtists + getGeocodedArtists) complete
-progress:
-  total_phases: 15
-  completed_phases: 15
-  total_plans: 49
-  completed_plans: 49
-  percent: 100
-  bar: "[██████████] 100%"
+  total_plans: 5
+  completed_plans: 1
+  percent: 20
+  bar: "[██--------] 20%"
 ---
 
 # Project State
@@ -41,10 +26,10 @@ See: .planning/PROJECT.md (updated 2026-03-03 after v1.7 start)
 
 ## Current Position
 
-Phase: 34-pipeline-foundation (COMPLETE)
-Plan: 34-04 complete → Phase 34 done
-Status: Phase 34 complete — all 4 plans executed
-Last activity: 2026-03-04 — 34-04 query functions (getSimilarArtists + getGeocodedArtists) complete
+Phase: 35-rabbit-hole (in progress)
+Plan: 35-01 complete → 35-02 next
+Status: 1/5 plans complete (Wave 1 data layer done)
+Last activity: 2026-03-04 — 35-01 five query functions + trail.svelte.ts complete
 
 ## Accumulated Context
 
@@ -83,12 +68,20 @@ Last activity: 2026-03-04 — 34-04 query functions (getSimilarArtists + getGeoc
 - Key decision: both functions degrade gracefully (try/catch → []) for pre-pipeline state — safe to call before full 2.6M pipeline run completes
 - Key decision: `GeocodedArtist.city_precision` union type `'city' | 'region' | 'country'` — 'none' excluded by WHERE clause, not in type
 
+### Phase 35 Rabbit Hole (v1.7 UI) — in progress
+
+- 35-01 DONE: Five query functions (searchTagsAutocomplete, getRandomArtist, getRandomArtistByTag, getRelatedTags, getArtistsByTagRandom) + trail.svelte.ts store
+- Key decision: offset-based random over ORDER BY RANDOM() — COUNT(*) first, then LIMIT 1 OFFSET random_int avoids O(n log n) sort on 26M+ tag rows
+- Key decision: CASE WHEN in getRelatedTags always returns the "other" tag from symmetric co-occurrence pairs
+- Key decision: jumpToTrailIndex moves pointer only, does NOT truncate subsequent items — branching history, not stack
+- Key decision: $state at module level (Svelte 5 runes compiler macro, no import needed)
+
 ### Blockers/Concerns
 
 None.
 
 ## Session Continuity
 
-Last session: 2026-03-04T13:40:04.486Z
-Stopped at: Phase 35 context gathered
-Resume file: .planning/phases/35-rabbit-hole/35-CONTEXT.md
+Last session: 2026-03-04T14:05:11Z
+Stopped at: Completed 35-01-PLAN.md (Rabbit Hole data layer — 5 query functions + trail store)
+Resume file: .planning/phases/35-rabbit-hole/35-02-PLAN.md
