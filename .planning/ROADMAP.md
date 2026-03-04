@@ -94,7 +94,7 @@ See `.planning/milestones/v1.6-ROADMAP.md`
 
 **Goal:** New `/rabbit-hole` route, artist + genre exploration pages, similar artists navigation, releases/tracks, history trail
 
-**Plans:** 4/5 plans executed
+**Plans:** 5/5 plans complete
 Plans:
 - [x] 35-01-PLAN.md — DB queries + trail store (5 new query functions + localStorage-persisted trail)
 - [x] 35-02-PLAN.md — Layout shell (root layout isRabbitHole bypass, nav restructure, sub-layout with exit + trail)
@@ -132,4 +132,4 @@ Plans:
 | 32. Embedded Players | v1.6 | 3/3 | Complete | 2026-02-27 |
 | 33. Artist Claim Form | v1.6 | 2/2 | Complete | 2026-02-27 |
 | 34. Pipeline Foundation | v1.7 | 4/4 | Complete | 2026-03-04 |
-| 35. Rabbit Hole | 4/5 | In Progress|  | — |
+| 35. Rabbit Hole | 5/5 | Complete   | 2026-03-04 | — |

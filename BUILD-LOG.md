@@ -4,6 +4,29 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-03-04 — Phase 35 Plan 05: Genre/Tag Exploration Page
+
+Phase 35 plan 05 complete. Built the genre/tag exploration page — the other main destination in the Rabbit Hole (alongside artist cards). Any tag chip anywhere in the Rabbit Hole navigates here.
+
+**Load function (`src/routes/rabbit-hole/tag/[slug]/+page.ts`):**
+Three parallel queries: `getArtistsByTagRandom(tag, 20)` for a random artist selection, `getRelatedTags(tag, 12)` for co-occurring tags, and `getGenreBySlug(params.slug)` for optional KB enrichment (inception year, origin city). The genre lookup is wrapped in `.catch(() => null)` — most tags won't have KB entries and that's fine.
+
+Tag slug is URL-encoded in navigation (`encodeURIComponent(tag)`) and decoded on arrival (`decodeURIComponent(params.slug)`) before DB queries. This handles tags with spaces and special characters correctly (e.g., "hip hop", "post-punk").
+
+**Page (`src/routes/rabbit-hole/tag/[slug]/+page.svelte`):**
+- Tag name as large heading + optional KB metadata (year/city) in muted text
+- 20 artist chips in a flowing wrap layout, with country code badge when available
+- "Related Genres & Tags" section below — co-occurrence chips that navigate to the next genre page
+- Reshuffle button re-navigates with `invalidateAll: true` — forces SvelteKit to re-run the load function even though the URL hasn't changed, producing a fresh random 20
+
+Both artist chip clicks and related tag chip clicks call `pushTrailItem()` before navigation, keeping the trail accurate as users explore.
+
+Key decision: `invalidateAll: true` in `goto()` is the correct SvelteKit pattern for "same URL, fresh data." Without it, SvelteKit would serve cached load results and reshuffling would be a no-op.
+
+`npm run check` 0 errors. 196 code tests pass.
+
+---
+
 ## Entry 2026-03-04 — Phase 35 Plan 04: Artist Exploration Card
 
 Phase 35 plan 04 complete. Built the artist card — the heart of the Rabbit Hole experience. This is where every click-through lands.
@@ -12892,4 +12915,13 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 > Files changed: 2
 
 > **Commit bb07c46a** (2026-03-04 15:19) — feat(35-04): artist exploration card — full interactive Rabbit Hole card
+> Files changed: 1
+
+> **Commit 855afe17** (2026-03-04 15:22) — docs(35-04): complete artist exploration card plan — Rabbit Hole main view
+> Files changed: 4
+
+> **Commit 63f0ccb3** (2026-03-04 15:24) — feat(35-05): genre/tag page load function
+> Files changed: 1
+
+> **Commit 74aae3ba** (2026-03-04 15:25) — feat(35-05): genre/tag exploration page (chips layout)
 > Files changed: 1

@@ -2,17 +2,17 @@
 gsd_state_version: 1.0
 milestone: v1.7
 milestone_name: The Rabbit Hole
-status: in_progress
-stopped_at: Completed 35-04-PLAN.md (Artist exploration card — Rabbit Hole main view)
-last_updated: "2026-03-04T14:21:00Z"
-last_activity: 2026-03-04 — 35-04 Artist exploration card (Rabbit Hole main view)
+status: complete
+stopped_at: Completed 35-05-PLAN.md (Genre/tag exploration page — Rabbit Hole)
+last_updated: "2026-03-04T14:27:00Z"
+last_activity: 2026-03-04 — 35-05 Genre/tag exploration page (Rabbit Hole complete)
 progress:
   total_phases: 1
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 5
-  completed_plans: 4
-  percent: 80
-  bar: "[████████--] 80%"
+  completed_plans: 5
+  percent: 100
+  bar: "[██████████] 100%"
 ---
 
 # Project State
@@ -26,10 +26,10 @@ See: .planning/PROJECT.md (updated 2026-03-03 after v1.7 start)
 
 ## Current Position
 
-Phase: 35-rabbit-hole (in progress)
-Plan: 35-04 complete → 35-05 next
-Status: 4/5 plans complete (data layer + route wiring + landing page + artist card done)
-Last activity: 2026-03-04 — 35-04 Artist exploration card (Rabbit Hole main view)
+Phase: 35-rabbit-hole (COMPLETE)
+Plan: 35-05 complete → Phase 35 done
+Status: 5/5 plans complete (data layer + route wiring + landing page + artist card + genre/tag page done)
+Last activity: 2026-03-04 — 35-05 Genre/tag exploration page (Rabbit Hole complete)
 
 ## Accumulated Context
 
@@ -68,7 +68,7 @@ Last activity: 2026-03-04 — 35-04 Artist exploration card (Rabbit Hole main vi
 - Key decision: both functions degrade gracefully (try/catch → []) for pre-pipeline state — safe to call before full 2.6M pipeline run completes
 - Key decision: `GeocodedArtist.city_precision` union type `'city' | 'region' | 'country'` — 'none' excluded by WHERE clause, not in type
 
-### Phase 35 Rabbit Hole (v1.7 UI) — in progress
+### Phase 35 Rabbit Hole (v1.7 UI) — COMPLETE
 
 - 35-01 DONE: Five query functions (searchTagsAutocomplete, getRandomArtist, getRandomArtistByTag, getRelatedTags, getArtistsByTagRandom) + trail.svelte.ts store
 - Key decision: offset-based random over ORDER BY RANDOM() — COUNT(*) first, then LIMIT 1 OFFSET random_int avoids O(n log n) sort on 26M+ tag rows
@@ -89,6 +89,10 @@ Last activity: 2026-03-04 — 35-04 Artist exploration card (Rabbit Hole main vi
 - Key decision: shell.open via @tauri-apps/plugin-shell for streaming links — opens in system browser/native app, not WebView2
 - Key decision: Continue fallback chain — similarArtists first; else getRandomArtistByTag on primary tag
 - Key decision: Tags not routed through TagChip.svelte — that component hardcodes /search links; Rabbit Hole uses /rabbit-hole/tag/ routes
+- 35-05 DONE: Genre/tag exploration page — random 20 artists + related tags + reshuffle
+- Key decision: invalidateAll: true in reshuffle goto() forces SvelteKit re-run on same URL — without it, cached load returns same artists
+- Key decision: getGenreBySlug wrapped in .catch(() => null) — most tags have no KB entry; failure is expected not exceptional
+- Key decision: decodeURIComponent at load, encodeURIComponent at navigation — tags with spaces/special chars round-trip correctly
 
 ### Blockers/Concerns
 
@@ -96,6 +100,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-04T14:21:00Z
-Stopped at: Completed 35-04-PLAN.md (Artist exploration card — Rabbit Hole main view)
-Resume file: .planning/phases/35-rabbit-hole/35-05-PLAN.md
+Last session: 2026-03-04T14:26:47.625Z
+Stopped at: Completed 35-05-PLAN.md (Genre/tag exploration page — Rabbit Hole)
+Resume file: None
