@@ -8,10 +8,10 @@ updated: 2026-03-04T20:00:00Z
 
 ## Current Test
 
-number: 5
-name: Random button
+number: 6
+name: Artist card content
 expected: |
-  The landing page has a Random button. Clicking it navigates to a random artist card page (/rabbit-hole/artist/[slug]). The artist is added to the trail.
+  The artist card shows: artist name, country/year info, tag chips, similar artist chips, collapsible release list, Play and Continue buttons.
 awaiting: user response
 
 ## Tests
@@ -38,7 +38,9 @@ result: pass
 
 ### 5. Random button
 expected: The landing page has a Random button. Clicking it navigates to a random artist card page (/rabbit-hole/artist/[slug]). The artist is added to the trail.
-result: [pending]
+result: issue
+reported: "no. it also only shows 'artist not found'"
+severity: major
 
 ### 6. Artist card content
 expected: The artist card shows: artist name, country/year info, tag chips, a row of similar artist chips (when available), and a collapsible release list (loads async after card renders — first 3 releases shown, expand toggle for more). Play and Continue buttons visible at bottom.
@@ -64,8 +66,8 @@ result: [pending]
 
 total: 10
 passed: 2
-issues: 2
-pending: 6
+issues: 3
+pending: 5
 skipped: 0
 
 ## Gaps
@@ -83,5 +85,13 @@ skipped: 0
   reason: "User reported: no. it shows 'no artist found'"
   severity: major
   test: 3
+  artifacts: []
+  missing: []
+
+- truth: "Random button navigates to a random artist card page"
+  status: failed
+  reason: "User reported: no. it also only shows 'artist not found'"
+  severity: major
+  test: 5
   artifacts: []
   missing: []
