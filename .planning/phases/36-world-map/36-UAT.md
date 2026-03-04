@@ -8,10 +8,10 @@ updated: 2026-03-04T20:35:00Z
 
 ## Current Test
 
-number: 5
-name: URL sync
+number: 6
+name: Artist detail panel
 expected: |
-  After filtering by a tag, the URL updates to include ?tag=... Reloading with ?tag= pre-filters the map.
+  Clicking any artist pin slides up a bottom panel showing the artist's card — name, tags, similar artists, and streaming links.
 awaiting: user response
 
 ## Tests
@@ -38,7 +38,8 @@ result: pass
 
 ### 5. URL sync
 expected: After filtering by a tag, the URL updates to include ?tag=... without adding a new browser history entry. Reloading the page with ?tag= in the URL shows the map pre-filtered.
-result: [pending]
+result: skipped
+reason: not observable in Tauri desktop — no visible address bar
 
 ### 6. Artist detail panel
 expected: Clicking any artist pin (or cluster → individual pin) slides up a bottom panel showing the artist's card — name, tags, similar artists, and streaming links.
@@ -53,8 +54,8 @@ result: [pending]
 total: 7
 passed: 1
 issues: 1
-pending: 3
-skipped: 2
+pending: 2
+skipped: 3
 
 ## Gaps
 
