@@ -230,6 +230,11 @@
 	<!-- Back button -->
 	<button class="wm-back" onclick={() => history.back()} title="Go back">&#8592; Back</button>
 
+	<!-- Backdrop — dismisses panel when clicking outside it -->
+	{#if selectedArtist}
+		<div class="wm-backdrop" role="button" tabindex="-1" aria-label="Close panel" onclick={() => selectedArtist = null} onkeydown={(e) => e.key === 'Escape' && (selectedArtist = null)}></div>
+	{/if}
+
 	<!-- Slide-up Artist Panel -->
 	<div class="wm-panel" class:open={!!selectedArtist}>
 		{#if selectedArtist}
@@ -402,8 +407,11 @@
 
 	.wm-filter-count {
 		font-size: 0.6875rem;
-		color: var(--t-4);
-		padding-left: 2px;
+		color: var(--t-2);
+		background: rgba(15, 15, 15, 0.75);
+		padding: 3px 8px;
+		border-radius: 4px;
+		align-self: flex-start;
 	}
 
 	.wm-suggestions {
@@ -441,6 +449,13 @@
 		font-size: 0.6875rem;
 		color: var(--t-4);
 		flex-shrink: 0;
+	}
+
+	.wm-backdrop {
+		position: fixed;
+		inset: 0;
+		z-index: 999;
+		cursor: pointer;
 	}
 
 	.wm-panel {
