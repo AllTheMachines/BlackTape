@@ -918,6 +918,16 @@
 		</div>
 	{:else if activeTab === 'about'}
 		<div data-testid="tab-content-about">
+			{#if effectiveBio}
+				<div class="bio">
+					<p>{effectiveDisplayBio}</p>
+					{#if effectiveBioNeedsCollapse}
+						<button class="bio-toggle" onclick={() => bioExpanded = !bioExpanded}>
+							{bioExpanded ? 'Show less' : 'Read more'}
+						</button>
+					{/if}
+				</div>
+			{/if}
 			<ArtistRelationships relationships={data.relationships} />
 		</div>
 	{:else}

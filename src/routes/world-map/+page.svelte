@@ -379,6 +379,8 @@
 		color: var(--t-1);
 		font-size: 0.8125rem;
 		outline: none;
+		-webkit-appearance: none;
+		appearance: none;
 	}
 
 	.wm-filter-input::placeholder {

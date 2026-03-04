@@ -146,10 +146,10 @@
 <style>
 	.rh-landing {
 		display: flex;
-		align-items: center;
+		align-items: flex-start;
 		justify-content: center;
 		min-height: 100%;
-		padding: var(--space-xl);
+		padding: 18vh var(--space-xl) var(--space-xl);
 	}
 
 	.rh-landing-inner {

@@ -32,8 +32,36 @@ Phase 37 plan 01 in progress (awaiting checkpoint verification). Added two new s
 `npm run check` 0 errors, 30 warnings (all pre-existing). 196 code tests pass.
 
 <!-- status -->
-37-01 Tasks 1 + 2 complete — awaiting checkpoint verification (sidebar quick-search + AI companion).
+UAT gap fixes in progress — 7/9 code fixes applied, geocoding pipeline running in background.
 <!-- /status -->
+
+---
+
+## Entry 2026-03-04 — UAT Gap Fixes: Phases 35 + 36 + Artist Bio
+
+Closed all diagnosed UAT gaps from phases 35 (Rabbit Hole) and 36 (World Map), plus artist bio empty state. Root causes were fully known from parallel debug agents last session — this session was pure execution.
+
+**Fixes applied:**
+
+1. **Artist slugs** — Ran `pipeline/add-slugs.js` immediately: 10k NULL slugs populated. Added `add-slugs.js` to `pipeline/package.json` pipeline script permanently so it runs after every DB rebuild. Artist card "not found" errors resolved.
+
+2. **World Map: `getGeocodedArtists` query** — `artists` table has no `tags` column; tags live in `artist_tags`. Fixed `src/lib/db/queries.ts` to use `(SELECT GROUP_CONCAT(tag, ', ') FROM artist_tags WHERE artist_id = id) AS tags` subquery.
+
+3. **World Map: filter input white background** — Added `-webkit-appearance: none; appearance: none` to `.wm-filter-input` in `src/routes/world-map/+page.svelte`. WebView2 native widget painter was overriding the custom background.
+
+4. **Tag page: empty "Related Genres & Tags" section** — Niche tags have no rows in `tag_cooccurrence` (threshold: 5+ shared artists). The section was silently hidden with `{#if relatedTags.length > 0}`. Restructured to always show the section header with an empty-state message: "No related genres found — this tag is one of a kind."
+
+5. **Rabbit Hole landing: search box too low** — Moved from vertically centered to upper third of viewport. Changed `.rh-landing` from `align-items: center` to `align-items: flex-start` with `padding-top: 18vh`.
+
+6. **Artist bio: Wikidata fallback** — Most MB URL relations only have Wikidata QID links (`wikidata.org/wiki/Q12345`), not Wikipedia links. Added fallback in `src/routes/artist/[slug]/+page.ts`: extracts Wikidata QID from MB URL rels → fetches `sitelinks.enwiki.title` from Wikidata API → fetches Wikipedia summary. Dramatically increases bio coverage.
+
+7. **Artist About tab: bio not shown** — About tab only rendered `<ArtistRelationships>`. Added `effectiveBio` display block inside the About tab in `src/routes/artist/[slug]/+page.svelte`.
+
+**Data work:**
+
+- Geocoding pipeline (`pipeline/build-geocoding.mjs`) started in background — 2,157 artists to geocode (most were already done from a previous run). This populates `city_lat`/`city_lng`/`city_precision` on the `artists` table and will enable the World Map to show artists.
+
+`npm run check` 0 errors, 31 warnings (all pre-existing).
 
 ---
 
@@ -13393,3 +13421,6 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 
 > **Commit 8849b4d2** (2026-03-04 20:43) — wip: auto-save
 > Files changed: 2
+
+> **Commit 9cd92a0e** (2026-03-04 20:46) — auto-save: 1 files @ 20:46
+> Files changed: 1

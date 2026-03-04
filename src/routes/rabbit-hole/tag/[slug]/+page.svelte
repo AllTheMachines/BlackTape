@@ -76,9 +76,9 @@
 		</div>
 
 		<!-- Related Tags -->
-		{#if relatedTags.length > 0}
-			<div class="rh-section">
-				<div class="rh-section-label">Related Genres &amp; Tags</div>
+		<div class="rh-section">
+			<div class="rh-section-label">Related Genres &amp; Tags</div>
+			{#if relatedTags.length > 0}
 				<div class="rh-related-chips">
 					{#each relatedTags as rt}
 						<button
@@ -90,8 +90,10 @@
 						</button>
 					{/each}
 				</div>
-			</div>
-		{/if}
+			{:else}
+				<div class="rh-empty">No related genres found — this tag is one of a kind.</div>
+			{/if}
+		</div>
 
 	</div>
 </div>

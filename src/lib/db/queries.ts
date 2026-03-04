@@ -1044,7 +1044,9 @@ export async function getGeocodedArtists(
 ): Promise<GeocodedArtist[]> {
 	try {
 		return await db.all<GeocodedArtist>(
-			`SELECT id, mbid, name, slug, country, tags, city_lat, city_lng, city_precision
+			`SELECT id, mbid, name, slug, country,
+			        (SELECT GROUP_CONCAT(tag, ', ') FROM artist_tags WHERE artist_id = id) AS tags,
+			        city_lat, city_lng, city_precision
 			 FROM artists
 			 WHERE city_precision IN ('city', 'region', 'country')
 			   AND city_lat IS NOT NULL

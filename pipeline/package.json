@@ -7,7 +7,7 @@
     "download": "node download.js",
     "import": "node import.js",
     "verify": "node verify.js",
-    "pipeline": "node download.js && node import.js && node verify.js",
+    "pipeline": "node download.js && node import.js && node verify.js && node add-slugs.js",
     "compress": "node compress-db.js"
   },
   "dependencies": {

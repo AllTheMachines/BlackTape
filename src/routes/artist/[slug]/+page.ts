@@ -54,6 +54,8 @@ export const load: PageLoad = async ({ params, fetch }) => {
 		// tag_stats table missing — badge simply won't render
 	}
 
+	let wikidataQid: string | null = null;
+
 	let links: PlatformLinks = {
 		bandcamp: [],
 		spotify: [],
@@ -132,7 +134,12 @@ export const load: PageLoad = async ({ params, fetch }) => {
 							else if (hostname.includes('youtube.com') || hostname === 'youtu.be')
 								links.youtube.push(url);
 							else if (hostname.includes('wikipedia.org')) links.wikipedia.push(url);
-							else links.other.push(url);
+							else if (hostname.includes('wikidata.org')) {
+								// Extract QID for bio fallback (e.g. https://www.wikidata.org/wiki/Q12345)
+								const qidMatch = url.match(/\/wiki\/(Q\d+)/);
+								if (qidMatch) wikidataQid = qidMatch[1];
+								links.other.push(url);
+							} else links.other.push(url);
 						} catch {
 							links.other.push(url);
 						}
@@ -265,6 +272,29 @@ export const load: PageLoad = async ({ params, fetch }) => {
 				fetchWikipediaBio(links.wikipedia[0]),
 				new Promise<null>((resolve) => setTimeout(() => resolve(null), 5_000))
 			]);
+		}
+		// Wikidata fallback: if no Wikipedia link but MB rels contain a Wikidata QID,
+		// resolve the English Wikipedia title via Wikidata sitelinks and fetch bio from there.
+		if (!bio && wikidataQid) {
+			const wdResp = await fetchSafe(
+				`https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${wikidataQid}&props=sitelinks&sitefilter=enwiki&format=json&origin=*`,
+				fetch,
+				5_000
+			);
+			if (wdResp) {
+				const wdData = (await wdResp.json()) as {
+					entities?: Record<string, { sitelinks?: { enwiki?: { title?: string } } }>;
+				};
+				const wikiTitle = wdData.entities?.[wikidataQid]?.sitelinks?.enwiki?.title;
+				if (wikiTitle) {
+					const { fetchWikipediaBio } = await import('$lib/bio');
+					const wikiUrl = `https://en.wikipedia.org/wiki/${encodeURIComponent(wikiTitle)}`;
+					bio = await Promise.race([
+						fetchWikipediaBio(wikiUrl),
+						new Promise<null>((resolve) => setTimeout(() => resolve(null), 5_000))
+					]);
+				}
+			}
 		}
 	} catch (err) {
 		console.error('Bio fetch error:', err);
