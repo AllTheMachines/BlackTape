@@ -8,10 +8,10 @@ updated: 2026-03-04T20:00:00Z
 
 ## Current Test
 
-number: 9
-name: Reshuffle on tag page
+number: 10
+name: History trail navigation
 expected: |
-  The tag page has a Reshuffle button. Clicking it reloads the same tag page with a fresh random set of artists.
+  After visiting several artists/tags, the trail bar at the top shows all visited items in order. Clicking an earlier item navigates back to that artist or tag.
 awaiting: user response
 
 ## Tests
@@ -60,7 +60,7 @@ severity: major
 
 ### 9. Reshuffle on tag page
 expected: The tag page has a Reshuffle button. Clicking it reloads the same tag page with a fresh random set of 20 artists — different artists than before (probability virtually certain with any reasonable tag size).
-result: [pending]
+result: pass
 
 ### 10. History trail navigation
 expected: After visiting several artists/tags, the trail bar at the top of the Rabbit Hole layout shows all visited items in order. Clicking an earlier item in the trail navigates back to that artist or tag.
@@ -69,9 +69,9 @@ result: [pending]
 ## Summary
 
 total: 10
-passed: 2
+passed: 3
 issues: 4
-pending: 2
+pending: 1
 skipped: 2
 
 ## Gaps
