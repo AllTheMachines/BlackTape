@@ -64,12 +64,16 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ""
         run: npm run tauri build
 
       - name: Build app (unsigned — no cert configured)
         if: ${{ env.APPLE_CERTIFICATE == '' }}
         env:
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ""
         run: npm run tauri build -- --config '{"bundle":{"macOS":{"signingIdentity":null}}}'
 
       - name: Upload DMG artifact
@@ -78,3 +82,62 @@ jobs:
           name: BlackTape-macOS-arm64
           path: src-tauri/target/release/bundle/dmg/*.dmg
           retention-days: 14
+
+      - name: Update latest.json with macOS entry
+        if: ${{ env.TAURI_SIGNING_PRIVATE_KEY != '' }}
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Find the update bundle and its signature
+          APP_TAR=$(find src-tauri/target/release/bundle/macos -name "*.app.tar.gz" | head -1)
+          APP_SIG=$(find src-tauri/target/release/bundle/macos -name "*.app.tar.gz.sig" | head -1)
+
+          if [ -z "$APP_TAR" ] || [ -z "$APP_SIG" ]; then
+            echo "No .app.tar.gz or .sig found — skipping latest.json update"
+            exit 0
+          fi
+
+          # Get version from Cargo.toml
+          VERSION=$(grep '^version' src-tauri/Cargo.toml | head -1 | cut -d'"' -f2)
+          echo "Version: $VERSION"
+
+          # Signature: base64-encode the entire .sig file (Tauri requirement)
+          SIG=$(base64 -w0 "$APP_SIG" 2>/dev/null || base64 "$APP_SIG")
+
+          # Asset URL — points to GitHub release (where we'll upload the tar.gz)
+          REPO="${GITHUB_REPOSITORY}"
+          TAR_FILENAME=$(basename "$APP_TAR")
+          ASSET_URL="https://github.com/${REPO}/releases/download/v${VERSION}/${TAR_FILENAME}"
+
+          echo "Asset URL: $ASSET_URL"
+
+          # Download current latest.json from release, patch it, re-upload
+          gh release download "v${VERSION}" --pattern latest.json --dir /tmp/updater 2>/dev/null || true
+
+          if [ -f /tmp/updater/latest.json ]; then
+            # Add darwin-aarch64 entry to existing latest.json
+            python3 - <<PYEOF
+          import json, sys
+
+          with open('/tmp/updater/latest.json') as f:
+              data = json.load(f)
+
+          data['platforms']['darwin-aarch64'] = {
+              'signature': '${SIG}',
+              'url': '${ASSET_URL}'
+          }
+
+          with open('/tmp/updater/latest.json', 'w') as f:
+              json.dump(data, f, indent=2)
+
+          print("Patched latest.json:")
+          print(json.dumps(data, indent=2))
+          PYEOF
+
+            # Upload the .app.tar.gz and updated latest.json to the release
+            gh release upload "v${VERSION}" "$APP_TAR" /tmp/updater/latest.json --clobber
+          else
+            echo "No existing release v${VERSION} found — skipping latest.json upload"
+            echo "Run this after creating the release manually"
+          fi
