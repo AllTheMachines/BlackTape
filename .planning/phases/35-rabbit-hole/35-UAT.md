@@ -8,10 +8,10 @@ updated: 2026-03-04T20:00:00Z
 
 ## Current Test
 
-number: 4
-name: Navigate to tag from search
+number: 5
+name: Random button
 expected: |
-  Clicking a tag in the autocomplete dropdown navigates to /rabbit-hole/tag/[slug]. The tag page loads. The history trail bar shows the visited tag.
+  The landing page has a Random button. Clicking it navigates to a random artist card page (/rabbit-hole/artist/[slug]). The artist is added to the trail.
 awaiting: user response
 
 ## Tests
@@ -34,7 +34,7 @@ severity: major
 
 ### 4. Navigate to tag from search
 expected: Clicking a tag in the autocomplete dropdown navigates to /rabbit-hole/tag/[slug]. The tag page loads. The history trail bar shows the visited tag.
-result: [pending]
+result: pass
 
 ### 5. Random button
 expected: The landing page has a Random button. Clicking it navigates to a random artist card page (/rabbit-hole/artist/[slug]). The artist is added to the trail.
@@ -63,9 +63,9 @@ result: [pending]
 ## Summary
 
 total: 10
-passed: 1
+passed: 2
 issues: 2
-pending: 7
+pending: 6
 skipped: 0
 
 ## Gaps
