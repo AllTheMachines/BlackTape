@@ -9,6 +9,7 @@
 - ✅ **v1.4 The Interface** — Phases 23--27 (shipped 2026-02-25)
 - ✅ **v1.5 UX Cleanup** — Phase 28 (shipped 2026-02-26)
 - ✅ **v1.6 The Playback Milestone** — Phases 29--33 (shipped 2026-02-27)
+- 🚧 **v1.7 The Rabbit Hole** — Phases 34--37 (in progress)
 
 ---
 
