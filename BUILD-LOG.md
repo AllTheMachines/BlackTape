@@ -32,7 +32,7 @@ Phase 37 plan 01 in progress (awaiting checkpoint verification). Added two new s
 `npm run check` 0 errors, 30 warnings (all pre-existing). 196 code tests pass.
 
 <!-- status -->
-All UAT gap fixes committed (196 tests pass). Geocoding pipeline running in background (2,157 artists). Next: re-run UAT on phases 35 + 36.
+All UAT gap fixes done. Geocoding pipeline complete: 417 new artists geocoded (317 city, 100 country). Ready for UAT re-run on phases 35 + 36.
 <!-- /status -->
 
 ---
@@ -13427,3 +13427,6 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 
 > **Commit f25eae2d** (2026-03-04 20:49) — fix: close all UAT gaps from phases 35, 36 and artist bio
 > Files changed: 8
+
+> **Commit 7774a9e7** (2026-03-04 20:50) — wip: auto-save
+> Files changed: 1
