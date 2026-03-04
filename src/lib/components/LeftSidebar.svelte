@@ -7,11 +7,7 @@
 
 	// Discovery modes — condensed view when on any discovery route
 	const DISCOVERY_MODES = [
-		{ href: '/discover', label: 'Discover', icon: '◉' },
-		{ href: '/style-map', label: 'Style Map', icon: '⬡' },
-		{ href: '/kb', label: 'Knowledge Base', icon: '◈' },
-		{ href: '/time-machine', label: 'Time Machine', icon: '◷' },
-		{ href: '/crate', label: 'Crate Dig', icon: '▦' }
+		{ href: '/discover', label: 'Discover', icon: '◉' }
 	] as const;
 
 	// Navigation groups — Discover, Library, Account
