@@ -227,6 +227,9 @@
 <div class="wm-root">
 	<div class="wm-map" bind:this={mapEl}></div>
 
+	<!-- Back button -->
+	<button class="wm-back" onclick={() => history.back()} title="Go back">&#8592; Back</button>
+
 	<!-- Slide-up Artist Panel -->
 	<div class="wm-panel" class:open={!!selectedArtist}>
 		{#if selectedArtist}
@@ -319,6 +322,27 @@
 	.wm-map {
 		width: 100%;
 		height: 100%;
+	}
+
+	.wm-back {
+		position: absolute;
+		bottom: 16px;
+		right: 16px;
+		z-index: 1000;
+		padding: 6px 12px;
+		background: var(--bg-2);
+		border: 1px solid var(--b-2);
+		border-radius: var(--r);
+		color: var(--t-2);
+		font-size: 0.8125rem;
+		cursor: pointer;
+		opacity: 0.85;
+		transition: opacity 0.15s;
+	}
+
+	.wm-back:hover {
+		opacity: 1;
+		color: var(--t-1);
 	}
 
 	.wm-filter {
