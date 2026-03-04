@@ -1027,7 +1027,7 @@ export async function getSimilarArtists(
 }
 
 // ---------------------------------------------------------------------------
-// World Map queries (Phase 36 — Geocoded Artists)
+// World Map queries (Phase 34 — Geocoded Artists)
 // ---------------------------------------------------------------------------
 
 /**
@@ -1055,6 +1055,163 @@ export async function getGeocodedArtists(
 		);
 	} catch {
 		// city_lat/city_lng columns don't exist yet (pipeline not run) — degrade gracefully
+		return [];
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Rabbit Hole queries (Phase 35 — Discovery navigation)
+// ---------------------------------------------------------------------------
+
+/**
+ * Autocomplete query for tags — prefix match ordered by global artist count.
+ * Used by the Rabbit Hole landing page unified search to surface tag suggestions.
+ */
+export async function searchTagsAutocomplete(
+	db: DbProvider,
+	query: string,
+	limit = 8
+): Promise<Array<{ tag: string; artist_count: number }>> {
+	const normalized = query.toLowerCase().trim();
+	if (!normalized) return [];
+	return db.all(
+		`SELECT tag, artist_count FROM tag_stats WHERE tag LIKE ? ORDER BY artist_count DESC LIMIT ?`,
+		normalized + '%',
+		limit
+	);
+}
+
+/**
+ * Return a single random artist that has at least one tag.
+ * Uses rowid-based random selection for O(1) performance against the full 2.6M artist table.
+ * Wrap-around fallback handles the case where randomId is near the end of the table.
+ */
+export async function getRandomArtist(db: DbProvider): Promise<ArtistResult | null> {
+	try {
+		const maxRow = await db.get<{ max_id: number }>(`SELECT MAX(id) as max_id FROM artists`);
+		if (!maxRow) return null;
+		const randomId = Math.floor(Math.random() * maxRow.max_id) + 1;
+		const result = await db.get<ArtistResult>(
+			`SELECT a.id, a.mbid, a.name, a.slug, a.country,
+			        (SELECT GROUP_CONCAT(tag, ', ') FROM artist_tags WHERE artist_id = a.id) AS tags
+			 FROM artists a
+			 WHERE a.id >= ? AND EXISTS (SELECT 1 FROM artist_tags WHERE artist_id = a.id)
+			 LIMIT 1`,
+			randomId
+		);
+		// Wrap-around: if we're near the end of the table, try from beginning
+		if (!result) {
+			return db.get<ArtistResult>(
+				`SELECT a.id, a.mbid, a.name, a.slug, a.country,
+				        (SELECT GROUP_CONCAT(tag, ', ') FROM artist_tags WHERE artist_id = a.id) AS tags
+				 FROM artists a
+				 WHERE EXISTS (SELECT 1 FROM artist_tags WHERE artist_id = a.id)
+				 LIMIT 1`
+			);
+		}
+		return result;
+	} catch {
+		return null;
+	}
+}
+
+/**
+ * Return a random artist sharing a given tag, excluding the current artist.
+ * Used as the "Continue" button fallback when no precomputed similar artists exist.
+ * Uses count-based random offset — consistent O(count) without full table scan.
+ */
+export async function getRandomArtistByTag(
+	db: DbProvider,
+	tag: string,
+	excludeId: number
+): Promise<ArtistResult | null> {
+	try {
+		// Rowid-based random within a tag — count, pick random offset
+		const countRow = await db.get<{ cnt: number }>(
+			`SELECT COUNT(*) as cnt FROM artist_tags WHERE tag = ?`,
+			tag
+		);
+		if (!countRow || countRow.cnt === 0) return null;
+		const randomOffset = Math.floor(Math.random() * countRow.cnt);
+		return db.get<ArtistResult>(
+			`SELECT a.id, a.mbid, a.name, a.slug, a.country,
+			        (SELECT GROUP_CONCAT(t.tag, ', ') FROM artist_tags t WHERE t.artist_id = a.id) AS tags
+			 FROM artist_tags at1
+			 JOIN artists a ON a.id = at1.artist_id
+			 WHERE at1.tag = ? AND a.id != ?
+			 LIMIT 1 OFFSET ?`,
+			tag,
+			excludeId,
+			randomOffset
+		);
+	} catch {
+		return null;
+	}
+}
+
+/**
+ * Return tags that co-occur most frequently with the given tag.
+ * Reads the precomputed tag_cooccurrence table ordered by shared_artists DESC.
+ * Used by genre/tag pages to populate related-tags navigation.
+ */
+export async function getRelatedTags(
+	db: DbProvider,
+	tag: string,
+	limit = 12
+): Promise<Array<{ tag: string; shared_artists: number }>> {
+	try {
+		return db.all(
+			`SELECT
+			   CASE WHEN tc.tag_a = ? THEN tc.tag_b ELSE tc.tag_a END AS tag,
+			   tc.shared_artists
+			 FROM tag_cooccurrence tc
+			 WHERE tc.tag_a = ? OR tc.tag_b = ?
+			 ORDER BY tc.shared_artists DESC
+			 LIMIT ?`,
+			tag,
+			tag,
+			tag,
+			limit
+		);
+	} catch {
+		return [];
+	}
+}
+
+/**
+ * Return ~20 random artists for a given tag, using offset-based random selection.
+ * Offset is chosen so the window fits within the tag's full artist list,
+ * avoiding the ORDER BY RANDOM() performance pitfall on large result sets.
+ * Used by genre/tag pages to populate the artist grid.
+ */
+export async function getArtistsByTagRandom(
+	db: DbProvider,
+	tag: string,
+	limit = 20
+): Promise<ArtistResult[]> {
+	try {
+		const countRow = await db.get<{ cnt: number }>(
+			`SELECT COUNT(*) as cnt FROM artist_tags WHERE tag = ?`,
+			tag
+		);
+		if (!countRow || countRow.cnt === 0) return [];
+		const randomOffset = Math.max(
+			0,
+			Math.floor(Math.random() * Math.max(1, countRow.cnt - limit))
+		);
+		const results = await db.all<ArtistResult>(
+			`SELECT a.id, a.mbid, a.name, a.slug, a.country,
+			        (SELECT GROUP_CONCAT(t.tag, ', ') FROM artist_tags t WHERE t.artist_id = a.id LIMIT 6) AS tags
+			 FROM artist_tags at1
+			 JOIN artists a ON a.id = at1.artist_id
+			 WHERE at1.tag = ?
+			 LIMIT ? OFFSET ?`,
+			tag,
+			limit,
+			randomOffset
+		);
+		return results;
+	} catch {
 		return [];
 	}
 }
