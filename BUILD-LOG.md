@@ -12721,3 +12721,6 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 
 > **Commit 4a002567** (2026-03-04 13:41) — feat(34-04): add getSimilarArtists and getGeocodedArtists query functions
 > Files changed: 1
+
+> **Commit f7df9a29** (2026-03-04 13:43) — docs(34-04): complete query functions plan — getSimilarArtists + getGeocodedArtists
+> Files changed: 4
