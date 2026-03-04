@@ -10,6 +10,9 @@ jobs:
   build:
     runs-on: macos-latest  # Apple Silicon (arm64)
 
+    env:
+      APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+
     steps:
       - uses: actions/checkout@v4
 
