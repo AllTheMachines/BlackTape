@@ -8,10 +8,10 @@ updated: 2026-03-04T20:35:00Z
 
 ## Current Test
 
-number: 6
-name: Artist detail panel
+number: 7
+name: See on map — cross-links from Rabbit Hole
 expected: |
-  Clicking any artist pin slides up a bottom panel showing the artist's card — name, tags, similar artists, and streaming links.
+  On a Rabbit Hole artist page (for a geocoded artist), a "See on map" button is visible. Clicking it opens /world-map with that artist's panel open.
 awaiting: user response
 
 ## Tests
@@ -43,7 +43,8 @@ reason: not observable in Tauri desktop — no visible address bar
 
 ### 6. Artist detail panel
 expected: Clicking any artist pin (or cluster → individual pin) slides up a bottom panel showing the artist's card — name, tags, similar artists, and streaming links.
-result: [pending]
+result: skipped
+reason: no artist pins visible (0 artists loading) — blocked by test 1 issue
 
 ### 7. See on map — cross-links from Rabbit Hole
 expected: On a Rabbit Hole artist page (for a geocoded artist), a "See on map" button is visible. Clicking it opens /world-map with that artist's pin highlighted or panel open.
@@ -54,8 +55,8 @@ result: [pending]
 total: 7
 passed: 1
 issues: 1
-pending: 2
-skipped: 3
+pending: 1
+skipped: 4
 
 ## Gaps
 
