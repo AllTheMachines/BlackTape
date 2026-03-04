@@ -1,5 +1,5 @@
 ---
-status: complete
+status: diagnosed
 phase: 36-world-map
 source: 36-01-SUMMARY.md, 36-02-SUMMARY.md, 36-03-SUMMARY.md, 36-04-SUMMARY.md, 36-05-SUMMARY.md, 36-06-SUMMARY.md
 started: 2026-03-04T20:35:00Z
@@ -62,5 +62,18 @@ skipped: 5
   reason: "User reported: no clusters, map shows 0 artists. Tag filter widget has white background clashing with dark map theme."
   severity: major
   test: 1
-  artifacts: []
-  missing: []
+  root_cause: "Two separate bugs: (1) Geocoding pipeline (build-geocoding.mjs) was never run — city_lat/city_lng/city_precision columns don't exist on artists table (added by ALTER TABLE in build-geocoding.mjs). getGeocodedArtists silently returns [] via try/catch. Secondary bug: query selects a.tags but tags live in artist_tags not artists. (2) Tag filter white background: WebView2 native input widget painter overrides CSS background — needs -webkit-appearance: none; appearance: none on .wm-filter-input"
+  artifacts:
+    - path: "src/routes/world-map/+page.ts"
+      issue: "calls getGeocodedArtists which returns [] silently when geocoding columns missing"
+    - path: "src/lib/db/queries.ts"
+      issue: "getGeocodedArtists selects a.tags but artists table has no tags column; also queries city_precision/city_lat/city_lng which don't exist before pipeline runs"
+    - path: "pipeline/build-geocoding.mjs"
+      issue: "adds geocoding columns via ALTER TABLE — must be run to populate map data"
+    - path: "src/routes/world-map/+page.svelte"
+      issue: ".wm-filter-input missing -webkit-appearance: none; appearance: none — WebView2 paints native white widget background"
+  missing:
+    - "Run node pipeline/build-geocoding.mjs to populate geocoding columns"
+    - "Fix getGeocodedArtists to fetch tags via subquery from artist_tags instead of a.tags"
+    - "Add -webkit-appearance: none; appearance: none to .wm-filter-input in +page.svelte"
+  debug_session: ""

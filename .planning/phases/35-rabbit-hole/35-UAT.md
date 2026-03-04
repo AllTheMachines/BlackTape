@@ -1,5 +1,5 @@
 ---
-status: complete
+status: diagnosed
 phase: 35-rabbit-hole
 source: 35-01-SUMMARY.md, 35-02-SUMMARY.md, 35-03-SUMMARY.md, 35-04-SUMMARY.md, 35-05-SUMMARY.md
 started: 2026-03-04T20:00:00Z
@@ -77,29 +77,58 @@ skipped: 2
   reason: "User reported: yes. (note that it should be a bit more up in the app. the first third"
   severity: cosmetic
   test: 2
-  artifacts: []
-  missing: []
+  root_cause: "Layout positioning in +page.svelte — search box vertically centered in viewport instead of positioned in upper third"
+  artifacts:
+    - path: "src/routes/rabbit-hole/+page.svelte"
+      issue: "search box positioned too low — needs to be in upper ~33% of page"
+  missing:
+    - "Adjust vertical positioning of search container to upper third of viewport"
+  debug_session: ""
 
 - truth: "Clicking an artist from search navigates to the artist card page"
   status: failed
   reason: "User reported: no. it shows 'no artist found'"
   severity: major
   test: 3
-  artifacts: []
-  missing: []
+  root_cause: "artists.slug column is NULL for all rows — pipeline/add-slugs.js was never run after DB rebuild. Autocomplete returns slug:null, navigation goes to /rabbit-hole/artist/null, getArtistBySlug finds nothing."
+  artifacts:
+    - path: "pipeline/package.json"
+      issue: "add-slugs.js missing from pipeline script — never runs automatically"
+    - path: "pipeline/add-slugs.js"
+      issue: "exists but orphaned from standard pipeline run"
+    - path: "pipeline/import.js"
+      issue: "never writes to slug column — leaves it NULL"
+    - path: "src/lib/db/queries.ts"
+      issue: "getArtistBySlug uses WHERE a.slug = ? — cannot match NULL rows"
+  missing:
+    - "Add add-slugs.js to pipeline/package.json pipeline script"
+    - "Run node pipeline/add-slugs.js against dev DB immediately"
+  debug_session: ""
 
 - truth: "Random button navigates to a random artist card page"
   status: failed
   reason: "User reported: no. it also only shows 'artist not found'"
   severity: major
   test: 5
-  artifacts: []
-  missing: []
+  root_cause: "Same root cause as test 3 — artists.slug is NULL, getRandomArtist returns artist with null slug, navigation fails"
+  artifacts:
+    - path: "pipeline/add-slugs.js"
+      issue: "not in pipeline script — slug column stays NULL"
+  missing:
+    - "Fixed by same fix as test 3"
+  debug_session: ""
 
 - truth: "Tag page shows Related Genres & Tags section with co-occurring tag chips"
   status: failed
   reason: "User reported: it shows 4 artist chips with country badges (because i searched for aphex twin) but no genre chips as tags"
   severity: major
   test: 8
-  artifacts: []
-  missing: []
+  root_cause: "Data issue, not a code bug. tag_cooccurrence has only 2,359 rows with threshold HAVING shared_artists >= 5. Niche tags like 'aphex twin' have no entries. The section is wrapped in {#if relatedTags.length > 0} so it disappears entirely rather than showing an empty state."
+  artifacts:
+    - path: "src/routes/rabbit-hole/tag/[slug]/+page.svelte"
+      issue: "line 79 — {#if relatedTags.length > 0} hides entire section with no empty state"
+    - path: "pipeline/build-tag-stats.mjs"
+      issue: "line 53 — HAVING shared_artists >= 5 threshold excludes niche tags"
+  missing:
+    - "Add empty-state message to tag page when relatedTags is empty (Option A)"
+  debug_session: ""
