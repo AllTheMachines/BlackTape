@@ -8,10 +8,10 @@ updated: 2026-03-04T20:00:00Z
 
 ## Current Test
 
-number: 2
-name: Landing page search
+number: 3
+name: Navigate to artist from search
 expected: |
-  The landing page shows a search input with placeholder text. Typing into it shows a grouped autocomplete dropdown — Artists section (up to 6 results) and Genres & Tags section (up to 6 results). Each artist result shows name + first tag. Each tag result shows name + artist count.
+  Clicking an artist in the autocomplete dropdown navigates to /rabbit-hole/artist/[slug]. The artist card loads in-place (no full page reload feel). The history trail bar at the top shows the visited artist.
 awaiting: user response
 
 ## Tests
@@ -22,7 +22,9 @@ result: pass
 
 ### 2. Landing page search
 expected: The landing page shows a search input with placeholder text. Typing into it shows a grouped autocomplete dropdown — Artists section (up to 6 results) and Genres & Tags section (up to 6 results). Each artist result shows name + first tag. Each tag result shows name + artist count.
-result: [pending]
+result: issue
+reported: "yes. (note that it should be a bit more up in the app. the first third"
+severity: cosmetic
 
 ### 3. Navigate to artist from search
 expected: Clicking an artist in the autocomplete dropdown navigates to /rabbit-hole/artist/[slug]. The artist card loads in-place (no full page reload feel). The history trail bar at the top shows the visited artist.
@@ -60,10 +62,16 @@ result: [pending]
 
 total: 10
 passed: 1
-issues: 0
-pending: 9
+issues: 1
+pending: 8
 skipped: 0
 
 ## Gaps
 
-[none yet]
+- truth: "Search input is centered/prominent on the landing page"
+  status: failed
+  reason: "User reported: yes. (note that it should be a bit more up in the app. the first third"
+  severity: cosmetic
+  test: 2
+  artifacts: []
+  missing: []
