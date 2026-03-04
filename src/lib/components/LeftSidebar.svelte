@@ -3,57 +3,6 @@
 	import { goto } from '$app/navigation';
 	import { helpTopicForPath } from '$lib/help';
 
-	// --- Quick Search ---
-	let searchQuery = $state('');
-	let artistSuggestions = $state<Array<{ name: string; slug: string; tags: string | null }>>([]);
-	let tagSuggestions = $state<Array<{ tag: string; artist_count: number }>>([]);
-	let showDropdown = $state(false);
-	let searchDebounceTimer: ReturnType<typeof setTimeout> | null = null;
-
-	async function fetchSuggestions(q: string) {
-		if (q.length < 2) {
-			artistSuggestions = [];
-			tagSuggestions = [];
-			showDropdown = false;
-			return;
-		}
-		try {
-			const { getProvider } = await import('$lib/db/provider');
-			const { searchArtistsAutocomplete, searchTagsAutocomplete } = await import('$lib/db/queries');
-			const db = await getProvider();
-			[artistSuggestions, tagSuggestions] = await Promise.all([
-				searchArtistsAutocomplete(db, q, 4),
-				searchTagsAutocomplete(db, q, 3)
-			]);
-			showDropdown = artistSuggestions.length > 0 || tagSuggestions.length > 0;
-		} catch {
-			artistSuggestions = [];
-			tagSuggestions = [];
-			showDropdown = false;
-		}
-	}
-
-	function handleSearchInput() {
-		if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
-		searchDebounceTimer = setTimeout(() => fetchSuggestions(searchQuery), 200);
-	}
-
-	function handleSearchBlur() {
-		setTimeout(() => { showDropdown = false; }, 150);
-	}
-
-	function selectArtist(slug: string) {
-		showDropdown = false;
-		searchQuery = '';
-		goto('/artist/' + slug);
-	}
-
-	function selectTag(tag: string) {
-		showDropdown = false;
-		searchQuery = '';
-		goto('/search?q=' + encodeURIComponent(tag) + '&mode=tag');
-	}
-
 	const MAX_TAGS = 5;
 
 	// Discovery modes — condensed view when on any discovery route
@@ -143,36 +92,6 @@
 </script>
 
 <aside class="left-sidebar" aria-label="Navigation and discovery">
-	<!-- Quick Search -->
-	<div class="qs-wrap">
-		<input
-			type="text"
-			class="qs-input"
-			placeholder="Search artists, genres..."
-			bind:value={searchQuery}
-			oninput={handleSearchInput}
-			onblur={handleSearchBlur}
-			autocomplete="off"
-		/>
-		{#if showDropdown}
-			<div class="qs-dropdown">
-				{#if artistSuggestions.length > 0}
-					<div class="qs-group-label">Artists</div>
-					{#each artistSuggestions as a}
-						<button class="qs-item" onmousedown={() => selectArtist(a.slug)}>{a.name}</button>
-					{/each}
-				{/if}
-				{#if tagSuggestions.length > 0}
-					<div class="qs-group-label">Tags</div>
-					{#each tagSuggestions as t}
-						<button class="qs-item qs-tag" onmousedown={() => selectTag(t.tag)}>{t.tag}</button>
-					{/each}
-				{/if}
-				<a class="qs-see-all" href="/search?q={encodeURIComponent(searchQuery)}">See all results</a>
-			</div>
-		{/if}
-	</div>
-
 	<!-- Grouped Nav -->
 	<nav class="sidebar-nav">
 		{#each navGroups as group}
@@ -251,87 +170,6 @@
 </aside>
 
 <style>
-	/* Quick Search */
-	.qs-wrap {
-		position: relative;
-		padding: 8px 10px 6px;
-		border-bottom: 1px solid var(--b-0);
-	}
-
-	.qs-input {
-		width: 100%;
-		box-sizing: border-box;
-		background: var(--bg-4);
-		border: 1px solid var(--b-2);
-		color: var(--t-1);
-		font-size: 11px;
-		padding: 4px 7px;
-		font-family: inherit;
-		outline: none;
-	}
-
-	.qs-input:focus {
-		border-color: var(--acc);
-	}
-
-	.qs-dropdown {
-		position: absolute;
-		top: 100%;
-		left: 10px;
-		right: 10px;
-		background: var(--bg-4);
-		border: 1px solid var(--b-2);
-		border-top: none;
-		z-index: 50;
-		display: flex;
-		flex-direction: column;
-	}
-
-	.qs-group-label {
-		font-size: 9px;
-		font-weight: 600;
-		text-transform: uppercase;
-		letter-spacing: 0.1em;
-		color: var(--t-3);
-		padding: 4px 8px 2px;
-	}
-
-	.qs-item {
-		background: none;
-		border: none;
-		color: var(--t-2);
-		font-size: 11px;
-		text-align: left;
-		padding: 4px 8px;
-		cursor: pointer;
-		font-family: inherit;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	.qs-item:hover {
-		background: #181818;
-		color: var(--t-1);
-	}
-
-	.qs-tag {
-		color: var(--t-3);
-		font-size: 10px;
-	}
-
-	.qs-see-all {
-		font-size: 10px;
-		color: var(--acc);
-		padding: 4px 8px 6px;
-		text-decoration: none;
-		border-top: 1px solid var(--b-1);
-	}
-
-	.qs-see-all:hover {
-		text-decoration: underline;
-	}
-
 	.left-sidebar {
 		width: var(--sidebar);
 		height: 100%;
