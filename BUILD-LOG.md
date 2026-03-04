@@ -5,6 +5,23 @@ A documentary record of building this project from idea to reality.
 ---
 
 
+## Entry 2026-03-04 — macOS Build Pipeline: First Successful DMG
+
+First macOS build succeeded via GitHub Actions. `BlackTape_0.3.0_aarch64.dmg` (13MB) built on `macos-latest` (Apple Silicon) and uploaded as artifact.
+
+**Bug found and fixed during the process:**
+
+The workflow was downloading `llama-${RELEASE}-bin-macos-arm64.zip` — but the llama.cpp project ships `.tar.gz` on macOS, not `.zip`. The binary extracts to `llama-${RELEASE}/llama-server`. Fixed the workflow in one commit — second CI run succeeded in 6m38s.
+
+**Pipeline design decisions:**
+- `llama-server` downloaded in CI from latest llama.cpp release (not stored in git — binary is too large)
+- Unsigned build for now — no Apple cert configured. Gatekeeper will prompt on first open; right-click > Open bypasses it.
+- Platform configs split cleanly: `tauri.macos.conf.json` (DMG target, macOS 11+) and `tauri.windows.conf.json` (NSIS + DLL resources)
+
+**Next:** Email Will Dickson at NTS Radio with download link + right-click > Open instructions. Signed build requires Apple cert secrets in GitHub repo settings.
+
+---
+
 ## Entry 2026-03-04 — Bug Fix: AI server DLLs missing from NSIS installer
 
 **Bug:** AI server fails to start on fresh installs (#91). Root cause: `llama-server.exe` was bundled via `externalBin` but its 20 DLL dependencies (`ggml.dll`, `llama.dll`, `libomp140.x86_64.dll`, etc.) were in `src-tauri/binaries/` locally but never declared as `resources` — so they were never included in the NSIS installer. Users effectively had to install llama.cpp system-wide as a workaround.
@@ -13614,4 +13631,10 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 > Files changed: 4
 
 > **Commit 0f7ecf35** (2026-03-04 23:23) — wip: auto-save
+> Files changed: 1
+
+> **Commit c61704e2** (2026-03-04 23:26) — wip: auto-save
+> Files changed: 2
+
+> **Commit e210e0ef** (2026-03-04 23:28) — fix: correct llama.cpp macOS asset format (tar.gz, not zip)
 > Files changed: 1
