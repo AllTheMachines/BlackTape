@@ -3,11 +3,27 @@ gsd_state_version: 1.0
 milestone: v1.7
 milestone_name: The Rabbit Hole
 status: in_progress
+stopped_at: Completed 36-05-PLAN.md (World Map artist panel)
+last_updated: "2026-03-04T15:41:40.715Z"
+last_activity: 2026-03-04 — 36-04 World Map tag filter (in-memory filtering, URL replaceState sync, autocomplete)
+progress:
+  total_phases: 3
+  completed_phases: 1
+  total_plans: 11
+  completed_plans: 10
+  percent: 98
+---
+
+---
+gsd_state_version: 1.0
+milestone: v1.7
+milestone_name: The Rabbit Hole
+status: in_progress
 stopped_at: Completed 36-04-PLAN.md (World Map tag filter chip)
 last_updated: "2026-03-04T15:34:25.395Z"
 last_activity: 2026-03-04 — 36-03 Leaflet map implementation (CartoDB tiles, markerClusterGroup, precision-tier opacity)
 progress:
-  total_phases: 3
+  [██████████] 98%
   completed_phases: 1
   total_plans: 11
   completed_plans: 9
@@ -72,10 +88,10 @@ See: .planning/PROJECT.md (updated 2026-03-03 after v1.7 start)
 
 ## Current Position
 
-Phase: 36-world-map (IN PROGRESS)
-Plan: 36-04 complete → 4/6 plans done (01 route scaffold, 02 layout bypass, 03 Leaflet map, 04 tag filter)
-Status: Leaflet map with floating tag filter chip live; artist panel remaining
-Last activity: 2026-03-04 — 36-04 World Map tag filter (in-memory filtering, URL replaceState sync, autocomplete)
+Phase: 36-world-map (COMPLETE)
+Plan: 36-05 complete → 5/5 plans done (01 route scaffold, 02 layout bypass, 03 Leaflet map, 04 tag filter, 05 artist panel)
+Status: World map feature complete — pins, clustering, tag filter, artist panel all live
+Last activity: 2026-03-04 — 36-05 World Map artist panel (RabbitHoleArtistCard extracted, slide-up panel wired)
 
 ## Accumulated Context
 
@@ -140,7 +156,7 @@ Last activity: 2026-03-04 — 36-04 World Map tag filter (in-memory filtering, U
 - Key decision: getGenreBySlug wrapped in .catch(() => null) — most tags have no KB entry; failure is expected not exceptional
 - Key decision: decodeURIComponent at load, encodeURIComponent at navigation — tags with spaces/special chars round-trip correctly
 
-### Phase 36 World Map (v1.7 map feature) — IN PROGRESS
+### Phase 36 World Map (v1.7 map feature) — COMPLETE
 
 - 36-01 DONE: leaflet.markercluster installed + /world-map route scaffold (+layout.ts, +page.ts, +page.svelte)
 - Key decision: leaflet.markercluster must be dynamically imported in onMount after leaflet itself — not top-level in Svelte
@@ -161,6 +177,12 @@ Last activity: 2026-03-04 — 36-04 World Map tag filter (in-memory filtering, U
 - Key decision: onmousedown for suggestion selection — fires before input onblur dismisses the autocomplete dropdown
 - Key decision: replaceState: true in goto() for tag filter URL sync — no history pollution on every keystroke
 - Key decision: $effect reads activeTag and artists before guard check to ensure both are tracked as reactive dependencies
+- 36-05 DONE: RabbitHoleArtistCard extracted as shared component + world map slide-up artist panel
+- Key decision: Callback props (onTagClick/onSimilarArtistClick/onOpenInRabbitHole) let same card component serve Rabbit Hole and map panel with context-specific navigation
+- Key decision: dbProvider must be explicitly typed as DbProvider (not any) to allow generic all<T>() calls — TypeScript rejects generic type args on any-typed values
+- Key decision: stopPropagation on marker click prevents event bubbling to map's dismiss handler
+- Key decision: showOpenInRabbitHole prop toggles Open in Rabbit Hole button — hidden in Rabbit Hole route, shown in map panel
+- Key decision: openArtistPanel() fetches artist + similar + links in parallel via Promise.all with graceful catch degradation
 
 ### Blockers/Concerns
 
@@ -168,6 +190,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-04T15:34:25.391Z
-Stopped at: Completed 36-04-PLAN.md (World Map tag filter chip)
+Last session: 2026-03-04T15:41:40.713Z
+Stopped at: Completed 36-05-PLAN.md (World Map artist panel)
 Resume file: None

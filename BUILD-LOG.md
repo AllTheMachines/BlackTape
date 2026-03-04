@@ -4,6 +4,36 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+
+## Entry 2026-03-04 — Phase 36 Plan 05: World Map Artist Panel
+
+Phase 36 plan 05 complete. The world map now has a slide-up artist panel — clicking any pin reveals the full artist card from the Rabbit Hole, sliding up from the bottom of the screen.
+
+**Task 1: Extracted `RabbitHoleArtistCard.svelte`**
+
+Moved all card markup, logic, and styles from the Rabbit Hole artist page into a reusable component. Props interface:
+- `artist`, `similarArtists`, `links` — data props
+- `onTagClick`, `onSimilarArtistClick`, `onOpenInRabbitHole` — callback props for context-specific navigation
+- `showOpenInRabbitHole` — toggles the "Open in Rabbit Hole →" button (hidden in Rabbit Hole, shown on the map)
+
+The Rabbit Hole artist page is now a thin 35-line wrapper — identical visual output, all logic lives in the component.
+
+**Task 2: Slide-up panel in world map**
+
+- `openArtistPanel(geocodedArtist)` — fetches full artist data, similar artists, and streaming links from DB via three parallel queries
+- Marker click events wired with `stopPropagation` so they don't bubble to the map dismiss handler
+- Map background click dismisses the panel
+- Panel uses CSS `transform: translateY(100%)` → `translateY(0)` with `0.28s cubic-bezier` transition
+- `?artist=slug` deep-link: centers map on the artist and opens the panel automatically on load
+- Similar artist click in the panel navigates the map to that artist's location and opens their panel
+- Tag click in the panel filters the map by that tag via URL replaceState
+
+Key decision: `dbProvider` must be explicitly typed as `DbProvider` (not `any`) to allow generic `all<T>()` calls — TypeScript refuses generic type arguments on `any`-typed values.
+
+`npm run check` 0 errors, 20 warnings (all pre-existing). 196 code tests pass.
+
+---
+
 ## Entry 2026-03-04 — Phase 36 Plan 04: World Map Tag Filter
 
 Phase 36 plan 04 complete. Added the floating tag filter chip to the world map — the "where is black metal from?" feature is now live.
@@ -13069,4 +13099,13 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 > Files changed: 3
 
 > **Commit 1018186d** (2026-03-04 16:32) — feat(36-04): add floating tag filter chip to world map
+> Files changed: 1
+
+> **Commit 9b81a936** (2026-03-04 16:34) — docs(36-04): complete world map tag filter plan
+> Files changed: 4
+
+> **Commit b49c6bcc** (2026-03-04 16:37) — feat(36-05): extract RabbitHoleArtistCard.svelte component
+> Files changed: 2
+
+> **Commit f2483b19** (2026-03-04 16:40) — feat(36-05): add slide-up artist panel to world map
 > Files changed: 1
