@@ -104,7 +104,16 @@ Plans:
 
 ### Phase 36: World Map
 
-**Goal:** Leaflet geographic discovery, city/scene pins, cross-link to Rabbit Hole
+**Goal:** Leaflet geographic discovery — full-viewport map at /world-map with CartoDB Dark Matter tiles, amber markerClusterGroup, precision-tier opacity, floating tag filter, slide-up artist panel, bidirectional cross-links with Rabbit Hole
+
+**Plans:** 6 plans
+Plans:
+- [ ] 36-01-PLAN.md — Route scaffold (install leaflet.markercluster, create +layout.ts, +page.ts, +page.svelte stub)
+- [ ] 36-02-PLAN.md — Layout bypass + nav (isWorldMap in root layout, World Map nav item)
+- [ ] 36-03-PLAN.md — Map core (Leaflet init, CartoDB tiles, markerClusterGroup, precision-tier opacity)
+- [ ] 36-04-PLAN.md — Tag filter (floating chip, in-memory filter, URL sync with replaceState, autocomplete)
+- [ ] 36-05-PLAN.md — Artist panel (extract RabbitHoleArtistCard.svelte, slide-up panel, marker click wiring)
+- [ ] 36-06-PLAN.md — Cross-links ("See on map" on Rabbit Hole artist + tag pages) + human verify checkpoint
 
 ### Phase 37: Context Sidebar + Decade Filtering
 
@@ -132,4 +141,5 @@ Plans:
 | 32. Embedded Players | v1.6 | 3/3 | Complete | 2026-02-27 |
 | 33. Artist Claim Form | v1.6 | 2/2 | Complete | 2026-02-27 |
 | 34. Pipeline Foundation | v1.7 | 4/4 | Complete | 2026-03-04 |
-| 35. Rabbit Hole | 5/5 | Complete    | 2026-03-04 | — |
+| 35. Rabbit Hole | v1.7 | 5/5 | Complete | 2026-03-04 |
+| 36. World Map | v1.7 | 0/6 | In Progress | — |
