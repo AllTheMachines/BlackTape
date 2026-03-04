@@ -13579,3 +13579,6 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 
 > **Commit 1dbbaa9c** (2026-03-04 23:09) — fix: export dialog clipped on small windows (#90)
 > Files changed: 1
+
+> **Commit 6d4ecfec** (2026-03-04 23:09) — wip: auto-save
+> Files changed: 1
