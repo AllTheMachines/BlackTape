@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.7
 milestone_name: The Rabbit Hole
 status: in_progress
-stopped_at: Phase 37 context gathered
-last_updated: "2026-03-04T18:00:30.654Z"
+stopped_at: Completed 37-02-PLAN.md (50s era pill — Discover decade filter)
+last_updated: "2026-03-04T18:22:32.855Z"
 last_activity: 2026-03-04 — 36-06 "See on map" cross-links on Rabbit Hole artist + tag pages (Phase 36 complete)
 progress:
   total_phases: 3
   completed_phases: 2
-  total_plans: 11
-  completed_plans: 11
+  total_plans: 13
+  completed_plans: 12
 ---
 
 ---
@@ -120,10 +120,10 @@ See: .planning/PROJECT.md (updated 2026-03-03 after v1.7 start)
 
 ## Current Position
 
-Phase: 36-world-map (COMPLETE — all 6 plans done)
-Plan: 36-06 complete → 6/6 plans done (01 route scaffold, 02 layout bypass, 03 Leaflet map, 04 tag filter, 05 artist panel, 06 cross-links)
-Status: Phase 36 World Map fully complete — pins, clustering, tag filter, artist panel, bidirectional Rabbit Hole cross-links all live
-Last activity: 2026-03-04 — 36-06 "See on map" cross-links on Rabbit Hole artist + tag pages (Phase 36 complete)
+Phase: 37-context-sidebar-decade-filtering (in progress)
+Plan: 37-02 complete → 2 plans done so far (01 context + planning, 02 50s era pill)
+Status: Phase 37 in progress — 50s era pill added to Discover filter (37-02 done)
+Last activity: 2026-03-04 — 37-02 Add '50s' to ERA_OPTIONS in Discover decade filter panel
 
 ## Accumulated Context
 
@@ -227,6 +227,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-04T18:00:30.651Z
-Stopped at: Phase 37 context gathered
-Resume file: .planning/phases/37-context-sidebar-decade-filtering/37-CONTEXT.md
+Last session: 2026-03-04T18:22:32.851Z
+Stopped at: Completed 37-02-PLAN.md (50s era pill — Discover decade filter)
+Resume file: None
