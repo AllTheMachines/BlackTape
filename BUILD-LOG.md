@@ -13261,3 +13261,6 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 
 > **Commit c122217c** (2026-03-04 19:26) — feat(37-01): add AI companion chat panel to RightSidebar
 > Files changed: 1
+
+> **Commit 03ea12b8** (2026-03-04 19:27) — docs(37-01): complete context sidebar + AI companion plan summary
+> Files changed: 4
