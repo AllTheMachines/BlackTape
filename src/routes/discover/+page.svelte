@@ -9,7 +9,7 @@
 	let { data }: { data: PageData } = $props();
 
 	// Era decade options
-	const ERA_OPTIONS = ['60s', '70s', '80s', '90s', '00s', '10s', '20s'];
+	const ERA_OPTIONS = ['50s', '60s', '70s', '80s', '90s', '00s', '10s', '20s'];
 	const MAX_TAGS = 5;
 
 	let customTagInput = $state('');
