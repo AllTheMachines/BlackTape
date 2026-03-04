@@ -32,8 +32,49 @@ Phase 37 plan 01 in progress (awaiting checkpoint verification). Added two new s
 `npm run check` 0 errors, 30 warnings (all pre-existing). 196 code tests pass.
 
 <!-- status -->
-All UAT gap fixes done. Geocoding pipeline complete: 417 new artists geocoded (317 city, 100 country). Ready for UAT re-run on phases 35 + 36.
+Server migration in progress. Hetzner VPS up, PostgreSQL running, API live at 46.225.239.209:3000. MusicBrainz extraction running in background (~30 min). Import script and SQL translator ready. App pointed at new server.
 <!-- /status -->
+
+---
+
+## Entry 2026-03-04 — Backend Migration: Distributed SQLite → Hetzner Postgres
+
+Strategic shift: instead of distributing a ~3GB SQLite database file to every user, BlackTape now runs a server. Users download only the app (~80MB). First search works immediately.
+
+**Architecture decision:**
+
+The original plan required users to download a separate database file — a significant friction point for onboarding. Moving to a hosted Postgres backend eliminates this entirely. Cost: ~€7.49/month on Hetzner (CAX21 ARM64 VPS). Donations kick in when infra costs exceed €50/month.
+
+> "Users just install the app and it works. That's the whole point."
+
+**What was built:**
+
+1. **Hetzner VPS** — `blacktape-db`, CAX21 (4 vCPU, 8GB RAM, 80GB SSD), Nuremberg. Ubuntu 24.04. Created via Hetzner API. SSH key `controlcenter-vps`.
+
+2. **PostgreSQL 16** — Installed and tuned for 8GB RAM: `shared_buffers=2GB`, `work_mem=64MB`, `effective_cache_size=6GB`. Database `blacktape`, user `blacktape`.
+
+3. **MusicBrainz import pipeline** — Downloaded `mbdump.tar.bz2` (6.6GB) and `mbdump-derived.tar.bz2` (461MB) directly from `data.metabrainz.org`. Wrote `pipeline/do-import-pg.mjs` — one-pass extraction + PostgreSQL import with:
+   - `mbid` column (not `gid`) to match app expectations
+   - `slug` column generated during import (same algorithm as `add-slugs.js`)
+   - `uniqueness_score` computed from `tag_stats` after import
+   - Trigram indexes (`pg_trgm`) for fast ILIKE search
+   - `tag_stats` and `tag_cooccurrence` tables for discovery features
+
+4. **Hono REST API** — Node.js 22 + Hono on port 3000, managed by PM2. Two modes:
+   - `POST /query` — SQL passthrough with a SQLite→PostgreSQL translator (handles `GROUP_CONCAT→STRING_AGG`, `FTS5 MATCH→ILIKE`, `ended=0→false`, `strftime→EXTRACT`, `?→$N`)
+   - `GET /api/artists/:id` — direct typed endpoint
+   - `GET /health` — health check
+
+5. **App wired up** — `API_BASE_URL` in `config.ts` now points to `http://46.225.239.209:3000`. The `HttpProvider` is unchanged — it still sends `POST /query { sql, params }`. The server translates and runs against Postgres.
+
+**Key technical decisions:**
+
+- **SQL passthrough with translation** rather than rewriting all queries. The 50+ query functions in `queries.ts` use SQLite dialect — rewriting them all was unnecessary risk. A translation layer on the server handles the dialect differences and lets us iterate toward proper REST endpoints gradually.
+- **One-pass tar extraction** to avoid scanning the 6.5GB bzip2 archive multiple times (learned from first attempt which was 3× slower).
+- **`bzip2` not preinstalled** on Ubuntu 24.04 minimal — had to `apt install bzip2` before `tar -xjf` worked.
+- **`mbdump-create-tables.tar.bz2` no longer exists** in MusicBrainz full exports as of 2026 — the schema is now only in the GitHub repo. Created the schema manually from known column definitions.
+
+**Import running now** — extraction ~30 min, full import + index build ~45 min total. API returns live health check; search will work once import completes.
 
 ---
 
@@ -13486,4 +13527,7 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 > Files changed: 1
 
 > **Commit 936813dc** (2026-03-04 22:16) — wip: auto-save
+> Files changed: 1
+
+> **Commit c148b560** (2026-03-04 22:23) — wip: auto-save
 > Files changed: 1

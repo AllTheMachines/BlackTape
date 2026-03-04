@@ -64,6 +64,16 @@ function elapsed(start) {
   return s < 60 ? `${s.toFixed(1)}s` : `${Math.floor(s/60)}m ${Math.round(s%60)}s`;
 }
 
+// Slug generation — same algorithm as pipeline/add-slugs.js
+function generateSlug(name) {
+  return name
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')  // strip diacritics
+    .replace(/[^a-z0-9]+/g, '-')     // non-alphanumeric → hyphen
+    .replace(/^-|-$/g, '');          // trim leading/trailing hyphens
+}
+
 // Table column definitions (matches MusicBrainz TSV COPY format)
 const COLS = {
   artist: ['id','gid','name','sort_name','begin_date_year','begin_date_month','begin_date_day',
@@ -106,9 +116,10 @@ async function main() {
 
     CREATE TABLE artists (
       id INTEGER PRIMARY KEY,
-      gid UUID NOT NULL,
+      mbid UUID NOT NULL,
       name TEXT NOT NULL,
       sort_name TEXT NOT NULL,
+      slug TEXT,
       type TEXT,
       country TEXT,
       area_id INTEGER,
@@ -116,7 +127,8 @@ async function main() {
       comment TEXT,
       begin_year SMALLINT,
       end_year SMALLINT,
-      ended BOOLEAN DEFAULT FALSE
+      ended BOOLEAN DEFAULT FALSE,
+      uniqueness_score FLOAT DEFAULT 0
     );
 
     CREATE TABLE artist_tags (
@@ -196,13 +208,28 @@ async function main() {
   const artistPath = `${EXTRACT_DIR}/artist`;
   if (!existsSync(artistPath)) throw new Error('artist file not found — did extraction succeed?');
 
+  // Track slugs for collision handling (same as add-slugs.js)
+  const slugCounts = new Map();
+
   await parseFile(artistPath, COLS.artist, async (row) => {
     const gender = row.gender === '1' ? 'Male' : row.gender === '2' ? 'Female' : row.gender === '3' ? 'Non-binary' : null;
+
+    // Generate slug with collision handling
+    let baseSlug = generateSlug(row.name) || 'artist';
+    let slug = baseSlug;
+    if (slugCounts.has(slug)) {
+      // Collision: append first 8 chars of MBID (same as add-slugs.js)
+      const mbidShort = (row.gid || '').replace(/-/g, '').slice(0, 8);
+      slug = `${baseSlug}-${mbidShort}`;
+    }
+    slugCounts.set(baseSlug, (slugCounts.get(baseSlug) || 0) + 1);
+
     batch.push({
       id: parseInt(row.id),
-      gid: row.gid,
+      mbid: row.gid,
       name: row.name,
       sort_name: row.sort_name,
+      slug,
       type: typeMap.get(row.type) || null,
       country: areaMap.get(row.area) || null,
       area_id: row.area ? parseInt(row.area) : null,
@@ -213,10 +240,10 @@ async function main() {
       ended: row.ended === 't',
     });
     if (batch.length >= BATCH) {
-      await flushBatch('artists', batch, ['id','gid','name','sort_name','type','country','area_id','gender','comment','begin_year','end_year','ended']);
+      await flushBatch('artists', batch, ['id','mbid','name','sort_name','slug','type','country','area_id','gender','comment','begin_year','end_year','ended']);
     }
   });
-  await flushBatch('artists', batch, ['id','gid','name','sort_name','type','country','area_id','gender','comment','begin_year','end_year','ended']);
+  await flushBatch('artists', batch, ['id','mbid','name','sort_name','slug','type','country','area_id','gender','comment','begin_year','end_year','ended']);
   const [{ count: artCount }] = await sql`SELECT COUNT(*) FROM artists`;
   console.log(`\n  ${formatNum(parseInt(artCount))} artists in ${elapsed(t)}\n`);
 
@@ -270,19 +297,40 @@ async function main() {
   const [{ count: coocCount }] = await sql`SELECT COUNT(*) FROM tag_cooccurrence`;
   console.log(`  ${formatNum(parseInt(coocCount))} edges in ${elapsed(t)}`);
 
-  // Step 8: Indexes
+  // Step 8: Compute uniqueness_score per artist
+  console.log('\n--- Computing uniqueness_score (may take 5-10 min) ---');
+  t = Date.now();
+  await sql.unsafe(`
+    UPDATE artists
+    SET uniqueness_score = sub.score
+    FROM (
+      SELECT at.artist_id,
+             ROUND(CAST(AVG(1.0 / NULLIF(ts.artist_count, 0)) * 1000.0 AS numeric), 2) AS score
+      FROM artist_tags at
+      JOIN tag_stats ts ON ts.tag = at.tag
+      GROUP BY at.artist_id
+    ) sub
+    WHERE artists.id = sub.artist_id
+  `);
+  const [{ count: scoredCount }] = await sql`SELECT COUNT(*) FROM artists WHERE uniqueness_score > 0`;
+  console.log(`  ${formatNum(parseInt(scoredCount))} artists scored in ${elapsed(t)}`);
+
+  // Step 9: Indexes
   console.log('\n--- Building indexes ---');
   t = Date.now();
-  await sql`CREATE INDEX IF NOT EXISTS idx_artists_name_trgm ON artists USING gin(name gin_trgm_ops)`.catch(() => {
-    // pg_trgm may not be installed, fall back
-    return sql`CREATE INDEX IF NOT EXISTS idx_artists_name ON artists(name)`;
-  });
+  await sql`CREATE INDEX IF NOT EXISTS idx_artists_slug ON artists(slug)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_artists_mbid ON artists(mbid)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_artists_sort_name ON artists(sort_name)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_artists_type ON artists(type)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_artists_country ON artists(country)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_artists_begin_year ON artists(begin_year)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_artists_uniqueness ON artists(uniqueness_score DESC)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_artist_tags_artist ON artist_tags(artist_id)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_artist_tags_tag ON artist_tags(tag)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_tag_stats_count ON tag_stats(artist_count DESC)`;
+  // Trigram index for fast ILIKE search
+  await sql.unsafe('CREATE INDEX IF NOT EXISTS idx_artists_name_trgm ON artists USING gin(name gin_trgm_ops)');
+  await sql.unsafe('CREATE INDEX IF NOT EXISTS idx_artists_sort_trgm ON artists USING gin(sort_name gin_trgm_ops)');
   console.log(`  Done in ${elapsed(t)}`);
 
   // Summary
@@ -290,9 +338,11 @@ async function main() {
   const [{ count: aN }] = await sql`SELECT COUNT(*) FROM artists`;
   const [{ count: tN }] = await sql`SELECT COUNT(*) FROM artist_tags`;
   const [{ count: tsN }] = await sql`SELECT COUNT(*) FROM tag_stats`;
+  const [{ count: sN }] = await sql`SELECT COUNT(*) FROM artists WHERE slug IS NOT NULL`;
   console.log(`  artists:       ${formatNum(parseInt(aN))}`);
   console.log(`  artist_tags:   ${formatNum(parseInt(tN))}`);
   console.log(`  tag_stats:     ${formatNum(parseInt(tsN))}`);
+  console.log(`  with slugs:    ${formatNum(parseInt(sN))}`);
 
   await sql.end();
 }

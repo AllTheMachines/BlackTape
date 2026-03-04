@@ -7,8 +7,8 @@ export const PROJECT_TAGLINE = 'Dig deeper.';
 // When empty, the backers page shows "Backer credits coming soon".
 export const BLACKTAPE_PUBKEY = '';
 
-// Mercury API base URL — Cloudflare Worker + D1 hosting the music catalog.
-export const API_BASE_URL = 'https://api.blacktape.org';
+// BlackTape API base URL — Hetzner VPS (blacktape-db) with PostgreSQL.
+export const API_BASE_URL = 'http://46.225.239.209:3000';
 
 // Help base URL — change to 'https://docs.blacktape.app' to serve help externally.
 // When set to a relative path, help opens in-app. When set to https://, shell.open() is used.
