@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.7
 milestone_name: The Rabbit Hole
-status: completed
-stopped_at: Completed 36-02-PLAN.md (World Map layout bypass)
-last_updated: "2026-03-04T15:25:37.273Z"
-last_activity: 2026-03-04 — 35-05 Genre/tag exploration page (Rabbit Hole complete)
+status: in_progress
+stopped_at: Completed 36-01-PLAN.md (World Map route scaffold)
+last_updated: "2026-03-04T00:15:00Z"
+last_activity: 2026-03-04 — 36-01 World Map route scaffold + leaflet.markercluster
 progress:
   total_phases: 3
   completed_phases: 1
   total_plans: 11
-  completed_plans: 6
+  completed_plans: 7
 ---
 
 ---
@@ -42,9 +42,9 @@ See: .planning/PROJECT.md (updated 2026-03-03 after v1.7 start)
 ## Current Position
 
 Phase: 36-world-map (IN PROGRESS)
-Plan: 36-02 complete → 1/6 plans done
-Status: Layout bypass complete; world map page + data layer remaining
-Last activity: 2026-03-04 — 36-02 isWorldMap layout bypass + World Map nav item
+Plan: 36-01 complete → 2/6 plans done (01 route scaffold, 02 layout bypass)
+Status: Route scaffold + layout bypass complete; Leaflet init + markers + sidebar + routing remaining
+Last activity: 2026-03-04 — 36-01 World Map route scaffold + leaflet.markercluster installed
 
 ## Accumulated Context
 
@@ -111,6 +111,10 @@ Last activity: 2026-03-04 — 36-02 isWorldMap layout bypass + World Map nav ite
 
 ### Phase 36 World Map (v1.7 map feature) — IN PROGRESS
 
+- 36-01 DONE: leaflet.markercluster installed + /world-map route scaffold (+layout.ts, +page.ts, +page.svelte)
+- Key decision: leaflet.markercluster must be dynamically imported in onMount after leaflet itself — not top-level in Svelte
+- Key decision: Load function degrades gracefully (try/catch -> artists=[]) for pre-pipeline state
+- Key decision: CSS height via calc(100vh - CSS vars with fallbacks) — avoids hardcoding Titlebar/Player pixel values
 - 36-02 DONE: isWorldMap bypass in root layout + World Map nav item in Tauri nav
 - Key decision: isWorldMap keeps Titlebar and Player — same treatment as isRabbitHole; nav/PanelLayout/footer suppressed for /world-map/* routes
 - Key decision: World Map nav link is Tauri-only — feature requires SQLite, no web counterpart
@@ -121,6 +125,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-04T15:25:37.265Z
-Stopped at: Completed 36-02-PLAN.md (World Map layout bypass)
+Last session: 2026-03-04T00:15:00Z
+Stopped at: Completed 36-01-PLAN.md (World Map route scaffold)
 Resume file: None

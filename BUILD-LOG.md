@@ -13010,3 +13010,6 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 
 > **Commit 7431de54** (2026-03-04 16:24) — feat(36-01): create world-map route scaffold
 > Files changed: 3
+
+> **Commit 85519a05** (2026-03-04 16:26) — docs(36-02): complete World Map layout bypass plan
+> Files changed: 4
