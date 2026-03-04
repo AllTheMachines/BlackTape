@@ -13701,3 +13701,21 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 
 > **Commit 30da6157** (2026-03-05 00:13) — wip: auto-save
 > Files changed: 2
+
+> **Commit e627205f** (2026-03-05 00:16) — auto-save: 1 files @ 00:16
+> Files changed: 1
+
+> **Commit e210136e** (2026-03-05 00:25) — fix: sign macOS updater bundle with rsign2 instead of Tauri CLI
+> Files changed: 1
+
+> **Commit 4a3b8e54** (2026-03-05 00:30) — fix: disable updater pubkey during build to allow manual rsign2 signing
+> Files changed: 1
+
+> **Commit da919e27** (2026-03-05 00:35) — fix: use throwaway tauri-generated key for build, rsign2 for real signature
+> Files changed: 1
+
+> **Commit 3a347250** (2026-03-05 00:39) — fix: use non-empty password for throwaway key — Tauri CLI can't decrypt empty-pw keys
+> Files changed: 1
+
+> **Commit ab6d938f** (2026-03-05 00:44) — fix: move APPLE_CERTIFICATE to job-level env so step conditions evaluate correctly
+> Files changed: 1
