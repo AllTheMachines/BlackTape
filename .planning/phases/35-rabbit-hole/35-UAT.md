@@ -8,10 +8,10 @@ updated: 2026-03-04T20:00:00Z
 
 ## Current Test
 
-number: 3
-name: Navigate to artist from search
+number: 4
+name: Navigate to tag from search
 expected: |
-  Clicking an artist in the autocomplete dropdown navigates to /rabbit-hole/artist/[slug]. The artist card loads in-place (no full page reload feel). The history trail bar at the top shows the visited artist.
+  Clicking a tag in the autocomplete dropdown navigates to /rabbit-hole/tag/[slug]. The tag page loads. The history trail bar shows the visited tag.
 awaiting: user response
 
 ## Tests
@@ -28,7 +28,9 @@ severity: cosmetic
 
 ### 3. Navigate to artist from search
 expected: Clicking an artist in the autocomplete dropdown navigates to /rabbit-hole/artist/[slug]. The artist card loads in-place (no full page reload feel). The history trail bar at the top shows the visited artist.
-result: [pending]
+result: issue
+reported: "no. it shows 'no artist found'"
+severity: major
 
 ### 4. Navigate to tag from search
 expected: Clicking a tag in the autocomplete dropdown navigates to /rabbit-hole/tag/[slug]. The tag page loads. The history trail bar shows the visited tag.
@@ -62,8 +64,8 @@ result: [pending]
 
 total: 10
 passed: 1
-issues: 1
-pending: 8
+issues: 2
+pending: 7
 skipped: 0
 
 ## Gaps
@@ -73,5 +75,13 @@ skipped: 0
   reason: "User reported: yes. (note that it should be a bit more up in the app. the first third"
   severity: cosmetic
   test: 2
+  artifacts: []
+  missing: []
+
+- truth: "Clicking an artist from search navigates to the artist card page"
+  status: failed
+  reason: "User reported: no. it shows 'no artist found'"
+  severity: major
+  test: 3
   artifacts: []
   missing: []
