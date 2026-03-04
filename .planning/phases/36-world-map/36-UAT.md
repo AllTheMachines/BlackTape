@@ -1,18 +1,14 @@
 ---
-status: testing
+status: complete
 phase: 36-world-map
 source: 36-01-SUMMARY.md, 36-02-SUMMARY.md, 36-03-SUMMARY.md, 36-04-SUMMARY.md, 36-05-SUMMARY.md, 36-06-SUMMARY.md
 started: 2026-03-04T20:35:00Z
-updated: 2026-03-04T20:35:00Z
+updated: 2026-03-04T21:00:00Z
 ---
 
 ## Current Test
 
-number: 7
-name: See on map — cross-links from Rabbit Hole
-expected: |
-  On a Rabbit Hole artist page (for a geocoded artist), a "See on map" button is visible. Clicking it opens /world-map with that artist's panel open.
-awaiting: user response
+[testing complete]
 
 ## Tests
 
@@ -48,15 +44,16 @@ reason: no artist pins visible (0 artists loading) — blocked by test 1 issue
 
 ### 7. See on map — cross-links from Rabbit Hole
 expected: On a Rabbit Hole artist page (for a geocoded artist), a "See on map" button is visible. Clicking it opens /world-map with that artist's pin highlighted or panel open.
-result: [pending]
+result: skipped
+reason: artist card broken (test 3/5 phase 35) — cannot reach Rabbit Hole artist page to verify
 
 ## Summary
 
 total: 7
 passed: 1
 issues: 1
-pending: 1
-skipped: 4
+pending: 0
+skipped: 5
 
 ## Gaps
 
