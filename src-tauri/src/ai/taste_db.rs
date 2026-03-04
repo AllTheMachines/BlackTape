@@ -124,6 +124,28 @@ pub fn init_taste_db(app_data_dir: &Path) -> Result<Connection, String> {
             summary     TEXT NOT NULL,
             generated_at INTEGER NOT NULL
         );
+
+        CREATE TABLE IF NOT EXISTS release_group_cache (
+            artist_mbid          TEXT NOT NULL,
+            release_group_mbid   TEXT NOT NULL,
+            title                TEXT NOT NULL,
+            release_type         TEXT,
+            first_release_year   INTEGER,
+            fetched_at           INTEGER NOT NULL,
+            PRIMARY KEY (artist_mbid, release_group_mbid)
+        );
+        CREATE INDEX IF NOT EXISTS idx_rgc_artist ON release_group_cache(artist_mbid);
+
+        CREATE TABLE IF NOT EXISTS release_track_cache (
+            release_group_mbid   TEXT NOT NULL,
+            track_mbid           TEXT NOT NULL,
+            title                TEXT NOT NULL,
+            track_number         INTEGER,
+            duration_ms          INTEGER,
+            fetched_at           INTEGER NOT NULL,
+            PRIMARY KEY (release_group_mbid, track_mbid)
+        );
+        CREATE INDEX IF NOT EXISTS idx_rtc_release ON release_track_cache(release_group_mbid);
         ",
     )
     .map_err(|e| format!("Failed to create taste.db tables: {}", e))?;
