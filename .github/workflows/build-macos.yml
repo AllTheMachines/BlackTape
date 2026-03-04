@@ -34,10 +34,10 @@ jobs:
         run: |
           RELEASE=$(curl -s https://api.github.com/repos/ggml-org/llama.cpp/releases/latest | grep '"tag_name"' | cut -d'"' -f4)
           echo "Downloading llama.cpp $RELEASE"
-          curl -L "https://github.com/ggml-org/llama.cpp/releases/download/${RELEASE}/llama-${RELEASE}-bin-macos-arm64.zip" -o llama-macos.zip
-          unzip -o llama-macos.zip -d llama-macos
+          curl -L "https://github.com/ggml-org/llama.cpp/releases/download/${RELEASE}/llama-${RELEASE}-bin-macos-arm64.tar.gz" -o llama-macos.tar.gz
+          tar -xzf llama-macos.tar.gz
           # Tauri sidecar naming convention: <name>-<target-triple>
-          cp llama-macos/llama-server src-tauri/binaries/llama-server-aarch64-apple-darwin
+          cp llama-${RELEASE}/llama-server src-tauri/binaries/llama-server-aarch64-apple-darwin
           chmod +x src-tauri/binaries/llama-server-aarch64-apple-darwin
 
       - name: Import Apple certificate
