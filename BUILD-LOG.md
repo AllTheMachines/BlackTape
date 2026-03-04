@@ -12606,3 +12606,36 @@ Zero `mercury.exe` references remain in tools, src, or app-recordings. Historica
 
 > **Commit 0bc4fe5b** (2026-03-04 13:16) — auto-save: 1 files @ 13:16
 > Files changed: 1
+
+> **Commit 519433c1** (2026-03-04 13:19) — wip: auto-save
+
+> Files changed: 2
+
+> **Commit add391a8** (2026-03-04 13:22) — feat(34-01): create build-similar-artists.mjs pipeline script
+> Files changed: 1
+
+> **Commit 41f8bec2** (2026-03-04 13:26) — fix(34-01): enforce both symmetry and top-K constraints correctly
+> Files changed: 1
+
+## Entry 2026-03-04 — Phase 34-01: Similar Artists Pipeline
+
+Built `pipeline/build-similar-artists.mjs` — the first pipeline script for v1.7 The Rabbit Hole. It precomputes pairwise Jaccard similarity between artists from their shared tags and stores results in a new `similar_artists` table.
+
+**What it does:**
+- Self-JOINs `artist_tags` to find all pairs sharing >= 2 tags
+- Computes Jaccard index: `shared_tags / (|A_tags| + |B_tags| - shared_tags)`
+- Filters to Jaccard >= 0.15 (15% tag overlap minimum)
+- Enforces top-10 per artist and full symmetry
+
+**Bug discovered and fixed:** The plan's original SQL (a UNION of ranked_forward + ranked_backward WHERE rn <= 10) had two flaws: (1) an artist could appear in both sides of the UNION, producing up to 20 entries, and (2) the backward ranking didn't guarantee the reverse of every forward pair existed. Fixed with a 4-phase approach: score unique pairs, symmetric expansion + top-10 ranking, symmetry backfill, then top-K enforcement + final asymmetric cleanup.
+
+**On this sample DB** (subset of the full 2.6M artist dataset): 746 symmetric pairs across 218 artists. On the full DB the computation is expected to take 5-15 minutes and produce millions of pairs.
+
+**All integrity checks pass:**
+- total_pairs: 746 (> 0) ✓
+- below_threshold (score < 0.15): 0 ✓
+- max_per_artist: 10 (≤ 10) ✓
+- asymmetric pairs: 0 ✓
+- Idempotent: same count on two consecutive runs ✓
+
+Phase 35 (Rabbit Hole) can now use `getSimilarArtists(artistId)` queries against this table.
