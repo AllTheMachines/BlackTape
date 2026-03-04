@@ -13570,3 +13570,6 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 
 > **Commit d489f79d** (2026-03-04 23:01) — wip: auto-save
 > Files changed: 1
+
+> **Commit a1ec2f0b** (2026-03-04 23:04) — fix: bundle llama-server DLLs in NSIS installer (#91)
+> Files changed: 2
