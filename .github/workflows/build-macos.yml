@@ -64,17 +64,46 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ""
+          # Note: TAURI_SIGNING_PRIVATE_KEY intentionally not set here.
+          # Tauri CLI can't decrypt the key with an empty password — we sign manually below.
         run: npm run tauri build
 
       - name: Build app (unsigned — no cert configured)
         if: ${{ env.APPLE_CERTIFICATE == '' }}
-        env:
-          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ""
         run: npm run tauri build -- --config '{"bundle":{"macOS":{"signingIdentity":null}}}'
+
+      - name: Sign updater bundle with rsign2
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+        run: |
+          # Install rsign2 (same tool used for Windows signing)
+          cargo install rsign2 --locked
+
+          # Decode the private key — secret is the base64-encoded key file content
+          # Try base64 decode first; fall back to raw (handles both formats)
+          if printf '%s' "$TAURI_SIGNING_PRIVATE_KEY" | base64 --decode 2>/dev/null | grep -q 'untrusted comment:'; then
+            printf '%s' "$TAURI_SIGNING_PRIVATE_KEY" | base64 --decode > /tmp/updater.key
+          else
+            printf '%s' "$TAURI_SIGNING_PRIVATE_KEY" > /tmp/updater.key
+          fi
+
+          # Find the .app.tar.gz produced by the build
+          APP_TAR=$(find src-tauri/target/release/bundle/macos -name "*.app.tar.gz" | head -1)
+          if [ -z "$APP_TAR" ]; then
+            echo "ERROR: No .app.tar.gz found in bundle output"
+            exit 1
+          fi
+          echo "Signing: $APP_TAR"
+
+          # Sign with rsign2 using -W (passwordless — key has empty password)
+          APP_SIG="${APP_TAR}.sig"
+          rsign sign -s /tmp/updater.key -W -x "$APP_SIG" "$APP_TAR"
+
+          echo "Signature written: $APP_SIG"
+          ls -la "$APP_TAR" "$APP_SIG"
+
+          # Clean up key file
+          rm -f /tmp/updater.key
 
       - name: Upload DMG artifact
         uses: actions/upload-artifact@v4
@@ -109,7 +138,7 @@ jobs:
           VERSION=$(grep '^version' src-tauri/Cargo.toml | head -1 | cut -d'"' -f2)
           echo "Version: $VERSION"
 
-          # Signature: base64-encode the entire .sig file (Tauri requirement)
+          # Signature: base64-encode the entire .sig file (Tauri updater requirement)
           SIG=$(base64 -w0 "$APP_SIG" 2>/dev/null || base64 "$APP_SIG")
 
           # Asset URL — points to GitHub release (where we'll upload the tar.gz)
