@@ -13199,3 +13199,12 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 
 > **Commit baa7b40a** (2026-03-04 19:00) — docs(37): capture phase context
 > Files changed: 1
+
+> **Commit f3877cc9** (2026-03-04 19:00) — wip: auto-save
+> Files changed: 2
+
+> **Commit ffcdf31b** (2026-03-04 19:06) — docs(37): research context sidebar + decade filtering phase
+> Files changed: 1
+
+> **Commit 3ef69c3e** (2026-03-04 19:07) — docs(phase-37): add validation strategy
+> Files changed: 1
