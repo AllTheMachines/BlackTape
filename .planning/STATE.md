@@ -3,16 +3,16 @@ gsd_state_version: 1.0
 milestone: v1.7
 milestone_name: The Rabbit Hole
 status: in_progress
-stopped_at: Completed 35-03-PLAN.md (Rabbit Hole landing page — search + Random entry point)
-last_updated: "2026-03-04T14:17:00Z"
-last_activity: 2026-03-04 — 35-03 Rabbit Hole landing page with unified search + Random button
+stopped_at: Completed 35-04-PLAN.md (Artist exploration card — Rabbit Hole main view)
+last_updated: "2026-03-04T14:21:00Z"
+last_activity: 2026-03-04 — 35-04 Artist exploration card (Rabbit Hole main view)
 progress:
   total_phases: 1
   completed_phases: 0
   total_plans: 5
-  completed_plans: 3
-  percent: 60
-  bar: "[██████----] 60%"
+  completed_plans: 4
+  percent: 80
+  bar: "[████████--] 80%"
 ---
 
 # Project State
@@ -27,9 +27,9 @@ See: .planning/PROJECT.md (updated 2026-03-03 after v1.7 start)
 ## Current Position
 
 Phase: 35-rabbit-hole (in progress)
-Plan: 35-03 complete → 35-04 next
-Status: 3/5 plans complete (Wave 1 data layer + route wiring + landing page done)
-Last activity: 2026-03-04 — 35-03 Rabbit Hole landing page with unified search + Random button
+Plan: 35-04 complete → 35-05 next
+Status: 4/5 plans complete (data layer + route wiring + landing page + artist card done)
+Last activity: 2026-03-04 — 35-04 Artist exploration card (Rabbit Hole main view)
 
 ## Accumulated Context
 
@@ -84,6 +84,11 @@ Last activity: 2026-03-04 — 35-03 Rabbit Hole landing page with unified search
 - Key decision: Search queries artists and tags in parallel via Promise.all — single 200ms debounce covers both
 - Key decision: Tag slug uses encodeURIComponent(tag) to handle spaces and special chars in tag URLs
 - Key decision: Random button fails silently — null result from getRandomArtist() shows nothing (edge case: empty DB)
+- 35-04 DONE: Artist exploration card — artist header, tags, similar artists row, releases (async), play + continue actions
+- Key decision: $derived(data) not destructuring into $state — enables reactive updates when navigating in-place between artist slugs
+- Key decision: shell.open via @tauri-apps/plugin-shell for streaming links — opens in system browser/native app, not WebView2
+- Key decision: Continue fallback chain — similarArtists first; else getRandomArtistByTag on primary tag
+- Key decision: Tags not routed through TagChip.svelte — that component hardcodes /search links; Rabbit Hole uses /rabbit-hole/tag/ routes
 
 ### Blockers/Concerns
 
@@ -91,6 +96,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-04T14:17:00Z
-Stopped at: Completed 35-03-PLAN.md (Rabbit Hole landing page — search + Random entry point)
-Resume file: .planning/phases/35-rabbit-hole/35-04-PLAN.md
+Last session: 2026-03-04T14:21:00Z
+Stopped at: Completed 35-04-PLAN.md (Artist exploration card — Rabbit Hole main view)
+Resume file: .planning/phases/35-rabbit-hole/35-05-PLAN.md

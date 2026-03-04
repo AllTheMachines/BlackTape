@@ -4,6 +4,29 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-03-04 — Phase 35 Plan 04: Artist Exploration Card
+
+Phase 35 plan 04 complete. Built the artist card — the heart of the Rabbit Hole experience. This is where every click-through lands.
+
+**Load function (`src/routes/rabbit-hole/artist/[slug]/+page.ts`):**
+Loads artist by slug, similar artists (up to 10), and streaming links in parallel. All client-side via the DB provider (Tauri SPA). Returns `{ artist, similarArtists, links }`. Graceful fallback: all fields empty on error, card renders "Artist not found."
+
+**Card (`src/routes/rabbit-hole/artist/[slug]/+page.svelte`):**
+Full artist card with artist name (linked to `/artist/slug` full page), country chip, founding year, tag chips, similar artists row, releases section, and action row.
+
+- **Tag chips:** Each tag navigates to `/rabbit-hole/tag/[encodeURIComponent(tag)]` + pushes to trail. Not using existing `TagChip.svelte` — it hardcodes `/search` links.
+- **Similar artists row:** Horizontal wrap of name chips. Click navigates in-place to that artist's card + pushes to trail. Up to 10 from `getSimilarArtists`.
+- **Releases:** Top 3 by default, expand to show all. Tracks (up to 5 per release) with track number, title, and duration. "+N more" hint when release has more than 5.
+- **Play button:** Reads `streamingPref.platform`, finds matching link from `artist_links`, opens via `shell.open`. Falls back to first available link. Disabled when no links.
+- **Continue button:** Random pick from `similarArtists` array. Falls back to `getRandomArtistByTag(primaryTag, artist.id)` when no similar artists exist (pre-pipeline state).
+- **Releases load async:** `onMount` calls `get_or_cache_releases` Tauri command — card is fully interactive before track data arrives.
+
+Key pattern: `let { artist, similarArtists, links } = $derived(data)` — reactive destructuring means the card updates in-place when SvelteKit navigates between artist slugs without unmounting the component.
+
+`npm run check` 0 errors. 196 code tests pass.
+
+---
+
 ## Entry 2026-03-04 — Phase 35 Plan 03: Rabbit Hole Landing Page
 
 Phase 35 plan 03 complete. Built the Rabbit Hole entry point — the first thing users see when they navigate to `/rabbit-hole`.
@@ -12864,3 +12887,9 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 
 > **Commit 2fbfb1e3** (2026-03-04 15:15) — docs(35-03): complete Rabbit Hole landing page plan
 > Files changed: 4
+
+> **Commit 07389565** (2026-03-04 15:16) — auto-save: 2 files @ 15:16
+> Files changed: 2
+
+> **Commit bb07c46a** (2026-03-04 15:19) — feat(35-04): artist exploration card — full interactive Rabbit Hole card
+> Files changed: 1
