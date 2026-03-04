@@ -117,7 +117,12 @@ Plans:
 
 ### Phase 37: Context Sidebar + Decade Filtering
 
-**Goal:** Context panel in nav-content gap, decade row replacing year input, AI companion (if AI connected)
+**Goal:** Persistent quick-search in right sidebar (artists + tags autocomplete), AI companion chat (when AI ready), decade row 50s-20s in Discover filter panel
+
+**Plans:** 2 plans
+Plans:
+- [ ] 37-01-PLAN.md — Sidebar quick-search + AI companion (RightSidebar.svelte)
+- [ ] 37-02-PLAN.md — Decade row 50s-20s (discover/+page.svelte ERA_OPTIONS)
 
 ---
 
