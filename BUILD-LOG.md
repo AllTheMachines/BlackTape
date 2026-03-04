@@ -13169,3 +13169,9 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 
 > **Commit 0065f564** (2026-03-04 18:05) — wip: auto-save
 > Files changed: 1
+
+> **Commit 466a37b2** (2026-03-04 18:07) — wip: auto-save
+> Files changed: 2
+
+> **Commit 0e77129b** (2026-03-04 18:12) — docs(36-06): complete See on map cross-links plan — Phase 36 World Map done
+> Files changed: 3
