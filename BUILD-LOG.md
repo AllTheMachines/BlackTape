@@ -13178,3 +13178,12 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 
 > **Commit f96bbfcc** (2026-03-04 18:16) — auto-save: 1 files @ 18:16
 > Files changed: 1
+
+> **Commit e634ade4** (2026-03-04 18:18) — wip: auto-save
+> Files changed: 2
+
+> **Commit 2f879d63** (2026-03-04 18:25) — fix(36): backdrop dismisses panel, make pin count visible
+> Files changed: 1
+
+> **Commit 858bb24a** (2026-03-04 18:25) — docs(phase-36): complete phase execution
+> Files changed: 2
