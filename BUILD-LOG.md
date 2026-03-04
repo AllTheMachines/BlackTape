@@ -12537,3 +12537,6 @@ Zero `mercury.exe` references remain in tools, src, or app-recordings. Historica
 
 > **Commit 92ee3c19** (2026-03-04 11:07) — wip: auto-save
 > Files changed: 1
+
+> **Commit 80bde4ed** (2026-03-04 11:11) — wip: auto-save
+> Files changed: 1
