@@ -3,11 +3,42 @@ gsd_state_version: 1.0
 milestone: v1.7
 milestone_name: The Rabbit Hole
 status: in_progress
+stopped_at: Completed 36-03-PLAN.md (World Map Leaflet implementation)
+last_updated: "2026-03-04T15:30:28.899Z"
+last_activity: 2026-03-04 — 36-03 Leaflet map implementation (CartoDB tiles, markerClusterGroup, precision-tier opacity)
+progress:
+  total_phases: 3
+  completed_phases: 1
+  total_plans: 11
+  completed_plans: 8
+---
+
+---
+gsd_state_version: 1.0
+milestone: v1.7
+milestone_name: The Rabbit Hole
+status: in_progress
+stopped_at: Completed 36-01-PLAN.md (World Map route scaffold)
+last_updated: "2026-03-04T15:29:47.182Z"
+last_activity: 2026-03-04 — 36-01 World Map route scaffold + leaflet.markercluster installed
+progress:
+  total_phases: 3
+  completed_phases: 1
+  total_plans: 11
+  completed_plans: 8
+  percent: 95
+---
+
+---
+gsd_state_version: 1.0
+milestone: v1.7
+milestone_name: The Rabbit Hole
+status: in_progress
 stopped_at: Completed 36-01-PLAN.md (World Map route scaffold)
 last_updated: "2026-03-04T00:15:00Z"
 last_activity: 2026-03-04 — 36-01 World Map route scaffold + leaflet.markercluster
 progress:
-  total_phases: 3
+  [██████████] 95%
   completed_phases: 1
   total_plans: 11
   completed_plans: 7
@@ -42,9 +73,9 @@ See: .planning/PROJECT.md (updated 2026-03-03 after v1.7 start)
 ## Current Position
 
 Phase: 36-world-map (IN PROGRESS)
-Plan: 36-01 complete → 2/6 plans done (01 route scaffold, 02 layout bypass)
-Status: Route scaffold + layout bypass complete; Leaflet init + markers + sidebar + routing remaining
-Last activity: 2026-03-04 — 36-01 World Map route scaffold + leaflet.markercluster installed
+Plan: 36-03 complete → 3/6 plans done (01 route scaffold, 02 layout bypass, 03 Leaflet map)
+Status: Full Leaflet map live with CartoDB tiles, amber clusters, precision-tier opacity; tag filter + artist panel remaining
+Last activity: 2026-03-04 — 36-03 Leaflet map implementation (CartoDB tiles, markerClusterGroup, precision-tier opacity)
 
 ## Accumulated Context
 
@@ -118,6 +149,13 @@ Last activity: 2026-03-04 — 36-01 World Map route scaffold + leaflet.markerclu
 - 36-02 DONE: isWorldMap bypass in root layout + World Map nav item in Tauri nav
 - Key decision: isWorldMap keeps Titlebar and Player — same treatment as isRabbitHole; nav/PanelLayout/footer suppressed for /world-map/* routes
 - Key decision: World Map nav link is Tauri-only — feature requires SQLite, no web counterpart
+- 36-03 DONE: Full Leaflet map — CartoDB Dark Matter tiles, amber markerClusterGroup, precision-tier circleMarkers
+- Key decision: leaflet imported before leaflet.markercluster in onMount — markercluster patches L as side-effect; wrong order breaks markerClusterGroup
+- Key decision: Both MarkerCluster.css and MarkerCluster.Default.css injected at runtime with data-* guards — both required, structural + visual CSS
+- Key decision: precision-tier opacity (city 1.0, region 0.6, country 0.3) communicates geocoding confidence visually
+- Key decision: _artistData stored on each marker for Plan 05 artist panel — no re-fetch needed on click
+- Key decision: map.invalidateSize() called after buildMarkers() — resolves deferred CSS layout calculation (Pitfall 1)
+- Key decision: onDestroy(() => { map?.remove(); map = null }) — prevents Map container already initialized error on SPA back-navigation
 
 ### Blockers/Concerns
 
@@ -125,6 +163,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-04T00:15:00Z
-Stopped at: Completed 36-01-PLAN.md (World Map route scaffold)
+Last session: 2026-03-04T15:30:28.896Z
+Stopped at: Completed 36-03-PLAN.md (World Map Leaflet implementation)
 Resume file: None
