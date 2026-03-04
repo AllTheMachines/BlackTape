@@ -13719,3 +13719,6 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 
 > **Commit ab6d938f** (2026-03-05 00:44) — fix: move APPLE_CERTIFICATE to job-level env so step conditions evaluate correctly
 > Files changed: 1
+
+> **Commit 9cb22b4e** (2026-03-05 00:46) — auto-save: 1 files @ 00:46
+> Files changed: 1
