@@ -11,16 +11,22 @@ export const load: PageLoad = async ({ params }) => {
 			return { artist: null, similarArtists: [], links: [] };
 		}
 
-		const [similarArtists, linksRaw] = await Promise.all([
+		const [similarArtists, linksRaw, geoRow] = await Promise.all([
 			getSimilarArtists(db, artist.id, 10),
 			db.all<{ platform: string; url: string }>(
 				`SELECT platform, url FROM artist_links WHERE artist_id = ? ORDER BY platform`,
 				artist.id
+			),
+			db.get<{ has_geo: number }>(
+				`SELECT (city_lat IS NOT NULL AND city_lat != 0) as has_geo FROM artists WHERE id = ?`,
+				artist.id
 			)
 		]);
 
-		return { artist, similarArtists, links: linksRaw };
+		const hasGeocoordinates = (geoRow?.has_geo ?? 0) === 1;
+
+		return { artist, similarArtists, links: linksRaw, hasGeocoordinates };
 	} catch {
-		return { artist: null, similarArtists: [], links: [] };
+		return { artist: null, similarArtists: [], links: [], hasGeocoordinates: false };
 	}
 };

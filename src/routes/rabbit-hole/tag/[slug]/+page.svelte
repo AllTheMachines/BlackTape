@@ -42,6 +42,9 @@
 			{#if genre?.origin_city}
 				<span class="rh-genre-meta">{genre.origin_city}</span>
 			{/if}
+			<a href="/world-map?tag={encodeURIComponent(tag)}" class="rh-map-link">
+				See on map
+			</a>
 		</div>
 
 		<!-- Artists -->
@@ -126,6 +129,22 @@
 	.rh-genre-meta {
 		font-size: 0.875rem;
 		color: var(--t-3);
+	}
+
+	.rh-map-link {
+		font-size: 0.8125rem;
+		color: var(--t-3);
+		text-decoration: none;
+		padding: 5px 12px;
+		border: 1px solid var(--b-1);
+		border-radius: var(--radius-sm);
+		transition: color 0.15s, border-color 0.15s;
+		margin-left: auto;
+	}
+
+	.rh-map-link:hover {
+		color: var(--acc);
+		border-color: var(--acc);
 	}
 
 	.rh-section {
