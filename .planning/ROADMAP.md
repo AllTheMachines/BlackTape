@@ -82,16 +82,25 @@ See `.planning/milestones/v1.6-ROADMAP.md`
 
 ## v1.7 — The Rabbit Hole (Phases 34--37)
 
-- [x] Phase 34: Pipeline Foundation — Precompute similar artists (tag overlap), artist city geocoding (Wikidata SPARQL), track/release caching layer (completed 2026-03-04)
+- [x] Phase 34: Pipeline Foundation — Precompute similar artists (tag overlap), artist city geocoding (Wikidata SPARQL), track/release caching layer (completed 2026-03-04)
   **Plans:** 4 plans
   Plans:
   - [ ] 34-01-PLAN.md — Similar artists pipeline (build-similar-artists.mjs + similar_artists table)
   - [ ] 34-02-PLAN.md — City geocoding pipeline (build-geocoding.mjs + city_lat/city_lng/city_precision columns)
   - [ ] 34-03-PLAN.md — Track/release cache (track_cache.rs Tauri command + taste.db schema)
   - [ ] 34-04-PLAN.md — Query functions (getSimilarArtists, getGeocodedArtists in queries.ts)
+
 ### Phase 35: Rabbit Hole
 
-**Goal:** New `/rabbit-hole` route, artist + genre exploration pages, similar artists navigation, paginated tracks, history trail
+**Goal:** New `/rabbit-hole` route, artist + genre exploration pages, similar artists navigation, releases/tracks, history trail
+
+**Plans:** 5 plans
+Plans:
+- [ ] 35-01-PLAN.md — DB queries + trail store (5 new query functions + localStorage-persisted trail)
+- [ ] 35-02-PLAN.md — Layout shell (root layout isRabbitHole bypass, nav restructure, sub-layout with exit + trail)
+- [ ] 35-03-PLAN.md — Landing page (unified search + Random button)
+- [ ] 35-04-PLAN.md — Artist card page (card with similar artists, releases, play + continue)
+- [ ] 35-05-PLAN.md — Genre/tag page (random 20 artists, related tags, reshuffle)
 
 ### Phase 36: World Map
 
@@ -122,4 +131,5 @@ See `.planning/milestones/v1.6-ROADMAP.md`
 | 31. v1 Prep | v1.6 | 1/1 | Complete | 2026-02-27 |
 | 32. Embedded Players | v1.6 | 3/3 | Complete | 2026-02-27 |
 | 33. Artist Claim Form | v1.6 | 2/2 | Complete | 2026-02-27 |
-| 34. Pipeline Foundation | 4/4 | Complete    | 2026-03-04 | — |
+| 34. Pipeline Foundation | v1.7 | 4/4 | Complete | 2026-03-04 |
+| 35. Rabbit Hole | v1.7 | 0/5 | Planned | — |
