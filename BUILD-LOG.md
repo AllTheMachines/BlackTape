@@ -12667,3 +12667,34 @@ Built `pipeline/build-geocoding.mjs` — geocodes artists in mercury.db to city-
 **Design decision:** `'none'` sentinel vs NULL. Using NULL as "not yet geocoded" allows the script to resume. Using `'none'` for confirmed no-result artists skips them on re-runs without refetching from Wikidata. Phase 36 (World Map) queries `WHERE city_precision IN ('city', 'region', 'country')` — naturally excludes both NULL and 'none'.
 
 Full geocoding of 2.6M artists will take ~15-17 hours at 50 MBIDs/batch × 1.1s sleep. This is a pipeline maintenance task run before each distribution build.
+
+> **Commit 5e964f72** (2026-03-04 13:33) — docs(34-02): complete artist geocoding pipeline plan
+> Files changed: 4
+
+> **Commit e5a2b17e** (2026-03-04 13:34) — feat(34-03): add release_group_cache and release_track_cache tables to taste.db
+> Files changed: 1
+
+> **Commit a492573c** (2026-03-04 13:36) — feat(34-03): implement get_or_cache_releases Tauri command with track caching
+> Files changed: 3
+
+## Entry 2026-03-04 — Phase 34-03: Track/Release Cache Tauri Command
+
+Built the caching layer for MusicBrainz release and track data. Artist pages currently fetch release-groups on every load — a live API call every visit. This plan adds a cache-first command that makes second visits instant.
+
+**What was built:**
+- `release_group_cache` and `release_track_cache` tables in taste.db — `CREATE TABLE IF NOT EXISTS`, safe on existing databases
+- `src-tauri/src/ai/track_cache.rs` — new module with `CachedRelease`, `CachedTrack` structs and the `get_or_cache_releases` async Tauri command
+- Registered in `ai/mod.rs` and `lib.rs` invoke_handler
+
+**How get_or_cache_releases works:**
+1. Check `release_group_cache` for artist — if rows exist, return immediately (no network)
+2. On cache miss: fetch MB release-groups endpoint (`/ws/2/release-group?artist={mbid}&type=album|single|ep&limit=100`)
+3. Store all release groups in `release_group_cache`
+4. For each release group: sleep 1100ms, fetch `/ws/2/release?release-group={id}&inc=recordings&limit=1`, store tracks in `release_track_cache`
+5. Track fetch errors are non-fatal — logged with `eprintln!`, command continues and returns releases
+
+**Rate limiting:** 1100ms sleep between per-release track fetches within a single invocation. An artist with 10 releases takes ~11 seconds on first visit; subsequent visits are instant. Concurrent invocations are not serialized — acceptable for the single-artist-at-a-time navigation pattern.
+
+**Design decision:** Track fetch errors don't fail the command. The release list is the primary data. If recordings fetch fails for some releases (404, network timeout, parse error), the user still sees the full discography — just without cached tracks for those releases. Re-fetching is possible if the cache is invalidated in a future plan.
+
+Phase 35 can now wire the artist page to call `invoke('get_or_cache_releases', { artistMbid })` instead of the live MB API call in `+page.ts`. The `CachedRelease` struct (`mbid`, `title`, `year`, `release_type`) matches the `ReleaseGroup` interface already used by the frontend.

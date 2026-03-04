@@ -3,16 +3,16 @@ gsd_state_version: 1.0
 milestone: v1.7
 milestone_name: The Rabbit Hole
 status: in_progress
-stopped_at: Completed 34-02-PLAN.md (artist geocoding pipeline)
-last_updated: "2026-03-04T12:31:49Z"
-last_activity: 2026-03-04 — 34-02 artist geocoding pipeline complete
+stopped_at: Completed 34-03-PLAN.md (track/release cache command)
+last_updated: "2026-03-04T12:50:00Z"
+last_activity: 2026-03-04 — 34-03 track/release cache Tauri command complete
 progress:
   total_phases: 15
   completed_phases: 14
   total_plans: 49
-  completed_plans: 47
-  percent: 96
-  bar: "[██████████] 96%"
+  completed_plans: 48
+  percent: 98
+  bar: "[██████████] 98%"
 ---
 
 # Project State
@@ -27,9 +27,9 @@ See: .planning/PROJECT.md (updated 2026-03-03 after v1.7 start)
 ## Current Position
 
 Phase: 34-pipeline-foundation (in progress)
-Plan: 34-02 complete → 34-03 next
+Plan: 34-03 complete → 34-04 next (or phase complete)
 Status: Executing phase plans
-Last activity: 2026-03-04 — 34-02 artist geocoding pipeline complete
+Last activity: 2026-03-04 — 34-03 track/release cache Tauri command complete
 
 ## Accumulated Context
 
@@ -60,6 +60,10 @@ Last activity: 2026-03-04 — 34-02 artist geocoding pipeline complete
 - Key decision: 'none' sentinel (not NULL) for confirmed no-Wikidata artists — idempotent re-runs without refetching
 - Key decision: explicit rank map { city:3, region:2, country:1 } applied after SPARQL SAMPLE() to guarantee best precision wins
 - `pipeline/build-geocoding.mjs` is idempotent, resumable; full 2.6M run ~15-17 hours
+- 34-03 DONE: `release_group_cache` + `release_track_cache` tables in taste.db; `get_or_cache_releases` Tauri command
+- Key decision: cache-first — check release_group_cache before any MB API call; empty result triggers fresh fetch
+- Key decision: track fetch errors are non-fatal — releases always returned even if recordings fetch fails
+- Key decision: 1100ms sleep between per-release track fetches within single invocation; concurrent invocations not serialized
 
 ### Blockers/Concerns
 
@@ -67,6 +71,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-04T12:31:49Z
-Stopped at: Completed 34-02-PLAN.md (artist geocoding pipeline)
+Last session: 2026-03-04T12:50:00Z
+Stopped at: Completed 34-03-PLAN.md (track/release cache command)
 Resume file: None
