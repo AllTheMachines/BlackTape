@@ -5,6 +5,14 @@ A documentary record of building this project from idea to reality.
 ---
 
 
+## Entry 2026-03-04 — Bug Fix: AI server DLLs missing from NSIS installer
+
+**Bug:** AI server fails to start on fresh installs (#91). Root cause: `llama-server.exe` was bundled via `externalBin` but its 20 DLL dependencies (`ggml.dll`, `llama.dll`, `libomp140.x86_64.dll`, etc.) were in `src-tauri/binaries/` locally but never declared as `resources` — so they were never included in the NSIS installer. Users effectively had to install llama.cpp system-wide as a workaround.
+
+**Fix:** Added `"resources": { "binaries/*.dll": "." }` to `tauri.conf.json`. All DLLs now bundle alongside `llama-server.exe` in the install directory.
+
+---
+
 ## Entry 2026-03-04 — Phase 37 Plan 01: Context Sidebar — Quick Search + AI Companion
 
 Phase 37 plan 01 in progress (awaiting checkpoint verification). Added two new sections to the top of `RightSidebar.svelte`: a persistent quick-search input with debounced autocomplete, and a compact AI companion chat panel shown only when AI is ready.
@@ -13558,4 +13566,7 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 > Files changed: 1
 
 > **Commit b0bba609** (2026-03-04 23:00) — wip: auto-save
+> Files changed: 1
+
+> **Commit d489f79d** (2026-03-04 23:01) — wip: auto-save
 > Files changed: 1
