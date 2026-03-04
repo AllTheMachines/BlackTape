@@ -114,4 +114,4 @@ See `.planning/milestones/v1.6-ROADMAP.md`
 | 31. v1 Prep | v1.6 | 1/1 | Complete | 2026-02-27 |
 | 32. Embedded Players | v1.6 | 3/3 | Complete | 2026-02-27 |
 | 33. Artist Claim Form | v1.6 | 2/2 | Complete | 2026-02-27 |
-| 34. Pipeline Foundation | 1/4 | In Progress|  | — |
+| 34. Pipeline Foundation | 2/4 | In Progress|  | — |

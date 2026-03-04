@@ -12639,3 +12639,31 @@ Built `pipeline/build-similar-artists.mjs` — the first pipeline script for v1.
 - Idempotent: same count on two consecutive runs ✓
 
 Phase 35 (Rabbit Hole) can now use `getSimilarArtists(artistId)` queries against this table.
+
+> **Commit 863dce15** (2026-03-04 13:28) — docs(34-01): complete similar-artists pipeline plan
+> Files changed: 4
+
+> **Commit cfee6c15** (2026-03-04 13:31) — feat(34-02): add build-geocoding.mjs pipeline script
+> Files changed: 1
+
+## Entry 2026-03-04 — Phase 34-02: Artist Geocoding Pipeline
+
+Built `pipeline/build-geocoding.mjs` — geocodes artists in mercury.db to city-level coordinates via Wikidata SPARQL. Writes `city_lat`, `city_lng`, and `city_precision` columns on the `artists` table.
+
+**What it does:**
+- Adds three columns to artists table (idempotent ALTER TABLE guard)
+- Batches 50 MBIDs per Wikidata SPARQL query, sleeps 1100ms between batches (rate limit)
+- Three-tier precision hierarchy: city (P19 place of birth + P625) > region (P131 + P625) > country (P27 centroid)
+- Marks no-Wikidata-result artists as `'none'` sentinel — skipped on re-runs
+- Creates `idx_artists_city` partial index for World Map query performance
+- Artists without a country code are skipped entirely (NULL lat/lng, omitted from map)
+
+**Verification on sample DB:**
+- 90 artists at city precision, 33 at country precision, 577 with 'none' sentinel
+- 0 out-of-range coordinates (lat -90..90, lng -180..180)
+- 0 records with precision set but coordinates missing
+- Script is resumable: re-run picks up from `city_precision IS NULL`
+
+**Design decision:** `'none'` sentinel vs NULL. Using NULL as "not yet geocoded" allows the script to resume. Using `'none'` for confirmed no-result artists skips them on re-runs without refetching from Wikidata. Phase 36 (World Map) queries `WHERE city_precision IN ('city', 'region', 'country')` — naturally excludes both NULL and 'none'.
+
+Full geocoding of 2.6M artists will take ~15-17 hours at 50 MBIDs/batch × 1.1s sleep. This is a pipeline maintenance task run before each distribution build.

@@ -3,16 +3,16 @@ gsd_state_version: 1.0
 milestone: v1.7
 milestone_name: The Rabbit Hole
 status: in_progress
-stopped_at: Completed 34-01-PLAN.md (similar_artists pipeline)
-last_updated: "2026-03-04T12:28:11.380Z"
-last_activity: 2026-03-04 — Phase 34-01 similar_artists pipeline complete
+stopped_at: Completed 34-02-PLAN.md (artist geocoding pipeline)
+last_updated: "2026-03-04T12:31:49Z"
+last_activity: 2026-03-04 — 34-02 artist geocoding pipeline complete
 progress:
   total_phases: 15
   completed_phases: 14
   total_plans: 49
-  completed_plans: 46
-  percent: 94
-  bar: "[█████████░] 94%"
+  completed_plans: 47
+  percent: 96
+  bar: "[██████████] 96%"
 ---
 
 # Project State
@@ -27,9 +27,9 @@ See: .planning/PROJECT.md (updated 2026-03-03 after v1.7 start)
 ## Current Position
 
 Phase: 34-pipeline-foundation (in progress)
-Plan: 34-01 complete → 34-02 next
+Plan: 34-02 complete → 34-03 next
 Status: Executing phase plans
-Last activity: 2026-03-04 — 34-01 similar_artists pipeline complete
+Last activity: 2026-03-04 — 34-02 artist geocoding pipeline complete
 
 ## Accumulated Context
 
@@ -56,6 +56,10 @@ Last activity: 2026-03-04 — 34-01 similar_artists pipeline complete
 - 34-01 DONE: `similar_artists` table populated — 746 symmetric pairs, all integrity checks pass
 - Key decision: 4-phase SQL (score unique pairs → symmetric expansion+top-10 → symmetry backfill → top-K enforcement+orphan cleanup) required because the plan's original UNION SQL produced asymmetric pairs and artists exceeding 10 entries
 - `pipeline/build-similar-artists.mjs` is idempotent, ready to run against full 2.6M artist DB
+- 34-02 DONE: `city_lat`, `city_lng`, `city_precision` columns on artists table; geocoding pipeline via Wikidata SPARQL
+- Key decision: 'none' sentinel (not NULL) for confirmed no-Wikidata artists — idempotent re-runs without refetching
+- Key decision: explicit rank map { city:3, region:2, country:1 } applied after SPARQL SAMPLE() to guarantee best precision wins
+- `pipeline/build-geocoding.mjs` is idempotent, resumable; full 2.6M run ~15-17 hours
 
 ### Blockers/Concerns
 
@@ -63,6 +67,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-04T12:28:11.376Z
-Stopped at: Completed 34-01-PLAN.md (similar_artists pipeline)
+Last session: 2026-03-04T12:31:49Z
+Stopped at: Completed 34-02-PLAN.md (artist geocoding pipeline)
 Resume file: None
