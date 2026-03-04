@@ -64,13 +64,15 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          # Note: TAURI_SIGNING_PRIVATE_KEY intentionally not set here.
           # Tauri CLI can't decrypt the key with an empty password — we sign manually below.
-        run: npm run tauri build
+          # Null out the updater pubkey so Tauri doesn't require TAURI_SIGNING_PRIVATE_KEY.
+        run: |
+          npm run tauri build -- --config '{"plugins":{"updater":{"pubkey":null}}}'
 
       - name: Build app (unsigned — no cert configured)
         if: ${{ env.APPLE_CERTIFICATE == '' }}
-        run: npm run tauri build -- --config '{"bundle":{"macOS":{"signingIdentity":null}}}'
+        run: |
+          npm run tauri build -- --config '{"bundle":{"macOS":{"signingIdentity":null}},"plugins":{"updater":{"pubkey":null}}}'
 
       - name: Sign updater bundle with rsign2
         env:
