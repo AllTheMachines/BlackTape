@@ -3,11 +3,27 @@ gsd_state_version: 1.0
 milestone: v1.7
 milestone_name: The Rabbit Hole
 status: in_progress
+stopped_at: Completed 37-01 Tasks 1+2 (sidebar quick-search + AI companion) — checkpoint Task 3 awaiting human verification
+last_updated: "2026-03-04T18:27:40.187Z"
+last_activity: 2026-03-04 — 37-02 Add '50s' to ERA_OPTIONS in Discover decade filter panel
+progress:
+  total_phases: 3
+  completed_phases: 3
+  total_plans: 13
+  completed_plans: 13
+  percent: 100
+---
+
+---
+gsd_state_version: 1.0
+milestone: v1.7
+milestone_name: The Rabbit Hole
+status: in_progress
 stopped_at: Completed 37-02-PLAN.md (50s era pill — Discover decade filter)
 last_updated: "2026-03-04T18:22:32.855Z"
 last_activity: 2026-03-04 — 36-06 "See on map" cross-links on Rabbit Hole artist + tag pages (Phase 36 complete)
 progress:
-  total_phases: 3
+  [██████████] 100%
   completed_phases: 2
   total_plans: 13
   completed_plans: 12
@@ -227,6 +243,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-04T18:22:32.851Z
-Stopped at: Completed 37-02-PLAN.md (50s era pill — Discover decade filter)
+Last session: 2026-03-04T18:27:40.183Z
+Stopped at: Completed 37-01 Tasks 1+2 (sidebar quick-search + AI companion) — checkpoint Task 3 awaiting human verification
 Resume file: None

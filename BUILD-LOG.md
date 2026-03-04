@@ -5,6 +5,38 @@ A documentary record of building this project from idea to reality.
 ---
 
 
+## Entry 2026-03-04 — Phase 37 Plan 01: Context Sidebar — Quick Search + AI Companion
+
+Phase 37 plan 01 in progress (awaiting checkpoint verification). Added two new sections to the top of `RightSidebar.svelte`: a persistent quick-search input with debounced autocomplete, and a compact AI companion chat panel shown only when AI is ready.
+
+**Task 1: Sidebar quick-search**
+
+- Persistent "Quick Search" section prepended above all page-specific sidebar content
+- Debounced (200ms) autocomplete queries artists and tags in parallel via `searchArtistsAutocomplete` + `searchTagsAutocomplete`
+- Grouped dropdown: "Artists" section (top 4 results) + "Tags" section (top 3 results) + "See all results" footer link
+- `onmousedown` handlers on dropdown items — fires before input `onblur` dismisses the dropdown (same pattern as World Map tag filter from Phase 36)
+- Artist selection navigates to `/artist/[slug]`, tag selection to `/search?q=TAG&mode=tag`
+- Lazy DB import inside async function (same pattern as SearchBar)
+
+**Task 2: AI companion chat panel**
+
+- Shown only when `aiState.status === 'ready'` — completely absent when AI not configured or loading
+- Sends user message via `getAiProvider().complete()` with URL-param context injected: era filter, tags filter, now playing track, user taste profile (top 10 tags by weight)
+- Uses `PROMPTS.nlExploreWithTaste()` when taste is available, `PROMPTS.nlExplore()` otherwise
+- Displays raw AI response text (not parsed for artist list — this is chat, not recommendations)
+- Chat history capped at 4 messages, scrollable if overflow
+- Uses `type="text"` input — avoids spacebar handler conflict in the root layout
+
+**Deviation:** TypeScript inferred `role: string` on `{ role: 'user', text }` spread into array — added `as const` to role literals. Standard TS pattern for literal union narrowing.
+
+`npm run check` 0 errors, 30 warnings (all pre-existing). 196 code tests pass.
+
+<!-- status -->
+37-01 Tasks 1 + 2 complete — awaiting checkpoint verification (sidebar quick-search + AI companion).
+<!-- /status -->
+
+---
+
 ## Entry 2026-03-04 — Phase 36 Plan 06: See on Map Cross-Links
 
 Phase 36 plan 06 complete. Added "See on map" buttons to the Rabbit Hole — closing the bidirectional loop between discovery and geography.
@@ -13214,3 +13246,18 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 
 > **Commit 8908f611** (2026-03-04 19:18) — docs(37): create phase 37 plan — context sidebar + decade filtering
 > Files changed: 2
+
+> **Commit db3d46de** (2026-03-04 19:20) — wip: auto-save
+> Files changed: 1
+
+> **Commit 745938e0** (2026-03-04 19:21) — feat(37-02): add '50s' to ERA_OPTIONS in discover page
+> Files changed: 1
+
+> **Commit c7ca582f** (2026-03-04 19:22) — docs(37-02): complete 50s era pill plan
+> Files changed: 3
+
+> **Commit 95a3a7bf** (2026-03-04 19:24) — feat(37-01): add sidebar quick-search section to RightSidebar
+> Files changed: 1
+
+> **Commit c122217c** (2026-03-04 19:26) — feat(37-01): add AI companion chat panel to RightSidebar
+> Files changed: 1
