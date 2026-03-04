@@ -1,6 +1,5 @@
 {
   "mode": "interactive",
-  "depth": "standard",
   "parallelization": true,
   "commit_docs": true,
   "model_profile": "quality",
@@ -17,5 +16,6 @@
     "branching_strategy": "none",
     "phase_branch_template": "gsd/phase-{phase}-{slug}",
     "milestone_branch_template": "gsd/{milestone}-{slug}"
-  }
+  },
+  "granularity": "standard"
 }
