@@ -48,9 +48,17 @@ db.exec(`
 `);
 
 // Step D — Compute and insert similar artists
+// Strategy:
+//   D1: Score all unique undirected pairs (artist_id < similar_id always)
+//   D2: From each artist's perspective (symmetric UNION ALL view), rank by jaccard,
+//       take top-10 — this gives at most 10 entries per artist_id
+//   D3: Ensure symmetry — for every stored (A,B), also store (B,A).
+//       Popular artists may exceed 10 entries due to reverse inserts, which is
+//       acceptable: the top-10 constraint binds from the *selecting* artist's side.
 console.log('[similar-artists] Computing Jaccard similarity (may take 5-15 min on full DB)...');
 db.exec(`
-  INSERT OR IGNORE INTO similar_artists (artist_id, similar_id, score)
+  -- D1: Compute scored unique pairs (artist_id always < similar_id to avoid duplicates)
+  CREATE TEMP TABLE _scored_pairs AS
   WITH candidates AS (
     SELECT
       t1.artist_id,
@@ -61,30 +69,63 @@ db.exec(`
       ON t1.tag = t2.tag AND t1.artist_id < t2.artist_id
     GROUP BY t1.artist_id, t2.artist_id
     HAVING shared >= 2
+  )
+  SELECT
+    c.artist_id,
+    c.similar_id,
+    c.shared * 1.0 / NULLIF(a1.tag_count + a2.tag_count - c.shared, 0) AS jaccard
+  FROM candidates c
+  JOIN _artist_tag_counts a1 ON a1.artist_id = c.artist_id
+  JOIN _artist_tag_counts a2 ON a2.artist_id = c.similar_id
+  WHERE c.shared * 1.0 / NULLIF(a1.tag_count + a2.tag_count - c.shared, 0) >= 0.15;
+
+  CREATE INDEX _sp_a_idx ON _scored_pairs(artist_id);
+  CREATE INDEX _sp_s_idx ON _scored_pairs(similar_id);
+
+  -- D2: Each artist sees all candidates in both directions (symmetric UNION ALL).
+  --     Rank and take top-10 per artist. Insert the directional rows directly.
+  INSERT OR IGNORE INTO similar_artists (artist_id, similar_id, score)
+  WITH symmetric AS (
+    SELECT artist_id, similar_id, jaccard FROM _scored_pairs
+    UNION ALL
+    SELECT similar_id AS artist_id, artist_id AS similar_id, jaccard FROM _scored_pairs
   ),
-  scored AS (
-    SELECT
-      c.artist_id,
-      c.similar_id,
-      c.shared * 1.0 / NULLIF(a1.tag_count + a2.tag_count - c.shared, 0) AS jaccard
-    FROM candidates c
-    JOIN _artist_tag_counts a1 ON a1.artist_id = c.artist_id
-    JOIN _artist_tag_counts a2 ON a2.artist_id = c.similar_id
-    WHERE c.shared * 1.0 / NULLIF(a1.tag_count + a2.tag_count - c.shared, 0) >= 0.15
-  ),
-  ranked_forward AS (
+  ranked AS (
     SELECT artist_id, similar_id, jaccard,
       ROW_NUMBER() OVER (PARTITION BY artist_id ORDER BY jaccard DESC) AS rn
-    FROM scored
-  ),
-  ranked_backward AS (
-    SELECT similar_id AS artist_id, artist_id AS similar_id, jaccard,
-      ROW_NUMBER() OVER (PARTITION BY similar_id ORDER BY jaccard DESC) AS rn
-    FROM scored
+    FROM symmetric
   )
-  SELECT artist_id, similar_id, jaccard FROM ranked_forward WHERE rn <= 10
-  UNION
-  SELECT artist_id, similar_id, jaccard FROM ranked_backward WHERE rn <= 10;
+  SELECT artist_id, similar_id, jaccard FROM ranked WHERE rn <= 10;
+
+  -- D3: Symmetry pass — for every (A, B) now stored, ensure (B, A) also exists.
+  --     Uses the same score for the reverse row.
+  INSERT OR IGNORE INTO similar_artists (artist_id, similar_id, score)
+  SELECT similar_id AS artist_id, artist_id AS similar_id, score
+  FROM similar_artists;
+
+  -- D4: Top-K enforcement pass — trim any artist with > 10 entries down to top-10 by score.
+  --     After D3, popular artists may have > 10 entries due to symmetry reverses.
+  --     Delete the lowest-ranked extras, keeping exactly 10 per artist.
+  DELETE FROM similar_artists
+  WHERE (artist_id, similar_id) IN (
+    SELECT artist_id, similar_id FROM (
+      SELECT artist_id, similar_id,
+        ROW_NUMBER() OVER (PARTITION BY artist_id ORDER BY score DESC) AS rn
+      FROM similar_artists
+    )
+    WHERE rn > 10
+  );
+
+  -- D5: Final symmetry cleanup — D4 may have deleted some rows, breaking symmetry.
+  --     Remove any row (A, B) whose reverse (B, A) no longer exists.
+  DELETE FROM similar_artists
+  WHERE NOT EXISTS (
+    SELECT 1 FROM similar_artists s2
+    WHERE s2.artist_id = similar_artists.similar_id
+      AND s2.similar_id = similar_artists.artist_id
+  );
+
+  DROP TABLE _scored_pairs;
 `);
 
 // Step E — Report results and close
