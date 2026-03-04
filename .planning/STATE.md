@@ -3,6 +3,21 @@ gsd_state_version: 1.0
 milestone: v1.7
 milestone_name: The Rabbit Hole
 status: in_progress
+stopped_at: Completed 36-06-PLAN.md (Phase 36 World Map complete)
+last_updated: "2026-03-04T17:25:13.360Z"
+last_activity: 2026-03-04 — 36-06 "See on map" cross-links on Rabbit Hole artist + tag pages (Phase 36 complete)
+progress:
+  total_phases: 3
+  completed_phases: 2
+  total_plans: 11
+  completed_plans: 11
+---
+
+---
+gsd_state_version: 1.0
+milestone: v1.7
+milestone_name: The Rabbit Hole
+status: in_progress
 stopped_at: Completed 36-06-PLAN.md (World Map cross-links — Phase 36 complete)
 last_updated: "2026-03-04T18:00:00.000Z"
 last_activity: 2026-03-04 — 36-06 "See on map" cross-links on Rabbit Hole artist + tag pages (Phase 36 World Map complete)

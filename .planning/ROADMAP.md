@@ -142,4 +142,4 @@ Plans:
 | 33. Artist Claim Form | v1.6 | 2/2 | Complete | 2026-02-27 |
 | 34. Pipeline Foundation | v1.7 | 4/4 | Complete | 2026-03-04 |
 | 35. Rabbit Hole | v1.7 | 5/5 | Complete | 2026-03-04 |
-| 36. World Map | 6/6 | Complete   | 2026-03-04 | 2026-03-04 |
+| 36. World Map | 6/6 | Complete    | 2026-03-04 | 2026-03-04 |
