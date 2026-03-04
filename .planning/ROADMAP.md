@@ -106,7 +106,7 @@ Plans:
 
 **Goal:** Leaflet geographic discovery — full-viewport map at /world-map with CartoDB Dark Matter tiles, amber markerClusterGroup, precision-tier opacity, floating tag filter, slide-up artist panel, bidirectional cross-links with Rabbit Hole
 
-**Plans:** 3/6 plans executed
+**Plans:** 4/6 plans executed
 Plans:
 - [ ] 36-01-PLAN.md — Route scaffold (install leaflet.markercluster, create +layout.ts, +page.ts, +page.svelte stub)
 - [ ] 36-02-PLAN.md — Layout bypass + nav (isWorldMap in root layout, World Map nav item)
@@ -142,4 +142,4 @@ Plans:
 | 33. Artist Claim Form | v1.6 | 2/2 | Complete | 2026-02-27 |
 | 34. Pipeline Foundation | v1.7 | 4/4 | Complete | 2026-03-04 |
 | 35. Rabbit Hole | v1.7 | 5/5 | Complete | 2026-03-04 |
-| 36. World Map | 3/6 | In Progress|  | — |
+| 36. World Map | 4/6 | In Progress|  | — |

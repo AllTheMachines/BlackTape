@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.7
 milestone_name: The Rabbit Hole
 status: in_progress
-stopped_at: Completed 36-03-PLAN.md (World Map Leaflet implementation)
-last_updated: "2026-03-04T15:30:28.899Z"
+stopped_at: Completed 36-04-PLAN.md (World Map tag filter chip)
+last_updated: "2026-03-04T15:34:25.395Z"
 last_activity: 2026-03-04 — 36-03 Leaflet map implementation (CartoDB tiles, markerClusterGroup, precision-tier opacity)
 progress:
   total_phases: 3
   completed_phases: 1
   total_plans: 11
-  completed_plans: 8
+  completed_plans: 9
 ---
 
 ---
@@ -73,9 +73,9 @@ See: .planning/PROJECT.md (updated 2026-03-03 after v1.7 start)
 ## Current Position
 
 Phase: 36-world-map (IN PROGRESS)
-Plan: 36-03 complete → 3/6 plans done (01 route scaffold, 02 layout bypass, 03 Leaflet map)
-Status: Full Leaflet map live with CartoDB tiles, amber clusters, precision-tier opacity; tag filter + artist panel remaining
-Last activity: 2026-03-04 — 36-03 Leaflet map implementation (CartoDB tiles, markerClusterGroup, precision-tier opacity)
+Plan: 36-04 complete → 4/6 plans done (01 route scaffold, 02 layout bypass, 03 Leaflet map, 04 tag filter)
+Status: Leaflet map with floating tag filter chip live; artist panel remaining
+Last activity: 2026-03-04 — 36-04 World Map tag filter (in-memory filtering, URL replaceState sync, autocomplete)
 
 ## Accumulated Context
 
@@ -156,6 +156,11 @@ Last activity: 2026-03-04 — 36-03 Leaflet map implementation (CartoDB tiles, m
 - Key decision: _artistData stored on each marker for Plan 05 artist panel — no re-fetch needed on click
 - Key decision: map.invalidateSize() called after buildMarkers() — resolves deferred CSS layout calculation (Pitfall 1)
 - Key decision: onDestroy(() => { map?.remove(); map = null }) — prevents Map container already initialized error on SPA back-navigation
+- 36-04 DONE: Floating tag filter chip — in-memory filtering, URL replaceState sync, autocomplete, pre-filter from URL param
+- Key decision: leafletRef variable stores L after onMount import so $effect (outside onMount) can call buildMarkers() reactively
+- Key decision: onmousedown for suggestion selection — fires before input onblur dismisses the autocomplete dropdown
+- Key decision: replaceState: true in goto() for tag filter URL sync — no history pollution on every keystroke
+- Key decision: $effect reads activeTag and artists before guard check to ensure both are tracked as reactive dependencies
 
 ### Blockers/Concerns
 
@@ -163,6 +168,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-04T15:30:28.896Z
-Stopped at: Completed 36-03-PLAN.md (World Map Leaflet implementation)
+Last session: 2026-03-04T15:34:25.391Z
+Stopped at: Completed 36-04-PLAN.md (World Map tag filter chip)
 Resume file: None

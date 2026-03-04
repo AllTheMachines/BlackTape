@@ -4,6 +4,29 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-03-04 — Phase 36 Plan 04: World Map Tag Filter
+
+Phase 36 plan 04 complete. Added the floating tag filter chip to the world map — the "where is black metal from?" feature is now live.
+
+**Changes to `src/routes/world-map/+page.svelte`:**
+- Floating `wm-filter` div in the top-left of the map (position absolute, z-index 1000, backdrop blur)
+- `getFilteredArtists()` — in-memory filter: splits the `GeocodedArtist.tags` comma-separated string, exact lowercase match
+- `$effect` reactively rebuilds markers whenever `activeTag` or `artists` changes — needed `leafletRef` variable so the effect can access `L` after `onMount`
+- URL sync via `goto(url, { replaceState: true, keepFocus: true, noScroll: true })` — no history pollution on keystrokes
+- Autocomplete suggestions from `searchTagsAutocomplete()` via the DB provider, debounced 150ms, only fires when ≥2 chars
+- Pre-filter support: if `tagFilter` from `+page.ts` is set (URL param on load), `activeTag` is initialized before markers are built
+- `filteredCount` `$derived` shows matching artist count in the chip
+- Clear button (✕) resets filter, navigates to `/world-map`, rebuilds all pins
+- `suggestion` buttons use `onmousedown` (not `onclick`) to fire before input's `onblur` dismisses the list
+
+Key decision: `leafletRef` variable stores `L` after import so the `$effect` (which runs outside `onMount`) can call `buildMarkers()`. The `$effect` tracks `activeTag` and `artists` as reactive deps by reading them before the guard check.
+
+Key decision: `onmousedown` for suggestion selection — the input's `onblur` fires 150ms after focus leaves, and `onclick` fires after `onblur`. Using `onmousedown` captures the click before the blur dismisses the dropdown.
+
+`npm run check` 0 errors, 20 warnings (all pre-existing). 196 code tests pass.
+
+---
+
 ## Entry 2026-03-04 — Phase 36 Plan 03: Leaflet Map Implementation
 
 Phase 36 plan 03 complete. Replaced the stub `+page.svelte` with the full Leaflet map — CartoDB Dark Matter tiles, markerClusterGroup with amber divIcon bubbles, and precision-tier opacity for pins.
@@ -13038,3 +13061,12 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 
 > **Commit d872f73c** (2026-03-04 16:26) — docs(36-01): complete world-map route scaffold plan
 > Files changed: 4
+
+> **Commit 41d37f62** (2026-03-04 16:28) — feat(36-03): implement Leaflet map with CartoDB tiles, clustering, and precision-tier opacity
+> Files changed: 2
+
+> **Commit 4e9c3e65** (2026-03-04 16:30) — docs(36-03): complete Leaflet map implementation plan
+> Files changed: 3
+
+> **Commit 1018186d** (2026-03-04 16:32) — feat(36-04): add floating tag filter chip to world map
+> Files changed: 1
