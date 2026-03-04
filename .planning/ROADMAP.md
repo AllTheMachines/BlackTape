@@ -89,9 +89,17 @@ See `.planning/milestones/v1.6-ROADMAP.md`
   - [ ] 34-02-PLAN.md — City geocoding pipeline (build-geocoding.mjs + city_lat/city_lng/city_precision columns)
   - [ ] 34-03-PLAN.md — Track/release cache (track_cache.rs Tauri command + taste.db schema)
   - [ ] 34-04-PLAN.md — Query functions (getSimilarArtists, getGeocodedArtists in queries.ts)
-- [ ] Phase 35: Rabbit Hole — New `/rabbit-hole` route, artist + genre exploration pages, similar artists navigation, paginated tracks, history trail (Continue)
-- [ ] Phase 36: World Map — Leaflet geographic discovery, city/scene pins, cross-link to Rabbit Hole
-- [ ] Phase 37: Context Sidebar + Decade Filtering — Context panel in nav-content gap, decade row replacing year input, AI companion (if AI connected)
+### Phase 35: Rabbit Hole
+
+**Goal:** New `/rabbit-hole` route, artist + genre exploration pages, similar artists navigation, paginated tracks, history trail
+
+### Phase 36: World Map
+
+**Goal:** Leaflet geographic discovery, city/scene pins, cross-link to Rabbit Hole
+
+### Phase 37: Context Sidebar + Decade Filtering
+
+**Goal:** Context panel in nav-content gap, decade row replacing year input, AI companion (if AI connected)
 
 ---
 
