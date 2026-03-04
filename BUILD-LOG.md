@@ -5,6 +5,27 @@ A documentary record of building this project from idea to reality.
 ---
 
 
+## Entry 2026-03-04 — Phase 36 Plan 06: See on Map Cross-Links
+
+Phase 36 plan 06 complete. Added "See on map" buttons to the Rabbit Hole — closing the bidirectional loop between discovery and geography.
+
+**Changes:**
+- `src/routes/rabbit-hole/artist/[slug]/+page.ts` — Parallel geocoordinates check: `SELECT (city_lat IS NOT NULL AND city_lat != 0) as has_geo FROM artists WHERE id = ?` runs alongside the existing similarArtists and links queries via `Promise.all`. Returns `hasGeocoordinates` flag.
+- `src/routes/rabbit-hole/artist/[slug]/+page.svelte` — Conditional "See on map" button below the RabbitHoleArtistCard, shown only when `hasGeocoordinates` is true. Links to `/world-map?artist=[slug]`.
+- `src/routes/rabbit-hole/tag/[slug]/+page.svelte` — "See on map" link in the genre header, always visible. Links to `/world-map?tag=[encodeURIComponent(tag)]`. Pushed to the right side of the header via `margin-left: auto`.
+
+Key decision: Parallel geo check in `Promise.all` rather than sequential — no extra round trip.
+
+`npm run check` 0 errors, 20 warnings (all pre-existing). 196 code tests pass.
+
+**Awaiting human verification of complete Phase 36 end-to-end flow.**
+
+<!-- status -->
+Plan 36-06 code complete — awaiting checkpoint verification of full Phase 36 World Map.
+<!-- /status -->
+
+---
+
 ## Entry 2026-03-04 — Phase 36 Plan 05: World Map Artist Panel
 
 Phase 36 plan 05 complete. The world map now has a slide-up artist panel — clicking any pin reveals the full artist card from the Rabbit Hole, sliding up from the bottom of the screen.
@@ -13109,3 +13130,9 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 
 > **Commit f2483b19** (2026-03-04 16:40) — feat(36-05): add slide-up artist panel to world map
 > Files changed: 1
+
+> **Commit 39632aeb** (2026-03-04 16:42) — docs(36-05): complete world map artist panel plan
+> Files changed: 4
+
+> **Commit dc484501** (2026-03-04 16:44) — feat(36-06): add See on map cross-links to Rabbit Hole artist and tag pages
+> Files changed: 3
