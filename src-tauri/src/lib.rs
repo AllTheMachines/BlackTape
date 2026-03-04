@@ -127,6 +127,7 @@ pub fn run() {
             ai::taste_db::record_artist_visit,
             ai::taste_db::get_artist_summary,
             ai::taste_db::save_artist_summary,
+            ai::track_cache::get_or_cache_releases,
             site_gen::generate_artist_site,
             site_gen::open_in_explorer,
             activitypub::export_activitypub,
