@@ -280,7 +280,7 @@ export async function searchByTag(
 		 LEFT JOIN artist_tags at_all ON at_all.artist_id = a.id
 		 WHERE at1.tag = ?
 		 GROUP BY a.id
-		 ORDER BY at1.count DESC
+		 ORDER BY MAX(at1.count) DESC
 		 LIMIT ?`,
 		normalizedTag,
 		limit
@@ -381,7 +381,7 @@ export async function searchByLabel(
 		 JOIN artist_tags at1 ON at1.artist_id = a.id
 		 WHERE LOWER(at1.tag) LIKE ?
 		 GROUP BY a.id
-		 ORDER BY at1.count DESC
+		 ORDER BY MAX(at1.count) DESC
 		 LIMIT ?`,
 		'%' + normalizedLabel + '%',
 		limit

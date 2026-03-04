@@ -31,10 +31,6 @@ Phase 37 plan 01 in progress (awaiting checkpoint verification). Added two new s
 
 `npm run check` 0 errors, 30 warnings (all pre-existing). 196 code tests pass.
 
-<!-- status -->
-Server migration in progress. Hetzner VPS up, PostgreSQL running, API live at 46.225.239.209:3000. MusicBrainz extraction running in background (~30 min). Import script and SQL translator ready. App pointed at new server.
-<!-- /status -->
-
 ---
 
 ## Entry 2026-03-04 — Backend Migration: Distributed SQLite → Hetzner Postgres
@@ -74,7 +70,9 @@ The original plan required users to download a separate database file — a sign
 - **`bzip2` not preinstalled** on Ubuntu 24.04 minimal — had to `apt install bzip2` before `tar -xjf` worked.
 - **`mbdump-create-tables.tar.bz2` no longer exists** in MusicBrainz full exports as of 2026 — the schema is now only in the GitHub repo. Created the schema manually from known column definitions.
 
-**Import running now** — extraction ~30 min, full import + index build ~45 min total. API returns live health check; search will work once import completes.
+**Import complete** — 2,816,827 artists, 680,014 tag links, 58,173 tags, all trigram indexes built. Full import in ~2 min (pipeline ran in-process, not via bzip streaming — much faster than estimated). API live, search confirmed working end-to-end.
+
+**Follow-up fix (next session):** Two `searchByTag`/`searchByLabel` queries used `ORDER BY at1.count DESC` after `GROUP BY a.id` — invalid in PostgreSQL (SQLite allows it). Fixed by changing to `ORDER BY MAX(at1.count) DESC`, which is valid in both dialects. Tag search and label search confirmed working in production.
 
 ---
 
@@ -121,9 +119,6 @@ Key decision: Parallel geo check in `Promise.all` rather than sequential — no 
 
 **Awaiting human verification of complete Phase 36 end-to-end flow.**
 
-<!-- status -->
-Plan 36-06 code complete — awaiting checkpoint verification of full Phase 36 World Map.
-<!-- /status -->
 
 ---
 
@@ -13534,3 +13529,6 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 
 > **Commit 2c4afe6d** (2026-03-04 22:36) — wip: auto-save
 > Files changed: 4
+
+> **Commit 1a9f763f** (2026-03-04 22:38) — wip: auto-save
+> Files changed: 2
