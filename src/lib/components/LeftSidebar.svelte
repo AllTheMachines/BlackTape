@@ -7,7 +7,9 @@
 
 	// Discovery modes — condensed view when on any discovery route
 	const DISCOVERY_MODES = [
-		{ href: '/discover', label: 'Discover', icon: '◉' }
+		{ href: '/discover', label: 'Discover', icon: '◉' },
+		{ href: '/rabbit-hole', label: 'Rabbit Hole', icon: '◈' },
+		{ href: '/world-map', label: 'World Map', icon: '◎' }
 	] as const;
 
 	// Navigation groups — Discover, Library, Account
@@ -86,11 +88,7 @@
 	/** True when we're on the Discover page — show filter controls. */
 	let isOnDiscover = $derived($page.url.pathname === '/discover');
 
-	/** The active discovery mode, if we're on any discovery route. */
-	let activeDiscoveryMode = $derived(
-		DISCOVERY_MODES.find((m) => isActive(m.href)) ?? null
-	);
-	let isOnDiscovery = $derived(activeDiscoveryMode !== null);
+
 </script>
 
 <aside class="left-sidebar" aria-label="Navigation and discovery">
@@ -100,34 +98,12 @@
 			<div class="nav-group">
 				<span class="nav-lbl">{group.label}</span>
 				{#if group.label === 'Discover'}
-					{#if isOnDiscovery && activeDiscoveryMode}
-						<!-- Active discovery mode shown prominently with compact mode switcher -->
-						<div class="discovery-mode-switcher">
-							<div class="active-mode-row">
-								<span class="active-mode-icon">{activeDiscoveryMode.icon}</span>
-								<span class="active-mode-name">{activeDiscoveryMode.label}</span>
-							</div>
-							<div class="mode-switch-grid">
-								{#each DISCOVERY_MODES as mode}
-									<a
-										href={mode.href}
-										class="mode-switch-btn"
-										class:active={mode.href === activeDiscoveryMode.href}
-										class:pending={isPending(mode.href)}
-										title={mode.label}
-									>{mode.icon}</a>
-								{/each}
-							</div>
-						</div>
-					{:else}
-						<!-- Not on a discovery page — show full link list -->
-						{#each DISCOVERY_MODES as mode}
-							<a href={mode.href} class="nav-item" class:active={isActive(mode.href)} class:pending={isPending(mode.href)}>
-								<span class="nav-ico">{mode.icon}</span>
-								{mode.label}
-							</a>
-						{/each}
-					{/if}
+					{#each DISCOVERY_MODES as mode}
+						<a href={mode.href} class="nav-item" class:active={isActive(mode.href)} class:pending={isPending(mode.href)}>
+							<span class="nav-ico">{mode.icon}</span>
+							{mode.label}
+						</a>
+					{/each}
 				{:else}
 					{#each group.links as link}
 						<a href={link.href} class="nav-item" class:active={isActive(link.href)} class:pending={isPending(link.href)}>
