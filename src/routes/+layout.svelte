@@ -36,6 +36,7 @@
 	let canGoBack = $derived($page.url.pathname !== '/');
 	let isEmbed = $derived($page.url.pathname.startsWith('/embed'));
 	let isRabbitHole = $derived($page.url.pathname.startsWith('/rabbit-hole'));
+	let isWorldMap = $derived($page.url.pathname.startsWith('/world-map'));
 
 	/** All templates for ControlBar — built-ins + user templates */
 	let allTemplateConfigs = $derived([
@@ -166,6 +167,20 @@
 	<Player />
 {/if}
 
+{:else if isWorldMap}
+
+{#if tauriMode}
+	<Titlebar />
+	<UpdateBanner />
+	<CriticalUpdateModal />
+{/if}
+
+{@render children()}
+
+{#if isTauri()}
+	<Player />
+{/if}
+
 {:else}
 
 {#if tauriMode}
@@ -196,6 +211,7 @@
 		<nav class="nav-links">
 			<a href="/discover" class="nav-link">Discover</a>
 			<a href="/rabbit-hole" class="nav-link" class:active={$page.url.pathname.startsWith('/rabbit-hole')}>Rabbit Hole</a>
+			<a href="/world-map" class="nav-link" class:active={$page.url.pathname.startsWith('/world-map')}>World Map</a>
 			<a href="/library" class="nav-link">Library</a>
 			<a href="/explore" class="nav-link">Explore</a>
 			<a href="/profile" class="nav-link" class:active={$page.url.pathname === '/profile'}>Profile</a>
