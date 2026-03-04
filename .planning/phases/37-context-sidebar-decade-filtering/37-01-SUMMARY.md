@@ -57,7 +57,7 @@ completed: 2026-03-04
 - **Duration:** ~5 min
 - **Started:** 2026-03-04T18:23:32Z
 - **Completed:** 2026-03-04T18:28:00Z
-- **Tasks:** 2 of 3 (checkpoint at Task 3)
+- **Tasks:** 3 of 3 (complete — Task 3 human verification approved)
 - **Files modified:** 1
 
 ## Accomplishments
@@ -73,7 +73,7 @@ Each task was committed atomically:
 
 1. **Task 1: Add sidebar quick-search section** - `95a3a7bf` (feat)
 2. **Task 2: Add AI companion chat panel** - `c122217c` (feat)
-3. **Task 3: Human verification checkpoint** - awaiting user sign-off
+3. **Task 3: Human verification checkpoint** - approved by user
 
 ## Files Created/Modified
 - `src/lib/components/RightSidebar.svelte` — Added imports (goto, aiState, getAiProvider, PROMPTS/INJECTION_GUARD/externalContent, page, get), quick-search state/functions, AI companion state/functions, Quick Search template section, AI Companion template section, CSS for both sections
@@ -107,10 +107,19 @@ None beyond the TypeScript literal union inference issue (documented above as a 
 ## User Setup Required
 None - no external service configuration required.
 
+## Post-Checkpoint Adjustments
+
+After human verification, Steve made UI layout adjustments (committed as wip auto-saves):
+- **Quick Search moved to ControlBar.svelte** (top bar) — removed from RightSidebar; more discoverable placement
+- **Right sidebar collapse button removed** — cleaner sidebar without the toggle
+- **LeftSidebar restructured** — related layout changes in PanelLayout.svelte and LeftSidebar.svelte
+
+The plan's `must_haves` are satisfied: quick-search is visible, works with 2+ char debounced autocomplete, artist/tag navigation is correct, and AI companion remains in RightSidebar guarded by `aiState.status === 'ready'`.
+
 ## Next Phase Readiness
-- Awaiting human verification (Task 3 checkpoint) before plan is marked complete
-- Both code tasks fully implemented and committed; verification is visual/functional only
-- After approval: proceed to 37-03 (decade filtering feature or next plan in phase)
+- Plan 37-01 complete — human verification approved
+- Quick Search accessible via ControlBar (moved post-checkpoint); AI companion in RightSidebar when AI ready
+- Ready to proceed to next plan in phase 37
 
 ---
 *Phase: 37-context-sidebar-decade-filtering*

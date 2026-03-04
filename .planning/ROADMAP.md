@@ -121,8 +121,8 @@ Plans:
 
 **Plans:** 2/2 plans complete
 Plans:
-- [ ] 37-01-PLAN.md — Sidebar quick-search + AI companion (RightSidebar.svelte)
-- [ ] 37-02-PLAN.md — Decade row 50s-20s (discover/+page.svelte ERA_OPTIONS)
+- [x] 37-01-PLAN.md — Sidebar quick-search + AI companion (RightSidebar.svelte)
+- [x] 37-02-PLAN.md — Decade row 50s-20s (discover/+page.svelte ERA_OPTIONS)
 
 ---
 
@@ -148,3 +148,4 @@ Plans:
 | 34. Pipeline Foundation | v1.7 | 4/4 | Complete | 2026-03-04 |
 | 35. Rabbit Hole | v1.7 | 5/5 | Complete | 2026-03-04 |
 | 36. World Map | 6/6 | Complete    | 2026-03-04 | 2026-03-04 |
+| 37. Context Sidebar + Decade Filtering | v1.7 | 2/2 | Complete | 2026-03-04 |
