@@ -8,10 +8,10 @@ updated: 2026-03-04T20:00:00Z
 
 ## Current Test
 
-number: 6
-name: Artist card content
+number: 8
+name: Tag exploration page
 expected: |
-  The artist card shows: artist name, country/year info, tag chips, similar artist chips, collapsible release list, Play and Continue buttons.
+  The tag page shows the tag name as heading, a grid/wrap of ~20 artist chips (each with a country badge), and a Related Genres & Tags section with co-occurring tag chips.
 awaiting: user response
 
 ## Tests
@@ -44,11 +44,13 @@ severity: major
 
 ### 6. Artist card content
 expected: The artist card shows: artist name, country/year info, tag chips, a row of similar artist chips (when available), and a collapsible release list (loads async after card renders — first 3 releases shown, expand toggle for more). Play and Continue buttons visible at bottom.
-result: [pending]
+result: skipped
+reason: artist card blocked by "artist not found" bug (tests 3 + 5)
 
 ### 7. Continue navigation
 expected: Clicking Continue on an artist card navigates to another artist (a similar artist if available, otherwise a random artist in the same genre). The trail bar updates to show the new entry. The card updates in-place.
-result: [pending]
+result: skipped
+reason: artist card blocked by "artist not found" bug (tests 3 + 5)
 
 ### 8. Tag exploration page
 expected: Clicking a tag chip on an artist card opens /rabbit-hole/tag/[slug]. The page shows the tag name as heading, a grid/wrap of ~20 artist chips (each with a country badge), and a Related Genres & Tags section with co-occurring tag chips.
@@ -67,8 +69,8 @@ result: [pending]
 total: 10
 passed: 2
 issues: 3
-pending: 5
-skipped: 0
+pending: 3
+skipped: 2
 
 ## Gaps
 
