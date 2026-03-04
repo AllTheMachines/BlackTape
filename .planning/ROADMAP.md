@@ -80,6 +80,15 @@ See `.planning/milestones/v1.6-ROADMAP.md`
 
 ---
 
+## v1.7 — The Rabbit Hole (Phases 34--37)
+
+- [ ] Phase 34: Pipeline Foundation — Precompute similar artists (tag overlap), artist city geocoding (Wikidata SPARQL), track/release caching layer
+- [ ] Phase 35: Rabbit Hole — New `/rabbit-hole` route, artist + genre exploration pages, similar artists navigation, paginated tracks, history trail (Continue)
+- [ ] Phase 36: World Map — Leaflet geographic discovery, city/scene pins, cross-link to Rabbit Hole
+- [ ] Phase 37: Context Sidebar + Decade Filtering — Context panel in nav-content gap, decade row replacing year input, AI companion (if AI connected)
+
+---
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
