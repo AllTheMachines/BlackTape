@@ -8,10 +8,10 @@ updated: 2026-03-04T20:00:00Z
 
 ## Current Test
 
-number: 8
-name: Tag exploration page
+number: 9
+name: Reshuffle on tag page
 expected: |
-  The tag page shows the tag name as heading, a grid/wrap of ~20 artist chips (each with a country badge), and a Related Genres & Tags section with co-occurring tag chips.
+  The tag page has a Reshuffle button. Clicking it reloads the same tag page with a fresh random set of artists.
 awaiting: user response
 
 ## Tests
@@ -54,7 +54,9 @@ reason: artist card blocked by "artist not found" bug (tests 3 + 5)
 
 ### 8. Tag exploration page
 expected: Clicking a tag chip on an artist card opens /rabbit-hole/tag/[slug]. The page shows the tag name as heading, a grid/wrap of ~20 artist chips (each with a country badge), and a Related Genres & Tags section with co-occurring tag chips.
-result: [pending]
+result: issue
+reported: "it shows 4 artist chips with country badges (because i searched for aphex twin) but no genre chips as tags"
+severity: major
 
 ### 9. Reshuffle on tag page
 expected: The tag page has a Reshuffle button. Clicking it reloads the same tag page with a fresh random set of 20 artists — different artists than before (probability virtually certain with any reasonable tag size).
@@ -68,8 +70,8 @@ result: [pending]
 
 total: 10
 passed: 2
-issues: 3
-pending: 3
+issues: 4
+pending: 2
 skipped: 2
 
 ## Gaps
@@ -95,5 +97,13 @@ skipped: 2
   reason: "User reported: no. it also only shows 'artist not found'"
   severity: major
   test: 5
+  artifacts: []
+  missing: []
+
+- truth: "Tag page shows Related Genres & Tags section with co-occurring tag chips"
+  status: failed
+  reason: "User reported: it shows 4 artist chips with country badges (because i searched for aphex twin) but no genre chips as tags"
+  severity: major
+  test: 8
   artifacts: []
   missing: []
