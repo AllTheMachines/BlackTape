@@ -8,25 +8,29 @@ updated: 2026-03-04T20:35:00Z
 
 ## Current Test
 
-number: 1
-name: World Map nav entry
+number: 4
+name: Tag filter
 expected: |
-  Desktop nav shows a "World Map" link. Clicking it loads /world-map with a full-viewport dark map (CartoDB Dark Matter tiles) and amber-colored cluster bubbles showing artist locations. No standard nav/sidebar/footer visible — just Titlebar and Player.
+  A floating filter input is visible in the top-left corner. Typing into it shows tag autocomplete suggestions with artist counts. Selecting a tag filters the visible pins.
 awaiting: user response
 
 ## Tests
 
 ### 1. World Map nav entry
 expected: Desktop nav shows a "World Map" link. Clicking it loads /world-map with a full-viewport dark map (CartoDB Dark Matter tiles) and amber-colored cluster bubbles showing artist locations. No standard nav/sidebar/footer visible — just Titlebar and Player.
-result: [pending]
+result: issue
+reported: "i dont see any amber-colored cluster bubbles. i see the world map and that there is no nav sidebar. but i see that weird thing (white) in the upper left corner — tag filter widget with white background showing '0 artists'"
+severity: major
 
 ### 2. Marker clustering
 expected: Zoomed out, nearby pins are grouped into amber cluster bubbles with a count. Zooming in causes clusters to break apart into individual artist pins.
-result: [pending]
+result: skipped
+reason: no artist data loading (0 artists shown) — blocked by test 1 issue
 
 ### 3. Precision-tier opacity
 expected: Artist pins vary in opacity based on geocoding precision — city-level pins are fully opaque, region-level pins are muted, country-level pins are faded.
-result: [pending]
+result: skipped
+reason: no artist data loading (0 artists shown) — blocked by test 1 issue
 
 ### 4. Tag filter
 expected: A floating search/filter input is visible in the top-left corner of the map. Typing into it shows tag autocomplete suggestions with artist counts. Selecting a tag filters the visible pins to only artists with that tag.
@@ -48,10 +52,16 @@ result: [pending]
 
 total: 7
 passed: 0
-issues: 0
-pending: 7
-skipped: 0
+issues: 1
+pending: 4
+skipped: 2
 
 ## Gaps
 
-[none yet]
+- truth: "World Map shows amber cluster bubbles with artist locations"
+  status: failed
+  reason: "User reported: no clusters, map shows 0 artists. Tag filter widget has white background clashing with dark map theme."
+  severity: major
+  test: 1
+  artifacts: []
+  missing: []
