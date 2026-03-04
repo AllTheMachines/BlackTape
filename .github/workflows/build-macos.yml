@@ -65,20 +65,22 @@ jobs:
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
-          # Generate a throwaway keypair using Tauri's own signer (guaranteed compatible).
-          # We only need it so Tauri's build doesn't fail on the signing step.
+          # Tauri CLI has a bug: it can't decrypt keys with empty passwords.
+          # Generate a throwaway keypair with a real password so Tauri's build step works.
           # The .sig file will be replaced by rsign2 with the real key below.
-          npx @tauri-apps/cli signer generate --ci -p "" -w /tmp/tauri_build.key
+          THROW_PW="ci-throwaway-$(date +%s)"
+          ./node_modules/.bin/tauri signer generate --ci -p "$THROW_PW" -w /tmp/tauri_build.key
           TAURI_SIGNING_PRIVATE_KEY=$(cat /tmp/tauri_build.key) \
-            TAURI_SIGNING_PRIVATE_KEY_PASSWORD="" \
+            TAURI_SIGNING_PRIVATE_KEY_PASSWORD="$THROW_PW" \
             npm run tauri build
 
       - name: Build app (unsigned — no cert configured)
         if: ${{ env.APPLE_CERTIFICATE == '' }}
         run: |
-          npx @tauri-apps/cli signer generate --ci -p "" -w /tmp/tauri_build.key
+          THROW_PW="ci-throwaway-$(date +%s)"
+          ./node_modules/.bin/tauri signer generate --ci -p "$THROW_PW" -w /tmp/tauri_build.key
           TAURI_SIGNING_PRIVATE_KEY=$(cat /tmp/tauri_build.key) \
-            TAURI_SIGNING_PRIVATE_KEY_PASSWORD="" \
+            TAURI_SIGNING_PRIVATE_KEY_PASSWORD="$THROW_PW" \
             npm run tauri build -- --config '{"bundle":{"macOS":{"signingIdentity":null}}}'
 
       - name: Sign updater bundle with rsign2
