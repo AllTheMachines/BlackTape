@@ -82,7 +82,7 @@ See `.planning/milestones/v1.6-ROADMAP.md`
 
 ## v1.7 — The Rabbit Hole (Phases 34--37)
 
-- [ ] Phase 34: Pipeline Foundation — Precompute similar artists (tag overlap), artist city geocoding (Wikidata SPARQL), track/release caching layer
+- [x] Phase 34: Pipeline Foundation — Precompute similar artists (tag overlap), artist city geocoding (Wikidata SPARQL), track/release caching layer (completed 2026-03-04)
   **Plans:** 4 plans
   Plans:
   - [ ] 34-01-PLAN.md — Similar artists pipeline (build-similar-artists.mjs + similar_artists table)
@@ -114,4 +114,4 @@ See `.planning/milestones/v1.6-ROADMAP.md`
 | 31. v1 Prep | v1.6 | 1/1 | Complete | 2026-02-27 |
 | 32. Embedded Players | v1.6 | 3/3 | Complete | 2026-02-27 |
 | 33. Artist Claim Form | v1.6 | 2/2 | Complete | 2026-02-27 |
-| 34. Pipeline Foundation | 3/4 | In Progress|  | — |
+| 34. Pipeline Foundation | 4/4 | Complete   | 2026-03-04 | — |

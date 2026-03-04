@@ -12698,3 +12698,26 @@ Built the caching layer for MusicBrainz release and track data. Artist pages cur
 **Design decision:** Track fetch errors don't fail the command. The release list is the primary data. If recordings fetch fails for some releases (404, network timeout, parse error), the user still sees the full discography — just without cached tracks for those releases. Re-fetching is possible if the cache is invalidated in a future plan.
 
 Phase 35 can now wire the artist page to call `invoke('get_or_cache_releases', { artistMbid })` instead of the live MB API call in `+page.ts`. The `CachedRelease` struct (`mbid`, `title`, `year`, `release_type`) matches the `ReleaseGroup` interface already used by the frontend.
+
+> **Commit 2f9f290b** (2026-03-04 13:39) — docs(34-03): complete track/release cache plan — get_or_cache_releases Tauri command
+
+---
+
+## Entry 2026-03-04 — Phase 34-04 Query Functions: getSimilarArtists + getGeocodedArtists
+
+Added the two query functions that Phase 35 (Rabbit Hole) and Phase 36 (World Map) will call. Pure TypeScript additions to `src/lib/db/queries.ts` — no new tables, no Rust changes.
+
+**What was added:**
+
+- `SimilarArtistResult` interface — `{ id, mbid, name, slug, score }`
+- `GeocodedArtist` interface — `{ id, mbid, name, slug, country, tags, city_lat, city_lng, city_precision: 'city'|'region'|'country' }`
+- `getSimilarArtists(db, artistId, limit=10)` — JOINs `similar_artists` + `artists`, ordered by score DESC. Degrades gracefully (returns `[]`) if the table doesn't exist yet
+- `getGeocodedArtists(db, limit=50000)` — queries `artists` WHERE `city_precision IN ('city','region','country')` AND lat/lng NOT NULL. Degrades gracefully if the columns don't exist yet
+
+The graceful degradation pattern (try/catch → return `[]`) is the key design choice here. The full 2.6M-artist pipeline run will take ~15-17 hours. These functions need to work (return empty arrays) before that run completes, so the app doesn't crash when Phase 35 and 36 start wiring up UI.
+
+`npm run check` passes with 0 errors. All 196 test suite checks pass. Phase 34 is now complete — all four plans done.
+> Files changed: 4
+
+> **Commit 4a002567** (2026-03-04 13:41) — feat(34-04): add getSimilarArtists and getGeocodedArtists query functions
+> Files changed: 1

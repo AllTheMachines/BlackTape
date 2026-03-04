@@ -3,16 +3,16 @@ gsd_state_version: 1.0
 milestone: v1.7
 milestone_name: The Rabbit Hole
 status: in_progress
-stopped_at: Completed 34-03-PLAN.md (track/release cache command)
-last_updated: "2026-03-04T12:50:00Z"
-last_activity: 2026-03-04 — 34-03 track/release cache Tauri command complete
+stopped_at: Completed 34-04-PLAN.md (query functions — getSimilarArtists + getGeocodedArtists)
+last_updated: "2026-03-04T12:42:00Z"
+last_activity: 2026-03-04 — 34-04 query functions (getSimilarArtists + getGeocodedArtists) complete
 progress:
   total_phases: 15
-  completed_phases: 14
+  completed_phases: 15
   total_plans: 49
-  completed_plans: 48
-  percent: 98
-  bar: "[██████████] 98%"
+  completed_plans: 49
+  percent: 100
+  bar: "[██████████] 100%"
 ---
 
 # Project State
@@ -26,10 +26,10 @@ See: .planning/PROJECT.md (updated 2026-03-03 after v1.7 start)
 
 ## Current Position
 
-Phase: 34-pipeline-foundation (in progress)
-Plan: 34-03 complete → 34-04 next (or phase complete)
-Status: Executing phase plans
-Last activity: 2026-03-04 — 34-03 track/release cache Tauri command complete
+Phase: 34-pipeline-foundation (COMPLETE)
+Plan: 34-04 complete → Phase 34 done
+Status: Phase 34 complete — all 4 plans executed
+Last activity: 2026-03-04 — 34-04 query functions (getSimilarArtists + getGeocodedArtists) complete
 
 ## Accumulated Context
 
@@ -51,7 +51,7 @@ Last activity: 2026-03-04 — 34-03 track/release cache Tauri command complete
 - Track data: not indexed, fetched live from MB (1 req/sec) — cache after first fetch
 - Old graph views (StyleMap, GenreGraph, etc.) code stays as fallback
 
-### Phase 34 Pipeline Foundation (v1.7 data layer)
+### Phase 34 Pipeline Foundation (v1.7 data layer) — COMPLETE
 
 - 34-01 DONE: `similar_artists` table populated — 746 symmetric pairs, all integrity checks pass
 - Key decision: 4-phase SQL (score unique pairs → symmetric expansion+top-10 → symmetry backfill → top-K enforcement+orphan cleanup) required because the plan's original UNION SQL produced asymmetric pairs and artists exceeding 10 entries
@@ -64,6 +64,9 @@ Last activity: 2026-03-04 — 34-03 track/release cache Tauri command complete
 - Key decision: cache-first — check release_group_cache before any MB API call; empty result triggers fresh fetch
 - Key decision: track fetch errors are non-fatal — releases always returned even if recordings fetch fails
 - Key decision: 1100ms sleep between per-release track fetches within single invocation; concurrent invocations not serialized
+- 34-04 DONE: `getSimilarArtists` + `getGeocodedArtists` query functions + `SimilarArtistResult` + `GeocodedArtist` types in queries.ts
+- Key decision: both functions degrade gracefully (try/catch → []) for pre-pipeline state — safe to call before full 2.6M pipeline run completes
+- Key decision: `GeocodedArtist.city_precision` union type `'city' | 'region' | 'country'` — 'none' excluded by WHERE clause, not in type
 
 ### Blockers/Concerns
 
@@ -71,6 +74,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-04T12:50:00Z
-Stopped at: Completed 34-03-PLAN.md (track/release cache command)
+Last session: 2026-03-04T12:42:00Z
+Stopped at: Completed 34-04-PLAN.md (query functions — getSimilarArtists + getGeocodedArtists)
 Resume file: None
