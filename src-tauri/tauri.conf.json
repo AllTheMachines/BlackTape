@@ -49,10 +49,7 @@
     },
     "externalBin": [
       "binaries/llama-server"
-    ],
-    "resources": {
-      "binaries/*.dll": "."
-    }
+    ]
   },
   "plugins": {
     "updater": {
