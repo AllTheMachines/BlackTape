@@ -21,6 +21,55 @@
 	let { currentTemplateId, allTemplates, onTemplateChange }: Props = $props();
 
 	let searchQuery = $state('');
+	let artistSuggestions = $state<Array<{ name: string; slug: string; tags: string | null }>>([]);
+	let tagSuggestions = $state<Array<{ tag: string; artist_count: number }>>([]);
+	let showDropdown = $state(false);
+	let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+
+	async function fetchSuggestions(q: string) {
+		if (q.length < 2) {
+			artistSuggestions = [];
+			tagSuggestions = [];
+			showDropdown = false;
+			return;
+		}
+		try {
+			const { getProvider } = await import('$lib/db/provider');
+			const { searchArtistsAutocomplete, searchTagsAutocomplete } = await import('$lib/db/queries');
+			const db = await getProvider();
+			[artistSuggestions, tagSuggestions] = await Promise.all([
+				searchArtistsAutocomplete(db, q, 4),
+				searchTagsAutocomplete(db, q, 3)
+			]);
+			showDropdown = artistSuggestions.length > 0 || tagSuggestions.length > 0;
+		} catch {
+			artistSuggestions = [];
+			tagSuggestions = [];
+			showDropdown = false;
+		}
+	}
+
+	function handleSearchInput() {
+		if (debounceTimer) clearTimeout(debounceTimer);
+		debounceTimer = setTimeout(() => fetchSuggestions(searchQuery), 200);
+	}
+
+	function handleSearchBlur() {
+		setTimeout(() => { showDropdown = false; }, 150);
+	}
+
+	function selectArtist(slug: string) {
+		showDropdown = false;
+		searchQuery = '';
+		goto('/artist/' + slug);
+	}
+
+	function selectTag(tag: string) {
+		showDropdown = false;
+		searchQuery = '';
+		goto('/search?q=' + encodeURIComponent(tag) + '&mode=tag');
+	}
+
 	// Split templates into built-ins and user templates for optgroup rendering
 	const builtinIds = ['cockpit', 'focus', 'minimal'];
 	const builtinTemplates = $derived(allTemplates.filter((t) => builtinIds.includes(t.id)));
@@ -83,8 +132,30 @@
 				type="search"
 				placeholder="Search..."
 				bind:value={searchQuery}
+				oninput={handleSearchInput}
+				onblur={handleSearchBlur}
 				autocomplete="off"
 			/>
+			{#if showDropdown}
+				<div class="search-dropdown">
+					{#if artistSuggestions.length > 0}
+						<div class="dd-group-label">Artists</div>
+						{#each artistSuggestions as a}
+							<button class="dd-item" onmousedown={() => selectArtist(a.slug)}>
+								<span class="dd-name">{a.name}</span>
+								{#if a.tags}<span class="dd-tags">{a.tags}</span>{/if}
+							</button>
+						{/each}
+					{/if}
+					{#if tagSuggestions.length > 0}
+						<div class="dd-group-label">Tags</div>
+						{#each tagSuggestions as t}
+							<button class="dd-item dd-tag" onmousedown={() => selectTag(t.tag)}>{t.tag}</button>
+						{/each}
+					{/if}
+					<a class="dd-see-all" href="/search?q={encodeURIComponent(searchQuery)}">See all results</a>
+				</div>
+			{/if}
 		</form>
 	</div>
 
@@ -245,6 +316,7 @@
 		padding: 0 6px;
 		width: 190px;
 		height: 26px;
+		position: relative;
 	}
 
 	.search-form:focus-within {
@@ -269,6 +341,77 @@
 
 	.search-input::placeholder {
 		color: var(--t-3);
+	}
+
+	/* Search dropdown */
+	.search-dropdown {
+		position: absolute;
+		top: calc(100% + 4px);
+		left: 0;
+		right: 0;
+		background: var(--bg-4);
+		border: 1px solid var(--b-2);
+		z-index: 200;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.dd-group-label {
+		font-size: 9px;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: var(--t-3);
+		padding: 4px 8px 2px;
+	}
+
+	.dd-item {
+		background: none;
+		border: none;
+		color: var(--t-2);
+		font-size: 11px;
+		text-align: left;
+		padding: 4px 8px;
+		cursor: pointer;
+		font-family: inherit;
+		display: flex;
+		align-items: baseline;
+		gap: 6px;
+		white-space: nowrap;
+		overflow: hidden;
+	}
+
+	.dd-item:hover {
+		background: var(--bg-5);
+		color: var(--t-1);
+	}
+
+	.dd-name {
+		flex-shrink: 0;
+	}
+
+	.dd-tags {
+		font-size: 10px;
+		color: var(--t-3);
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.dd-tag {
+		color: var(--t-3);
+		font-size: 10px;
+	}
+
+	.dd-see-all {
+		font-size: 10px;
+		color: var(--acc);
+		padding: 4px 8px 6px;
+		text-decoration: none;
+		border-top: 1px solid var(--b-1);
+	}
+
+	.dd-see-all:hover {
+		text-decoration: underline;
 	}
 
 	/* Layout Switcher */
