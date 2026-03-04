@@ -64,15 +64,22 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          # Tauri CLI can't decrypt the key with an empty password — we sign manually below.
-          # Null out the updater pubkey so Tauri doesn't require TAURI_SIGNING_PRIVATE_KEY.
         run: |
-          npm run tauri build -- --config '{"plugins":{"updater":{"pubkey":null}}}'
+          # Generate a throwaway keypair using Tauri's own signer (guaranteed compatible).
+          # We only need it so Tauri's build doesn't fail on the signing step.
+          # The .sig file will be replaced by rsign2 with the real key below.
+          npx @tauri-apps/cli signer generate --ci -p "" -w /tmp/tauri_build.key
+          TAURI_SIGNING_PRIVATE_KEY=$(cat /tmp/tauri_build.key) \
+            TAURI_SIGNING_PRIVATE_KEY_PASSWORD="" \
+            npm run tauri build
 
       - name: Build app (unsigned — no cert configured)
         if: ${{ env.APPLE_CERTIFICATE == '' }}
         run: |
-          npm run tauri build -- --config '{"bundle":{"macOS":{"signingIdentity":null}},"plugins":{"updater":{"pubkey":null}}}'
+          npx @tauri-apps/cli signer generate --ci -p "" -w /tmp/tauri_build.key
+          TAURI_SIGNING_PRIVATE_KEY=$(cat /tmp/tauri_build.key) \
+            TAURI_SIGNING_PRIVATE_KEY_PASSWORD="" \
+            npm run tauri build -- --config '{"bundle":{"macOS":{"signingIdentity":null}}}'
 
       - name: Sign updater bundle with rsign2
         env:
@@ -97,11 +104,12 @@ jobs:
           fi
           echo "Signing: $APP_TAR"
 
-          # Sign with rsign2 using -W (passwordless — key has empty password)
+          # Sign with rsign2 -W (passwordless — key has empty password).
+          # This REPLACES the throwaway .sig from the build step with the real signature.
           APP_SIG="${APP_TAR}.sig"
           rsign sign -s /tmp/updater.key -W -x "$APP_SIG" "$APP_TAR"
 
-          echo "Signature written: $APP_SIG"
+          echo "Real signature written: $APP_SIG"
           ls -la "$APP_TAR" "$APP_SIG"
 
           # Clean up key file
