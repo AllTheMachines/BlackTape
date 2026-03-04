@@ -13157,3 +13157,6 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 
 > **Commit da428a2d** (2026-03-04 17:57) — fix(36-02): add Rabbit Hole and World Map to sidebar nav
 > Files changed: 1
+
+> **Commit dc6c9495** (2026-03-04 17:57) — wip: auto-save
+> Files changed: 1
