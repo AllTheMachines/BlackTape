@@ -13606,3 +13606,9 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 
 > **Commit f07b62a3** (2026-03-04 23:19) — wip: auto-save
 > Files changed: 1
+
+> **Commit 27e72c19** (2026-03-04 23:20) — wip: auto-save
+> Files changed: 1
+
+> **Commit da1cb58f** (2026-03-04 23:23) — feat: macOS build pipeline — GitHub Actions + DMG target
+> Files changed: 4
