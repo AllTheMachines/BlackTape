@@ -83,6 +83,12 @@ See `.planning/milestones/v1.6-ROADMAP.md`
 ## v1.7 — The Rabbit Hole (Phases 34--37)
 
 - [ ] Phase 34: Pipeline Foundation — Precompute similar artists (tag overlap), artist city geocoding (Wikidata SPARQL), track/release caching layer
+  **Plans:** 4 plans
+  Plans:
+  - [ ] 34-01-PLAN.md — Similar artists pipeline (build-similar-artists.mjs + similar_artists table)
+  - [ ] 34-02-PLAN.md — City geocoding pipeline (build-geocoding.mjs + city_lat/city_lng/city_precision columns)
+  - [ ] 34-03-PLAN.md — Track/release cache (track_cache.rs Tauri command + taste.db schema)
+  - [ ] 34-04-PLAN.md — Query functions (getSimilarArtists, getGeocodedArtists in queries.ts)
 - [ ] Phase 35: Rabbit Hole — New `/rabbit-hole` route, artist + genre exploration pages, similar artists navigation, paginated tracks, history trail (Continue)
 - [ ] Phase 36: World Map — Leaflet geographic discovery, city/scene pins, cross-link to Rabbit Hole
 - [ ] Phase 37: Context Sidebar + Decade Filtering — Context panel in nav-content gap, decade row replacing year input, AI companion (if AI connected)
@@ -108,3 +114,4 @@ See `.planning/milestones/v1.6-ROADMAP.md`
 | 31. v1 Prep | v1.6 | 1/1 | Complete | 2026-02-27 |
 | 32. Embedded Players | v1.6 | 3/3 | Complete | 2026-02-27 |
 | 33. Artist Claim Form | v1.6 | 2/2 | Complete | 2026-02-27 |
+| 34. Pipeline Foundation | v1.7 | 0/4 | Planned | — |
