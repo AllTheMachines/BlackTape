@@ -1,18 +1,14 @@
 ---
-status: testing
+status: complete
 phase: 35-rabbit-hole
 source: 35-01-SUMMARY.md, 35-02-SUMMARY.md, 35-03-SUMMARY.md, 35-04-SUMMARY.md, 35-05-SUMMARY.md
 started: 2026-03-04T20:00:00Z
-updated: 2026-03-04T20:00:00Z
+updated: 2026-03-04T20:30:00Z
 ---
 
 ## Current Test
 
-number: 10
-name: History trail navigation
-expected: |
-  After visiting several artists/tags, the trail bar at the top shows all visited items in order. Clicking an earlier item navigates back to that artist or tag.
-awaiting: user response
+[testing complete]
 
 ## Tests
 
@@ -64,14 +60,14 @@ result: pass
 
 ### 10. History trail navigation
 expected: After visiting several artists/tags, the trail bar at the top of the Rabbit Hole layout shows all visited items in order. Clicking an earlier item in the trail navigates back to that artist or tag.
-result: [pending]
+result: pass
 
 ## Summary
 
 total: 10
-passed: 3
+passed: 4
 issues: 4
-pending: 1
+pending: 0
 skipped: 2
 
 ## Gaps
