@@ -85,10 +85,10 @@ See `.planning/milestones/v1.6-ROADMAP.md`
 - [x] Phase 34: Pipeline Foundation — Precompute similar artists (tag overlap), artist city geocoding (Wikidata SPARQL), track/release caching layer (completed 2026-03-04)
   **Plans:** 4 plans
   Plans:
-  - [ ] 34-01-PLAN.md — Similar artists pipeline (build-similar-artists.mjs + similar_artists table)
-  - [ ] 34-02-PLAN.md — City geocoding pipeline (build-geocoding.mjs + city_lat/city_lng/city_precision columns)
-  - [ ] 34-03-PLAN.md — Track/release cache (track_cache.rs Tauri command + taste.db schema)
-  - [ ] 34-04-PLAN.md — Query functions (getSimilarArtists, getGeocodedArtists in queries.ts)
+  - [x] 34-01-PLAN.md — Similar artists pipeline (build-similar-artists.mjs + similar_artists table)
+  - [x] 34-02-PLAN.md — City geocoding pipeline (build-geocoding.mjs + city_lat/city_lng/city_precision columns)
+  - [x] 34-03-PLAN.md — Track/release cache (track_cache.rs Tauri command + taste.db schema)
+  - [x] 34-04-PLAN.md — Query functions (getSimilarArtists, getGeocodedArtists in queries.ts)
 
 ### Phase 35: Rabbit Hole
 
@@ -99,21 +99,21 @@ Plans:
 - [x] 35-01-PLAN.md — DB queries + trail store (5 new query functions + localStorage-persisted trail)
 - [x] 35-02-PLAN.md — Layout shell (root layout isRabbitHole bypass, nav restructure, sub-layout with exit + trail)
 - [x] 35-03-PLAN.md — Landing page (unified search + Random button)
-- [ ] 35-04-PLAN.md — Artist card page (card with similar artists, releases, play + continue)
-- [ ] 35-05-PLAN.md — Genre/tag page (random 20 artists, related tags, reshuffle)
+- [x] 35-04-PLAN.md — Artist card page (card with similar artists, releases, play + continue)
+- [x] 35-05-PLAN.md — Genre/tag page (random 20 artists, related tags, reshuffle)
 
 ### Phase 36: World Map
 
 **Goal:** Leaflet geographic discovery — full-viewport map at /world-map with CartoDB Dark Matter tiles, amber markerClusterGroup, precision-tier opacity, floating tag filter, slide-up artist panel, bidirectional cross-links with Rabbit Hole
 
-**Plans:** 5/6 plans executed
+**Plans:** 6/6 plans complete
 Plans:
-- [ ] 36-01-PLAN.md — Route scaffold (install leaflet.markercluster, create +layout.ts, +page.ts, +page.svelte stub)
-- [ ] 36-02-PLAN.md — Layout bypass + nav (isWorldMap in root layout, World Map nav item)
-- [ ] 36-03-PLAN.md — Map core (Leaflet init, CartoDB tiles, markerClusterGroup, precision-tier opacity)
-- [ ] 36-04-PLAN.md — Tag filter (floating chip, in-memory filter, URL sync with replaceState, autocomplete)
-- [ ] 36-05-PLAN.md — Artist panel (extract RabbitHoleArtistCard.svelte, slide-up panel, marker click wiring)
-- [ ] 36-06-PLAN.md — Cross-links ("See on map" on Rabbit Hole artist + tag pages) + human verify checkpoint
+- [x] 36-01-PLAN.md — Route scaffold (install leaflet.markercluster, create +layout.ts, +page.ts, +page.svelte stub)
+- [x] 36-02-PLAN.md — Layout bypass + nav (isWorldMap in root layout, World Map nav item)
+- [x] 36-03-PLAN.md — Map core (Leaflet init, CartoDB tiles, markerClusterGroup, precision-tier opacity)
+- [x] 36-04-PLAN.md — Tag filter (floating chip, in-memory filter, URL sync with replaceState, autocomplete)
+- [x] 36-05-PLAN.md — Artist panel (extract RabbitHoleArtistCard.svelte, slide-up panel, marker click wiring)
+- [x] 36-06-PLAN.md — Cross-links ("See on map" on Rabbit Hole artist + tag pages) + human verify checkpoint
 
 ### Phase 37: Context Sidebar + Decade Filtering
 
@@ -142,4 +142,4 @@ Plans:
 | 33. Artist Claim Form | v1.6 | 2/2 | Complete | 2026-02-27 |
 | 34. Pipeline Foundation | v1.7 | 4/4 | Complete | 2026-03-04 |
 | 35. Rabbit Hole | v1.7 | 5/5 | Complete | 2026-03-04 |
-| 36. World Map | 5/6 | In Progress|  | — |
+| 36. World Map | 6/6 | Complete   | 2026-03-04 | 2026-03-04 |

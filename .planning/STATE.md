@@ -3,11 +3,28 @@ gsd_state_version: 1.0
 milestone: v1.7
 milestone_name: The Rabbit Hole
 status: in_progress
+stopped_at: Completed 36-06-PLAN.md (World Map cross-links — Phase 36 complete)
+last_updated: "2026-03-04T18:00:00.000Z"
+last_activity: 2026-03-04 — 36-06 "See on map" cross-links on Rabbit Hole artist + tag pages (Phase 36 World Map complete)
+progress:
+  total_phases: 3
+  completed_phases: 2
+  total_plans: 11
+  completed_plans: 11
+  percent: 100
+  bar: "[██████████] 100%"
+---
+
+---
+gsd_state_version: 1.0
+milestone: v1.7
+milestone_name: The Rabbit Hole
+status: in_progress
 stopped_at: Completed 36-05-PLAN.md (World Map artist panel)
 last_updated: "2026-03-04T15:41:40.715Z"
 last_activity: 2026-03-04 — 36-04 World Map tag filter (in-memory filtering, URL replaceState sync, autocomplete)
 progress:
-  total_phases: 3
+  [██████████] 100%
   completed_phases: 1
   total_plans: 11
   completed_plans: 10
@@ -88,10 +105,10 @@ See: .planning/PROJECT.md (updated 2026-03-03 after v1.7 start)
 
 ## Current Position
 
-Phase: 36-world-map (COMPLETE)
-Plan: 36-05 complete → 5/5 plans done (01 route scaffold, 02 layout bypass, 03 Leaflet map, 04 tag filter, 05 artist panel)
-Status: World map feature complete — pins, clustering, tag filter, artist panel all live
-Last activity: 2026-03-04 — 36-05 World Map artist panel (RabbitHoleArtistCard extracted, slide-up panel wired)
+Phase: 36-world-map (COMPLETE — all 6 plans done)
+Plan: 36-06 complete → 6/6 plans done (01 route scaffold, 02 layout bypass, 03 Leaflet map, 04 tag filter, 05 artist panel, 06 cross-links)
+Status: Phase 36 World Map fully complete — pins, clustering, tag filter, artist panel, bidirectional Rabbit Hole cross-links all live
+Last activity: 2026-03-04 — 36-06 "See on map" cross-links on Rabbit Hole artist + tag pages (Phase 36 complete)
 
 ## Accumulated Context
 
@@ -183,6 +200,11 @@ Last activity: 2026-03-04 — 36-05 World Map artist panel (RabbitHoleArtistCard
 - Key decision: stopPropagation on marker click prevents event bubbling to map's dismiss handler
 - Key decision: showOpenInRabbitHole prop toggles Open in Rabbit Hole button — hidden in Rabbit Hole route, shown in map panel
 - Key decision: openArtistPanel() fetches artist + similar + links in parallel via Promise.all with graceful catch degradation
+- 36-06 DONE: "See on map" cross-links on Rabbit Hole artist + tag pages; bidirectional Rabbit Hole ↔ World Map deep-linking
+- Key decision: Lightweight SQL geo check (SELECT city_lat IS NOT NULL FROM artists WHERE id=?) in +page.ts load — avoids loading 50K geocoded artist records just to check one artist
+- Key decision: hasGeocoordinates flag returned from load, $derived in component — clean data/UI separation
+- Key decision: Artist cross-link conditional (only if geocoded); tag cross-link always shown — tags always have potential geocoded artists
+- Key decision: Human verification approved with noted DB limitation — sample DB (10K artists, 123 geocoded); full test pending complete geocoding pipeline run
 
 ### Blockers/Concerns
 
@@ -190,6 +212,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-04T15:41:40.713Z
-Stopped at: Completed 36-05-PLAN.md (World Map artist panel)
+Last session: 2026-03-04T18:00:00.000Z
+Stopped at: Completed 36-06-PLAN.md (Phase 36 World Map complete)
 Resume file: None
