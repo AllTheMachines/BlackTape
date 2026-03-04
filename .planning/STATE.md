@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.7
 milestone_name: The Rabbit Hole
 status: completed
-stopped_at: Phase 36 context gathered
-last_updated: "2026-03-04T14:51:57.107Z"
+stopped_at: Completed 36-02-PLAN.md (World Map layout bypass)
+last_updated: "2026-03-04T15:25:37.273Z"
 last_activity: 2026-03-04 — 35-05 Genre/tag exploration page (Rabbit Hole complete)
 progress:
   total_phases: 3
   completed_phases: 1
-  total_plans: 5
-  completed_plans: 5
+  total_plans: 11
+  completed_plans: 6
 ---
 
 ---
@@ -41,10 +41,10 @@ See: .planning/PROJECT.md (updated 2026-03-03 after v1.7 start)
 
 ## Current Position
 
-Phase: 35-rabbit-hole (COMPLETE)
-Plan: 35-05 complete → Phase 35 done
-Status: 5/5 plans complete (data layer + route wiring + landing page + artist card + genre/tag page done)
-Last activity: 2026-03-04 — 35-05 Genre/tag exploration page (Rabbit Hole complete)
+Phase: 36-world-map (IN PROGRESS)
+Plan: 36-02 complete → 1/6 plans done
+Status: Layout bypass complete; world map page + data layer remaining
+Last activity: 2026-03-04 — 36-02 isWorldMap layout bypass + World Map nav item
 
 ## Accumulated Context
 
@@ -109,12 +109,18 @@ Last activity: 2026-03-04 — 35-05 Genre/tag exploration page (Rabbit Hole comp
 - Key decision: getGenreBySlug wrapped in .catch(() => null) — most tags have no KB entry; failure is expected not exceptional
 - Key decision: decodeURIComponent at load, encodeURIComponent at navigation — tags with spaces/special chars round-trip correctly
 
+### Phase 36 World Map (v1.7 map feature) — IN PROGRESS
+
+- 36-02 DONE: isWorldMap bypass in root layout + World Map nav item in Tauri nav
+- Key decision: isWorldMap keeps Titlebar and Player — same treatment as isRabbitHole; nav/PanelLayout/footer suppressed for /world-map/* routes
+- Key decision: World Map nav link is Tauri-only — feature requires SQLite, no web counterpart
+
 ### Blockers/Concerns
 
 None.
 
 ## Session Continuity
 
-Last session: 2026-03-04T14:51:57.103Z
-Stopped at: Phase 36 context gathered
-Resume file: .planning/phases/36-world-map/36-CONTEXT.md
+Last session: 2026-03-04T15:25:37.265Z
+Stopped at: Completed 36-02-PLAN.md (World Map layout bypass)
+Resume file: None

@@ -4,6 +4,40 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-03-04 — Phase 36 Plan 01: World Map Route Scaffold
+
+Phase 36 plan 01 complete. Installed `leaflet.markercluster` and created the three `src/routes/world-map/` scaffold files that all subsequent plans build on.
+
+**Packages installed:**
+- `leaflet.markercluster ^1.5.3` — marker clustering plugin for Leaflet (dynamic import only — must NOT be top-level imported in Svelte; load order: leaflet before markercluster in onMount)
+- `@types/leaflet.markercluster ^1.5.6` — TypeScript types
+
+**Files created:**
+- `src/routes/world-map/+layout.ts` — mirrors rabbit-hole layout exactly: `prerender = false`, `ssr = false`
+- `src/routes/world-map/+page.ts` — load function reads `?artist=` and `?tag=` URL params, calls `getGeocodedArtists(db, 50000)`, degrades gracefully (try/catch → `[]`) for pre-pipeline state
+- `src/routes/world-map/+page.svelte` — stub with `.wm-root` full-viewport container and `.wm-map` div that Leaflet will bind to in Plan 03. Uses `calc(100vh - var(--titlebar-height, 32px) - var(--player-height, 0px))` for responsive height.
+
+Key decision: CSS height via `calc(100vh - ...)` with CSS variable fallbacks — avoids hardcoding pixel values for Titlebar/Player heights. Theme sets `--titlebar-height` and `--player-height`; fallbacks ensure the page renders correctly even if the variables aren't set.
+
+`npm run check` 0 errors, 196 code tests pass.
+
+---
+
+## Entry 2026-03-04 — Phase 36 Plan 02: World Map Layout Bypass
+
+Phase 36 plan 02 complete. Added the `isWorldMap` layout bypass to the root layout — the World Map gets the same full-viewport immersive treatment as Rabbit Hole.
+
+**Changes to `src/routes/+layout.svelte`:**
+- Added `isWorldMap` derived variable (mirrors the existing `isRabbitHole` pattern): `let isWorldMap = $derived($page.url.pathname.startsWith('/world-map'))`
+- Added `{:else if isWorldMap}` template branch between the Rabbit Hole block and the standard cockpit `{:else}` — renders only Titlebar + children + Player, suppressing the nav header, ControlBar, PanelLayout, sidebar, and footer
+- Added "World Map" nav link after Rabbit Hole in the Tauri nav with active state detection
+
+Key decision: World Map nav link is Tauri-only (added only to the `{#if tauriMode}` nav block). The feature requires SQLite via tauri-plugin-sql, so it has no web counterpart.
+
+`npm run check` 0 errors, 196 code tests pass.
+
+---
+
 ## Entry 2026-03-04 — Phase 35 Plan 05: Genre/Tag Exploration Page
 
 Phase 35 plan 05 complete. Built the genre/tag exploration page — the other main destination in the Rabbit Hole (alongside artist cards). Any tag chip anywhere in the Rabbit Hole navigates here.
@@ -12964,3 +12998,15 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 
 > **Commit 2c871db7** (2026-03-04 16:16) — auto-save: 1 files @ 16:16
 > Files changed: 1
+
+> **Commit e8cd9a69** (2026-03-04 16:18) — wip: auto-save
+> Files changed: 1
+
+> **Commit cd6ef9b6** (2026-03-04 16:24) — chore(36-01): install leaflet.markercluster and types
+> Files changed: 2
+
+> **Commit 81b80fbc** (2026-03-04 16:24) — feat(36-02): add isWorldMap layout bypass and World Map nav item
+> Files changed: 1
+
+> **Commit 7431de54** (2026-03-04 16:24) — feat(36-01): create world-map route scaffold
+> Files changed: 3
