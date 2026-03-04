@@ -8,18 +8,17 @@ updated: 2026-03-04T20:00:00Z
 
 ## Current Test
 
-number: 1
-name: Rabbit Hole nav entry
+number: 2
+name: Landing page search
 expected: |
-  Desktop nav shows a "Rabbit Hole" link (after Discover). Clicking it loads the /rabbit-hole route.
-  The page renders in immersive mode — no left sidebar, no header nav, no footer. Only Titlebar and Player remain visible at top/bottom.
+  The landing page shows a search input with placeholder text. Typing into it shows a grouped autocomplete dropdown — Artists section (up to 6 results) and Genres & Tags section (up to 6 results). Each artist result shows name + first tag. Each tag result shows name + artist count.
 awaiting: user response
 
 ## Tests
 
 ### 1. Rabbit Hole nav entry
 expected: Desktop nav shows a "Rabbit Hole" link (after Discover). Clicking it loads the /rabbit-hole route. The page renders in immersive mode — no left sidebar, no header nav, no footer. Only Titlebar and Player remain visible at top/bottom.
-result: [pending]
+result: pass
 
 ### 2. Landing page search
 expected: The landing page shows a search input with placeholder text. Typing into it shows a grouped autocomplete dropdown — Artists section (up to 6 results) and Genres & Tags section (up to 6 results). Each artist result shows name + first tag. Each tag result shows name + artist count.
@@ -60,9 +59,9 @@ result: [pending]
 ## Summary
 
 total: 10
-passed: 0
+passed: 1
 issues: 0
-pending: 10
+pending: 9
 skipped: 0
 
 ## Gaps
