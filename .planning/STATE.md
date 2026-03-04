@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.7
 milestone_name: The Rabbit Hole
 status: completed
-stopped_at: Completed 35-05-PLAN.md (Genre/tag exploration page — Rabbit Hole)
-last_updated: "2026-03-04T14:32:13.584Z"
+stopped_at: Phase 36 context gathered
+last_updated: "2026-03-04T14:51:57.107Z"
 last_activity: 2026-03-04 — 35-05 Genre/tag exploration page (Rabbit Hole complete)
 progress:
   total_phases: 3
@@ -115,6 +115,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-04T14:26:47.625Z
-Stopped at: Completed 35-05-PLAN.md (Genre/tag exploration page — Rabbit Hole)
-Resume file: None
+Last session: 2026-03-04T14:51:57.103Z
+Stopped at: Phase 36 context gathered
+Resume file: .planning/phases/36-world-map/36-CONTEXT.md
