@@ -2,7 +2,6 @@
 	import { queueState, clearQueue } from '$lib/player/queue.svelte';
 	import { playerState } from '$lib/player/state.svelte';
 	import { tasteProfile } from '$lib/taste/profile.svelte';
-	import { goto } from '$app/navigation';
 	import { aiState } from '$lib/ai/state.svelte';
 	import { getAiProvider } from '$lib/ai/engine';
 	import { PROMPTS, INJECTION_GUARD, externalContent } from '$lib/ai/prompts';
@@ -50,57 +49,6 @@
 			.sort((a, b) => b.weight - a.weight)
 			.slice(0, 5)
 	);
-
-	// --- Sidebar quick-search ---
-	let searchQuery = $state('');
-	let artistSuggestions = $state<Array<{ name: string; slug: string; tags: string | null }>>([]);
-	let tagSuggestions = $state<Array<{ tag: string; artist_count: number }>>([]);
-	let showDropdown = $state(false);
-	let searchDebounceTimer: ReturnType<typeof setTimeout> | null = null;
-
-	async function fetchSuggestions(q: string) {
-		if (q.length < 2) {
-			artistSuggestions = [];
-			tagSuggestions = [];
-			showDropdown = false;
-			return;
-		}
-		try {
-			const { getProvider } = await import('$lib/db/provider');
-			const { searchArtistsAutocomplete, searchTagsAutocomplete } = await import('$lib/db/queries');
-			const db = await getProvider();
-			[artistSuggestions, tagSuggestions] = await Promise.all([
-				searchArtistsAutocomplete(db, q, 4),
-				searchTagsAutocomplete(db, q, 3)
-			]);
-			showDropdown = artistSuggestions.length > 0 || tagSuggestions.length > 0;
-		} catch {
-			artistSuggestions = [];
-			tagSuggestions = [];
-			showDropdown = false;
-		}
-	}
-
-	function handleSearchInput() {
-		if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
-		searchDebounceTimer = setTimeout(() => fetchSuggestions(searchQuery), 200);
-	}
-
-	function handleSearchBlur() {
-		setTimeout(() => { showDropdown = false; }, 150);
-	}
-
-	function selectArtist(slug: string) {
-		showDropdown = false;
-		searchQuery = '';
-		goto('/artist/' + slug);
-	}
-
-	function selectTag(tag: string) {
-		showDropdown = false;
-		searchQuery = '';
-		goto('/search?q=' + encodeURIComponent(tag) + '&mode=tag');
-	}
 
 	// --- AI companion chat ---
 	interface ChatMessage { role: 'user' | 'assistant'; text: string; }
@@ -176,49 +124,6 @@
 </script>
 
 <aside class="right-sidebar" aria-label="Context panel">
-	<!-- Quick Search -->
-	<section class="sidebar-section sidebar-search">
-		<h4 class="section-label">Quick Search</h4>
-		<div class="search-input-wrap">
-			<input
-				type="text"
-				class="sidebar-search-input"
-				placeholder="Artist or genre..."
-				bind:value={searchQuery}
-				oninput={handleSearchInput}
-				onblur={handleSearchBlur}
-				autocomplete="off"
-			/>
-			{#if showDropdown}
-				<div class="search-dropdown">
-					{#if artistSuggestions.length > 0}
-						<div class="dropdown-group-label">Artists</div>
-						{#each artistSuggestions as a}
-							<button
-								class="dropdown-item"
-								onmousedown={() => selectArtist(a.slug)}
-							>{a.name}</button>
-						{/each}
-					{/if}
-					{#if tagSuggestions.length > 0}
-						<div class="dropdown-group-label">Tags</div>
-						{#each tagSuggestions as t}
-							<button
-								class="dropdown-item tag-item"
-								onmousedown={() => selectTag(t.tag)}
-							>{t.tag}</button>
-						{/each}
-					{/if}
-					<a
-						class="dropdown-see-all"
-						href="/search?q={encodeURIComponent(searchQuery)}"
-					>See all results</a>
-				</div>
-			{/if}
-		</div>
-	</section>
-	<div class="section-divider"></div>
-
 	<!-- AI Companion (only when ready) -->
 	{#if aiState.status === 'ready'}
 		<section class="sidebar-section ai-companion">
@@ -685,90 +590,6 @@
 		background: var(--bg-hover);
 	}
 
-	/* Sidebar quick-search */
-	.sidebar-search {
-		position: relative;
-	}
-
-	.search-input-wrap {
-		position: relative;
-		margin-top: var(--space-xs);
-	}
-
-	.sidebar-search-input {
-		width: 100%;
-		background: var(--bg-elevated);
-		border: 1px solid var(--border-subtle);
-		color: var(--text-primary);
-		font-size: 0.75rem;
-		padding: 4px 6px;
-		border-radius: 0;
-		outline: none;
-		font-family: inherit;
-		box-sizing: border-box;
-	}
-
-	.sidebar-search-input:focus {
-		border-color: var(--text-accent);
-	}
-
-	.search-dropdown {
-		position: absolute;
-		top: 100%;
-		left: 0;
-		right: 0;
-		background: var(--bg-elevated);
-		border: 1px solid var(--border-subtle);
-		border-top: none;
-		z-index: 50;
-		display: flex;
-		flex-direction: column;
-	}
-
-	.dropdown-group-label {
-		font-size: 0.6rem;
-		font-weight: 600;
-		text-transform: uppercase;
-		letter-spacing: 0.08em;
-		color: var(--text-muted);
-		padding: 4px 8px 2px;
-	}
-
-	.dropdown-item {
-		background: none;
-		border: none;
-		color: var(--text-primary);
-		font-size: 0.75rem;
-		text-align: left;
-		padding: 4px 8px;
-		cursor: pointer;
-		font-family: inherit;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	.dropdown-item:hover {
-		background: var(--bg-hover);
-	}
-
-	.dropdown-item.tag-item {
-		color: var(--text-secondary);
-		font-size: 0.7rem;
-	}
-
-	.dropdown-see-all {
-		font-size: 0.65rem;
-		color: var(--text-accent);
-		padding: 4px 8px 6px;
-		text-decoration: none;
-		border-top: 1px solid var(--border-subtle);
-	}
-
-	.dropdown-see-all:hover {
-		text-decoration: underline;
-	}
-
 	/* AI Companion chat */
 	.ai-companion {
 		display: flex;
@@ -786,7 +607,7 @@
 	}
 
 	.chat-msg {
-		font-size: 0.7rem;
+		font-size: 0.8rem;
 		line-height: 1.4;
 		padding: 4px 6px;
 		border-radius: 0;
