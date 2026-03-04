@@ -102,6 +102,34 @@ export interface GenreGraph {
 	edges: GenreEdge[];
 }
 
+/** Similar artist result from precomputed similar_artists table. */
+export interface SimilarArtistResult {
+	id: number;
+	mbid: string;
+	name: string;
+	slug: string;
+	score: number;
+}
+
+/** Artist with geocoordinates for World Map rendering. */
+export interface GeocodedArtist {
+	id: number;
+	mbid: string;
+	name: string;
+	slug: string;
+	country: string | null;
+	tags: string | null;
+	city_lat: number;
+	city_lng: number;
+	/**
+	 * Precision level of the geocoordinate:
+	 * - 'city'    = place-of-birth city coordinate (highest precision)
+	 * - 'region'  = administrative region/state coordinate (mid precision)
+	 * - 'country' = country centroid fallback (lowest precision)
+	 */
+	city_precision: 'city' | 'region' | 'country';
+}
+
 /** Parsed intent from a natural language search query */
 export interface SearchIntent {
 	type: 'artist' | 'city' | 'label';
@@ -965,4 +993,68 @@ export async function getAllGenreGraph(db: DbProvider): Promise<GenreGraph> {
 	);
 
 	return { nodes, edges };
+}
+
+// ---------------------------------------------------------------------------
+// Rabbit Hole queries (Phase 35 — Similar Artists)
+// ---------------------------------------------------------------------------
+
+/**
+ * Get top similar artists for a given artist ID.
+ * Returns artists ordered by Jaccard similarity score descending.
+ * Returns empty array if similar_artists table doesn't exist yet (pre-pipeline run).
+ */
+export async function getSimilarArtists(
+	db: DbProvider,
+	artistId: number,
+	limit = 10
+): Promise<SimilarArtistResult[]> {
+	try {
+		return await db.all<SimilarArtistResult>(
+			`SELECT a.id, a.mbid, a.name, a.slug, sa.score
+			 FROM similar_artists sa
+			 JOIN artists a ON a.id = sa.similar_id
+			 WHERE sa.artist_id = ?
+			 ORDER BY sa.score DESC
+			 LIMIT ?`,
+			artistId,
+			limit
+		);
+	} catch {
+		// similar_artists table doesn't exist yet (pipeline not run) — degrade gracefully
+		return [];
+	}
+}
+
+// ---------------------------------------------------------------------------
+// World Map queries (Phase 36 — Geocoded Artists)
+// ---------------------------------------------------------------------------
+
+/**
+ * Get all artists with valid geocoordinates for World Map rendering.
+ * Returns artists with city_precision = 'city', 'region', or 'country' only.
+ * Artists with precision = 'none' (Wikidata checked, no match) are excluded.
+ * Returns empty array if geocoding columns don't exist yet (pre-pipeline run).
+ *
+ * @param limit  Cap results for initial load (default 50000 — full dataset for map rendering)
+ */
+export async function getGeocodedArtists(
+	db: DbProvider,
+	limit = 50000
+): Promise<GeocodedArtist[]> {
+	try {
+		return await db.all<GeocodedArtist>(
+			`SELECT id, mbid, name, slug, country, tags, city_lat, city_lng, city_precision
+			 FROM artists
+			 WHERE city_precision IN ('city', 'region', 'country')
+			   AND city_lat IS NOT NULL
+			   AND city_lng IS NOT NULL
+			 ORDER BY city_precision ASC, id ASC
+			 LIMIT ?`,
+			limit
+		);
+	} catch {
+		// city_lat/city_lng columns don't exist yet (pipeline not run) — degrade gracefully
+		return [];
+	}
 }
