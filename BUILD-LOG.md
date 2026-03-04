@@ -4,6 +4,29 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-03-04 — Phase 35 Plan 02: Rabbit Hole Route Wiring
+
+Phase 35 plan 02 complete. Wired the Rabbit Hole route tree into the app — the architectural gate that makes the immersive experience work.
+
+**Root layout bypass (`src/routes/+layout.svelte`):**
+Added `isRabbitHole` derived (`$page.url.pathname.startsWith('/rabbit-hole')`), then added a `{:else if isRabbitHole}` branch between `isEmbed` and the normal layout. The Rabbit Hole branch keeps Titlebar and Player (Tauri chrome stays) but skips header nav, loading bar, PanelLayout, ControlBar, and footer. Sidebars gone. Total immersion.
+
+**Desktop nav restructured:**
+Removed Style Map, Knowledge Base, Time Machine, and Dig from the tauriMode nav. Added Rabbit Hole after Discover. New order: Discover, Rabbit Hole, Library, Explore, Profile, Settings, About. The legacy d3 graph views are still reachable by URL but aren't navigable from the main nav — they belong to v2.
+
+**LeftSidebar DISCOVERY_MODES reduced to Discover only:**
+The sidebar's mode switcher grid now shows exactly one item. The mode-switch-grid still renders (1 icon = just Discover), and `activeDiscoveryMode` logic still works — single-item array is still an array.
+
+**Rabbit Hole sub-layout (`src/routes/rabbit-hole/+layout.svelte`):**
+Immersive shell that wraps all `/rabbit-hole/*` pages. Top bar: exit button (back to /discover) + "Rabbit Hole" label. Below: horizontal scrollable trail row showing visited artists/tags as clickable breadcrumb pills. Active item highlighted with accent ring. Trail loads from localStorage on `onMount` via `loadTrail()`.
+
+**Layout type file (`src/routes/rabbit-hole/+layout.ts`):**
+`prerender = false, ssr = false` — consistent with all other Tauri SPA routes.
+
+All 196 code tests pass. `npm run check` 0 errors.
+
+---
+
 ## Entry 2026-03-04 — Phase 35 Wave 1: Rabbit Hole Data Layer
 
 Phase 35 plan 01 complete. Built the pure data layer that all Rabbit Hole UI plans depend on — no UI coupling, just query functions and a trail store.
@@ -12803,3 +12826,12 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 
 > **Commit d8e30954** (2026-03-04 15:04) — feat(35-01): create rabbit-hole trail store (trail.svelte.ts)
 > Files changed: 1
+
+> **Commit 2161a7ed** (2026-03-04 15:06) — docs(35-01): complete Rabbit Hole data layer plan — 5 queries + trail store
+> Files changed: 4
+
+> **Commit 632cae15** (2026-03-04 15:08) — feat(35-02): root layout — add isRabbitHole bypass + restructure nav
+> Files changed: 1
+
+> **Commit b97f8504** (2026-03-04 15:09) — feat(35-02): LeftSidebar cleanup + Rabbit Hole sub-layout
+> Files changed: 3

@@ -3,16 +3,16 @@ gsd_state_version: 1.0
 milestone: v1.7
 milestone_name: The Rabbit Hole
 status: in_progress
-stopped_at: Completed 35-01-PLAN.md (Rabbit Hole data layer — 5 query functions + trail store)
-last_updated: "2026-03-04T14:05:11Z"
-last_activity: 2026-03-04 — 35-01 five query functions + trail.svelte.ts complete
+stopped_at: Completed 35-02-PLAN.md (Rabbit Hole route wiring — isRabbitHole bypass + sub-layout)
+last_updated: "2026-03-04T14:09:27Z"
+last_activity: 2026-03-04 — 35-02 root layout bypass + Rabbit Hole sub-layout complete
 progress:
   total_phases: 1
   completed_phases: 0
   total_plans: 5
-  completed_plans: 1
-  percent: 20
-  bar: "[██--------] 20%"
+  completed_plans: 2
+  percent: 40
+  bar: "[████------] 40%"
 ---
 
 # Project State
@@ -27,9 +27,9 @@ See: .planning/PROJECT.md (updated 2026-03-03 after v1.7 start)
 ## Current Position
 
 Phase: 35-rabbit-hole (in progress)
-Plan: 35-01 complete → 35-02 next
-Status: 1/5 plans complete (Wave 1 data layer done)
-Last activity: 2026-03-04 — 35-01 five query functions + trail.svelte.ts complete
+Plan: 35-02 complete → 35-03 next
+Status: 2/5 plans complete (Wave 1 data layer + route wiring done)
+Last activity: 2026-03-04 — 35-02 root layout bypass + Rabbit Hole sub-layout complete
 
 ## Accumulated Context
 
@@ -75,6 +75,10 @@ Last activity: 2026-03-04 — 35-01 five query functions + trail.svelte.ts compl
 - Key decision: CASE WHEN in getRelatedTags always returns the "other" tag from symmetric co-occurrence pairs
 - Key decision: jumpToTrailIndex moves pointer only, does NOT truncate subsequent items — branching history, not stack
 - Key decision: $state at module level (Svelte 5 runes compiler macro, no import needed)
+- 35-02 DONE: isRabbitHole bypass in root layout + Rabbit Hole sub-layout (exit button + trail bar)
+- Key decision: isRabbitHole keeps Titlebar and Player — Tauri chrome stays; nav/PanelLayout/footer suppressed for /rabbit-hole/* routes
+- Key decision: LeftSidebar DISCOVERY_MODES single-item array — mode switcher still renders correctly with 1 item
+- Key decision: Legacy d3 graph routes removed from nav but not deleted — URLs still reachable, preserved as v2 fallback
 
 ### Blockers/Concerns
 
@@ -82,6 +86,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-04T14:05:11Z
-Stopped at: Completed 35-01-PLAN.md (Rabbit Hole data layer — 5 query functions + trail store)
-Resume file: .planning/phases/35-rabbit-hole/35-02-PLAN.md
+Last session: 2026-03-04T14:09:27Z
+Stopped at: Completed 35-02-PLAN.md (Rabbit Hole route wiring — isRabbitHole bypass + sub-layout)
+Resume file: .planning/phases/35-rabbit-hole/35-03-PLAN.md
