@@ -101,6 +101,78 @@
 		searchQuery = '';
 		goto('/search?q=' + encodeURIComponent(tag) + '&mode=tag');
 	}
+
+	// --- AI companion chat ---
+	interface ChatMessage { role: 'user' | 'assistant'; text: string; }
+	let chatMessages = $state<ChatMessage[]>([]);
+	let chatInput = $state('');
+	let chatLoading = $state(false);
+
+	const MAX_CHAT_MESSAGES = 4;
+
+	const tasteDescription = $derived(
+		tasteProfile.tags
+			.sort((a, b) => b.weight - a.weight)
+			.slice(0, 10)
+			.map((t) => t.tag)
+			.join(', ')
+	);
+
+	function buildAiContext(): string {
+		try {
+			const url = get(page).url;
+			const era = url.searchParams.get('era');
+			const tags = url.searchParams.get('tags');
+			const parts: string[] = [];
+			if (tags) parts.push(`Current genre filters: ${tags}`);
+			if (era) parts.push(`Current era filter: ${era}`);
+			if (playerState.currentTrack) {
+				parts.push(`Now playing: ${playerState.currentTrack.artist} - ${playerState.currentTrack.title}`);
+			}
+			if (tasteDescription) parts.push(`User taste: ${tasteDescription}`);
+			return parts.join('. ');
+		} catch {
+			return '';
+		}
+	}
+
+	async function sendChatMessage() {
+		const text = chatInput.trim();
+		if (!text || chatLoading) return;
+		const provider = getAiProvider();
+		if (!provider) return;
+
+		chatInput = '';
+		chatMessages = [...chatMessages, { role: 'user' as const, text }].slice(-MAX_CHAT_MESSAGES);
+		chatLoading = true;
+
+		try {
+			const context = buildAiContext();
+			const contextSuffix = context ? ` Context: ${externalContent(context)}` : '';
+			const prompt = tasteDescription
+				? PROMPTS.nlExploreWithTaste(text, tasteDescription)
+				: PROMPTS.nlExplore(text);
+
+			const response = await provider.complete(prompt, {
+				systemPrompt: INJECTION_GUARD + contextSuffix,
+				temperature: 0.8,
+				maxTokens: 512
+			});
+
+			chatMessages = [...chatMessages, { role: 'assistant' as const, text: response }].slice(-MAX_CHAT_MESSAGES);
+		} catch {
+			chatMessages = [...chatMessages, { role: 'assistant' as const, text: 'Something went wrong. Try again.' }].slice(-MAX_CHAT_MESSAGES);
+		} finally {
+			chatLoading = false;
+		}
+	}
+
+	function handleChatKeydown(e: KeyboardEvent) {
+		if (e.key === 'Enter' && !e.shiftKey) {
+			e.preventDefault();
+			sendChatMessage();
+		}
+	}
 </script>
 
 <aside class="right-sidebar" aria-label="Context panel">
@@ -146,6 +218,42 @@
 		</div>
 	</section>
 	<div class="section-divider"></div>
+
+	<!-- AI Companion (only when ready) -->
+	{#if aiState.status === 'ready'}
+		<section class="sidebar-section ai-companion">
+			<h4 class="section-label">AI Companion</h4>
+			{#if chatMessages.length > 0}
+				<div class="chat-messages">
+					{#each chatMessages as msg}
+						<div class="chat-msg" class:user={msg.role === 'user'} class:assistant={msg.role === 'assistant'}>
+							{msg.text}
+						</div>
+					{/each}
+					{#if chatLoading}
+						<div class="chat-msg assistant chat-loading">...</div>
+					{/if}
+				</div>
+			{/if}
+			<div class="chat-input-row">
+				<input
+					type="text"
+					class="chat-input"
+					placeholder="Ask about music..."
+					bind:value={chatInput}
+					onkeydown={handleChatKeydown}
+					disabled={chatLoading}
+				/>
+				<button
+					class="chat-send-btn"
+					onclick={sendChatMessage}
+					disabled={chatLoading || !chatInput.trim()}
+					aria-label="Send"
+				>&rarr;</button>
+			</div>
+		</section>
+		<div class="section-divider"></div>
+	{/if}
 
 	{#if isArtistPage && artistData}
 		<!-- Artist Context -->
@@ -659,5 +767,96 @@
 
 	.dropdown-see-all:hover {
 		text-decoration: underline;
+	}
+
+	/* AI Companion chat */
+	.ai-companion {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-xs);
+	}
+
+	.chat-messages {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+		max-height: 200px;
+		overflow-y: auto;
+		margin-top: var(--space-xs);
+	}
+
+	.chat-msg {
+		font-size: 0.7rem;
+		line-height: 1.4;
+		padding: 4px 6px;
+		border-radius: 0;
+		white-space: pre-wrap;
+		word-break: break-word;
+	}
+
+	.chat-msg.user {
+		color: var(--text-primary);
+		background: var(--bg-hover);
+		align-self: flex-end;
+		max-width: 90%;
+	}
+
+	.chat-msg.assistant {
+		color: var(--text-secondary);
+		background: var(--bg-elevated);
+		align-self: flex-start;
+		max-width: 95%;
+	}
+
+	.chat-loading {
+		color: var(--text-muted);
+		font-style: italic;
+	}
+
+	.chat-input-row {
+		display: flex;
+		gap: 4px;
+		margin-top: var(--space-xs);
+	}
+
+	.chat-input {
+		flex: 1;
+		background: var(--bg-elevated);
+		border: 1px solid var(--border-subtle);
+		color: var(--text-primary);
+		font-size: 0.75rem;
+		padding: 4px 6px;
+		border-radius: 0;
+		outline: none;
+		font-family: inherit;
+		min-width: 0;
+	}
+
+	.chat-input:focus {
+		border-color: var(--text-accent);
+	}
+
+	.chat-input:disabled {
+		opacity: 0.5;
+	}
+
+	.chat-send-btn {
+		background: var(--bg-elevated);
+		border: 1px solid var(--border-subtle);
+		color: var(--text-accent);
+		font-size: 0.75rem;
+		padding: 4px 8px;
+		cursor: pointer;
+		border-radius: 0;
+		flex-shrink: 0;
+	}
+
+	.chat-send-btn:hover:not(:disabled) {
+		background: var(--bg-hover);
+	}
+
+	.chat-send-btn:disabled {
+		opacity: 0.4;
+		cursor: not-allowed;
 	}
 </style>
