@@ -13725,3 +13725,15 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 
 > **Commit 3d68cd9f** (2026-03-05 00:48) — wip: auto-save
 > Files changed: 1
+
+> **Commit 088871a4** (2026-03-05 00:50) — wip: auto-save
+> Files changed: 2
+
+> **Commit 2b194292** (2026-03-05 00:51) — fix: write TAURI_SIGNING_PRIVATE_KEY directly — secret is now raw minisign format, not base64
+> Files changed: 1
+
+> **Commit fe2c0f99** (2026-03-05 01:04) — fix: store TAURI_SIGNING_PRIVATE_KEY as base64 to avoid multiline secret handling issues
+> Files changed: 1
+
+> **Commit 03d8acf2** (2026-03-05 01:09) — debug: add key file diagnostics to macOS signing step
+> Files changed: 1
