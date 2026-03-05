@@ -14099,3 +14099,9 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 
 > **Commit ea08c244** (2026-03-05 10:53) — wip: auto-save
 > Files changed: 1
+
+> **Commit 676e9996** (2026-03-05 10:56) — wip: auto-save
+> Files changed: 2
+
+> **Commit 56f41393** (2026-03-05 10:58) — fix: authenticate github api call in macos workflow to avoid rate limiting
+> Files changed: 1
