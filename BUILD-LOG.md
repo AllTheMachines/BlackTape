@@ -13931,3 +13931,9 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 
 > **Commit a01de8d8** (2026-03-05 02:45) — wip: auto-save
 > Files changed: 1
+
+> **Commit b9b78a87** (2026-03-05 02:46) — auto-save: 1 files @ 02:46
+> Files changed: 1
+
+> **Commit 5a8a8793** (2026-03-05 02:49) — fix: reset ScreenCapture TCC permissions before ARD setup
+> Files changed: 1
