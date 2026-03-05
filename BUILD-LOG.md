@@ -13943,3 +13943,9 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 
 > **Commit 3b40bfb0** (2026-03-05 02:54) — fix: replace VNC with screencapture+HTTP viewer for headless macOS
 > Files changed: 1
+
+> **Commit 4ab1fbb7** (2026-03-05 02:55) — wip: auto-save
+> Files changed: 1
+
+> **Commit 97b7211f** (2026-03-05 02:56) — fix: strip Gatekeeper quarantine and use full path to launch app
+> Files changed: 1
