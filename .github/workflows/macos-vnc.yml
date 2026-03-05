@@ -1,0 +1,46 @@
+name: macOS VNC Session
+
+on:
+  workflow_dispatch:
+
+jobs:
+  vnc:
+    runs-on: macos-latest
+    timeout-minutes: 360
+
+    steps:
+      - name: Install BlackTape DMG
+        run: |
+          curl -L https://github.com/AllTheMachines/BlackTape/releases/download/v0.3.0/BlackTape_0.3.0_aarch64.dmg -o blacktape.dmg
+          hdiutil attach blacktape.dmg -nobrowse
+          cp -R "/Volumes/BlackTape/BlackTape.app" /Applications/
+          hdiutil detach "/Volumes/BlackTape"
+
+      - name: Enable Screen Sharing (VNC)
+        run: |
+          sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart \
+            -activate -configure -access -on \
+            -configure -allowAccessFor -allUsers \
+            -configure -restart -agent -privs -all
+          sudo defaults write /Library/Preferences/com.apple.RemoteManagement ARD_AllLocalUsers -bool YES
+          # Set VNC password for the current runner user
+          sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart \
+            -configure -clientopts -setvnclegacy -vnclegacy yes \
+            -clientopts -setvncpw -vncpw testpass123
+
+      - name: Install ngrok and open tunnel
+        env:
+          NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+        run: |
+          brew install ngrok/ngrok/ngrok
+          ngrok authtoken "$NGROK_AUTH_TOKEN"
+          ngrok tcp 5900 &
+          sleep 8
+          # Print the public address
+          curl -s http://localhost:4040/api/tunnels | python3 -c \
+            "import sys,json; t=json.load(sys.stdin)['tunnels'][0]['public_url']; print(); print('=============================================='); print('VNC ADDRESS:', t.replace('tcp://','')); print('VNC PASSWORD: testpass123'); print('=============================================='); print()"
+
+      - name: Keep session alive (up to 6 hours)
+        run: |
+          echo "Session is live. Connect via VNC, then cancel this workflow run when done."
+          sleep 21600
