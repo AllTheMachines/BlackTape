@@ -4,6 +4,7 @@
 	import { getProvider } from '$lib/db/provider';
 	import { getRandomArtistByTag } from '$lib/db/queries';
 	import { getWikiThumbnail } from '$lib/wiki-thumbnail';
+	import ArtistSummary from '$lib/components/ArtistSummary.svelte';
 
 	interface CachedTrack {
 		title: string;
@@ -50,6 +51,10 @@
 
 	const TOP_RELEASES = 3;
 	let visibleReleases = $derived(showAllReleases ? releases : releases.slice(0, TOP_RELEASES));
+
+	let releasesForSummary = $derived(
+		releases.map(r => ({ title: r.title, year: r.first_release_year, type: r.release_type }))
+	);
 
 	let tagList = $derived(
 		sortedTags && sortedTags.length > 0
@@ -190,6 +195,16 @@
 				{/each}
 			</div>
 		{/if}
+
+		<!-- AI Summary -->
+		{#key artist.mbid}
+			<ArtistSummary
+				artistMbid={artist.mbid}
+				artistName={artist.name}
+				artistTags={artist.tags ?? ''}
+				releases={releasesForSummary}
+			/>
+		{/key}
 
 		<!-- Similar Artists -->
 		{#if similarArtists.length > 0}
