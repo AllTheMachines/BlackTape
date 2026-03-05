@@ -22,8 +22,11 @@ jobs:
           sudo pmset -a displaysleep 0 sleep 0 disksleep 0
           caffeinate -d -t 21600 &
 
-          # Launch the app
-          sudo -u runner open -a BlackTape
+          # Strip Gatekeeper quarantine so the app can open
+          sudo xattr -cr /Applications/BlackTape.app
+
+          # Launch using full path (avoids app name lookup issues)
+          sudo -u runner open /Applications/BlackTape.app
           sleep 8
 
       - name: Start screenshot server and ngrok
