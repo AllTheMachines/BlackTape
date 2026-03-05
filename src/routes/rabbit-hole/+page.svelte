@@ -5,6 +5,7 @@
 	import { searchArtistsAutocomplete, searchTagsAutocomplete, getRandomArtist } from '$lib/db/queries';
 	import { pushTrailItem } from '$lib/rabbit-hole/trail.svelte';
 	import type { DbProvider } from '$lib/db/provider';
+	import spiralImg from '$lib/assets/rabbit-hole-spiral.png';
 
 	let db = $state<DbProvider | null>(null);
 	let query = $state('');
@@ -81,6 +82,7 @@
 
 <div class="rh-landing">
 	<div class="rh-landing-inner">
+		<img src={spiralImg} alt="" class="rh-spiral" aria-hidden="true" />
 		<p class="rh-tagline">Where do you want to go?</p>
 
 		<div class="rh-search-wrap">
@@ -159,6 +161,16 @@
 		gap: var(--space-lg);
 		width: 100%;
 		max-width: 520px;
+	}
+
+	.rh-spiral {
+		width: 220px;
+		height: 220px;
+		object-fit: cover;
+		border-radius: 50%;
+		opacity: 0.7;
+		pointer-events: none;
+		display: block;
 	}
 
 	.rh-tagline {
