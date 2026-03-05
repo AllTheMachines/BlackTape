@@ -15,6 +15,11 @@
  * real similarity. The 500 threshold covers specific genre tags (e.g. "shoegaze",
  * "post-punk", "jazz fusion") while excluding broad ones.
  *
+ * DATA STRUCTURE: pairShared uses nested integer-keyed plain objects rather than
+ * a flat string-keyed object. String keys like "123:456" require heap allocation
+ * per pair, causing GC pressure at 20M+ pairs. Integer-keyed objects use V8's
+ * fast integer hash path with no string allocation, handling 20M pairs efficiently.
+ *
  * Usage: node pipeline/build-similar-artists-pg.mjs
  */
 import postgres from 'postgres';
@@ -73,11 +78,13 @@ for (const { artist_id, tag } of rows) {
 }
 console.log(`  ${tagToArtists.size.toLocaleString()} qualifying tags, ${artistTagCount.size.toLocaleString()} artists with tags`);
 
-// Step 4 — Generate all pairs and accumulate shared tag counts in memory
-// Use a plain object (not Map) — V8 Maps have a hard 16.7M entry limit;
-// plain objects in dictionary mode handle 50M+ keys without issue.
+// Step 4 — Generate all pairs and accumulate shared tag counts in memory.
+// Use nested integer-keyed plain objects: pairShared[lowId][highId] = count.
+// Integer property access in V8 uses a fast integer hash path with no string
+// allocation, unlike "lowId:highId" string keys which caused GC pressure at
+// 20M+ pairs and ground the process to a halt.
 console.log('[similar-artists] Computing pair shared tag counts...');
-const pairShared = Object.create(null); // "lowId:highId" -> shared count
+const pairShared = Object.create(null); // lowId -> { highId: sharedCount }
 
 let pairOps = 0;
 let pairCount = 0;
@@ -88,9 +95,10 @@ for (const [, artists] of tagToArtists) {
     for (let j = i + 1; j < n; j++) {
       const a = artists[i] < artists[j] ? artists[i] : artists[j];
       const b = artists[i] < artists[j] ? artists[j] : artists[i];
-      const key = `${a}:${b}`;
-      if (pairShared[key] === undefined) { pairShared[key] = 1; pairCount++; }
-      else pairShared[key]++;
+      let aMap = pairShared[a];
+      if (aMap === undefined) { pairShared[a] = aMap = Object.create(null); }
+      if (aMap[b] === undefined) { aMap[b] = 1; pairCount++; }
+      else aMap[b]++;
     }
   }
   pairOps += (n * (n - 1)) / 2;
@@ -102,26 +110,28 @@ console.log('[similar-artists] Computing Jaccard scores...');
 // artistSimilar: artist_id -> array of { similar_id, score }
 const artistSimilar = new Map();
 
-for (const key of Object.keys(pairShared)) {
-  const shared = pairShared[key];
-  if (shared < MIN_SHARED) continue;
-
-  const colon = key.indexOf(':');
-  const a = parseInt(key.slice(0, colon));
-  const b = parseInt(key.slice(colon + 1));
-
+for (const aKey of Object.keys(pairShared)) {
+  const a = +aKey;
+  const aMap = pairShared[a];
   const countA = artistTagCount.get(a) ?? 0;
-  const countB = artistTagCount.get(b) ?? 0;
-  const union = countA + countB - shared;
-  if (union <= 0) continue;
 
-  const jaccard = shared / union;
-  if (jaccard < MIN_JACCARD) continue;
+  for (const bKey of Object.keys(aMap)) {
+    const shared = aMap[bKey];
+    if (shared < MIN_SHARED) continue;
 
-  if (!artistSimilar.has(a)) artistSimilar.set(a, []);
-  if (!artistSimilar.has(b)) artistSimilar.set(b, []);
-  artistSimilar.get(a).push({ similar_id: b, score: jaccard });
-  artistSimilar.get(b).push({ similar_id: a, score: jaccard });
+    const b = +bKey;
+    const countB = artistTagCount.get(b) ?? 0;
+    const union = countA + countB - shared;
+    if (union <= 0) continue;
+
+    const jaccard = shared / union;
+    if (jaccard < MIN_JACCARD) continue;
+
+    if (!artistSimilar.has(a)) artistSimilar.set(a, []);
+    if (!artistSimilar.has(b)) artistSimilar.set(b, []);
+    artistSimilar.get(a).push({ similar_id: b, score: jaccard });
+    artistSimilar.get(b).push({ similar_id: a, score: jaccard });
+  }
 }
 console.log(`  ${artistSimilar.size.toLocaleString()} artists have at least one similar artist`);
 
