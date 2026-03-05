@@ -7,9 +7,9 @@
 
 	// Discovery modes — condensed view when on any discovery route
 	const DISCOVERY_MODES = [
-		{ href: '/discover', label: 'Discover', icon: '◉' },
-		{ href: '/rabbit-hole', label: 'Rabbit Hole', icon: '◈' },
-		{ href: '/world-map', label: 'World Map', icon: '◎' }
+		{ href: '/discover', label: 'Discover', icon: '◉', comingSoon: false },
+		{ href: '/rabbit-hole', label: 'Rabbit Hole', icon: '◈', comingSoon: false },
+		{ href: '/world-map', label: 'World Map', icon: '◎', comingSoon: true }
 	] as const;
 
 	// Navigation groups — Discover, Library, Account
@@ -99,10 +99,17 @@
 				<span class="nav-lbl">{group.label}</span>
 				{#if group.label === 'Discover'}
 					{#each DISCOVERY_MODES as mode}
-						<a href={mode.href} class="nav-item" class:active={isActive(mode.href)} class:pending={isPending(mode.href)}>
-							<span class="nav-ico">{mode.icon}</span>
-							{mode.label}
-						</a>
+						{#if mode.comingSoon}
+							<span class="nav-item nav-item--soon" title="Coming soon">
+								<span class="nav-ico">{mode.icon}</span>
+								{mode.label}
+							</span>
+						{:else}
+							<a href={mode.href} class="nav-item" class:active={isActive(mode.href)} class:pending={isPending(mode.href)}>
+								<span class="nav-ico">{mode.icon}</span>
+								{mode.label}
+							</a>
+						{/if}
 					{/each}
 				{:else}
 					{#each group.links as link}
@@ -233,6 +240,11 @@
 
 	.nav-item.active .nav-ico {
 		color: var(--acc);
+	}
+
+	.nav-item--soon {
+		opacity: 0.35;
+		cursor: not-allowed;
 	}
 
 	.nav-item.pending {
