@@ -307,7 +307,7 @@ export async function searchArtistsAutocomplete(
 
 	if (!sanitized) return [];
 
-	// Use FTS5 for speed, but order by prefix match first (exact prefix wins)
+	// Exact match → prefix match → other FTS matches
 	return db.all(
 		`SELECT a.name, a.slug,
 		        (SELECT tag FROM artist_tags WHERE artist_id = a.id ORDER BY count DESC LIMIT 1) AS tags
@@ -316,12 +316,14 @@ export async function searchArtistsAutocomplete(
 		 WHERE artists_fts MATCH ?
 		 ORDER BY
 		   CASE
-		     WHEN LOWER(a.name) LIKE ? THEN 0
-		     ELSE 1
+		     WHEN LOWER(a.name) = ? THEN 0
+		     WHEN LOWER(a.name) LIKE ? THEN 1
+		     ELSE 2
 		   END,
 		   f.rank
 		 LIMIT ?`,
 		sanitized + '*',
+		lowerQuery,
 		lowerQuery + '%',
 		limit
 	);
