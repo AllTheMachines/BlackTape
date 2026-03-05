@@ -14737,3 +14737,6 @@ Completed the second half of the Rabbit Hole UX polish run. The first 7 fixes sh
 
 All 4 commits clean, all 196 tests passing. The Rabbit Hole feature is now fully polished with all 12 originally-planned improvements complete.
 
+
+> **Commit a7b80be7** (2026-03-05 18:27) — docs: log Rabbit Hole UX completion (fixes 8-11)
+> Files changed: 1
