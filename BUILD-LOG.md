@@ -14868,3 +14868,6 @@ All 4 commits clean, all 196 tests passing. The Rabbit Hole feature is now fully
 
 > **Commit cfb86b68** (2026-03-05 20:10) — wip: auto-save
 > Files changed: 8
+
+> **Commit fb473f17** (2026-03-05 20:16) — wip: auto-save
+> Files changed: 1
