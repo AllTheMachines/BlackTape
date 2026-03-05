@@ -14066,3 +14066,9 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 
 > **Commit 6f7dd9da** (2026-03-05 10:35) — wip: auto-save
 > Files changed: 1
+
+> **Commit a869b553** (2026-03-05 10:37) — wip: auto-save
+> Files changed: 1
+
+> **Commit bac27e15** (2026-03-05 10:41) — fix: don't double-encode macOS .sig file in build workflow
+> Files changed: 1
