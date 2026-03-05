@@ -14294,3 +14294,9 @@ Once complete, the World Map will show real artist pins and the Rabbit Hole will
 
 > **Commit 9b172db6** (2026-03-05 13:15) — wip: auto-save
 > Files changed: 2
+
+> **Commit acd0b804** (2026-03-05 13:16) — auto-save: 1 files @ 13:16
+> Files changed: 1
+
+> **Commit ecfd9431** (2026-03-05 13:25) — fix(pipeline): filter generic tags in Jaccard computation to prevent disk exhaustion
+> Files changed: 1
