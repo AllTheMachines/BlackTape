@@ -1,8 +1,10 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import { loadTrail, trailState, jumpToTrailIndex } from '$lib/rabbit-hole/trail.svelte';
+	import { aiState } from '$lib/ai/state.svelte';
+	import { getAiProvider } from '$lib/ai/engine';
+	import { INJECTION_GUARD, externalContent } from '$lib/ai/prompts';
 
 	let { children } = $props();
 
@@ -22,6 +24,62 @@
 			? `/rabbit-hole/artist/${item.slug}`
 			: `/rabbit-hole/tag/${item.slug}`;
 		goto(route, { keepFocus: true, noScroll: true });
+	}
+
+	// --- AI companion ---
+	interface ChatMessage { role: 'user' | 'assistant'; text: string; }
+	let chatMessages = $state<ChatMessage[]>([]);
+	let chatInput = $state('');
+	let chatLoading = $state(false);
+	const MAX_CHAT_MESSAGES = 6;
+
+	function buildRhContext(): string {
+		const current = trailState.items[trailState.currentIndex];
+		if (!current) return '';
+		const parts: string[] = [];
+		if (current.type === 'artist') {
+			parts.push(`The user is currently exploring artist: ${current.name}`);
+		} else {
+			parts.push(`The user is currently browsing music tagged: ${current.name}`);
+		}
+		if (trailState.items.length > 1) {
+			const trail = trailState.items.map(i => i.name).join(' → ');
+			parts.push(`Their exploration trail: ${trail}`);
+		}
+		return parts.join('. ');
+	}
+
+	async function sendChatMessage() {
+		const text = chatInput.trim();
+		if (!text || chatLoading) return;
+		const provider = getAiProvider();
+		if (!provider) return;
+
+		chatInput = '';
+		chatMessages = [...chatMessages, { role: 'user' as const, text }].slice(-MAX_CHAT_MESSAGES);
+		chatLoading = true;
+
+		try {
+			const rhContext = buildRhContext();
+			const contextSuffix = rhContext ? ` ${externalContent(rhContext)}` : '';
+			const response = await provider.complete(text, {
+				systemPrompt: INJECTION_GUARD + ' You are a music companion helping someone explore music. Answer concisely.' + contextSuffix,
+				temperature: 0.8,
+				maxTokens: 512
+			});
+			chatMessages = [...chatMessages, { role: 'assistant' as const, text: response }].slice(-MAX_CHAT_MESSAGES);
+		} catch {
+			chatMessages = [...chatMessages, { role: 'assistant' as const, text: 'Something went wrong. Try again.' }].slice(-MAX_CHAT_MESSAGES);
+		} finally {
+			chatLoading = false;
+		}
+	}
+
+	function handleKeydown(e: KeyboardEvent) {
+		if (e.key === 'Enter' && !e.shiftKey) {
+			e.preventDefault();
+			sendChatMessage();
+		}
 	}
 </script>
 
@@ -57,8 +115,48 @@
 		</div>
 	{/if}
 
-	<div class="rh-content">
-		{@render children()}
+	<div class="rh-body">
+		<div class="rh-content">
+			{@render children()}
+		</div>
+
+		{#if aiState.status === 'ready'}
+			<div class="rh-ai-panel">
+				<div class="rh-ai-header">AI Companion</div>
+
+				{#if chatMessages.length > 0}
+					<div class="rh-chat-messages">
+						{#each chatMessages as msg}
+							<div class="rh-chat-msg" class:user={msg.role === 'user'} class:assistant={msg.role === 'assistant'}>
+								{msg.text}
+							</div>
+						{/each}
+						{#if chatLoading}
+							<div class="rh-chat-msg assistant rh-chat-loading">...</div>
+						{/if}
+					</div>
+				{:else}
+					<p class="rh-ai-hint">Ask me anything about the artist or music like it.</p>
+				{/if}
+
+				<div class="rh-chat-input-row">
+					<input
+						type="text"
+						class="rh-chat-input"
+						placeholder="Ask me anything..."
+						bind:value={chatInput}
+						onkeydown={handleKeydown}
+						disabled={chatLoading}
+					/>
+					<button
+						class="rh-chat-send"
+						onclick={sendChatMessage}
+						disabled={chatLoading || !chatInput.trim()}
+						aria-label="Send"
+					>&rarr;</button>
+				</div>
+			</div>
+		{/if}
 	</div>
 </div>
 
@@ -163,9 +261,129 @@
 		opacity: 0.7;
 	}
 
+	/* Body: main content + AI panel side by side */
+	.rh-body {
+		flex: 1;
+		display: flex;
+		overflow: hidden;
+	}
+
 	.rh-content {
 		flex: 1;
 		overflow-y: auto;
 		overflow-x: hidden;
+	}
+
+	/* AI companion panel */
+	.rh-ai-panel {
+		width: 220px;
+		flex-shrink: 0;
+		border-left: 1px solid var(--b-1);
+		background: var(--bg-2);
+		display: flex;
+		flex-direction: column;
+		padding: var(--space-sm);
+		gap: var(--space-xs);
+	}
+
+	.rh-ai-header {
+		font-size: 0.65rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--t-4);
+		padding-bottom: var(--space-xs);
+		border-bottom: 1px solid var(--b-1);
+		flex-shrink: 0;
+	}
+
+	.rh-ai-hint {
+		font-size: 0.75rem;
+		color: var(--t-4);
+		font-style: italic;
+		margin: 0;
+		line-height: 1.4;
+	}
+
+	.rh-chat-messages {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+		overflow-y: auto;
+		min-height: 0;
+	}
+
+	.rh-chat-msg {
+		font-size: 0.8rem;
+		line-height: 1.4;
+		padding: 4px 6px;
+		white-space: pre-wrap;
+		word-break: break-word;
+	}
+
+	.rh-chat-msg.user {
+		color: var(--t-1);
+		background: var(--bg-3);
+		align-self: flex-end;
+		max-width: 95%;
+	}
+
+	.rh-chat-msg.assistant {
+		color: var(--t-2);
+		background: var(--bg-1);
+		align-self: flex-start;
+		max-width: 100%;
+	}
+
+	.rh-chat-loading {
+		color: var(--t-4);
+		font-style: italic;
+	}
+
+	.rh-chat-input-row {
+		display: flex;
+		gap: 4px;
+		flex-shrink: 0;
+		margin-top: auto;
+	}
+
+	.rh-chat-input {
+		flex: 1;
+		background: var(--bg-1);
+		border: 1px solid var(--b-1);
+		color: var(--t-1);
+		font-size: 0.75rem;
+		padding: 4px 6px;
+		outline: none;
+		font-family: inherit;
+		min-width: 0;
+	}
+
+	.rh-chat-input:focus {
+		border-color: var(--acc);
+	}
+
+	.rh-chat-input:disabled {
+		opacity: 0.5;
+	}
+
+	.rh-chat-send {
+		background: var(--bg-1);
+		border: 1px solid var(--b-1);
+		color: var(--acc);
+		font-size: 0.75rem;
+		padding: 4px 8px;
+		cursor: pointer;
+		flex-shrink: 0;
+	}
+
+	.rh-chat-send:hover:not(:disabled) {
+		background: var(--bg-3);
+	}
+
+	.rh-chat-send:disabled {
+		opacity: 0.4;
+		cursor: not-allowed;
 	}
 </style>
