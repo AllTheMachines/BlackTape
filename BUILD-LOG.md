@@ -14761,3 +14761,6 @@ All 4 commits clean, all 196 tests passing. The Rabbit Hole feature is now fully
 
 > **Commit a727e9c4** (2026-03-05 18:39) — feat(rabbit-hole): show AI companion summary on artist card
 > Files changed: 1
+
+> **Commit 539cd298** (2026-03-05 18:39) — wip: auto-save
+> Files changed: 1
