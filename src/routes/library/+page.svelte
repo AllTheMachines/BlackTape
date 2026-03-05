@@ -264,18 +264,21 @@
 	/* Shelf strip */
 	.library-shelf-strip {
 		width: 100%;
-		height: 120px;
+		height: 100px;
+		min-height: 100px;
+		max-height: 100px;
 		overflow: hidden;
 		flex-shrink: 0;
+		flex-grow: 0;
 	}
 
 	.shelf-img {
 		width: 100%;
-		height: 100%;
+		height: 100px;
 		object-fit: cover;
 		object-position: center;
 		display: block;
-		opacity: 0.6;
+		opacity: 0.55;
 	}
 
 	/* Header */

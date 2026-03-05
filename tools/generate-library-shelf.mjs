@@ -20,15 +20,14 @@ const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODE
 const PROMPT = [
   'A super wide panoramic illustration of an enormous record store shelf stretching endlessly from left to right.',
   'The shelf is absolutely packed with hundreds of vinyl record sleeves standing upright, spine-out, crammed together tightly.',
-  'Viewed straight-on, eye level with the shelf — a flat, horizontal composition.',
-  'The records fill the entire image from edge to edge, no empty space on the shelf.',
-  'Record sleeves have varied heights, slight tilts, dog-eared corners — a real lived-in collection.',
-  'Comic book / graphic novel illustration style: bold black ink outlines, flat dark color fills, cel-shading.',
-  'Dark moody color palette: deep blacks, dark greys, dark burgundy, navy, with occasional faded color spines.',
-  'The style is like a panel from a dark indie graphic novel — bold, stylized, slightly gritty.',
-  'Ultra-wide 16:9 composition. The shelf and records fill the entire frame edge to edge top to bottom.',
-  'No people, no text on spines, no logos, no watermarks.',
-  'The feeling is: an infinite, overwhelming, obsessive record collection.',
+  'Viewed straight-on, eye level with the shelf — a flat, horizontal strip composition.',
+  'The records fill the entire image from edge to edge. Record sleeves have varied heights, slight tilts, dog-eared corners.',
+  'Pure black and white only. No color, no grey tones — just stark black ink on white, like a woodcut or linocut print.',
+  'Bold comic book / graphic novel style: thick black ink outlines, heavy black fills, strong contrast.',
+  'The style is like a panel from a black-and-white indie comic — stark, high contrast, slightly gritty and raw.',
+  'The shelf itself is black. The record spines alternate between black and white.',
+  'Ultra-wide 16:9 composition. No people, no readable text, no logos, no watermarks.',
+  'The feeling: an infinite, obsessive, overwhelming record collection rendered in bold ink.',
 ].join(' ');
 
 async function generate() {
