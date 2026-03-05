@@ -1,192 +1,172 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 390" fill="none">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 280" fill="none">
   <defs>
-    <pattern id="scr" x="84" y="144" width="14" height="14" patternUnits="userSpaceOnUse">
+    <pattern id="scr" x="227" y="57" width="14" height="14" patternUnits="userSpaceOnUse">
       <path d="M 14 0 L 0 0 0 14" fill="none" stroke="#444" stroke-width="0.4"/>
     </pattern>
   </defs>
 
   <!-- BACKGROUND -->
-  <rect width="280" height="390" fill="#050505"/>
+  <rect width="600" height="280" fill="#050505"/>
 
-  <!-- ══════════════════════════════════════
-       CABLES / WIRE HAIR
-       Emerge from monitor top (y≈132) and fan outward
-       ══════════════════════════════════════ -->
+  <!-- ══════ CABLES — far left ══════ -->
+  <path d="M 248,45 C 218,18 148,2 48,-2"          stroke="#c8c8c8" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M 244,45 C 206,12 122,-8 14,4"           stroke="#b0b0b0" stroke-width="1.8" stroke-linecap="round"/>
+  <path d="M 240,45 C 194,6 100,-12 -14,8"          stroke="#c0c0c0" stroke-width="1.2" stroke-linecap="round"/>
+  <path d="M 237,45 C 190,16 88,18 -34,32"          stroke="#a0a0a0" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M 234,45 C 186,28 82,38 -44,58"          stroke="#b8b8b8" stroke-width="1.0" stroke-linecap="round"/>
 
-  <!-- Far-left sweep -->
-  <path d="M 112,132 C 98,88 52,44 -15,10"       stroke="#c8c8c8" stroke-width="2.5" stroke-linecap="round"/>
-  <path d="M 108,132 C 86,80 28,32 -48,0"         stroke="#b0b0b0" stroke-width="1.8" stroke-linecap="round"/>
-  <path d="M 105,132 C 78,72 12,24 -72,6"          stroke="#c0c0c0" stroke-width="1.2" stroke-linecap="round"/>
-  <path d="M 103,132 C 72,90  -2,72 -88,58"        stroke="#a0a0a0" stroke-width="1.5" stroke-linecap="round"/>
-  <path d="M 101,132 C 68,102 -8,96 -105,85"       stroke="#b8b8b8" stroke-width="1.0" stroke-linecap="round"/>
+  <!-- ══════ CABLES — mid-left (S-curves) ══════ -->
+  <path d="M 252,45 C 232,20 194,6 145,-2 C 106,-8 66,-6 26,4"   stroke="#d0d0d0" stroke-width="2.0" stroke-linecap="round"/>
+  <path d="M 256,45 C 240,22 212,10 172,2 C 138,-4 102,-2 68,8"  stroke="#c0c0c0" stroke-width="1.4" stroke-linecap="round"/>
+  <path d="M 260,45 C 246,26 224,14 196,6 C 168,-2 136,0 104,10" stroke="#d8d8d8" stroke-width="1.0" stroke-linecap="round"/>
+  <path d="M 264,45 C 252,28 234,18 210,10 C 186,2 156,4 124,16" stroke="#c8c8c8" stroke-width="1.8" stroke-linecap="round"/>
 
-  <!-- Mid-left with S-curves -->
-  <path d="M 116,132 C 106,92 72,56 26,26 C 8,13 -8,4 -22,0"    stroke="#d0d0d0" stroke-width="2.0" stroke-linecap="round"/>
-  <path d="M 120,132 C 112,98 92,68 58,44 C 36,28 12,12 -4,2"    stroke="#c0c0c0" stroke-width="1.4" stroke-linecap="round"/>
-  <path d="M 124,132 C 118,104 102,80 74,54 C 52,34 28,16  8,2"   stroke="#d8d8d8" stroke-width="1.0" stroke-linecap="round"/>
-  <path d="M 127,132 C 122,106 110,86 86,64 C 66,46 42,26 22,8"  stroke="#c8c8c8" stroke-width="1.8" stroke-linecap="round"/>
+  <!-- ══════ CABLES — center ══════ -->
+  <path d="M 272,45 C 268,26 260,8 253,-2"   stroke="#e0e0e0" stroke-width="1.2" stroke-linecap="round"/>
+  <path d="M 281,45 C 279,26 274,8 270,-2"   stroke="#d0d0d0" stroke-width="1.8" stroke-linecap="round"/>
+  <path d="M 291,45 C 290,22 289,6 289,-2"   stroke="#e0e0e0" stroke-width="2.0" stroke-linecap="round"/>
+  <path d="M 300,45 C 300,20 300,4 300,-2"   stroke="#f0f0f0" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M 309,45 C 310,22 311,6 311,-2"   stroke="#e0e0e0" stroke-width="2.0" stroke-linecap="round"/>
+  <path d="M 319,45 C 321,26 326,8 330,-2"   stroke="#d0d0d0" stroke-width="1.8" stroke-linecap="round"/>
+  <path d="M 328,45 C 332,26 340,8 347,-2"   stroke="#e0e0e0" stroke-width="1.2" stroke-linecap="round"/>
 
-  <!-- Center cables -->
-  <path d="M 131,132 C 128,98 120,62 112,32 C 107,12 103,2 101,0"  stroke="#e0e0e0" stroke-width="1.2" stroke-linecap="round"/>
-  <path d="M 136,132 C 134,96 128,60 122,28 C 118,10 116,1 115,0"  stroke="#d0d0d0" stroke-width="1.8" stroke-linecap="round"/>
-  <path d="M 140,132 C 140,94 140,56 140,22 C 140,8 140,1 140,0"   stroke="#e0e0e0" stroke-width="2.2" stroke-linecap="round"/>
-  <path d="M 144,132 C 146,94 150,56 158,22 C 162,8 164,1 165,0"   stroke="#d0d0d0" stroke-width="1.8" stroke-linecap="round"/>
-  <path d="M 149,132 C 152,98 160,62 168,32 C 173,12 177,2 179,0"  stroke="#e0e0e0" stroke-width="1.2" stroke-linecap="round"/>
+  <!-- ══════ CABLES — mid-right (S-curves) ══════ -->
+  <path d="M 336,45 C 348,28 366,18 390,10 C 414,2 444,4 476,16" stroke="#c8c8c8" stroke-width="1.8" stroke-linecap="round"/>
+  <path d="M 340,45 C 354,26 376,14 404,6 C 432,-2 464,0 496,10" stroke="#d8d8d8" stroke-width="1.0" stroke-linecap="round"/>
+  <path d="M 344,45 C 360,22 388,10 428,2 C 462,-4 498,-2 532,8" stroke="#c0c0c0" stroke-width="1.4" stroke-linecap="round"/>
+  <path d="M 348,45 C 368,20 406,6 455,-2 C 494,-8 534,-6 574,4" stroke="#d0d0d0" stroke-width="2.0" stroke-linecap="round"/>
 
-  <!-- Mid-right with S-curves -->
-  <path d="M 153,132 C 158,106 170,86 194,64 C 214,46 238,26 258,8"  stroke="#c8c8c8" stroke-width="1.8" stroke-linecap="round"/>
-  <path d="M 156,132 C 162,104 178,80 206,54 C 228,34 252,16 272,2"  stroke="#d8d8d8" stroke-width="1.0" stroke-linecap="round"/>
-  <path d="M 160,132 C 168,98 188,68 222,44 C 244,28 268,12 284,2"  stroke="#c0c0c0" stroke-width="1.4" stroke-linecap="round"/>
-  <path d="M 164,132 C 174,92 208,56 254,26 C 272,13 288,4 302,0"   stroke="#d0d0d0" stroke-width="2.0" stroke-linecap="round"/>
+  <!-- ══════ CABLES — far right ══════ -->
+  <path d="M 352,45 C 382,28 452,18 546,18"         stroke="#b8b8b8" stroke-width="1.0" stroke-linecap="round"/>
+  <path d="M 356,45 C 394,12 478,-8 586,4"          stroke="#c0c0c0" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M 360,45 C 406,6 500,-12 614,8"          stroke="#c8c8c8" stroke-width="1.2" stroke-linecap="round"/>
+  <path d="M 363,45 C 412,16 512,18 634,32"         stroke="#a0a0a0" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M 366,45 C 418,28 518,38 644,58"         stroke="#b8b8b8" stroke-width="1.0" stroke-linecap="round"/>
+  <path d="M 369,45 C 424,18 524,-2 644,12"         stroke="#c8c8c8" stroke-width="2.5" stroke-linecap="round"/>
 
-  <!-- Far-right sweep -->
-  <path d="M 168,132 C 184,102 228,72 295,44"      stroke="#b8b8b8" stroke-width="1.0" stroke-linecap="round"/>
-  <path d="M 172,132 C 192,90 248,46 324,16"        stroke="#c0c0c0" stroke-width="1.5" stroke-linecap="round"/>
-  <path d="M 175,132 C 202,72 270,24 358,2"          stroke="#c8c8c8" stroke-width="1.2" stroke-linecap="round"/>
-  <path d="M 177,132 C 208,82 282,34 374,0"          stroke="#b0b0b0" stroke-width="1.8" stroke-linecap="round"/>
-  <path d="M 180,132 C 214,88 295,42 400,12"         stroke="#c8c8c8" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- ══════ CABLES — side exits from monitor flanks ══════ -->
+  <path d="M 215,88  C 168,80 118,76 56,70"   stroke="#888" stroke-width="1.2" stroke-linecap="round"/>
+  <path d="M 215,108 C 158,106 98,112 36,122"  stroke="#777" stroke-width="1.0" stroke-linecap="round"/>
+  <path d="M 385,88  C 432,80 482,76 544,70"  stroke="#888" stroke-width="1.2" stroke-linecap="round"/>
+  <path d="M 385,108 C 442,106 502,112 564,122" stroke="#777" stroke-width="1.0" stroke-linecap="round"/>
 
-  <!-- A few side-exit cables from the monitor flanks -->
-  <path d="M 72,172 C 40,160 8,155 -20,148"         stroke="#909090" stroke-width="1.2" stroke-linecap="round"/>
-  <path d="M 72,188 C 32,185 -4,190 -30,200"         stroke="#808080" stroke-width="1.0" stroke-linecap="round"/>
-  <path d="M 208,172 C 240,160 272,155 300,148"      stroke="#909090" stroke-width="1.2" stroke-linecap="round"/>
-  <path d="M 208,188 C 248,185 284,190 310,200"      stroke="#808080" stroke-width="1.0" stroke-linecap="round"/>
-
-  <!-- ══════════════════════════════════════
-       MONITOR HEAD
-       ══════════════════════════════════════ -->
-
+  <!-- ══════ MONITOR ══════ -->
   <!-- Outer casing -->
-  <rect x="70" y="130" width="140" height="118" rx="8" fill="#101010" stroke="#d0d0d0" stroke-width="2.5"/>
-
-  <!-- Top-edge highlight crease -->
-  <line x1="80" y1="130" x2="200" y2="130" stroke="#e8e8e8" stroke-width="0.7" opacity="0.35"/>
+  <rect x="213" y="43" width="174" height="134" rx="9" fill="#101010" stroke="#d0d0d0" stroke-width="2.5"/>
+  <!-- Top-edge crease -->
+  <line x1="225" y1="43" x2="375" y2="43" stroke="#e8e8e8" stroke-width="0.7" opacity="0.35"/>
 
   <!-- Screen bezel -->
-  <rect x="78" y="138" width="124" height="100" rx="4" fill="#060606" stroke="#a0a0a0" stroke-width="1.5"/>
+  <rect x="221" y="51" width="158" height="116" rx="4" fill="#060606" stroke="#a0a0a0" stroke-width="1.5"/>
 
-  <!-- Screen surface -->
-  <rect x="82" y="142" width="116" height="90" rx="2" fill="#080808"/>
+  <!-- Screen surface + grid -->
+  <rect x="227" y="57" width="146" height="102" rx="2" fill="#080808"/>
+  <rect x="227" y="57" width="146" height="102" fill="url(#scr)" opacity="0.9"/>
 
-  <!-- Screen grid -->
-  <rect x="82" y="142" width="116" height="90" fill="url(#scr)" opacity="0.9"/>
+  <!-- Test circle (center 300, 108) r=36 -->
+  <circle cx="300" cy="108" r="36" stroke="#c0c0c0" stroke-width="1.5" fill="none"/>
+  <circle cx="300" cy="108" r="18" stroke="#707070" stroke-width="0.8" fill="none"/>
 
-  <!-- Test pattern — main circle (center 140, 187) -->
-  <circle cx="140" cy="187" r="34" stroke="#c0c0c0" stroke-width="1.5" fill="none"/>
+  <!-- Crosshairs -->
+  <line x1="227" y1="108" x2="373" y2="108" stroke="#909090" stroke-width="0.9"/>
+  <line x1="300" y1="57"  x2="300" y2="159" stroke="#909090" stroke-width="0.9"/>
 
-  <!-- Inner ring -->
-  <circle cx="140" cy="187" r="17" stroke="#707070" stroke-width="0.8" fill="none"/>
+  <!-- Tick marks at circle quarters -->
+  <line x1="300" y1="72" x2="300" y2="81"   stroke="#808080" stroke-width="0.9"/>
+  <line x1="300" y1="135" x2="300" y2="144" stroke="#808080" stroke-width="0.9"/>
+  <line x1="264" y1="108" x2="273" y2="108" stroke="#808080" stroke-width="0.9"/>
+  <line x1="327" y1="108" x2="336" y2="108" stroke="#808080" stroke-width="0.9"/>
 
-  <!-- Full-width crosshairs -->
-  <line x1="82" y1="187" x2="198" y2="187" stroke="#909090" stroke-width="0.9"/>
-  <line x1="140" y1="142" x2="140" y2="232" stroke="#909090" stroke-width="0.9"/>
-
-  <!-- Quadrant tick marks on circle -->
-  <line x1="140" y1="153" x2="140" y2="162" stroke="#808080" stroke-width="0.9"/>
-  <line x1="140" y1="212" x2="140" y2="221" stroke="#808080" stroke-width="0.9"/>
-  <line x1="106" y1="187" x2="115" y2="187" stroke="#808080" stroke-width="0.9"/>
-  <line x1="165" y1="187" x2="174" y2="187" stroke="#808080" stroke-width="0.9"/>
-
-  <!-- Diagonal marks at 45° on circle -->
-  <line x1="116" y1="163" x2="122" y2="169" stroke="#606060" stroke-width="0.7"/>
-  <line x1="164" y1="163" x2="158" y2="169" stroke="#606060" stroke-width="0.7"/>
-  <line x1="116" y1="211" x2="122" y2="205" stroke="#606060" stroke-width="0.7"/>
-  <line x1="164" y1="211" x2="158" y2="205" stroke="#606060" stroke-width="0.7"/>
+  <!-- 45° diagonal ticks -->
+  <line x1="275" y1="83"  x2="282" y2="90"  stroke="#606060" stroke-width="0.7"/>
+  <line x1="325" y1="83"  x2="318" y2="90"  stroke="#606060" stroke-width="0.7"/>
+  <line x1="275" y1="133" x2="282" y2="126" stroke="#606060" stroke-width="0.7"/>
+  <line x1="325" y1="133" x2="318" y2="126" stroke="#606060" stroke-width="0.7"/>
 
   <!-- Bottom test bars -->
-  <rect x="82"  y="225" width="29" height="7" fill="#141414" stroke="#505050" stroke-width="0.5"/>
-  <rect x="111" y="225" width="29" height="7" fill="#080808" stroke="#505050" stroke-width="0.5"/>
-  <rect x="140" y="225" width="29" height="7" fill="#141414" stroke="#505050" stroke-width="0.5"/>
-  <rect x="169" y="225" width="29" height="7" fill="#080808" stroke="#505050" stroke-width="0.5"/>
+  <rect x="227" y="151" width="37"  height="8" fill="#141414" stroke="#505050" stroke-width="0.5"/>
+  <rect x="264" y="151" width="36"  height="8" fill="#080808" stroke="#505050" stroke-width="0.5"/>
+  <rect x="300" y="151" width="37"  height="8" fill="#141414" stroke="#505050" stroke-width="0.5"/>
+  <rect x="337" y="151" width="36"  height="8" fill="#080808" stroke="#505050" stroke-width="0.5"/>
 
-  <!-- Bottom casing strip -->
-  <rect x="78" y="242" width="124" height="6" rx="1" fill="#0c0c0c" stroke="#787878" stroke-width="0.8"/>
+  <!-- Casing bottom strip -->
+  <rect x="221" y="163" width="158" height="6" rx="1" fill="#0c0c0c" stroke="#787878" stroke-width="0.8"/>
 
   <!-- Indicator dots -->
-  <circle cx="176" cy="245" r="2.5" fill="none" stroke="#707070" stroke-width="1.0"/>
-  <circle cx="184" cy="245" r="2.5" fill="none" stroke="#707070" stroke-width="1.0"/>
-  <circle cx="192" cy="245" r="2.5" fill="none" stroke="#707070" stroke-width="1.0"/>
+  <circle cx="356" cy="166" r="3" fill="none" stroke="#707070" stroke-width="1.0"/>
+  <circle cx="365" cy="166" r="3" fill="none" stroke="#707070" stroke-width="1.0"/>
+  <circle cx="374" cy="166" r="3" fill="none" stroke="#707070" stroke-width="1.0"/>
 
-  <!-- ══════════════════════════════════════
-       NECK
-       ══════════════════════════════════════ -->
-  <path d="M 122,248 L 118,274 L 162,274 L 158,248 Z" fill="#0a0a0a" stroke="#b8b8b8" stroke-width="1.5"/>
+  <!-- ══════ NECK ══════ -->
+  <path d="M 278,169 L 274,192 L 326,192 L 322,169 Z" fill="#0a0a0a" stroke="#b8b8b8" stroke-width="1.5"/>
+  <line x1="284" y1="171" x2="282" y2="192" stroke="#555" stroke-width="0.9"/>
+  <line x1="291" y1="170" x2="290" y2="192" stroke="#555" stroke-width="0.9"/>
+  <line x1="300" y1="169" x2="300" y2="192" stroke="#666" stroke-width="1.0"/>
+  <line x1="309" y1="170" x2="310" y2="192" stroke="#555" stroke-width="0.9"/>
+  <line x1="316" y1="171" x2="318" y2="192" stroke="#555" stroke-width="0.9"/>
 
-  <!-- Neck circuit lines (wires flowing into body) -->
-  <line x1="128" y1="250" x2="126" y2="274" stroke="#555" stroke-width="0.9"/>
-  <line x1="133" y1="249" x2="132" y2="274" stroke="#555" stroke-width="0.9"/>
-  <line x1="140" y1="248" x2="140" y2="274" stroke="#666" stroke-width="1.0"/>
-  <line x1="147" y1="249" x2="148" y2="274" stroke="#555" stroke-width="0.9"/>
-  <line x1="152" y1="250" x2="154" y2="274" stroke="#555" stroke-width="0.9"/>
-
-  <!-- ══════════════════════════════════════
-       BODY / SHOULDERS
-       ══════════════════════════════════════ -->
-
+  <!-- ══════ BODY ══════ -->
   <!-- Main bust silhouette -->
-  <path d="M 18,390 C 14,340 26,304 50,280 C 76,254 112,258 140,258 C 168,258 204,254 230,280 C 254,304 266,340 262,390 Z"
+  <path d="M 56,280 C 52,244 68,212 98,194 C 130,174 174,180 200,180 L 300,180 L 400,180 C 426,180 470,174 502,194 C 532,212 548,244 544,280 Z"
         fill="#0c0c0c" stroke="#c0c0c0" stroke-width="2"/>
 
-  <!-- Left jacket lapel -->
-  <path d="M 118,274 C 105,283 85,296 65,315 L 58,350 L 94,318 L 116,286 Z"
+  <!-- Left lapel -->
+  <path d="M 278,192 C 258,203 230,218 202,238 L 194,272 L 232,240 L 272,208 Z"
         fill="#080808" stroke="#a8a8a8" stroke-width="1.5"/>
 
-  <!-- Right jacket lapel -->
-  <path d="M 162,274 C 175,283 195,296 215,315 L 222,350 L 186,318 L 164,286 Z"
+  <!-- Right lapel -->
+  <path d="M 322,192 C 342,203 370,218 398,238 L 406,272 L 368,240 L 328,208 Z"
         fill="#080808" stroke="#a8a8a8" stroke-width="1.5"/>
 
-  <!-- Chest center seam -->
-  <line x1="140" y1="274" x2="140" y2="368" stroke="#888" stroke-width="1.0"/>
+  <!-- Center seam -->
+  <line x1="300" y1="192" x2="300" y2="279" stroke="#888" stroke-width="1.0"/>
 
-  <!-- Circuit board — horizontal traces -->
-  <line x1="104" y1="292" x2="176" y2="292" stroke="#4a4a4a" stroke-width="0.9"/>
-  <line x1="96"  y1="308" x2="184" y2="308" stroke="#4a4a4a" stroke-width="0.9"/>
-  <line x1="90"  y1="324" x2="190" y2="324" stroke="#4a4a4a" stroke-width="0.9"/>
-  <line x1="85"  y1="340" x2="195" y2="340" stroke="#4a4a4a" stroke-width="0.9"/>
-  <line x1="82"  y1="356" x2="198" y2="356" stroke="#4a4a4a" stroke-width="0.9"/>
+  <!-- Circuit — horizontal traces -->
+  <line x1="228" y1="210" x2="372" y2="210" stroke="#4a4a4a" stroke-width="0.9"/>
+  <line x1="214" y1="226" x2="386" y2="226" stroke="#4a4a4a" stroke-width="0.9"/>
+  <line x1="202" y1="242" x2="398" y2="242" stroke="#4a4a4a" stroke-width="0.9"/>
+  <line x1="192" y1="258" x2="408" y2="258" stroke="#4a4a4a" stroke-width="0.9"/>
+  <line x1="184" y1="274" x2="416" y2="274" stroke="#4a4a4a" stroke-width="0.9"/>
 
-  <!-- Circuit board — vertical traces -->
-  <line x1="113" y1="292" x2="113" y2="324" stroke="#4a4a4a" stroke-width="0.9"/>
-  <line x1="122" y1="292" x2="122" y2="340" stroke="#4a4a4a" stroke-width="0.9"/>
-  <line x1="131" y1="292" x2="131" y2="356" stroke="#4a4a4a" stroke-width="0.9"/>
-  <line x1="149" y1="292" x2="149" y2="356" stroke="#4a4a4a" stroke-width="0.9"/>
-  <line x1="158" y1="292" x2="158" y2="340" stroke="#4a4a4a" stroke-width="0.9"/>
-  <line x1="167" y1="292" x2="167" y2="324" stroke="#4a4a4a" stroke-width="0.9"/>
+  <!-- Circuit — vertical traces -->
+  <line x1="258" y1="210" x2="258" y2="242" stroke="#4a4a4a" stroke-width="0.9"/>
+  <line x1="273" y1="210" x2="273" y2="258" stroke="#4a4a4a" stroke-width="0.9"/>
+  <line x1="287" y1="210" x2="287" y2="274" stroke="#4a4a4a" stroke-width="0.9"/>
+  <line x1="313" y1="210" x2="313" y2="274" stroke="#4a4a4a" stroke-width="0.9"/>
+  <line x1="327" y1="210" x2="327" y2="258" stroke="#4a4a4a" stroke-width="0.9"/>
+  <line x1="342" y1="210" x2="342" y2="242" stroke="#4a4a4a" stroke-width="0.9"/>
 
-  <!-- Solder dots at trace intersections -->
-  <circle cx="113" cy="308" r="1.8" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
-  <circle cx="122" cy="308" r="1.8" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
-  <circle cx="131" cy="308" r="1.8" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
-  <circle cx="149" cy="308" r="1.8" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
-  <circle cx="158" cy="308" r="1.8" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
-  <circle cx="167" cy="308" r="1.8" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
-
-  <circle cx="113" cy="324" r="1.8" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
-  <circle cx="122" cy="324" r="1.8" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
-  <circle cx="131" cy="324" r="1.8" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
-  <circle cx="149" cy="324" r="1.8" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
-  <circle cx="158" cy="324" r="1.8" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
-  <circle cx="167" cy="324" r="1.8" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
-
-  <circle cx="122" cy="340" r="1.8" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
-  <circle cx="131" cy="340" r="1.8" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
-  <circle cx="149" cy="340" r="1.8" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
-  <circle cx="158" cy="340" r="1.8" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
-
-  <circle cx="131" cy="356" r="1.8" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
-  <circle cx="149" cy="356" r="1.8" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
+  <!-- Solder dots -->
+  <circle cx="258" cy="226" r="2" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
+  <circle cx="273" cy="226" r="2" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
+  <circle cx="287" cy="226" r="2" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
+  <circle cx="313" cy="226" r="2" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
+  <circle cx="327" cy="226" r="2" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
+  <circle cx="342" cy="226" r="2" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
+  <circle cx="258" cy="242" r="2" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
+  <circle cx="273" cy="242" r="2" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
+  <circle cx="287" cy="242" r="2" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
+  <circle cx="313" cy="242" r="2" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
+  <circle cx="327" cy="242" r="2" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
+  <circle cx="342" cy="242" r="2" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
+  <circle cx="273" cy="258" r="2" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
+  <circle cx="287" cy="258" r="2" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
+  <circle cx="313" cy="258" r="2" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
+  <circle cx="327" cy="258" r="2" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
+  <circle cx="287" cy="274" r="2" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
+  <circle cx="313" cy="274" r="2" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
 
   <!-- Shoulder plate — left -->
-  <path d="M 26,302 C 28,289 46,282 64,285 C 78,288 87,298 85,312 C 83,324 67,330 52,326 C 37,322 24,315 26,302 Z"
+  <path d="M 64,222 C 66,208 88,200 110,204 C 126,207 137,218 135,232 C 133,246 114,252 94,248 C 76,244 62,236 64,222 Z"
         fill="#080808" stroke="#989898" stroke-width="1.5"/>
-  <line x1="34" y1="302" x2="78" y2="302" stroke="#484848" stroke-width="0.7"/>
-  <line x1="31" y1="312" x2="80" y2="312" stroke="#484848" stroke-width="0.7"/>
-  <line x1="30" y1="322" x2="76" y2="322" stroke="#484848" stroke-width="0.7"/>
+  <line x1="72" y1="222" x2="126" y2="222" stroke="#484848" stroke-width="0.7"/>
+  <line x1="69" y1="232" x2="128" y2="232" stroke="#484848" stroke-width="0.7"/>
+  <line x1="70" y1="242" x2="124" y2="242" stroke="#484848" stroke-width="0.7"/>
 
   <!-- Shoulder plate — right -->
-  <path d="M 254,302 C 252,289 234,282 216,285 C 202,288 193,298 195,312 C 197,324 213,330 228,326 C 243,322 256,315 254,302 Z"
+  <path d="M 536,222 C 534,208 512,200 490,204 C 474,207 463,218 465,232 C 467,246 486,252 506,248 C 524,244 538,236 536,222 Z"
         fill="#080808" stroke="#989898" stroke-width="1.5"/>
-  <line x1="202" y1="302" x2="246" y2="302" stroke="#484848" stroke-width="0.7"/>
-  <line x1="200" y1="312" x2="249" y2="312" stroke="#484848" stroke-width="0.7"/>
-  <line x1="204" y1="322" x2="250" y2="322" stroke="#484848" stroke-width="0.7"/>
+  <line x1="474" y1="222" x2="528" y2="222" stroke="#484848" stroke-width="0.7"/>
+  <line x1="472" y1="232" x2="531" y2="232" stroke="#484848" stroke-width="0.7"/>
+  <line x1="476" y1="242" x2="530" y2="242" stroke="#484848" stroke-width="0.7"/>
 </svg>

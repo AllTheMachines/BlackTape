@@ -512,18 +512,17 @@
 		line-height: 1.5;
 	}
 
-	/* Oracle figure hero */
+	/* Oracle figure hero — full-width landscape banner */
 	.oracle-hero {
-		display: flex;
-		justify-content: center;
-		padding: 24px 0 8px;
+		margin: -20px -20px 0;
 		pointer-events: none;
+		line-height: 0;
 	}
 
 	.oracle-figure {
-		width: 140px;
+		width: 100%;
 		height: auto;
-		opacity: 0.82;
+		display: block;
 	}
 
 	/* Explore page layout */
