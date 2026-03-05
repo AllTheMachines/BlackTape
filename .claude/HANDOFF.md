@@ -4,72 +4,92 @@
 macOS testing of v0.3.0 via GitHub Actions — automated UI tests + updater test.
 
 ## Context
-v0.3.0 is released on GitHub with Windows + macOS (aarch64) artifacts. We're using GitHub Actions macOS runners + screencapture to test the app on macOS without a physical Mac. VNC was abandoned (black screen issues on headless runners) in favour of screencapture → HTTP → ngrok viewer.
+v0.3.0 is released on GitHub with Windows + macOS (aarch64) artifacts. We're using GitHub Actions macOS runners + screencapture to test the app on macOS without a physical Mac. Gatekeeper was confirmed passing in a previous run.
 
 ## Progress
 ### Completed
 - v0.3.0 macOS DMG confirmed installable on GitHub Actions runner
-- **Gatekeeper test PASSED**: shows "Apple checked it for malicious software and none was detected" + Open/Cancel dialog — best possible outcome for unsigned app
-- App launches and renders UI correctly (setup wizard, menu bar, queue panel all visible)
-- Live screencapture browser viewer working (ngrok HTTP + python HTTP server + screencapture loop)
-- Workflow now runs automated tests + uploads screenshots as artifacts
+- **Gatekeeper test PASSED** (previous run): shows "Apple checked it for malicious software and none was detected" — best possible outcome for unsigned app
+- App launches and renders UI correctly (confirmed from earlier screenshots)
+- Live screencapture browser viewer working (ngrok HTTP + python HTTP server)
+- **-10673 fix LANDED**: moved Gatekeeper test to last in workflow — run #16 (22699098978) confirmed "Launch BlackTape" PASSED
+- One screenshot captured (test-01-setup-wizard.png, 91751 bytes) — uploaded as artifact
 
 ### In Progress
-- Automated test run #15 (run 22698896053) failed at "Launch BlackTape" with error -10673
-- Error: `_LSOpenURLsWithCompletionHandler() failed with error -10673`
-- Root cause: the Gatekeeper test (step 1) launches the quarantined app in background, which poisons Launch Services state for subsequent `open` calls, even after quarantine is stripped and process is killed
-- Tests 2/3/4 (setup wizard, search, navigation) never ran
+- Run #16 (22699098978) — FAILED at "Test 2 — Setup wizard completes"
+- Error: `185:195: execution error: Can't get item 1 of {}. (-1728)`
+- This is an AppleScript error: the script does `item 1 of btn` inside `repeat with btn in allBtns`, but `allBtns` contains empty sub-lists (windows with no buttons), causing -1728 when accessing item 1 of an empty list
 
 ### Remaining
-- Fix -10673: either reset Launch Services after quarantine test, or restructure workflow so Gatekeeper test runs AFTER functional tests
-- Get search + navigation + setup wizard screenshots
-- **Update test on macOS**: Steve wants to verify the updater works on macOS (not just Windows). v0.3.0 is the ONLY release so far — no v0.2.0 macOS DMG exists. To test updater: need to either (a) wait for v0.4.0, or (b) install v0.3.0 and manually trigger update check against a fake v0.4.0 latest.json
+- Fix AppleScript error handling in Test 2 (wrap button access in try/end try)
+- Download and review test-01-setup-wizard.png artifact to see app state
+- Get search + navigation screenshots (Tests 3 & 4)
+- Decide on macOS updater test approach (RentAMac.io at $15/day was discussed as an option for interactive testing)
 - Send DMG to Will Dickson at NTS (will@ntslive.co.uk) — Gatekeeper result already confirms it's safe to send
 - Update BUILD-LOG.md with session summary
 
 ## Key Decisions
-- VNC abandoned — GitHub Actions macOS runners are headless, VNC shows black screen
-- screencapture + HTTP server + ngrok = working alternative to view the screen
-- Gatekeeper result is good enough to send DMG to Will even before functional tests complete
-- Update test on macOS requires a previous release to exist — currently impossible
+- **-10673 root cause confirmed**: Gatekeeper test poisoned Launch Services for subsequent open() calls. Fix = move Gatekeeper test to last step. WORKING.
+- **RentAMac.io** ($15/day, dedicated Mac Mini M4) discussed as alternative for interactive/updater testing — GitHub Actions is for automated regression, RentAMac for one-off interactive sessions
+- Updater test on macOS: best option is wait for v0.4.0 (v0.3.0 is only release with macOS artifacts) — or use RentAMac for manual test
+- DMG is safe to send to Will even without functional test completion — Gatekeeper already confirmed clean
 
 ## Relevant Files
-- `.github/workflows/macos-vnc.yml` — the macOS test workflow (has Gatekeeper test + 4 automated UI tests + live viewer)
+- `.github/workflows/macos-vnc.yml` — the macOS test workflow (restructured: functional tests first, Gatekeeper last)
 - `BUILD-LOG.md` — 3 lines of uncommitted auto-save changes
 
-## -10673 Fix Options
-Option A (recommended): Move Gatekeeper test to LAST, after functional tests. That way -10673 only affects the final step which is optional.
-
-Option B: Reset Launch Services after quarantine test:
-```bash
-/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -kill -r -domain local -domain system -domain user
+## AppleScript Fix Needed
+Current broken code in Test 2:
+```applescript
+set allBtns to every button of every window
+repeat with btn in allBtns
+  if name of (item 1 of btn) is "Continue" then  -- FAILS if btn is empty list
+    click (item 1 of btn)
+  end if
+end repeat
 ```
 
-Option C: Use `open` without `sudo -u runner` — runner IS already the runner user, sudo might be redundant.
+Fix — wrap in try/end try:
+```applescript
+set allBtns to every button of every window
+repeat with btn in allBtns
+  try
+    if name of (item 1 of btn) is "Continue" then
+      click (item 1 of btn)
+    end if
+  end try
+end repeat
+```
+
+Or restructure to iterate buttons directly:
+```applescript
+repeat with w in every window
+  repeat with btn in every button of w
+    try
+      if name of btn is "Continue" then
+        click btn
+      end if
+    end try
+  end repeat
+end repeat
+```
 
 ## Git Status
 - `BUILD-LOG.md` modified (3 lines auto-save, not staged)
-- Branch is 2 commits ahead of origin (both pushed: BUILD-LOG auto-saves)
+- Branch is 2 commits ahead of origin (both pushed)
 
-## Active GitHub Actions Run
-- Run 22698896053 — FAILED at "Launch BlackTape"
-- No active run currently
-
-## Update Test (macOS) — Steve's Question
-Steve asked about testing the updater on macOS (not just Windows, which was tested end-to-end with v0.2.0→v0.3.0). Currently impossible because:
-- v0.3.0 is the only GitHub release
-- No previous macOS build exists to install and then update FROM
-Options:
-1. Wait until v0.4.0 is released, then test v0.3.0→v0.4.0 updater on macOS
-2. Create a "fake" v0.2.0-mac tag with an old build and test against that
-3. Accept that updater was tested on Windows end-to-end and macOS updater code is identical (Tauri handles it)
+## Active GitHub Actions
+- Run 22699098978 — COMPLETED (failure at Test 2), took 40s total
+- Artifact uploaded: `macos-test-screenshots` (contains test-01-setup-wizard.png)
+- Download artifact to see app state: `gh run download 22699098978 -n macos-test-screenshots -D /tmp/mac-screenshots`
 
 ## Next Steps
-1. Fix the workflow — move Gatekeeper test to last, or try `open` without `sudo -u runner`
-2. Run the functional tests (setup wizard, search, navigation) and download artifacts
-3. Address update test question — probably option 1 (wait for v0.4.0)
-4. Send DMG to Will Dickson: https://github.com/AllTheMachines/BlackTape/releases/download/v0.3.0/BlackTape_0.3.0_aarch64.dmg
-5. Write BUILD-LOG session summary and commit
+1. Fix AppleScript in Test 2 (add try/end try around button access)
+2. Consider also making Test 2 non-failing (use `|| true` or set `continue-on-error: true`) since setup wizard may not always appear
+3. Trigger another run and download artifacts to verify screenshots look correct
+4. Decide: RentAMac for interactive updater test, or wait for v0.4.0?
+5. Send DMG to Will Dickson
+6. Write BUILD-LOG session summary
 
 ## Resume Command
 After running `/clear`, run `/resume` to continue.
