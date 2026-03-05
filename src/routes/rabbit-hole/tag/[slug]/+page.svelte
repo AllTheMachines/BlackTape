@@ -60,6 +60,7 @@
 			{:else}
 				<div class="rh-artist-chips">
 					{#each artists as a}
+						{@const secondaryTag = a.tags ? a.tags.split(',').map((t: string) => t.trim()).filter((t: string) => t && t !== tag)[0] : null}
 						<button
 							class="rh-artist-chip"
 							onclick={() => navigateToArtist(a.slug, a.name)}
@@ -68,6 +69,9 @@
 							{a.name}
 							{#if a.country}
 								<span class="rh-chip-country">{a.country}</span>
+							{/if}
+							{#if secondaryTag}
+								<span class="rh-chip-tag">{secondaryTag}</span>
 							{/if}
 						</button>
 					{/each}
@@ -220,6 +224,12 @@
 		background: var(--bg-3);
 		padding: 1px 5px;
 		border-radius: 3px;
+	}
+
+	.rh-chip-tag {
+		font-size: 0.6rem;
+		color: var(--t-4);
+		opacity: 0.7;
 	}
 
 	.rh-related-chips {
