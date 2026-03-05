@@ -5,6 +5,27 @@ A documentary record of building this project from idea to reality.
 ---
 
 
+## Entry 2026-03-05 — v0.3.1: macOS Updater Test, Icon Fix, Banner Fix
+
+Tested the macOS updater end-to-end on a rented Mac Mini M4 (RentAMac, DeskIn). Several bugs found and fixed across two sessions.
+
+**Bugs fixed:**
+
+- **Double base64 encoding** — Tauri's macOS `.sig` files are already base64-encoded. The CI workflow was running `base64` on them again, producing `Invalid encoding in minisign data`. Fixed: use `cat file | tr -d '\n'` directly, no re-encoding.
+- **HTTP 403 on release upload** — CI workflow missing `permissions: contents: write`. Fixed.
+- **App closing silently after update** — Originally used `process::exit(0)`. Attempted `app.restart()` — also unreliable on macOS after the bundle is replaced by the updater. Final fix: `open -n <bundle_path>` via macOS Launch Services (3 ancestors up from the binary gives the `.app` bundle path). This is more reliable post-bundle-replacement.
+- **Old macOS icon** — `icon.icns` and all derived PNGs (`128x128.png` etc.) were from an old icon design. `icon.png` was already the correct design. Fixed by running `npx tauri icon src-tauri/icons/icon.png` to regenerate everything.
+- **GitHub API rate limiting in CI** — `curl` to get latest llama.cpp release returned empty (no auth). Fixed by adding `Authorization: Bearer $GH_TOKEN` to the curl call.
+- **Unclear update UX** — Banner just said "updating..." and the app closed with no indication of what to do next. Fixed banner text to: "Update installed — open the app again to use the new version". Also increased banner padding and font size.
+
+**What still doesn't work:** Auto-relaunch on macOS is unreliable even with `open -n` — macOS caching or quarantine behavior may be interfering. The explicit message in the banner is the reliable fallback.
+
+**Decision:** Keep v0.3.1 as production rather than reverting to v0.3.0. The updater flow works — app closes, user sees the message and reopens manually. Good enough for now.
+
+**v0.3.1 release assets:** macOS DMG + updater bundle + `latest.json`. Windows entry still missing from v0.3.1 `latest.json` — Windows users won't see the update yet (v0.3.0 Windows installer remains functional). Will add when building Windows v0.3.1.
+
+---
+
 ## Entry 2026-03-05 — v0.3.0 Release Complete: macOS + Windows Artifacts
 
 v0.3.0 is now fully released on GitHub with artifacts for both platforms.
@@ -14131,4 +14152,7 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 > Files changed: 2
 
 > **Commit 4fbdb200** (2026-03-05 11:34) — wip: auto-save
+> Files changed: 1
+
+> **Commit 459e650d** (2026-03-05 11:36) — wip: auto-save
 > Files changed: 1
