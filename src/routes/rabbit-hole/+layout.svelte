@@ -54,7 +54,9 @@
 	let correctionSaved = $state(false);
 	let wikiNotFound = $state(false);
 	let feedbackText = $state('');
-	let emailOpened = $state(false);
+	let emailSent = $state(false);
+	let emailError = $state('');
+	let emailSending = $state(false);
 
 	// Helper intro message — resets on each new page, no API call
 	let helperMessage = $state<string | null>(null);
@@ -170,7 +172,9 @@
 		correctionSaved = false;
 		pendingCorrection = null;
 		feedbackText = '';
-		emailOpened = false;
+		emailSent = false;
+		emailError = '';
+		emailSending = false;
 
 		const wiki = await fetchWikipedia(trigger.name);
 		wikiLoading = false;
@@ -236,18 +240,28 @@
 
 	async function sendFeedbackEmail() {
 		const trigger = correctionTriggerState.active;
-		if (!trigger) return;
-		const { name, slug } = trigger;
-		const body = encodeURIComponent(`${feedbackText}\n\nArtist: ${name}\nSlug: ${slug}`);
-		const subject = encodeURIComponent(`Artist correction: ${name}`);
-		const mailto = `mailto:hello@blacktape.fm?subject=${subject}&body=${body}`;
+		if (!trigger || !feedbackText.trim()) return;
+		emailSending = true;
+		emailError = '';
 		try {
-			const { open } = await import('@tauri-apps/plugin-shell');
-			await open(mailto);
+			const res = await fetch('https://blacktape-signups.theaterofdelays.workers.dev/feedback', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					type: 'other',
+					title: `Artist correction: ${trigger.name}`,
+					body: `${feedbackText.trim()}\n\nArtist: ${trigger.name}\nSlug: ${trigger.slug}`,
+					replyTo: null,
+					context: { page: `/rabbit-hole/artist/${trigger.slug}` }
+				})
+			});
+			if (!res.ok) throw new Error(`Server error: ${res.status}`);
+			emailSent = true;
 		} catch {
-			window.open(mailto, '_blank');
+			emailError = 'Failed to send — try again.';
+		} finally {
+			emailSending = false;
 		}
-		emailOpened = true;
 	}
 
 	// Parse markdown links from AI response into segments
@@ -334,10 +348,15 @@
 							placeholder="What's wrong or missing?"
 							rows={4}
 						></textarea>
-						{#if emailOpened}
-						<p class="rh-correction-saved">✓ Email client opened. Thanks!</p>
+						{#if emailSent}
+						<p class="rh-correction-saved">✓ Sent. Thanks!</p>
 					{:else}
-						<button class="rh-suggestion" onclick={sendFeedbackEmail}>Send via email</button>
+						{#if emailError}
+							<p class="rh-wiki-miss" style="color: #e07070;">{emailError}</p>
+						{/if}
+						<button class="rh-suggestion" onclick={sendFeedbackEmail} disabled={emailSending || !feedbackText.trim()}>
+							{emailSending ? 'Sending...' : 'Send'}
+						</button>
 					{/if}
 					{:else if correctionMode && chatLoading}
 						<p class="rh-helper-msg rh-wiki-loading">Analyzing with AI...</p>
