@@ -74,10 +74,13 @@ for (const { artist_id, tag } of rows) {
 console.log(`  ${tagToArtists.size.toLocaleString()} qualifying tags, ${artistTagCount.size.toLocaleString()} artists with tags`);
 
 // Step 4 — Generate all pairs and accumulate shared tag counts in memory
+// Use a plain object (not Map) — V8 Maps have a hard 16.7M entry limit;
+// plain objects in dictionary mode handle 50M+ keys without issue.
 console.log('[similar-artists] Computing pair shared tag counts...');
-const pairShared = new Map(); // "lowId:highId" -> shared count
+const pairShared = Object.create(null); // "lowId:highId" -> shared count
 
 let pairOps = 0;
+let pairCount = 0;
 for (const [, artists] of tagToArtists) {
   const n = artists.length;
   if (n < 2) continue;
@@ -86,19 +89,21 @@ for (const [, artists] of tagToArtists) {
       const a = artists[i] < artists[j] ? artists[i] : artists[j];
       const b = artists[i] < artists[j] ? artists[j] : artists[i];
       const key = `${a}:${b}`;
-      pairShared.set(key, (pairShared.get(key) ?? 0) + 1);
+      if (pairShared[key] === undefined) { pairShared[key] = 1; pairCount++; }
+      else pairShared[key]++;
     }
   }
   pairOps += (n * (n - 1)) / 2;
 }
-console.log(`  ${pairOps.toLocaleString()} pair operations, ${pairShared.size.toLocaleString()} unique pairs`);
+console.log(`  ${pairOps.toLocaleString()} pair operations, ${pairCount.toLocaleString()} unique pairs`);
 
 // Step 5 — Compute Jaccard scores and filter
 console.log('[similar-artists] Computing Jaccard scores...');
 // artistSimilar: artist_id -> array of { similar_id, score }
 const artistSimilar = new Map();
 
-for (const [key, shared] of pairShared) {
+for (const key of Object.keys(pairShared)) {
+  const shared = pairShared[key];
   if (shared < MIN_SHARED) continue;
 
   const colon = key.indexOf(':');
