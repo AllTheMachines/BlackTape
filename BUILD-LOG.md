@@ -14411,3 +14411,26 @@ Once complete, the World Map will show real artist pins and the Rabbit Hole will
 
 > **Commit 7eb77123** (2026-03-05 14:11) — wip: auto-save
 > Files changed: 3
+
+> **Commit 92a42908** (2026-03-05 14:13) — wip: auto-save
+> Files changed: 1
+
+---
+
+## Entry 2026-03-05 — AI-Generated Page Art (Oracle + Rabbit Hole)
+
+Replaced hand-crafted SVG artwork with AI-generated illustrations using Gemini 3.1 Flash Image (Nano Banana 2). Both pages now have distinctive visual identities that match the app's dark aesthetic.
+
+**Oracle page — landscape banner:**
+- Replaced the SVG figure (red bg, blue body) with a full-width AI-generated image
+- Prompt: CRT monitor head, organic cables as hair fanning dramatically left/right, circuit board chest, black/white ink illustration style
+- Displayed as full-width banner (height 380px, cropped from bottom via `object-fit: cover`, opacity 50%)
+
+**Rabbit Hole page — spiral disc:**
+- Generated top-down spiral galaxy arm illustration — open arms, dark center void, same ink style as Oracle
+- User made a transparent PNG in Photoshop for clean edge blending
+- Displayed as 260×260 centered above the search input
+
+**Generation scripts (reusable):**
+- `tools/generate-oracle.mjs` — regenerate oracle banner
+- `tools/generate-rabbit-hole.mjs` — regenerate rabbit hole spiral
