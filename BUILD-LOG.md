@@ -14596,3 +14596,6 @@ Replaced hand-crafted SVG artwork with AI-generated illustrations using Gemini 3
 
 > **Commit 2a37e44d** (2026-03-05 16:46) — auto-save: 2 files @ 16:46
 > Files changed: 2
+
+> **Commit 71e2468b** (2026-03-05 16:47) — fix(pipeline): nested int-key objects for pair accumulation — 30s vs 1h37min
+> Files changed: 1
