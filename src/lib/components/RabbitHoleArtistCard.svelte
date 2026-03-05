@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { isTauri } from '$lib/platform';
 	import { streamingPref } from '$lib/theme/preferences.svelte';
 	import { getProvider } from '$lib/db/provider';
@@ -52,19 +51,20 @@
 	);
 	let hasLinks = $derived(links && links.length > 0);
 
-	onMount(async () => {
-		if (!artist || !isTauri()) return;
+	$effect(() => {
+		const mbid = artist?.mbid;
+		if (!mbid || !isTauri()) return;
 		releasesLoading = true;
-		try {
-			const { invoke } = await import('@tauri-apps/api/core');
-			releases = await invoke<CachedRelease[]>('get_or_cache_releases', {
-				artistMbid: artist.mbid
-			});
-		} catch {
+		releases = [];
+		import('@tauri-apps/api/core').then(({ invoke }) =>
+			invoke<CachedRelease[]>('get_or_cache_releases', { artistMbid: mbid })
+		).then(result => {
+			releases = (result ?? []).map(r => ({ ...r, tracks: r.tracks ?? [] }));
+		}).catch(() => {
 			// best-effort — no tracks available
-		} finally {
+		}).finally(() => {
 			releasesLoading = false;
-		}
+		});
 	});
 
 	function handleTagClickInternal(tag: string) {
@@ -192,10 +192,10 @@
 								<span class="rh-release-title">{rel.title}</span>
 								<span class="rh-release-meta">
 									{rel.first_release_year ?? ''}
-									{#if rel.tracks.length > 0}&middot; {rel.tracks.length} tracks{/if}
+									{#if rel.tracks?.length > 0}&middot; {rel.tracks.length} tracks{/if}
 								</span>
 							</div>
-							{#if rel.tracks.length > 0}
+							{#if rel.tracks?.length > 0}
 								<div class="rh-tracks">
 									{#each rel.tracks.slice(0, 5) as track}
 										<div class="rh-track">
@@ -207,7 +207,7 @@
 										</div>
 									{/each}
 									{#if rel.tracks.length > 5}
-										<div class="rh-track-more">+{rel.tracks.length - 5} more tracks</div>
+										<div class="rh-track-more">+{rel.tracks?.length - 5} more tracks</div>
 									{/if}
 								</div>
 							{/if}
