@@ -14705,3 +14705,35 @@ Replaced hand-crafted SVG artwork with AI-generated illustrations using Gemini 3
 
 > **Commit d2977c95** (2026-03-05 18:12) — wip: auto-save
 > Files changed: 2
+
+> **Commit d1093a39** (2026-03-05 18:16) — auto-save: 1 files @ 18:16
+> Files changed: 1
+
+> **Commit 80b07b7a** (2026-03-05 18:24) — fix(rabbit-hole): show Explore vs Continue based on similarity availability
+> Files changed: 1
+
+> **Commit 77cb5b3d** (2026-03-05 18:25) — fix(rabbit-hole): show secondary tag label on tag-page artist chips
+> Files changed: 1
+
+> **Commit 138dc186** (2026-03-05 18:26) — fix(rabbit-hole): show Wikipedia genre description on tag page
+> Files changed: 1
+
+> **Commit c298d5f2** (2026-03-05 18:26) — fix(rabbit-hole): add Style Map and Crate Dig cross-links on tag page
+> Files changed: 1
+
+## Entry 2026-03-05 — Rabbit Hole UX: All 12 Improvements Complete
+
+Completed the second half of the Rabbit Hole UX polish run. The first 7 fixes shipped last session; this session closed out the remaining 5.
+
+**Fixes shipped (5 commits):**
+
+8. **"Explore →" fallback signal** — The Continue button now reads "Explore →" when the artist has no precomputed similarity data (98.6% of artists fall back to random-by-tag). Artists with real similarity data show "Continue →". One character change, clear user signal.
+
+9. **Secondary tag on tag-page artist chips** — Each chip on the genre/tag page now shows the first tag from that artist that *isn't* the current page's tag. Gives immediate genre context: browsing "ambient" and seeing "krautrock" on a chip is more useful than a blank chip.
+
+10. **Wikipedia genre description** — When `genre.wikipedia_title` is populated (from the `genres` table), a `$effect` fetches the Wikipedia REST API summary paragraph and displays it below the header. Loads lazily, resets on navigation, silent on failure.
+
+11. **Style Map + Crate Dig cross-links** — Tag pages now show three navigation links in the header: "See on map" (world map), "Style Map" (`/style-map?tag=`), and "Crate Dig" (`/crate?tag=`). Both targets already read `?tag=` from URL params — zero changes to those routes.
+
+All 4 commits clean, all 196 tests passing. The Rabbit Hole feature is now fully polished with all 12 originally-planned improvements complete.
+
