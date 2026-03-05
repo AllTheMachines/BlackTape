@@ -78,11 +78,36 @@ pub async fn install_update(app: AppHandle) -> Result<(), String> {
     // Tell frontend to show "Restarting..." then relaunch on a background thread
     // so the event loop can deliver the event before we restart
     let _ = app.emit("update-restarting", ());
-    let app2 = app.clone();
-    std::thread::spawn(move || {
-        std::thread::sleep(std::time::Duration::from_millis(2500));
-        app2.restart();
-    });
+
+    #[cfg(target_os = "macos")]
+    {
+        // On macOS, app.restart() (exec) is unreliable after the bundle is replaced by the updater.
+        // Use `open -n <bundle>` via Launch Services instead — it respects code signing + quarantine.
+        std::thread::spawn(|| {
+            std::thread::sleep(std::time::Duration::from_millis(2500));
+            if let Ok(exe) = std::env::current_exe() {
+                // exe path: BlackTape.app/Contents/MacOS/BlackTape
+                // 3 ancestors up → BlackTape.app
+                if let Some(app_bundle) = exe.ancestors().nth(3) {
+                    let _ = std::process::Command::new("open")
+                        .arg("-n")
+                        .arg(app_bundle)
+                        .spawn();
+                    std::thread::sleep(std::time::Duration::from_millis(500));
+                }
+            }
+            std::process::exit(0);
+        });
+    }
+
+    #[cfg(not(target_os = "macos"))]
+    {
+        let app2 = app.clone();
+        std::thread::spawn(move || {
+            std::thread::sleep(std::time::Duration::from_millis(2500));
+            app2.restart();
+        });
+    }
 
     Ok(())
 }
