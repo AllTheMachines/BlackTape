@@ -4,6 +4,27 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-03-05 — Discogs Tags + Similar Artists: V8 Algorithm Fix
+
+Completed the Discogs genre import cycle. The Discogs data import itself ran cleanly (1.4M masters, 1.79M artist-tag pairs). The similar-artists rebuild is where things got interesting.
+
+**Problem:** `build-similar-artists-pg.mjs` ran for 1h37min without completing. With 290K artist-tag pairs at TAG_THRESHOLD=500, the pair computation generates ~20M unique pairs. The original code used string keys (`"lowId:highId"`) for the pairShared accumulator — 20M string heap allocations caused massive GC pressure and ground V8 to a halt.
+
+**First attempt at fix:** Lower TAG_THRESHOLD from 500 → 100. That caps pairs at 1.75M and ran in 15 seconds — but coverage dropped from 38K artists to 10,724. Tags with 100+ artists were excluded, which removed most Discogs-tagged artists (Discogs uses broader genre labels). Worse than before.
+
+**Real fix:** Swap the data structure. Instead of a flat string-keyed object, use **nested integer-keyed plain objects**: `pairShared[lowId][highId] = count`. V8 handles integer property keys through a fast integer hash path with zero string allocation. The same 20M pairs at TAG_THRESHOLD=500 now complete in **under 30 seconds**.
+
+**Also hit:** Deadlock between `build-finalize-pg.mjs` (UPDATE artists SET uniqueness_score) and the concurrent geocoding job (UPDATE artists SET city_lat/lng). The geocoding job will run for days. Fix: run `build-similar-artists-pg.mjs` directly, skip the uniqueness_score step (hasn't changed meaningfully — no new artists added).
+
+**Final result:**
+- 20.97M pair operations, 19.4M unique pairs computed in ~30s
+- **39,268 artists** with similarity data (vs 38,150 before Discogs — slight improvement)
+- **286,386 rows** in similar_artists
+
+Coverage improvement is smaller than expected — Discogs adds many artists but most only have broad genre tags that also appear on many other artists, so the Jaccard filter is strict. The meaningful gain is in artists who appear in multiple specific Discogs styles (e.g., "Psychedelic Rock" + "Space Rock" + "Krautrock").
+
+---
+
 ## Entry 2026-03-05 — API Security: Read-Only DB User + SQL Guard
 
 The `/query` endpoint in `server/index.js` was running arbitrary SQL with no validation — a write query from anyone who found the server IP (which is in `config.ts`) could have wiped the DB.
@@ -14572,3 +14593,6 @@ Replaced hand-crafted SVG artwork with AI-generated illustrations using Gemini 3
 
 > **Commit 36abb439** (2026-03-05 16:16) — auto-save: 1 files @ 16:16
 > Files changed: 1
+
+> **Commit 2a37e44d** (2026-03-05 16:46) — auto-save: 2 files @ 16:46
+> Files changed: 2
