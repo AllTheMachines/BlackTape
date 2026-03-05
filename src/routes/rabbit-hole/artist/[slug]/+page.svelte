@@ -4,7 +4,7 @@
 	import RabbitHoleArtistCard from '$lib/components/RabbitHoleArtistCard.svelte';
 
 	let { data } = $props();
-	let { artist, similarArtists, links, sortedTags } = $derived(data);
+	let { artist, similarArtists, links, sortedTags, uniquenessScore } = $derived(data);
 	let hasGeocoordinates = $derived(data.hasGeocoordinates as boolean);
 
 	function navigateToArtist(slug: string, name: string) {
@@ -25,6 +25,7 @@
 		{similarArtists}
 		{links}
 		{sortedTags}
+		{uniquenessScore}
 		onTagClick={navigateToTag}
 		onSimilarArtistClick={navigateToArtist}
 		showOpenInRabbitHole={false}

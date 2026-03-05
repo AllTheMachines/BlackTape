@@ -40,22 +40,23 @@ async function fetchStreamingLinks(mbid: string, fetchFn: typeof fetch): Promise
 export const load: PageLoad = async ({ params, fetch }) => {
 	try {
 		const { getProvider } = await import('$lib/db/provider');
-		const { getArtistBySlug, getSimilarArtists, getArtistTagDistribution } = await import('$lib/db/queries');
+		const { getArtistBySlug, getSimilarArtists, getArtistTagDistribution, getArtistUniquenessScore } = await import('$lib/db/queries');
 		const db = await getProvider();
 
 		const artist = await getArtistBySlug(db, params.slug);
 		if (!artist) {
-			return { artist: null, similarArtists: [], links: [], sortedTags: [], hasGeocoordinates: false };
+			return { artist: null, similarArtists: [], links: [], sortedTags: [], uniquenessScore: null, hasGeocoordinates: false };
 		}
 
-		const [similarArtists, geoRow, links, tagDist] = await Promise.all([
+		const [similarArtists, geoRow, links, tagDist, uniquenessData] = await Promise.all([
 			getSimilarArtists(db, artist.id, 10),
 			db.get<{ has_geo: number }>(
 				`SELECT (city_lat IS NOT NULL AND city_lat != 0) as has_geo FROM artists WHERE id = ?`,
 				artist.id
 			),
 			fetchStreamingLinks(artist.mbid, fetch),
-			getArtistTagDistribution(db, artist.id).catch(() => [] as Awaited<ReturnType<typeof getArtistTagDistribution>>)
+			getArtistTagDistribution(db, artist.id).catch(() => [] as Awaited<ReturnType<typeof getArtistTagDistribution>>),
+			getArtistUniquenessScore(db, artist.id).catch(() => null)
 		]);
 
 		// Sort by vote count DESC (most-defining tags first)
@@ -65,9 +66,10 @@ export const load: PageLoad = async ({ params, fetch }) => {
 			.map(t => t.tag);
 
 		const hasGeocoordinates = (geoRow?.has_geo ?? 0) === 1;
+		const uniquenessScore = uniquenessData?.uniqueness_score ?? null;
 
-		return { artist, similarArtists, links, sortedTags, hasGeocoordinates };
+		return { artist, similarArtists, links, sortedTags, uniquenessScore, hasGeocoordinates };
 	} catch {
-		return { artist: null, similarArtists: [], links: [], sortedTags: [], hasGeocoordinates: false };
+		return { artist: null, similarArtists: [], links: [], sortedTags: [], uniquenessScore: null, hasGeocoordinates: false };
 	}
 };

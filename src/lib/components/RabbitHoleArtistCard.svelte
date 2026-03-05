@@ -24,6 +24,7 @@
 		similarArtists: any[]; // SimilarArtistResult[]
 		links: any[]; // { platform: string; url: string }[]
 		sortedTags?: string[]; // pre-sorted by vote count DESC; overrides artist.tags parsing
+		uniquenessScore?: number | null;
 		onTagClick?: (tag: string) => void;
 		onSimilarArtistClick?: (slug: string, name: string) => void;
 		onOpenInRabbitHole?: (slug: string) => void;
@@ -35,6 +36,7 @@
 		similarArtists,
 		links,
 		sortedTags,
+		uniquenessScore,
 		onTagClick,
 		onSimilarArtistClick,
 		onOpenInRabbitHole,
@@ -173,6 +175,9 @@
 			{/if}
 			{#if artist.ended}
 				<span class="rh-disbanded-badge">Disbanded</span>
+			{/if}
+			{#if uniquenessScore !== null && uniquenessScore !== undefined}
+				<span class="rh-uniqueness-badge {uniquenessScore >= 100 ? 'very-niche' : uniquenessScore >= 8 ? 'niche' : uniquenessScore >= 0.36 ? 'eclectic' : 'mainstream'}">{uniquenessScore >= 100 ? 'Very Niche' : uniquenessScore >= 8 ? 'Niche' : uniquenessScore >= 0.36 ? 'Eclectic' : 'Mainstream'}</span>
 			{/if}
 		</div>
 
@@ -347,6 +352,20 @@
 		border: 1px solid var(--b-1);
 		opacity: 0.7;
 	}
+
+	.rh-uniqueness-badge {
+		font-size: 0.6rem;
+		font-weight: 600;
+		letter-spacing: 0.07em;
+		text-transform: uppercase;
+		padding: 2px 7px;
+		border-radius: 0;
+		border: 1px solid currentColor;
+	}
+	.rh-uniqueness-badge.very-niche { color: var(--acc); }
+	.rh-uniqueness-badge.niche { color: #7dd3a8; }
+	.rh-uniqueness-badge.eclectic { color: var(--t-3); }
+	.rh-uniqueness-badge.mainstream { color: var(--t-4); }
 
 	.rh-tags {
 		display: flex;
