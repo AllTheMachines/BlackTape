@@ -59,6 +59,12 @@
 			<a href="/world-map?tag={encodeURIComponent(tag)}" class="rh-map-link">
 				See on map
 			</a>
+			<a href="/style-map?tag={encodeURIComponent(tag)}" class="rh-map-link">
+				Style Map
+			</a>
+			<a href="/crate?tag={encodeURIComponent(tag)}" class="rh-map-link">
+				Crate Dig
+			</a>
 		</div>
 
 		{#if wikiSummary}
