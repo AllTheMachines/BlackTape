@@ -4,6 +4,36 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-03-05 — DB Pipeline State Assessment & Similar-Artists Re-Run
+
+Session picked up mid-pipeline. Mapped the current state of all Hetzner DB jobs:
+
+**What's done:**
+- Discogs tags fully inserted into `artist_tags` (500,223 unique tagged artists)
+- `tag_stats` rebuilt with Discogs data (58,275 tags)
+- `similar_artists` re-confirmed at 251,246 rows, 35,013 artists
+
+**What's stuck:**
+- `uniqueness_score` update on `artists` table deadlocked twice — once from `build-discogs-tags-pg.mjs` and again from `build-finalize.mjs`. Both crashed at the same `UPDATE artists SET uniqueness_score` step. Root cause: geocoding job runs `UPDATE artists SET city_lat/lng` concurrently, creating lock contention.
+- Geocoding is at ~100K/1.39M processed (7%) — at current rate, ~5 more days remaining.
+
+**The Discogs coverage paradox:**
+Running `build-similar-artists-pg.mjs` now with updated tag data gives *fewer* results than before Discogs:
+
+- Before Discogs: 57,852 qualifying tags, 143,660 artists, 39,268 with similarity → 286,386 pairs
+- After Discogs: 54,777 qualifying tags, 135,561 artists, 35,013 with similarity → 251,246 pairs
+
+The `TAG_THRESHOLD=500` filter excludes tags used by > 500 artists (too generic to be meaningful). Discogs pushed ~3,000 previously-qualifying tags over that threshold by assigning broad genre labels ("Rock", "Electronic") to huge numbers of artists. Net result: Discogs reduced similarity coverage rather than increasing it for this threshold.
+
+The meaningful Discogs gain is in niche style tags ("Space Rock", "Krautrock", "Minimal Wave") — artists who appear in multiple specific styles now link to each other better. The broad genres just bloat common tag counts.
+
+**Next steps (waiting on geocoding):**
+When geocoding finishes (~5 days), run `build-finalize.mjs` — it updates `uniqueness_score` then re-runs similar-artists with final data.
+
+**Decision: don't increase TAG_THRESHOLD.** 500 is correct for the similarity signal. Broad genres like "Rock" aren't useful for "similar artist" matching. The discovery value comes from specific co-tagged styles.
+
+---
+
 ## Entry 2026-03-05 — Album Favourites: Full Frontend Wiring
 
 Completed the album favourites feature end-to-end. The Rust backend (`favorite_releases` table + CRUD commands) was already in place from the previous session. This session wired up all the frontend pieces.
@@ -14954,4 +14984,7 @@ All 4 commits clean, all 196 tests passing. The Rabbit Hole feature is now fully
 > Files changed: 8
 
 > **Commit f83234ed** (2026-03-05 21:37) — wip: auto-save
+> Files changed: 1
+
+> **Commit 6eec64dd** (2026-03-05 21:37) — wip: auto-save
 > Files changed: 1
