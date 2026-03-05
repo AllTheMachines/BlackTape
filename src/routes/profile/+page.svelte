@@ -157,6 +157,20 @@
 			</div>
 		</section>
 
+		<!-- Favorites Section -->
+		{#if tasteProfile.favorites.length > 0}
+		<section class="favorites-section">
+			<h2 class="section-title">Favourite Artists</h2>
+			<ul class="fav-list">
+				{#each tasteProfile.favorites as fav (fav.artist_mbid)}
+					<li>
+						<a class="fav-link" href="/artist/{fav.artist_slug}">{fav.artist_name}</a>
+					</li>
+				{/each}
+			</ul>
+		</section>
+		{/if}
+
 		<!-- Collections Section -->
 		<section class="collections-section">
 			<div class="collections-header">
@@ -258,6 +272,18 @@
 	.handle-input:focus { border-bottom-color: var(--acc); }
 	.handle-hint { font-size: 0.75rem; color: var(--t-3); }
 	.section-title { font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--t-3); margin-bottom: var(--space-sm); }
+	.fav-list { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: var(--space-xs); }
+	.fav-link {
+		display: inline-block;
+		font-size: 0.85rem;
+		color: var(--t-2);
+		text-decoration: none;
+		padding: 4px 10px;
+		border: 1px solid var(--b-2);
+		border-radius: 2px;
+		transition: color 0.15s, border-color 0.15s;
+	}
+	.fav-link:hover { color: var(--t-1); border-color: var(--acc); }
 	.section-desc { font-size: 0.85rem; color: var(--t-3); margin-bottom: var(--space-sm); }
 	.collections-header { display: flex; justify-content: space-between; align-items: center; }
 	.new-shelf-btn {
