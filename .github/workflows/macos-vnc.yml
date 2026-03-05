@@ -39,8 +39,11 @@ jobs:
 
       - name: Launch BlackTape
         run: |
+          # Kill any zombie BlackTape left from the quarantine test
+          pkill -x BlackTape 2>/dev/null || true
+          sleep 2
           sudo -u runner open /Applications/BlackTape.app
-          sleep 6
+          sleep 8
 
           # Dismiss any permission dialogs (screen recording etc)
           osascript << 'EOF'
