@@ -1,192 +1,192 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 360" fill="none">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 390" fill="none">
   <defs>
-    <!-- Hot red background gradient -->
-    <radialGradient id="bg" cx="40%" cy="35%" r="70%">
-      <stop offset="0%"   stop-color="#ff2a1a"/>
-      <stop offset="55%"  stop-color="#e0001a"/>
-      <stop offset="100%" stop-color="#8a0010"/>
-    </radialGradient>
-
-    <!-- CRT screen — bright cyan bloom -->
-    <radialGradient id="screen" cx="45%" cy="42%" r="58%">
-      <stop offset="0%"   stop-color="#afffff"/>
-      <stop offset="25%"  stop-color="#00f0e0"/>
-      <stop offset="65%"  stop-color="#00b8c8"/>
-      <stop offset="100%" stop-color="#006878"/>
-    </radialGradient>
-
-    <!-- Screen outer bloom -->
-    <filter id="bloom" x="-40%" y="-40%" width="180%" height="180%">
-      <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="b"/>
-      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-    </filter>
-
-    <!-- LED glow -->
-    <filter id="led" x="-400%" y="-400%" width="900%" height="900%">
-      <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="b"/>
-      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-    </filter>
-
-    <!-- Figure body — deep indigo blue -->
-    <linearGradient id="body" x1="30%" y1="0%" x2="70%" y2="100%">
-      <stop offset="0%"   stop-color="#1e2870"/>
-      <stop offset="45%"  stop-color="#141c54"/>
-      <stop offset="100%" stop-color="#0c1238"/>
-    </linearGradient>
-
-    <!-- Monitor casing — dark steel blue -->
-    <linearGradient id="mon" x1="5%" y1="0%" x2="95%" y2="100%">
-      <stop offset="0%"   stop-color="#283c6e"/>
-      <stop offset="100%" stop-color="#162448"/>
-    </linearGradient>
-
-    <!-- Cable gradient — deep blue -->
-    <linearGradient id="cable-dark" x1="0%" y1="100%" x2="0%" y2="0%">
-      <stop offset="0%"   stop-color="#1a2860"/>
-      <stop offset="100%" stop-color="#0e1840"/>
-    </linearGradient>
-
-    <!-- Scanlines -->
-    <pattern id="scan" x="0" y="0" width="1" height="4" patternUnits="userSpaceOnUse">
-      <rect x="0" y="0" width="1" height="1.5" fill="black" opacity="0.12"/>
+    <pattern id="scr" x="84" y="144" width="14" height="14" patternUnits="userSpaceOnUse">
+      <path d="M 14 0 L 0 0 0 14" fill="none" stroke="#444" stroke-width="0.4"/>
     </pattern>
   </defs>
 
-  <!-- ── BACKGROUND ── -->
-  <rect width="280" height="360" fill="url(#bg)"/>
-  <!-- Slight bottom darkening -->
-  <rect width="280" height="360" fill="url(#bgfade)" opacity="0.3"/>
+  <!-- BACKGROUND -->
+  <rect width="280" height="390" fill="#050505"/>
 
-  <!-- ── CABLES (organic, behind monitor) ── -->
+  <!-- ══════════════════════════════════════
+       CABLES / WIRE HAIR
+       Emerge from monitor top (y≈132) and fan outward
+       ══════════════════════════════════════ -->
 
-  <!-- Far right — thickest, dominant -->
-  <path d="M 205,170 C 238,150 260,118 255,78 C 252,50 244,24 242,2"
-        stroke="#1a2c62" stroke-width="8" stroke-linecap="round"/>
-  <path d="M 210,180 C 248,162 268,132 264,90 C 261,60 253,30 251,4"
-        stroke="#142050" stroke-width="5" stroke-linecap="round"/>
+  <!-- Far-left sweep -->
+  <path d="M 112,132 C 98,88 52,44 -15,10"       stroke="#c8c8c8" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M 108,132 C 86,80 28,32 -48,0"         stroke="#b0b0b0" stroke-width="1.8" stroke-linecap="round"/>
+  <path d="M 105,132 C 78,72 12,24 -72,6"          stroke="#c0c0c0" stroke-width="1.2" stroke-linecap="round"/>
+  <path d="M 103,132 C 72,90  -2,72 -88,58"        stroke="#a0a0a0" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M 101,132 C 68,102 -8,96 -105,85"       stroke="#b8b8b8" stroke-width="1.0" stroke-linecap="round"/>
 
-  <!-- Right cluster -->
-  <path d="M 200,158 C 228,136 242,104 238,68 C 235,44 228,20 226,2"
-        stroke="#1e3272" stroke-width="6" stroke-linecap="round"/>
-  <path d="M 194,145 C 218,122 228,90 224,58 C 221,36 216,16 214,1"
-        stroke="#243880" stroke-width="4.5" stroke-linecap="round"/>
-  <path d="M 188,136 C 208,114 215,82 211,52 C 208,32 204,14 202,1"
-        stroke="#1a2e68" stroke-width="3.5" stroke-linecap="round"/>
-
-  <!-- Right-center -->
-  <path d="M 178,128 C 192,100 195,70 191,42 C 189,24 186,10 184,1"
-        stroke="#1e3472" stroke-width="3" stroke-linecap="round"/>
-  <path d="M 168,124 C 177,96 175,66 171,38 C 169,20 167,8 165,1"
-        stroke="#263c84" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Mid-left with S-curves -->
+  <path d="M 116,132 C 106,92 72,56 26,26 C 8,13 -8,4 -22,0"    stroke="#d0d0d0" stroke-width="2.0" stroke-linecap="round"/>
+  <path d="M 120,132 C 112,98 92,68 58,44 C 36,28 12,12 -4,2"    stroke="#c0c0c0" stroke-width="1.4" stroke-linecap="round"/>
+  <path d="M 124,132 C 118,104 102,80 74,54 C 52,34 28,16  8,2"   stroke="#d8d8d8" stroke-width="1.0" stroke-linecap="round"/>
+  <path d="M 127,132 C 122,106 110,86 86,64 C 66,46 42,26 22,8"  stroke="#c8c8c8" stroke-width="1.8" stroke-linecap="round"/>
 
   <!-- Center cables -->
-  <path d="M 155,122 C 157,92 154,62 150,34 C 148,17 146,6 145,1"
-        stroke="#182e62" stroke-width="3" stroke-linecap="round"/>
-  <path d="M 143,122 C 141,90 141,60 137,32 C 135,16 133,5 132,1"
-        stroke="#1e3470" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M 131,132 C 128,98 120,62 112,32 C 107,12 103,2 101,0"  stroke="#e0e0e0" stroke-width="1.2" stroke-linecap="round"/>
+  <path d="M 136,132 C 134,96 128,60 122,28 C 118,10 116,1 115,0"  stroke="#d0d0d0" stroke-width="1.8" stroke-linecap="round"/>
+  <path d="M 140,132 C 140,94 140,56 140,22 C 140,8 140,1 140,0"   stroke="#e0e0e0" stroke-width="2.2" stroke-linecap="round"/>
+  <path d="M 144,132 C 146,94 150,56 158,22 C 162,8 164,1 165,0"   stroke="#d0d0d0" stroke-width="1.8" stroke-linecap="round"/>
+  <path d="M 149,132 C 152,98 160,62 168,32 C 173,12 177,2 179,0"  stroke="#e0e0e0" stroke-width="1.2" stroke-linecap="round"/>
 
-  <!-- Left-center -->
-  <path d="M 118,124 C 112,96 114,66 118,38 C 120,20 122,8 121,1"
-        stroke="#263c84" stroke-width="2.5" stroke-linecap="round"/>
-  <path d="M 107,128 C 96,100 97,70 101,42 C 103,24 107,10 105,1"
-        stroke="#1e3472" stroke-width="3" stroke-linecap="round"/>
+  <!-- Mid-right with S-curves -->
+  <path d="M 153,132 C 158,106 170,86 194,64 C 214,46 238,26 258,8"  stroke="#c8c8c8" stroke-width="1.8" stroke-linecap="round"/>
+  <path d="M 156,132 C 162,104 178,80 206,54 C 228,34 252,16 272,2"  stroke="#d8d8d8" stroke-width="1.0" stroke-linecap="round"/>
+  <path d="M 160,132 C 168,98 188,68 222,44 C 244,28 268,12 284,2"  stroke="#c0c0c0" stroke-width="1.4" stroke-linecap="round"/>
+  <path d="M 164,132 C 174,92 208,56 254,26 C 272,13 288,4 302,0"   stroke="#d0d0d0" stroke-width="2.0" stroke-linecap="round"/>
 
-  <!-- Left cluster -->
-  <path d="M 96,136 C 80,112 78,82 82,52 C 84,32 88,14 86,1"
-        stroke="#1a2e68" stroke-width="3.5" stroke-linecap="round"/>
-  <path d="M 88,146 C 68,122 64,90 68,58 C 70,36 74,16 72,1"
-        stroke="#243880" stroke-width="4.5" stroke-linecap="round"/>
-  <path d="M 82,158 C 58,136 48,104 52,68 C 55,44 60,20 58,2"
-        stroke="#1e3272" stroke-width="6" stroke-linecap="round"/>
+  <!-- Far-right sweep -->
+  <path d="M 168,132 C 184,102 228,72 295,44"      stroke="#b8b8b8" stroke-width="1.0" stroke-linecap="round"/>
+  <path d="M 172,132 C 192,90 248,46 324,16"        stroke="#c0c0c0" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M 175,132 C 202,72 270,24 358,2"          stroke="#c8c8c8" stroke-width="1.2" stroke-linecap="round"/>
+  <path d="M 177,132 C 208,82 282,34 374,0"          stroke="#b0b0b0" stroke-width="1.8" stroke-linecap="round"/>
+  <path d="M 180,132 C 214,88 295,42 400,12"         stroke="#c8c8c8" stroke-width="2.5" stroke-linecap="round"/>
 
-  <!-- Far left — thickest -->
-  <path d="M 76,170 C 38,150 18,118 22,78 C 25,50 32,24 30,2"
-        stroke="#1a2c62" stroke-width="8" stroke-linecap="round"/>
-  <path d="M 72,180 C 28,162 8,130 12,88 C 15,58 22,30 20,4"
-        stroke="#142050" stroke-width="5" stroke-linecap="round"/>
+  <!-- A few side-exit cables from the monitor flanks -->
+  <path d="M 72,172 C 40,160 8,155 -20,148"         stroke="#909090" stroke-width="1.2" stroke-linecap="round"/>
+  <path d="M 72,188 C 32,185 -4,190 -30,200"         stroke="#808080" stroke-width="1.0" stroke-linecap="round"/>
+  <path d="M 208,172 C 240,160 272,155 300,148"      stroke="#909090" stroke-width="1.2" stroke-linecap="round"/>
+  <path d="M 208,188 C 248,185 284,190 310,200"      stroke="#808080" stroke-width="1.0" stroke-linecap="round"/>
 
-  <!-- ── MONITOR ── -->
-
-  <!-- Outer casing shadow -->
-  <rect x="81" y="125" width="118" height="94" rx="7" fill="#0c1830" opacity="0.4"/>
+  <!-- ══════════════════════════════════════
+       MONITOR HEAD
+       ══════════════════════════════════════ -->
 
   <!-- Outer casing -->
-  <rect x="80" y="122" width="118" height="92" rx="6" fill="url(#mon)" stroke="#3a5490" stroke-width="1.5"/>
+  <rect x="70" y="130" width="140" height="118" rx="8" fill="#101010" stroke="#d0d0d0" stroke-width="2.5"/>
 
-  <!-- Top indicator dots -->
-  <circle cx="91" cy="129" r="1.5" fill="#3a5080" opacity="0.8"/>
-  <circle cx="97" cy="129" r="1.5" fill="#3a5080" opacity="0.8"/>
+  <!-- Top-edge highlight crease -->
+  <line x1="80" y1="130" x2="200" y2="130" stroke="#e8e8e8" stroke-width="0.7" opacity="0.35"/>
 
-  <!-- Bezel recess -->
-  <rect x="87" y="129" width="104" height="76" rx="4" fill="#060c18" stroke="#0e1c30" stroke-width="1"/>
+  <!-- Screen bezel -->
+  <rect x="78" y="138" width="124" height="100" rx="4" fill="#060606" stroke="#a0a0a0" stroke-width="1.5"/>
 
-  <!-- CRT screen with strong bloom -->
-  <rect x="91" y="133" width="96" height="68" rx="2" fill="url(#screen)" filter="url(#bloom)"/>
+  <!-- Screen surface -->
+  <rect x="82" y="142" width="116" height="90" rx="2" fill="#080808"/>
 
-  <!-- Scanlines on screen -->
-  <rect x="91" y="133" width="96" height="68" rx="2" fill="url(#scan)" opacity="0.5"/>
+  <!-- Screen grid -->
+  <rect x="82" y="142" width="116" height="90" fill="url(#scr)" opacity="0.9"/>
 
-  <!-- Screen content — data readout -->
-  <line x1="99" y1="148" x2="152" y2="148" stroke="white" stroke-width="2.5" opacity="0.28"/>
-  <line x1="99" y1="155" x2="136" y2="155" stroke="white" stroke-width="2"   opacity="0.20"/>
-  <line x1="99" y1="162" x2="162" y2="162" stroke="white" stroke-width="1.5" opacity="0.14"/>
-  <rect  x="99" y="170" width="9"  height="5" rx="0.5" fill="white"          opacity="0.22"/>
-  <rect  x="111" y="170" width="18" height="5" rx="0.5" fill="white"         opacity="0.14"/>
-  <line x1="99" y1="182" x2="176" y2="182" stroke="white" stroke-width="1"   opacity="0.10"/>
-  <line x1="99" y1="187" x2="150" y2="187" stroke="white" stroke-width="1"   opacity="0.08"/>
+  <!-- Test pattern — main circle (center 140, 187) -->
+  <circle cx="140" cy="187" r="34" stroke="#c0c0c0" stroke-width="1.5" fill="none"/>
 
-  <!-- Monitor bottom face depth -->
-  <rect x="86" y="208" width="106" height="7" rx="1" fill="#0e1c34" stroke="#1e3060" stroke-width="0.5"/>
+  <!-- Inner ring -->
+  <circle cx="140" cy="187" r="17" stroke="#707070" stroke-width="0.8" fill="none"/>
 
-  <!-- Vent slots -->
-  <rect x="95"  y="211" width="5" height="2" rx="0.5" fill="#060c18"/>
-  <rect x="103" y="211" width="5" height="2" rx="0.5" fill="#060c18"/>
-  <rect x="111" y="211" width="5" height="2" rx="0.5" fill="#060c18"/>
-  <rect x="119" y="211" width="5" height="2" rx="0.5" fill="#060c18"/>
-  <rect x="127" y="211" width="5" height="2" rx="0.5" fill="#060c18"/>
-  <rect x="135" y="211" width="5" height="2" rx="0.5" fill="#060c18"/>
-  <rect x="143" y="211" width="5" height="2" rx="0.5" fill="#060c18"/>
-  <rect x="151" y="211" width="5" height="2" rx="0.5" fill="#060c18"/>
-  <rect x="159" y="211" width="5" height="2" rx="0.5" fill="#060c18"/>
-  <rect x="167" y="211" width="5" height="2" rx="0.5" fill="#060c18"/>
+  <!-- Full-width crosshairs -->
+  <line x1="82" y1="187" x2="198" y2="187" stroke="#909090" stroke-width="0.9"/>
+  <line x1="140" y1="142" x2="140" y2="232" stroke="#909090" stroke-width="0.9"/>
 
-  <!-- Power LED — cyan glow -->
-  <circle cx="178" cy="212" r="3" fill="#00e8d8" filter="url(#led)"/>
+  <!-- Quadrant tick marks on circle -->
+  <line x1="140" y1="153" x2="140" y2="162" stroke="#808080" stroke-width="0.9"/>
+  <line x1="140" y1="212" x2="140" y2="221" stroke="#808080" stroke-width="0.9"/>
+  <line x1="106" y1="187" x2="115" y2="187" stroke="#808080" stroke-width="0.9"/>
+  <line x1="165" y1="187" x2="174" y2="187" stroke="#808080" stroke-width="0.9"/>
 
-  <!-- Side ports -->
-  <rect x="196" y="152" width="4" height="8" rx="1" fill="#060c18"/>
-  <rect x="196" y="164" width="4" height="4" rx="1" fill="#060c18"/>
+  <!-- Diagonal marks at 45° on circle -->
+  <line x1="116" y1="163" x2="122" y2="169" stroke="#606060" stroke-width="0.7"/>
+  <line x1="164" y1="163" x2="158" y2="169" stroke="#606060" stroke-width="0.7"/>
+  <line x1="116" y1="211" x2="122" y2="205" stroke="#606060" stroke-width="0.7"/>
+  <line x1="164" y1="211" x2="158" y2="205" stroke="#606060" stroke-width="0.7"/>
 
-  <!-- ── NECK ── -->
-  <path d="M 126,215 L 122,234 L 158,234 L 154,215 Z" fill="#101c40"/>
-  <rect x="116" y="232" width="48" height="6" rx="2" fill="#121e42" stroke="#1e3060" stroke-width="0.5"/>
+  <!-- Bottom test bars -->
+  <rect x="82"  y="225" width="29" height="7" fill="#141414" stroke="#505050" stroke-width="0.5"/>
+  <rect x="111" y="225" width="29" height="7" fill="#080808" stroke="#505050" stroke-width="0.5"/>
+  <rect x="140" y="225" width="29" height="7" fill="#141414" stroke="#505050" stroke-width="0.5"/>
+  <rect x="169" y="225" width="29" height="7" fill="#080808" stroke="#505050" stroke-width="0.5"/>
 
-  <!-- ── BUST / SHOULDERS ── -->
-  <path d="M 38,360 C 34,315 40,282 60,262 C 84,240 116,233 140,232 C 164,233 196,240 220,262 C 240,282 246,315 242,360 Z"
-        fill="url(#body)"/>
+  <!-- Bottom casing strip -->
+  <rect x="78" y="242" width="124" height="6" rx="1" fill="#0c0c0c" stroke="#787878" stroke-width="0.8"/>
 
-  <!-- Robe collar V -->
-  <path d="M 112,236 Q 140,254 168,236 L 162,286 Q 140,265 118,286 Z"
-        fill="#1a2462" stroke="#2a3880" stroke-width="1"/>
+  <!-- Indicator dots -->
+  <circle cx="176" cy="245" r="2.5" fill="none" stroke="#707070" stroke-width="1.0"/>
+  <circle cx="184" cy="245" r="2.5" fill="none" stroke="#707070" stroke-width="1.0"/>
+  <circle cx="192" cy="245" r="2.5" fill="none" stroke="#707070" stroke-width="1.0"/>
 
-  <!-- Collar decorative lines (mimicking robe pattern) -->
-  <path d="M 120,250 Q 140,242 160,250" stroke="#2e4494" stroke-width="1" opacity="0.6" fill="none"/>
-  <path d="M 122,258 Q 140,250 158,258" stroke="#2e4494" stroke-width="0.8" opacity="0.45" fill="none"/>
-  <path d="M 124,266 Q 140,258 156,266" stroke="#2e4494" stroke-width="0.8" opacity="0.35" fill="none"/>
+  <!-- ══════════════════════════════════════
+       NECK
+       ══════════════════════════════════════ -->
+  <path d="M 122,248 L 118,274 L 162,274 L 158,248 Z" fill="#0a0a0a" stroke="#b8b8b8" stroke-width="1.5"/>
 
-  <!-- Left shoulder fabric lines -->
-  <path d="M 58,272 Q 86,264 113,272" stroke="#1e3272" stroke-width="1" opacity="0.45" fill="none"/>
-  <path d="M 52,290 Q 83,280 114,290" stroke="#1e3272" stroke-width="1" opacity="0.35" fill="none"/>
-  <path d="M 48,310 Q 82,298 116,310" stroke="#1e3272" stroke-width="1" opacity="0.28" fill="none"/>
+  <!-- Neck circuit lines (wires flowing into body) -->
+  <line x1="128" y1="250" x2="126" y2="274" stroke="#555" stroke-width="0.9"/>
+  <line x1="133" y1="249" x2="132" y2="274" stroke="#555" stroke-width="0.9"/>
+  <line x1="140" y1="248" x2="140" y2="274" stroke="#666" stroke-width="1.0"/>
+  <line x1="147" y1="249" x2="148" y2="274" stroke="#555" stroke-width="0.9"/>
+  <line x1="152" y1="250" x2="154" y2="274" stroke="#555" stroke-width="0.9"/>
 
-  <!-- Right shoulder fabric lines -->
-  <path d="M 167,272 Q 194,264 222,272" stroke="#1e3272" stroke-width="1" opacity="0.45" fill="none"/>
-  <path d="M 166,290 Q 197,280 228,290" stroke="#1e3272" stroke-width="1" opacity="0.35" fill="none"/>
-  <path d="M 164,310 Q 198,298 232,310" stroke="#1e3272" stroke-width="1" opacity="0.28" fill="none"/>
+  <!-- ══════════════════════════════════════
+       BODY / SHOULDERS
+       ══════════════════════════════════════ -->
 
-  <!-- Red light rim on figure edges (from background bounce) -->
-  <path d="M 38,360 C 34,315 40,282 60,262 C 84,240 116,233 140,232"
-        stroke="#cc1a10" stroke-width="1.5" opacity="0.35" fill="none"/>
-  <path d="M 242,360 C 246,315 240,282 220,262 C 196,240 164,233 140,232"
-        stroke="#cc1a10" stroke-width="1.5" opacity="0.35" fill="none"/>
+  <!-- Main bust silhouette -->
+  <path d="M 18,390 C 14,340 26,304 50,280 C 76,254 112,258 140,258 C 168,258 204,254 230,280 C 254,304 266,340 262,390 Z"
+        fill="#0c0c0c" stroke="#c0c0c0" stroke-width="2"/>
+
+  <!-- Left jacket lapel -->
+  <path d="M 118,274 C 105,283 85,296 65,315 L 58,350 L 94,318 L 116,286 Z"
+        fill="#080808" stroke="#a8a8a8" stroke-width="1.5"/>
+
+  <!-- Right jacket lapel -->
+  <path d="M 162,274 C 175,283 195,296 215,315 L 222,350 L 186,318 L 164,286 Z"
+        fill="#080808" stroke="#a8a8a8" stroke-width="1.5"/>
+
+  <!-- Chest center seam -->
+  <line x1="140" y1="274" x2="140" y2="368" stroke="#888" stroke-width="1.0"/>
+
+  <!-- Circuit board — horizontal traces -->
+  <line x1="104" y1="292" x2="176" y2="292" stroke="#4a4a4a" stroke-width="0.9"/>
+  <line x1="96"  y1="308" x2="184" y2="308" stroke="#4a4a4a" stroke-width="0.9"/>
+  <line x1="90"  y1="324" x2="190" y2="324" stroke="#4a4a4a" stroke-width="0.9"/>
+  <line x1="85"  y1="340" x2="195" y2="340" stroke="#4a4a4a" stroke-width="0.9"/>
+  <line x1="82"  y1="356" x2="198" y2="356" stroke="#4a4a4a" stroke-width="0.9"/>
+
+  <!-- Circuit board — vertical traces -->
+  <line x1="113" y1="292" x2="113" y2="324" stroke="#4a4a4a" stroke-width="0.9"/>
+  <line x1="122" y1="292" x2="122" y2="340" stroke="#4a4a4a" stroke-width="0.9"/>
+  <line x1="131" y1="292" x2="131" y2="356" stroke="#4a4a4a" stroke-width="0.9"/>
+  <line x1="149" y1="292" x2="149" y2="356" stroke="#4a4a4a" stroke-width="0.9"/>
+  <line x1="158" y1="292" x2="158" y2="340" stroke="#4a4a4a" stroke-width="0.9"/>
+  <line x1="167" y1="292" x2="167" y2="324" stroke="#4a4a4a" stroke-width="0.9"/>
+
+  <!-- Solder dots at trace intersections -->
+  <circle cx="113" cy="308" r="1.8" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
+  <circle cx="122" cy="308" r="1.8" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
+  <circle cx="131" cy="308" r="1.8" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
+  <circle cx="149" cy="308" r="1.8" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
+  <circle cx="158" cy="308" r="1.8" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
+  <circle cx="167" cy="308" r="1.8" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
+
+  <circle cx="113" cy="324" r="1.8" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
+  <circle cx="122" cy="324" r="1.8" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
+  <circle cx="131" cy="324" r="1.8" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
+  <circle cx="149" cy="324" r="1.8" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
+  <circle cx="158" cy="324" r="1.8" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
+  <circle cx="167" cy="324" r="1.8" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
+
+  <circle cx="122" cy="340" r="1.8" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
+  <circle cx="131" cy="340" r="1.8" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
+  <circle cx="149" cy="340" r="1.8" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
+  <circle cx="158" cy="340" r="1.8" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
+
+  <circle cx="131" cy="356" r="1.8" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
+  <circle cx="149" cy="356" r="1.8" fill="#0c0c0c" stroke="#4a4a4a" stroke-width="0.9"/>
+
+  <!-- Shoulder plate — left -->
+  <path d="M 26,302 C 28,289 46,282 64,285 C 78,288 87,298 85,312 C 83,324 67,330 52,326 C 37,322 24,315 26,302 Z"
+        fill="#080808" stroke="#989898" stroke-width="1.5"/>
+  <line x1="34" y1="302" x2="78" y2="302" stroke="#484848" stroke-width="0.7"/>
+  <line x1="31" y1="312" x2="80" y2="312" stroke="#484848" stroke-width="0.7"/>
+  <line x1="30" y1="322" x2="76" y2="322" stroke="#484848" stroke-width="0.7"/>
+
+  <!-- Shoulder plate — right -->
+  <path d="M 254,302 C 252,289 234,282 216,285 C 202,288 193,298 195,312 C 197,324 213,330 228,326 C 243,322 256,315 254,302 Z"
+        fill="#080808" stroke="#989898" stroke-width="1.5"/>
+  <line x1="202" y1="302" x2="246" y2="302" stroke="#484848" stroke-width="0.7"/>
+  <line x1="200" y1="312" x2="249" y2="312" stroke="#484848" stroke-width="0.7"/>
+  <line x1="204" y1="322" x2="250" y2="322" stroke="#484848" stroke-width="0.7"/>
 </svg>
