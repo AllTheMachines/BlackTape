@@ -5,7 +5,7 @@
 	import { searchArtistsAutocomplete, searchTagsAutocomplete, getRandomArtist } from '$lib/db/queries';
 	import { pushTrailItem } from '$lib/rabbit-hole/trail.svelte';
 	import type { DbProvider } from '$lib/db/provider';
-	import spiralImg from '$lib/assets/rabbit-hole-spiral.png';
+	import spiralImg from '$lib/assets/rabbit-hole-spira_transaprent.png';
 
 	let db = $state<DbProvider | null>(null);
 	let query = $state('');
@@ -166,12 +166,10 @@
 	.rh-spiral {
 		width: 260px;
 		height: 260px;
-		object-fit: cover;
+		object-fit: contain;
 		opacity: 0.85;
 		pointer-events: none;
 		display: block;
-		mask-image: radial-gradient(circle, black 40%, transparent 72%);
-		-webkit-mask-image: radial-gradient(circle, black 40%, transparent 72%);
 	}
 
 	.rh-tagline {
