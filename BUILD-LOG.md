@@ -13889,3 +13889,9 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 
 > **Commit d9035d83** (2026-03-05 02:33) — wip: auto-save
 > Files changed: 1
+
+> **Commit 2b754851** (2026-03-05 02:35) — wip: auto-save
+> Files changed: 2
+
+> **Commit 60d9b191** (2026-03-05 02:38) — fix: use legacy VNC password auth for headless macOS display
+> Files changed: 1
