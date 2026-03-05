@@ -13737,3 +13737,12 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 
 > **Commit 03d8acf2** (2026-03-05 01:09) — debug: add key file diagnostics to macOS signing step
 > Files changed: 1
+
+> **Commit e609cfc0** (2026-03-05 01:16) — auto-save: 1 files @ 01:16
+> Files changed: 1
+
+> **Commit a0c22369** (2026-03-05 01:21) — fix: new signing key with real password — removes rsign2 ARM bug workaround, uses Tauri CLI native signing for macOS CI
+> Files changed: 2
+
+> **Commit db867d8c** (2026-03-05 01:26) — fix: use -i flag for BSD base64 on macOS (no -w0 support)
+> Files changed: 1
