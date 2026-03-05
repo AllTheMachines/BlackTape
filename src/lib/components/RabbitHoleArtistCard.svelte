@@ -5,6 +5,9 @@
 	import { getRandomArtistByTag } from '$lib/db/queries';
 	import { getWikiThumbnail } from '$lib/wiki-thumbnail';
 	import ArtistSummary from '$lib/components/ArtistSummary.svelte';
+	import { aiState } from '$lib/ai/state.svelte';
+	import { getLocalCorrection, type ArtistCorrection } from '$lib/corrections/store';
+	import { triggerCorrection, correctionVersion } from '$lib/rabbit-hole/correction-trigger.svelte';
 
 	interface CachedTrack {
 		title: string;
@@ -43,6 +46,14 @@
 		onOpenInRabbitHole,
 		showOpenInRabbitHole = false
 	}: Props = $props();
+
+	let localCorrection = $state<ArtistCorrection | null>(null);
+
+	// Re-read localStorage when slug changes or after a correction is saved (correctionVersion bumps)
+	$effect(() => {
+		const _v = correctionVersion.count;
+		localCorrection = getLocalCorrection(artist.slug);
+	});
 
 	let releases = $state<CachedRelease[]>([]);
 	let releasesLoading = $state(false);
@@ -196,6 +207,22 @@
 			</div>
 		{/if}
 
+		<!-- Corrected fields (country / founding year from Wikipedia) -->
+		{#if localCorrection?.country || localCorrection?.foundingYear}
+			<div class="rh-correction-meta">
+				{#if localCorrection.country}
+					<span class="rh-corrected-field">
+						<span class="rh-wiki-check">✓</span> {localCorrection.country}
+					</span>
+				{/if}
+				{#if localCorrection.foundingYear}
+					<span class="rh-corrected-field">
+						<span class="rh-wiki-check">✓</span> est. {localCorrection.foundingYear}
+					</span>
+				{/if}
+			</div>
+		{/if}
+
 		<!-- AI Summary -->
 		{#key artist.mbid}
 			<ArtistSummary
@@ -204,6 +231,7 @@
 				artistTags={artist.tags ?? ''}
 				releases={releasesForSummary}
 				autoGenerate={true}
+				correctedBio={localCorrection?.bio}
 			/>
 		{/key}
 
@@ -289,6 +317,14 @@
 			{#if showOpenInRabbitHole && onOpenInRabbitHole}
 				<button class="rh-open-rh-btn" onclick={() => onOpenInRabbitHole!(artist.slug)}>
 					Open in Rabbit Hole &rarr;
+				</button>
+			{/if}
+			{#if aiState.status === 'ready'}
+				<button
+					class="rh-report-btn"
+					onclick={() => triggerCorrection({ slug: artist.slug, name: artist.name, mbid: artist.mbid })}
+				>
+					Something seem off?
 				</button>
 			{/if}
 		</div>
@@ -618,5 +654,41 @@
 
 	.rh-open-rh-btn:hover {
 		border-color: var(--acc);
+	}
+
+	.rh-report-btn {
+		background: none;
+		border: none;
+		color: var(--t-4);
+		font-size: 0.75rem;
+		cursor: pointer;
+		padding: 4px 0;
+		margin-left: auto;
+		text-decoration: none;
+		transition: color 0.15s;
+	}
+
+	.rh-report-btn:hover {
+		color: var(--t-2);
+		text-decoration: underline;
+	}
+
+	.rh-correction-meta {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-sm);
+	}
+
+	.rh-corrected-field {
+		font-size: 0.8125rem;
+		color: var(--t-2);
+		display: flex;
+		align-items: center;
+		gap: 4px;
+	}
+
+	.rh-wiki-check {
+		color: #7dd3a8;
+		font-size: 0.75rem;
 	}
 </style>

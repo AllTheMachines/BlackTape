@@ -4,6 +4,29 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-03-05 — AI Fact-Check & Correction System
+
+Artist pages in Rabbit Hole sometimes have wrong or sparse info — wrong founding year, wrong country, outdated bio. Built a complete correction pipeline so users can flag and fix it.
+
+**Flow:** User clicks "Something seem off?" on the artist card → AI panel fetches Wikipedia → AI compares and extracts structured fields → "Save this correction" button appears → correction saved to localStorage (immediate display) and POSTed to the server (fire-and-forget). On reload, the card reads localStorage and shows the corrected bio with a `✓ Wikipedia` badge and any corrected country/year fields. If Wikipedia doesn't have the artist, an email fallback textarea appears so users can describe the problem.
+
+**New files:**
+- `src/lib/corrections/store.ts` — localStorage save/read/clear + server POST
+- `src/lib/corrections/wikipedia.ts` — tries `(band)`, `(musician)`, then bare name via Wikipedia REST API; skips disambiguation pages
+- `src/lib/rabbit-hole/correction-trigger.svelte.ts` — shared reactive trigger state + `correctionVersion` counter to signal card re-reads
+
+**Modified files:**
+- `ArtistSummary.svelte` — `correctedBio` prop: when set, skips all AI generation and shows the Wikipedia text with a green `✓ Wikipedia` badge
+- `RabbitHoleArtistCard.svelte` — reads localStorage on mount (reactive to `correctionVersion`), shows corrected fields with `✓` marker, adds "Something seem off?" button (visible when AI is ready)
+- `+layout.svelte` — correction mode state machine: Wikipedia fetch → AI comparison prompt → JSON extraction → pending correction display → save handler; email fallback when Wikipedia not found
+- `server/index.js` — `POST /api/corrections` (no auth, writes to ndjson file) + `GET /api/corrections` (token-protected for review)
+
+**Server:** Deployed to Hetzner, `CORRECTIONS_TOKEN` set via PM2, corrections file at `/opt/blacktape-api/corrections.ndjson`. Verified write works end-to-end.
+
+The AI prompt asks it to both assess the artist info and output a JSON block `{"foundingYear": N, "country": "...", "genres": [...]}` — the layout parses that JSON out of the response for structured saving, while the full Wikipedia extract (not AI-paraphrased) goes in as the corrected bio.
+
+---
+
 ## Entry 2026-03-05 — Discogs Tags + Similar Artists: V8 Algorithm Fix
 
 Completed the Discogs genre import cycle. The Discogs data import itself ran cleanly (1.4M masters, 1.79M artist-tag pairs). The similar-artists rebuild is where things got interesting.
@@ -14838,4 +14861,7 @@ All 4 commits clean, all 196 tests passing. The Rabbit Hole feature is now fully
 > Files changed: 1
 
 > **Commit 1101e4fc** (2026-03-05 19:46) — auto-save: 1 files @ 19:46
+> Files changed: 1
+
+> **Commit def2f8ea** (2026-03-05 19:50) — wip: auto-save
 > Files changed: 1

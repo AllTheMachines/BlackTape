@@ -31,13 +31,15 @@
 		artistName,
 		artistTags,
 		releases,
-		autoGenerate = false
+		autoGenerate = false,
+		correctedBio = undefined
 	}: {
 		artistMbid: string;
 		artistName: string;
 		artistTags: string;
 		releases: Array<{ title: string; year: number | null; type: string }>;
 		autoGenerate?: boolean; // force auto-generation regardless of global preference
+		correctedBio?: string; // if set, skip AI and show this bio with a Wikipedia badge
 	} = $props();
 
 	// State machine variables
@@ -98,6 +100,9 @@
 	}
 
 	onMount(() => {
+		// If correctedBio is provided, skip all AI work
+		if (correctedBio !== undefined) return;
+
 		(async () => {
 			try {
 				aiAvailable = getAiProvider() !== null;
@@ -125,7 +130,12 @@
 	});
 </script>
 
-{#if summaryText || isGenerating || aiAvailable}
+{#if correctedBio !== undefined}
+	<section class="ai-summary" data-testid="ai-summary">
+		<span class="ai-badge wiki-badge">✓ Wikipedia</span>
+		<p class="ai-summary-text">{correctedBio}</p>
+	</section>
+{:else if summaryText || isGenerating || aiAvailable}
 	<section class="ai-summary" data-testid="ai-summary">
 		<span class="ai-badge">AI</span>
 
@@ -175,6 +185,12 @@
 		opacity: 0.6;
 		margin-bottom: 0.4rem;
 		text-transform: uppercase;
+	}
+
+	.wiki-badge {
+		opacity: 0.8;
+		color: #7dd3a8;
+		border-color: #7dd3a8;
 	}
 
 	.ai-summary-text {

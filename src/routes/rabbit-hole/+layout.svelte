@@ -5,6 +5,13 @@
 	import { aiState } from '$lib/ai/state.svelte';
 	import { getAiProvider } from '$lib/ai/engine';
 	import { INJECTION_GUARD, externalContent } from '$lib/ai/prompts';
+	import {
+		correctionTriggerState,
+		clearCorrectionTrigger,
+		bumpCorrectionVersion
+	} from '$lib/rabbit-hole/correction-trigger.svelte';
+	import { fetchWikipedia } from '$lib/corrections/wikipedia';
+	import { saveLocalCorrection, submitToServer, type ArtistCorrection } from '$lib/corrections/store';
 
 	let { children } = $props();
 
@@ -39,6 +46,14 @@
 	let chatInput = $state('');
 	let chatLoading = $state(false);
 	const MAX_CHAT_MESSAGES = 6;
+
+	// --- Correction mode ---
+	let correctionMode = $state(false);
+	let wikiLoading = $state(false);
+	let pendingCorrection = $state<ArtistCorrection | null>(null);
+	let correctionSaved = $state(false);
+	let wikiNotFound = $state(false);
+	let feedbackText = $state('');
 
 	// Helper intro message — resets on each new page, no API call
 	let helperMessage = $state<string | null>(null);
@@ -126,6 +141,105 @@
 		}
 	}
 
+	// --- Correction flow ---
+
+	function parseAiCorrectionJson(
+		text: string
+	): { foundingYear?: number | null; country?: string | null; genres?: string[] } | null {
+		const codeBlock = text.match(/```json\s*([\s\S]*?)```/);
+		const inlineObj = text.match(/(\{[^{}]*"foundingYear"[^{}]*\})/);
+		const raw = codeBlock?.[1] ?? inlineObj?.[1];
+		if (!raw) return null;
+		try {
+			return JSON.parse(raw);
+		} catch {
+			return null;
+		}
+	}
+
+	async function runCorrectionCheck(trigger: { slug: string; name: string; mbid: string }) {
+		if (correctionMode) return; // already running
+		const provider = getAiProvider();
+		if (!provider) return;
+
+		chatMessages = [];
+		correctionMode = true;
+		wikiLoading = true;
+		wikiNotFound = false;
+		correctionSaved = false;
+		pendingCorrection = null;
+		feedbackText = '';
+
+		const wiki = await fetchWikipedia(trigger.name);
+		wikiLoading = false;
+
+		if (!wiki.found) {
+			wikiNotFound = true;
+			return;
+		}
+
+		const systemPrompt =
+			INJECTION_GUARD +
+			' You are verifying music artist info. The user suspects something is wrong. Compare the Wikipedia content with what you know about this artist. Extract: founding year, country/origin, genres. Be specific and factual. Output a short assessment then a JSON block: `{"foundingYear": N, "country": "...", "genres": [...]}` or null for any you can\'t determine.';
+		const userPrompt = `Artist: ${trigger.name}. Wikipedia says: ${wiki.extract} (source: ${wiki.url}). What's the key info and does it match the current data?`;
+
+		chatLoading = true;
+		try {
+			const response = await provider.complete(userPrompt, {
+				systemPrompt,
+				temperature: 0.3,
+				maxTokens: 512
+			});
+			chatMessages = [{ role: 'assistant', text: response }];
+
+			const parsed = parseAiCorrectionJson(response);
+			pendingCorrection = {
+				slug: trigger.slug,
+				artistName: trigger.name,
+				bio: wiki.extract,
+				foundingYear: parsed?.foundingYear ?? null,
+				country: parsed?.country ?? null,
+				additionalTags: parsed?.genres ?? [],
+				source: 'wikipedia',
+				sourceUrl: wiki.url,
+				wikiTitle: wiki.title,
+				correctedAt: new Date().toISOString()
+			};
+		} catch {
+			chatMessages = [
+				{ role: 'assistant', text: 'Could not complete the check. Try again.' }
+			];
+		} finally {
+			chatLoading = false;
+		}
+	}
+
+	$effect(() => {
+		const trigger = correctionTriggerState.active;
+		if (!trigger) return;
+		void runCorrectionCheck(trigger);
+	});
+
+	function savePendingCorrection() {
+		if (!pendingCorrection) return;
+		saveLocalCorrection(pendingCorrection);
+		void submitToServer(pendingCorrection);
+		correctionSaved = true;
+		correctionMode = false;
+		pendingCorrection = null;
+		bumpCorrectionVersion();
+		clearCorrectionTrigger();
+	}
+
+	function sendFeedbackEmail() {
+		const trigger = correctionTriggerState.active;
+		if (!trigger) return;
+		const { name, slug } = trigger;
+		const body = encodeURIComponent(`${feedbackText}\n\nArtist: ${name}\nSlug: ${slug}`);
+		const subject = encodeURIComponent(`Artist correction: ${name}`);
+		window.open(`mailto:hello@blacktape.fm?subject=${subject}&body=${body}`, '_blank');
+	}
+
 	// Parse markdown links from AI response into segments
 	interface TextSegment { type: 'text'; content: string; }
 	interface LinkSegment { type: 'link'; content: string; href: string; internal: boolean; }
@@ -199,7 +313,19 @@
 				<h4 class="rh-ai-header">AI Companion</h4>
 
 				<div class="rh-chat-body" bind:this={chatBodyEl}>
-					{#if chatMessages.length > 0}
+					{#if correctionMode && wikiLoading}
+						<p class="rh-helper-msg rh-wiki-loading">Checking Wikipedia...</p>
+					{:else if correctionMode && wikiNotFound}
+						<p class="rh-wiki-miss">Couldn't find this artist on Wikipedia.</p>
+						<p class="rh-wiki-miss-sub">You can still tell us directly:</p>
+						<textarea
+							class="rh-feedback-textarea"
+						bind:value={feedbackText}
+							placeholder="What's wrong or missing?"
+							rows={4}
+						></textarea>
+						<button class="rh-suggestion" onclick={sendFeedbackEmail}>Send via email</button>
+					{:else if chatMessages.length > 0}
 						{#each chatMessages as msg}
 							<div class="rh-chat-msg" class:user={msg.role === 'user'} class:assistant={msg.role === 'assistant'}>
 								{#if msg.role === 'assistant'}
@@ -231,6 +357,14 @@
 						{/if}
 					{/if}
 				</div>
+
+				{#if correctionMode && pendingCorrection && !correctionSaved}
+					<button class="rh-save-correction" onclick={savePendingCorrection}>
+						Save this correction
+					</button>
+				{:else if correctionSaved}
+					<p class="rh-correction-saved">✓ Saved locally. Thanks!</p>
+				{/if}
 
 				<div class="rh-chat-input-row">
 					<input
@@ -535,5 +669,66 @@
 	.rh-chat-send:disabled {
 		opacity: 0.4;
 		cursor: not-allowed;
+	}
+
+	/* Correction mode */
+	.rh-save-correction {
+		margin: var(--space-xs) 0;
+		width: 100%;
+		padding: 6px 10px;
+		background: color-mix(in srgb, var(--acc) 15%, transparent);
+		border: 1px solid var(--acc);
+		color: var(--acc);
+		font-size: 0.75rem;
+		font-family: inherit;
+		cursor: pointer;
+		text-align: center;
+		transition: background 0.15s;
+	}
+
+	.rh-save-correction:hover {
+		background: color-mix(in srgb, var(--acc) 25%, transparent);
+	}
+
+	.rh-correction-saved {
+		margin: var(--space-xs) 0;
+		font-size: 0.72rem;
+		color: #7dd3a8;
+		text-align: center;
+	}
+
+	.rh-wiki-miss {
+		font-size: 0.75rem;
+		color: var(--text-secondary);
+		margin: var(--space-xs) 0 2px 0;
+	}
+
+	.rh-wiki-miss-sub {
+		font-size: 0.7rem;
+		color: var(--text-muted);
+		margin: 0 0 var(--space-xs) 0;
+	}
+
+	.rh-wiki-loading {
+		font-style: italic;
+	}
+
+	.rh-feedback-textarea {
+		width: 100%;
+		box-sizing: border-box;
+		background: var(--bg-elevated);
+		border: 1px solid var(--border-subtle);
+		color: var(--text-primary);
+		font-size: 0.72rem;
+		font-family: inherit;
+		padding: 4px 6px;
+		border-radius: 0;
+		outline: none;
+		resize: vertical;
+		margin-bottom: var(--space-xs);
+	}
+
+	.rh-feedback-textarea:focus {
+		border-color: var(--text-accent);
 	}
 </style>

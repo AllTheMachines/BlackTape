@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { serve } from '@hono/node-server';
 import { cors } from 'hono/cors';
 import postgres from 'postgres';
+import { readFileSync, appendFileSync } from 'fs';
 
 const sql = postgres({
   host: 'localhost',
@@ -144,6 +145,42 @@ app.get('/api/artists/:id', async (c) => {
     return c.json(artist);
   } catch (err) {
     return c.json({ error: err.message }, 500);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Artist corrections
+// ---------------------------------------------------------------------------
+
+const CORRECTIONS_FILE = '/opt/blacktape-api/corrections.ndjson';
+
+// POST /api/corrections — no auth, desktop-app only
+app.post('/api/corrections', async (c) => {
+  let body;
+  try {
+    body = await c.req.json();
+  } catch {
+    return c.json({ error: 'Invalid JSON' }, 400);
+  }
+  if (!body.slug || !body.artistName) return c.json({ error: 'Missing fields' }, 400);
+  const line = JSON.stringify({ ...body, receivedAt: new Date().toISOString() }) + '\n';
+  try {
+    appendFileSync(CORRECTIONS_FILE, line);
+  } catch {
+    // If file/dir doesn't exist yet, fail silently — not worth crashing
+  }
+  return c.json({ ok: true });
+});
+
+// GET /api/corrections — token-protected for Steve's review
+app.get('/api/corrections', (c) => {
+  const token = c.req.header('Authorization')?.replace('Bearer ', '');
+  if (token !== process.env.CORRECTIONS_TOKEN) return c.json({ error: 'Unauthorized' }, 401);
+  try {
+    const lines = readFileSync(CORRECTIONS_FILE, 'utf8').trim().split('\n').filter(Boolean);
+    return c.json({ corrections: lines.map(l => JSON.parse(l)) });
+  } catch {
+    return c.json({ corrections: [] });
   }
 });
 
