@@ -526,7 +526,7 @@
 		height: 270px;
 		display: block;
 		object-fit: cover;
-		object-position: center 65%;
+		object-position: center 20%;
 		opacity: 0.5;
 	}
 
