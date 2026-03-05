@@ -14186,3 +14186,6 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 
 > **Commit d77b055f** (2026-03-05 12:12) — docs: add release-process.md — auto-updater workflow, signing, known bugs, open risks
 > Files changed: 1
+
+> **Commit 0688befc** (2026-03-05 12:13) — wip: auto-save
+> Files changed: 1
