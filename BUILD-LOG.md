@@ -14123,3 +14123,6 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 
 > **Commit ab2a7793** (2026-03-05 11:19) — fix: update banner text + size (bigger padding/font, clearer post-install message)
 > Files changed: 1
+
+> **Commit 8e6851d4** (2026-03-05 11:24) — wip: auto-save
+> Files changed: 1
