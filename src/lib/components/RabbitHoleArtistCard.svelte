@@ -22,6 +22,7 @@
 		artist: any; // ArtistResult
 		similarArtists: any[]; // SimilarArtistResult[]
 		links: any[]; // { platform: string; url: string }[]
+		sortedTags?: string[]; // pre-sorted by vote count DESC; overrides artist.tags parsing
 		onTagClick?: (tag: string) => void;
 		onSimilarArtistClick?: (slug: string, name: string) => void;
 		onOpenInRabbitHole?: (slug: string) => void;
@@ -32,6 +33,7 @@
 		artist,
 		similarArtists,
 		links,
+		sortedTags,
 		onTagClick,
 		onSimilarArtistClick,
 		onOpenInRabbitHole,
@@ -47,7 +49,9 @@
 	let visibleReleases = $derived(showAllReleases ? releases : releases.slice(0, TOP_RELEASES));
 
 	let tagList = $derived(
-		artist?.tags ? artist.tags.split(',').map((t: string) => t.trim()).filter(Boolean) : []
+		sortedTags && sortedTags.length > 0
+			? sortedTags
+			: (artist?.tags ? artist.tags.split(',').map((t: string) => t.trim()).filter(Boolean) : [])
 	);
 	let hasLinks = $derived(links && links.length > 0);
 
