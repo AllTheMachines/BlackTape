@@ -13970,3 +13970,9 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 
 > **Commit 46604107** (2026-03-05 03:04) — fix: run open in background during Gatekeeper test to avoid hang
 > Files changed: 1
+
+> **Commit 9cdc2ea0** (2026-03-05 03:05) — wip: auto-save
+> Files changed: 1
+
+> **Commit 8d8a2f70** (2026-03-05 03:06) — fix: kill zombie BlackTape before relaunch after quarantine test
+> Files changed: 1
