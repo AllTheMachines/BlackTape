@@ -5,6 +5,7 @@
 	import { PROMPTS, INJECTION_GUARD } from '$lib/ai/prompts';
 	import { tasteProfile } from '$lib/taste/profile.svelte';
 	import ExploreResult from '$lib/components/ExploreResult.svelte';
+	import oracleFigure from '$lib/assets/oracle-figure.svg';
 
 	let tauriMode = $state(false);
 	let aiReady = $state(false);
@@ -252,7 +253,7 @@
 </script>
 
 <svelte:head>
-	<title>Explore</title>
+	<title>Oracle</title>
 </svelte:head>
 
 {#if !tauriMode}
@@ -305,12 +306,15 @@
 	</div>
 {:else}
 	<div class="explore-page">
+		<div class="oracle-hero">
+			<img src={oracleFigure} alt="" class="oracle-figure" aria-hidden="true" />
+		</div>
 		<div class="discover-mode-desc">
-			<h2>Explore</h2>
+			<h2>Oracle</h2>
 			<p>AI-powered open-ended discovery. Describe what you're looking for in plain language — the AI finds artists that match your vibe.</p>
 		</div>
 		<div class="page-header">
-			<h1>Explore</h1>
+			<h1>Oracle</h1>
 			{#if !tasteProfile.isLoaded}
 				<!-- Skeleton: profile is loading — show placeholder for hint area -->
 				<div class="taste-hint-skeleton">
@@ -508,9 +512,23 @@
 		line-height: 1.5;
 	}
 
+	/* Oracle figure hero */
+	.oracle-hero {
+		display: flex;
+		justify-content: center;
+		padding: 24px 0 8px;
+		pointer-events: none;
+	}
+
+	.oracle-figure {
+		width: 140px;
+		height: auto;
+		opacity: 0.82;
+	}
+
 	/* Explore page layout */
 	.explore-page {
-		padding: 20px;
+		padding: 0 20px 20px;
 	}
 
 	.page-header {

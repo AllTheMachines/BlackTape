@@ -8,7 +8,7 @@
 	// Discovery modes — condensed view when on any discovery route
 	const DISCOVERY_MODES = [
 		{ href: '/discover', label: 'Discover', icon: '◉', comingSoon: false },
-		{ href: '/explore', label: 'Explore', icon: '◬', comingSoon: false },
+		{ href: '/explore', label: 'Oracle', icon: '◬', comingSoon: false },
 		{ href: '/rabbit-hole', label: 'Rabbit Hole', icon: '◈', comingSoon: false },
 		{ href: '/world-map', label: 'World Map', icon: '◎', comingSoon: true }
 	] as const;

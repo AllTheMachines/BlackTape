@@ -1,0 +1,142 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 360" fill="none">
+  <defs>
+    <radialGradient id="screen" cx="48%" cy="44%" r="56%">
+      <stop offset="0%"   stop-color="#80fff8"/>
+      <stop offset="28%"  stop-color="#00d8cc"/>
+      <stop offset="68%"  stop-color="#008898"/>
+      <stop offset="100%" stop-color="#004858"/>
+    </radialGradient>
+    <filter id="bloom" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="led" x="-300%" y="-300%" width="700%" height="700%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="3.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <linearGradient id="mon" x1="4%" y1="0%" x2="96%" y2="100%">
+      <stop offset="0%"   stop-color="#1e3454"/>
+      <stop offset="100%" stop-color="#0c1a2e"/>
+    </linearGradient>
+    <linearGradient id="body" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%"   stop-color="#0e1e34"/>
+      <stop offset="55%"  stop-color="#081220"/>
+      <stop offset="100%" stop-color="#040a14"/>
+    </linearGradient>
+    <pattern id="scan" x="0" y="0" width="1" height="4" patternUnits="userSpaceOnUse">
+      <rect x="0" y="0" width="1" height="1" fill="black" opacity="0.1"/>
+    </pattern>
+  </defs>
+
+  <!-- ── CABLES (behind figure) ── -->
+
+  <!-- Far right, thickest -->
+  <path d="M 202,168 C 232,150 252,122 248,84 C 245,56 238,30 236,4"
+        stroke="#0c1c30" stroke-width="6" stroke-linecap="round"/>
+  <!-- Right cluster -->
+  <path d="M 197,155 C 224,136 238,106 234,70 C 231,46 224,22 222,2"
+        stroke="#102030" stroke-width="4.5" stroke-linecap="round"/>
+  <path d="M 192,143 C 215,120 224,90 220,56 C 217,34 212,14 210,1"
+        stroke="#162c44" stroke-width="4" stroke-linecap="round"/>
+  <path d="M 187,134 C 206,112 212,82 208,50 C 205,30 201,13 199,1"
+        stroke="#1c3452" stroke-width="3" stroke-linecap="round"/>
+  <!-- Right-center cables, organic curves -->
+  <path d="M 178,126 C 190,98 192,68 188,40 C 186,22 183,9 181,1"
+        stroke="#162840" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M 168,123 C 175,95 172,65 168,38 C 166,20 164,7 162,1"
+        stroke="#1e3658" stroke-width="2" stroke-linecap="round"/>
+  <!-- Center cables -->
+  <path d="M 155,121 C 156,90 153,60 149,32 C 147,16 145,5 144,1"
+        stroke="#102236" stroke-width="3" stroke-linecap="round"/>
+  <path d="M 142,121 C 140,90 140,60 136,32 C 134,16 132,5 131,1"
+        stroke="#0e1e30" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Left-center -->
+  <path d="M 118,123 C 112,96 114,66 118,38 C 120,20 122,7 121,1"
+        stroke="#1e3658" stroke-width="2" stroke-linecap="round"/>
+  <path d="M 108,126 C 98,99 99,68 103,40 C 105,22 108,8 107,1"
+        stroke="#162840" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Left cluster -->
+  <path d="M 97,133 C 82,110 80,80 84,50 C 86,29 90,12 88,1"
+        stroke="#1c3452" stroke-width="3" stroke-linecap="round"/>
+  <path d="M 90,144 C 70,120 66,90 70,58 C 72,36 76,17 74,2"
+        stroke="#162c44" stroke-width="4" stroke-linecap="round"/>
+  <path d="M 85,156 C 60,138 50,110 54,74 C 56,48 62,24 60,3"
+        stroke="#102030" stroke-width="4.5" stroke-linecap="round"/>
+  <!-- Far left, thickest — slight drape outward -->
+  <path d="M 81,167 C 50,150 36,120 40,82 C 42,54 48,28 46,4"
+        stroke="#0c1c30" stroke-width="6" stroke-linecap="round"/>
+  <!-- One cable drifting wide-right for asymmetry (like the image) -->
+  <path d="M 205,175 C 242,160 262,132 258,94 C 255,66 247,38 245,8"
+        stroke="#0a1826" stroke-width="4" stroke-linecap="round"/>
+
+  <!-- ── MONITOR ── -->
+
+  <!-- Outer casing -->
+  <rect x="82" y="122" width="116" height="92" rx="6" fill="url(#mon)" stroke="#243e60" stroke-width="1.5"/>
+
+  <!-- Corner indicator dots (top-left) -->
+  <circle cx="92" cy="129" r="1.3" fill="#1e3858" opacity="0.7"/>
+  <circle cx="97" cy="129" r="1.3" fill="#1e3858" opacity="0.7"/>
+
+  <!-- Screen bezel recess -->
+  <rect x="89" y="129" width="102" height="74" rx="4" fill="#050e18" stroke="#0d1c2c" stroke-width="1"/>
+
+  <!-- CRT screen -->
+  <rect x="93" y="133" width="94" height="66" rx="2" fill="url(#screen)" filter="url(#bloom)"/>
+
+  <!-- Scanlines on screen -->
+  <rect x="93" y="133" width="94" height="66" rx="2" fill="url(#scan)" opacity="0.5"/>
+
+  <!-- Screen content — data readout suggestion -->
+  <line x1="101" y1="147" x2="152" y2="147" stroke="white" stroke-width="2"   opacity="0.22"/>
+  <line x1="101" y1="153" x2="134" y2="153" stroke="white" stroke-width="1.5" opacity="0.16"/>
+  <line x1="101" y1="159" x2="160" y2="159" stroke="white" stroke-width="1.5" opacity="0.11"/>
+  <rect  x="101" y="167" width="8"  height="4" rx="0.5" fill="white" opacity="0.18"/>
+  <rect  x="112" y="167" width="16" height="4" rx="0.5" fill="white" opacity="0.12"/>
+  <line x1="101" y1="178" x2="174" y2="178" stroke="white" stroke-width="1"   opacity="0.09"/>
+  <line x1="101" y1="182" x2="148" y2="182" stroke="white" stroke-width="1"   opacity="0.07"/>
+
+  <!-- Bottom face of monitor (slight depth) -->
+  <rect x="88" y="208" width="104" height="6" rx="1" fill="#0a1622" stroke="#15253a" stroke-width="0.5"/>
+
+  <!-- Vent slots -->
+  <rect x="96"  y="210" width="5" height="2" rx="0.5" fill="#04090f"/>
+  <rect x="104" y="210" width="5" height="2" rx="0.5" fill="#04090f"/>
+  <rect x="112" y="210" width="5" height="2" rx="0.5" fill="#04090f"/>
+  <rect x="120" y="210" width="5" height="2" rx="0.5" fill="#04090f"/>
+  <rect x="128" y="210" width="5" height="2" rx="0.5" fill="#04090f"/>
+  <rect x="136" y="210" width="5" height="2" rx="0.5" fill="#04090f"/>
+  <rect x="144" y="210" width="5" height="2" rx="0.5" fill="#04090f"/>
+  <rect x="152" y="210" width="5" height="2" rx="0.5" fill="#04090f"/>
+  <rect x="160" y="210" width="5" height="2" rx="0.5" fill="#04090f"/>
+  <rect x="168" y="210" width="5" height="2" rx="0.5" fill="#04090f"/>
+
+  <!-- Power LED -->
+  <circle cx="178" cy="211" r="2.8" fill="#00d4c8" filter="url(#led)"/>
+
+  <!-- Right side ports/indent -->
+  <rect x="196" y="152" width="4" height="7" rx="1" fill="#05090f"/>
+  <rect x="196" y="163" width="4" height="4" rx="1" fill="#040810"/>
+
+  <!-- ── NECK ── -->
+  <path d="M 126,214 L 122,234 L 158,234 L 154,214 Z" fill="#091420"/>
+  <rect x="116" y="232" width="48" height="6" rx="2" fill="#0b1826" stroke="#14263a" stroke-width="0.5"/>
+
+  <!-- ── SHOULDERS / BUST ── -->
+  <path d="M 44,360 C 40,318 44,286 62,266 C 84,244 114,238 140,237 C 166,238 196,244 218,266 C 236,286 240,318 236,360 Z"
+        fill="url(#body)"/>
+
+  <!-- Collar / robe V -->
+  <path d="M 113,240 Q 140,256 167,240 L 161,288 Q 140,269 119,288 Z"
+        fill="#0c1c32" stroke="#172a40" stroke-width="0.8"/>
+
+  <!-- Fabric lines — left shoulder -->
+  <path d="M 62,276 Q 88,269 114,276" stroke="#14263a" stroke-width="0.8" opacity="0.45" fill="none"/>
+  <path d="M 56,294 Q 85,285 115,294" stroke="#14263a" stroke-width="0.8" opacity="0.35" fill="none"/>
+  <path d="M 52,312 Q 83,301 116,312" stroke="#14263a" stroke-width="0.8" opacity="0.28" fill="none"/>
+
+  <!-- Fabric lines — right shoulder -->
+  <path d="M 166,276 Q 192,269 218,276" stroke="#14263a" stroke-width="0.8" opacity="0.45" fill="none"/>
+  <path d="M 165,294 Q 195,285 224,294" stroke="#14263a" stroke-width="0.8" opacity="0.35" fill="none"/>
+  <path d="M 164,312 Q 197,301 228,312" stroke="#14263a" stroke-width="0.8" opacity="0.28" fill="none"/>
+</svg>
