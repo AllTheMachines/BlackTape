@@ -63,6 +63,16 @@
 		goto(`/rabbit-hole/tag/${encodeURIComponent(tag)}`, { keepFocus: true, noScroll: true });
 	}
 
+	function goToSearch() {
+		const q = query.trim();
+		if (!q) return;
+		goto(`/rabbit-hole/search?q=${encodeURIComponent(q)}`, { keepFocus: true, noScroll: true });
+	}
+
+	function handleKeydown(e: KeyboardEvent) {
+		if (e.key === 'Enter') { e.preventDefault(); goToSearch(); }
+	}
+
 	async function handleRandom() {
 		if (!db || randomLoading) return;
 		randomLoading = true;
@@ -92,6 +102,7 @@
 				placeholder="Search artists, genres, tags..."
 				bind:value={query}
 				oninput={handleInput}
+				onkeydown={handleKeydown}
 				autocomplete="off"
 				spellcheck="false"
 			/>
@@ -134,7 +145,12 @@
 								{/each}
 							</div>
 						{/if}
+					{#if query.trim()}
+						<div class="rh-search-pill-row">
+							<button class="rh-search-pill" onclick={goToSearch}>See all results for "{query.trim()}"</button>
+						</div>
 					{/if}
+				{/if}
 				</div>
 			{/if}
 		</div>
@@ -264,6 +280,31 @@
 		color: var(--t-4);
 		font-size: 0.75rem;
 		flex-shrink: 0;
+	}
+
+	.rh-search-pill-row {
+		padding: 6px 8px;
+		border-top: 1px solid var(--b-1);
+	}
+
+	.rh-search-pill {
+		display: block;
+		width: 100%;
+		padding: 7px 12px;
+		background: none;
+		border: 1px solid var(--b-2);
+		border-radius: 999px;
+		color: var(--acc);
+		font-size: 0.75rem;
+		font-family: inherit;
+		cursor: pointer;
+		text-align: center;
+		transition: background 0.1s, border-color 0.15s;
+	}
+
+	.rh-search-pill:hover {
+		background: var(--bg-3);
+		border-color: var(--acc);
 	}
 
 	.rh-random-btn {
