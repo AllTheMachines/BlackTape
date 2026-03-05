@@ -4,6 +4,18 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-03-05 — API Security: Read-Only DB User + SQL Guard
+
+The `/query` endpoint in `server/index.js` was running arbitrary SQL with no validation — a write query from anyone who found the server IP (which is in `config.ts`) could have wiped the DB.
+
+**Fix: two layers**
+1. **SQL guard** — `/query` now rejects anything that isn't SELECT or WITH (CTEs) with a 403
+2. **Read-only Postgres user** — API server now connects as `blacktape_ro` (SELECT-only grants). Even if the guard is bypassed, the DB user physically cannot write. Password injected via PM2 env var — not in repo.
+
+Deployed and verified: SELECTs work, DELETE/DROP return 403.
+
+---
+
 ## Entry 2026-03-05 — Discogs Genre Data Import
 
 Created `pipeline/build-discogs-tags-pg.mjs` — a stream-parser that ingests the Discogs masters dump (gzipped XML, ~574MB compressed) and adds genre/style tags to our `artist_tags` table.
@@ -14436,4 +14448,7 @@ Replaced hand-crafted SVG artwork with AI-generated illustrations using Gemini 3
 - `tools/generate-rabbit-hole.mjs` — regenerate rabbit hole spiral
 
 > **Commit fd37d6dd** (2026-03-05 14:13) — feat(ui): AI-generated art for Oracle and Rabbit Hole pages
+> Files changed: 1
+
+> **Commit cdff4f34** (2026-03-05 14:13) — wip: auto-save
 > Files changed: 1

@@ -7,8 +7,8 @@ const sql = postgres({
   host: 'localhost',
   port: 5432,
   database: 'blacktape',
-  username: 'blacktape',
-  password: 'bt_local_dev_2026',
+  username: 'blacktape_ro',
+  password: process.env.PG_RO_PASSWORD,
   max: 10,
 });
 
@@ -104,6 +104,12 @@ app.post('/query', async (c) => {
   const { sql: rawSql, params: rawParams = [] } = body;
   if (!rawSql || typeof rawSql !== 'string') {
     return c.json({ error: 'Missing sql field' }, 400);
+  }
+
+  // Only allow read queries — belt AND suspenders (DB user is also read-only)
+  const firstWord = rawSql.trim().replace(/\/\*[\s\S]*?\*\//g, '').trimStart().split(/\s/)[0].toUpperCase();
+  if (firstWord !== 'SELECT' && firstWord !== 'WITH') {
+    return c.json({ error: 'Only SELECT queries are allowed' }, 403);
   }
 
   try {
