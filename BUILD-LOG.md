@@ -13937,3 +13937,9 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 
 > **Commit 5a8a8793** (2026-03-05 02:49) — fix: reset ScreenCapture TCC permissions before ARD setup
 > Files changed: 1
+
+> **Commit 3b5cc509** (2026-03-05 02:50) — wip: auto-save
+> Files changed: 1
+
+> **Commit 3b40bfb0** (2026-03-05 02:54) — fix: replace VNC with screencapture+HTTP viewer for headless macOS
+> Files changed: 1
