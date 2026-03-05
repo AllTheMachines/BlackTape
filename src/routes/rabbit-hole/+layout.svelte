@@ -190,7 +190,8 @@
 				temperature: 0.3,
 				maxTokens: 512
 			});
-			chatMessages = [{ role: 'assistant', text: response }];
+			const displayText = response.replace(/```json[\s\S]*?```/g, '').replace(/\n{3,}/g, '\n\n').trim();
+			chatMessages = [{ role: 'assistant', text: displayText }];
 
 			const parsed = parseAiCorrectionJson(response);
 			pendingCorrection = {
