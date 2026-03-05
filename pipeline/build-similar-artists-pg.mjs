@@ -50,7 +50,11 @@ await sql`
 await sql`CREATE INDEX ON _artist_tag_counts(artist_id)`;
 
 // Step 3 — Scored pairs
-console.log('[similar-artists-pg] Computing Jaccard similarity pairs (may take 5-15 min)...');
+// Tags used by >2000 artists (e.g. "jazz", "rock", "hip hop") are too generic
+// to signal real similarity — and cause an explosion of pairs that fills disk.
+// Filtering them out keeps the intermediate result manageable.
+console.log('[similar-artists-pg] Computing Jaccard similarity pairs...');
+await sql`SET work_mem = '256MB'`;
 await sql`DROP TABLE IF EXISTS _scored_pairs`;
 await sql`
   CREATE TEMP TABLE _scored_pairs AS
@@ -62,6 +66,8 @@ await sql`
     FROM artist_tags t1
     JOIN artist_tags t2
       ON t1.tag = t2.tag AND t1.artist_id < t2.artist_id
+    JOIN tag_stats ts
+      ON ts.tag = t1.tag AND ts.artist_count <= 2000
     GROUP BY t1.artist_id, t2.artist_id
     HAVING COUNT(*) >= 2
   )
