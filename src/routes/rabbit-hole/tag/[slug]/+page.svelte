@@ -20,6 +20,20 @@
 		goto(`/rabbit-hole/tag/${slug}`, { keepFocus: true, noScroll: true });
 	}
 
+	let wikiSummary = $state<string | null>(null);
+
+	$effect(() => {
+		const title = genre?.wikipedia_title;
+		if (!title) { wikiSummary = null; return; }
+		wikiSummary = null;
+		const encoded = encodeURIComponent(title.replace(/ /g, '_'));
+		fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encoded}`, {
+			headers: { 'User-Agent': 'BlackTape/0.1.0', Accept: 'application/json' }
+		}).then(r => r.ok ? r.json() : null).then(d => {
+			wikiSummary = d?.extract ?? null;
+		}).catch(() => {});
+	});
+
 	function reshuffle() {
 		// Navigate to same URL to re-run the load function → fresh random 20
 		goto(`/rabbit-hole/tag/${encodeURIComponent(tag)}`, {
@@ -46,6 +60,10 @@
 				See on map
 			</a>
 		</div>
+
+		{#if wikiSummary}
+			<p class="rh-genre-summary">{wikiSummary}</p>
+		{/if}
 
 		<!-- Artists -->
 		<div class="rh-section">
@@ -135,6 +153,14 @@
 	.rh-genre-meta {
 		font-size: 0.875rem;
 		color: var(--t-3);
+	}
+
+	.rh-genre-summary {
+		font-size: 0.875rem;
+		color: var(--t-3);
+		line-height: 1.6;
+		margin: 0;
+		max-width: 60ch;
 	}
 
 	.rh-map-link {
