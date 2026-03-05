@@ -18,16 +18,16 @@ const MODEL = 'gemini-3.1-flash-image-preview';
 const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 
 const PROMPT = [
-  'A super wide panoramic illustration of an enormous record store shelf stretching endlessly from left to right.',
-  'The shelf is absolutely packed with hundreds of vinyl record sleeves standing upright, spine-out, crammed together tightly.',
-  'Viewed straight-on, eye level with the shelf — a flat, horizontal strip composition.',
-  'The records fill the entire image from edge to edge. Record sleeves have varied heights, slight tilts, dog-eared corners.',
-  'Pure black and white only. No color, no grey tones — just stark black ink on white, like a woodcut or linocut print.',
-  'Bold comic book / graphic novel style: thick black ink outlines, heavy black fills, strong contrast.',
-  'The style is like a panel from a black-and-white indie comic — stark, high contrast, slightly gritty and raw.',
-  'The shelf itself is black. The record spines alternate between black and white.',
-  'Ultra-wide 16:9 composition. No people, no readable text, no logos, no watermarks.',
-  'The feeling: an infinite, obsessive, overwhelming record collection rendered in bold ink.',
+  'A wide panoramic illustration of a long vinyl record shelf, viewed from slightly above — looking down at the tops of the records.',
+  'The shelf stretches from left to right across the entire image.',
+  'Most records are packed tightly together, but a few individual records stick up higher than the others — poking out above the crowd, clearly identifiable as square vinyl record sleeves.',
+  'The tops of the record sleeves are clearly visible — you can see the square corners, the slight thickness of each sleeve.',
+  'A few records lean at slight angles. The overall impression is a massive dense collection with a few records pulled slightly forward or sticking up.',
+  'Pure black and white ink illustration — comic book / graphic novel style. Bold outlines, strong contrast, black fills.',
+  'The shelf wood is dark. The record sleeves have varied black and white tones.',
+  'Ultra-wide horizontal composition, like a panoramic strip. Slightly elevated viewing angle.',
+  'No readable text, no logos, no people, no watermarks.',
+  'The image should make it immediately obvious these are vinyl records on a shelf.',
 ].join(' ');
 
 async function generate() {
