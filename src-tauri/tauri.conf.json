@@ -2,7 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/nicehash/tauri/dev/crates/tauri-config-schema/schema.json",
   "productName": "BlackTape",
   "identifier": "com.blacktape.app",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "build": {
     "beforeDevCommand": "npx cross-env VITE_TAURI=1 npm run dev",
     "beforeBuildCommand": "npx cross-env TAURI_ENV=1 VITE_TAURI=1 npm run build",
