@@ -4,6 +4,31 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-03-05 — Postgres Data Pipeline: Genre Data, Geocoding, Similar Artists
+
+Second session completing the Hetzner Postgres data pipeline work. All three datasets now either live or running.
+
+**Genre data — completed:**
+- Exported 4086 genres + 2775 genre_relationships from local SQLite → `pipeline/data/genres-export.json`
+- Created `pipeline/build-genre-data-pg.mjs` — reads JSON export, creates `genres` and `genre_relationships` tables in Postgres with proper indexes
+- Ran on Hetzner: both tables verified (4086 genres, 2775 relationships)
+- Tested against live API: `/query` pass-through returns genre graph correctly
+- KB page, Time Machine, and genre detail pages will now work with real data
+
+**Geocoding — running:**
+- `build-geocoding-pg.mjs` is live on Hetzner, ~1100+ artists geocoded so far
+- Process is healthy (255MB memory, confirmed alive via ps)
+- Log buffering in nohup mode hides progress — verified via DB row count instead
+- Estimated ~8 hours total runtime (1100ms sleep between Wikidata SPARQL batches, 1.4M artists)
+
+**Similar artists — running:**
+- `build-similar-artists-pg.mjs` is live, still computing Jaccard pairs SQL step
+- 0 rows in similar_artists yet — the initial SQL computation takes the most time
+- Once done, rows will populate rapidly
+
+**Decision:** Genre data is static (Wikidata/Wikipedia) — correct to do a one-time export+import rather than re-running the full `build-genre-data.mjs` scraper pipeline every time. The export approach is fast, idempotent, and produces the same result.
+
+---
 
 ## Entry 2026-03-05 — v0.3.1: macOS Updater Test, Icon Fix, Banner Fix
 
@@ -14235,4 +14260,7 @@ Once complete, the World Map will show real artist pins and the Rabbit Hole will
 > Files changed: 1
 
 > **Commit 1e92e17b** (2026-03-05 12:41) — wip: auto-save
+> Files changed: 2
+
+> **Commit 8bd36eff** (2026-03-05 12:46) — auto-save: 2 files @ 12:46
 > Files changed: 2
