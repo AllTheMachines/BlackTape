@@ -18,8 +18,8 @@ jobs:
 
       - name: Enable Screen Sharing (VNC)
         run: |
-          # Set a known password for the runner user
-          sudo dscl . -passwd /Users/runner testpass123
+          # Create a new user with a known password
+          sudo sysadminctl -addUser vncuser -fullName "VNC User" -password testpass123 -admin
           # Enable Screen Sharing with all users allowed
           sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart \
             -activate -configure -access -on \
