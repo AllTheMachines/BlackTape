@@ -10,8 +10,10 @@
 	</div>
 {:else if updateState.available && !updateState.critical && !updateState.dismissed}
 	<div class="update-banner" class:restarting={updateState.restarting || updateState.installing} role="status">
-		{#if updateState.restarting || updateState.installing}
-			<span class="update-text">Installing update...</span>
+		{#if updateState.restarting}
+			<span class="update-text">Update installed — reopening...</span>
+		{:else if updateState.installing}
+			<span class="update-text">Downloading update...</span>
 		{:else if updateState.error}
 			<span class="update-text">Update failed — {updateState.error}</span>
 			<div class="update-actions">

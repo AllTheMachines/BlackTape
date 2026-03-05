@@ -1,5 +1,5 @@
 use serde::Serialize;
-use tauri::{AppHandle, Emitter};
+use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_updater::UpdaterExt;
 
 #[derive(Serialize)]
@@ -75,12 +75,13 @@ pub async fn install_update(app: AppHandle) -> Result<(), String> {
         .await
         .map_err(|e| format!("Install failed: {}", e))?;
 
-    // Tell frontend to show "Restarting..." then exit on a background thread
-    // so the event loop can deliver the event before we die
+    // Tell frontend to show "Restarting..." then relaunch on a background thread
+    // so the event loop can deliver the event before we restart
     let _ = app.emit("update-restarting", ());
-    std::thread::spawn(|| {
+    let app2 = app.clone();
+    std::thread::spawn(move || {
         std::thread::sleep(std::time::Duration::from_millis(2500));
-        std::process::exit(0);
+        app2.restart();
     });
 
     Ok(())
