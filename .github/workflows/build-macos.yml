@@ -94,7 +94,13 @@ jobs:
           cargo install rsign2 --locked
 
           # Decode the private key — secret is base64-encoded minisign key (single line, no newlines)
-          echo "$TAURI_SIGNING_PRIVATE_KEY" | base64 -d > /tmp/updater.key
+          # Use Python for cross-platform base64 decode (avoids BSD vs GNU base64 quirks)
+          echo "$TAURI_SIGNING_PRIVATE_KEY" | python3 -c "import sys, base64; sys.stdout.buffer.write(base64.b64decode(sys.stdin.read().strip()))" > /tmp/updater.key
+
+          # Debug: verify key file looks correct (first line only — safe to print)
+          echo "Key file size: $(wc -c < /tmp/updater.key) bytes"
+          echo "Key file line 1: $(head -1 /tmp/updater.key)"
+          echo "Key sig_alg+kdf_alg hex: $(xxd -l 6 /tmp/updater.key | awk '{print $2,$3,$4}')"
 
           # Find the .app.tar.gz produced by the build
           APP_TAR=$(find src-tauri/target/release/bundle/macos -name "*.app.tar.gz" | head -1)
