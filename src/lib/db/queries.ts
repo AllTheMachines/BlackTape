@@ -302,29 +302,21 @@ export async function searchArtistsAutocomplete(
 	query: string,
 	limit = 5
 ): Promise<Array<{ name: string; slug: string; tags: string | null }>> {
-	const sanitized = sanitizeFtsQuery(query);
 	const lowerQuery = query.toLowerCase().trim();
+	if (!lowerQuery) return [];
 
-	if (!sanitized) return [];
-
-	// Exact match → prefix match → other FTS matches
+	// Simple prefix match on name — exact match first, then alphabetical
 	return db.all(
 		`SELECT a.name, a.slug,
 		        (SELECT tag FROM artist_tags WHERE artist_id = a.id ORDER BY count DESC LIMIT 1) AS tags
-		 FROM artists_fts f
-		 JOIN artists a ON a.id = f.rowid
-		 WHERE artists_fts MATCH ?
+		 FROM artists a
+		 WHERE LOWER(a.name) LIKE ?
 		 ORDER BY
-		   CASE
-		     WHEN LOWER(a.name) = ? THEN 0
-		     WHEN LOWER(a.name) LIKE ? THEN 1
-		     ELSE 2
-		   END,
-		   f.rank
+		   CASE WHEN LOWER(a.name) = ? THEN 0 ELSE 1 END,
+		   a.name
 		 LIMIT ?`,
-		sanitized + '*',
-		lowerQuery,
 		lowerQuery + '%',
+		lowerQuery,
 		limit
 	);
 }
