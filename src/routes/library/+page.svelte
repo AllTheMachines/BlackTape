@@ -8,6 +8,8 @@
 	import { isTauri } from '$lib/platform';
 	import { onMount } from 'svelte';
 	import shelfImg from '$lib/assets/library-shelf.png';
+	import { tasteProfile } from '$lib/taste/profile.svelte';
+	import { loadFavorites } from '$lib/taste/favorites';
 
 	let tauriMode = $state(false);
 	let showFolderManager = $state(false);
@@ -20,6 +22,7 @@
 		if (tauriMode && !libraryState.isLoaded) {
 			await loadLibrary();
 		}
+		if (tauriMode) await loadFavorites();
 	});
 
 	async function handleAddFolder() {
@@ -192,6 +195,18 @@
 				onRemove={handleRemoveFolder}
 				onClose={() => (showFolderManager = false)}
 			/>
+		{/if}
+
+		<!-- Favourite Artists -->
+		{#if tasteProfile.favorites.length > 0}
+			<div class="fav-section">
+				<h2 class="fav-heading">Favourite Artists</h2>
+				<div class="fav-list">
+					{#each tasteProfile.favorites as fav (fav.artist_mbid)}
+						<a class="fav-chip" href="/artist/{fav.artist_slug}">{fav.artist_name}</a>
+					{/each}
+				</div>
+			</div>
 		{/if}
 
 		<!-- Content -->
@@ -418,6 +433,35 @@
 	.enrich-fill {
 		background: var(--acc, var(--progress-color));
 	}
+
+	/* Favourite Artists */
+	.fav-section {
+		padding: var(--space-md) 20px var(--space-sm);
+		border-bottom: 1px solid var(--b-1);
+		flex-shrink: 0;
+	}
+	.fav-heading {
+		font-size: 0.7rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.07em;
+		color: var(--t-3);
+		margin: 0 0 var(--space-sm);
+	}
+	.fav-list {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px;
+	}
+	.fav-chip {
+		font-size: 0.8rem;
+		color: var(--t-2);
+		text-decoration: none;
+		padding: 3px 10px;
+		border: 1px solid var(--b-2);
+		transition: color 0.15s, border-color 0.15s;
+	}
+	.fav-chip:hover { color: var(--t-1); border-color: var(--acc); }
 
 	/* Library content fills remaining space */
 	.library-content {
