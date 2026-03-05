@@ -14623,3 +14623,9 @@ Replaced hand-crafted SVG artwork with AI-generated illustrations using Gemini 3
 
 > **Commit 8a5cdaf0** (2026-03-05 17:01) — wip: auto-save
 > Files changed: 1
+
+> **Commit 9141237c** (2026-03-05 17:02) — wip: auto-save
+> Files changed: 1
+
+> **Commit 00181e7b** (2026-03-05 17:09) — fix(pipeline): blocklist meta/geo/garbage tags from similarity computation
+> Files changed: 1
