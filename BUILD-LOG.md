@@ -5,6 +5,35 @@ A documentary record of building this project from idea to reality.
 ---
 
 
+## Entry 2026-03-05 — v0.3.0 Release Complete: macOS + Windows Artifacts
+
+v0.3.0 is now fully released on GitHub with artifacts for both platforms.
+
+**What happened last session (context boundary):**
+
+The macOS CI build pipeline was fixed and made fully operational. The root cause of the signing failures was an rsign2 ARM bug — it couldn't decrypt empty-password keys on macOS ARM (GitHub's `macos-latest` runner). Fix: generated a new signing key `~/.tauri/blacktape-prod.key` with a real password ("blacktape-ci-2026"), updated the GitHub secrets, and removed rsign2 entirely. Tauri CLI now signs natively in CI.
+
+Run 22696167799 was the first fully green run — build, sign, notarize, DMG artifact all passed. The only failure was `latest.json` upload (HTTP 403) because v0.3.0 didn't exist on GitHub yet.
+
+**This session:**
+
+- Downloaded macOS artifacts from run 22696167799 (`BlackTape_0.3.0_aarch64.dmg`, `BlackTape.app.tar.gz`, `BlackTape.app.tar.gz.sig`)
+- Uploaded all three to the existing v0.3.0 release (Windows NSIS + `latest.json` were already there)
+- Patched `latest.json` to include the `darwin-aarch64` platform entry with the Tauri-signed signature
+- Re-uploaded `latest.json` with `--clobber`
+
+**Release now contains:**
+- `BlackTape_0.3.0_x64-setup.exe` — Windows installer
+- `BlackTape_0.3.0_aarch64.dmg` — macOS Apple Silicon DMG
+- `BlackTape.app.tar.gz` + `.sig` — macOS updater bundle
+- `latest.json` — updater manifest with both platforms
+
+**Key change (key rotation):** The new signing key means v0.2.0 users cannot auto-update to v0.3.0. They'll need to manually install. Future releases from v0.3.0 onward will update normally.
+
+**Next:** Send the macOS DMG to Will Dickson (will@ntslive.co.uk) at NTS Radio.
+
+---
+
 ## Entry 2026-03-04 — macOS Build Pipeline: First Successful DMG
 
 First macOS build succeeded via GitHub Actions. `BlackTape_0.3.0_aarch64.dmg` (13MB) built on `macos-latest` (Apple Silicon) and uploaded as artifact.
@@ -13746,3 +13775,6 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 
 > **Commit db867d8c** (2026-03-05 01:26) — fix: use -i flag for BSD base64 on macOS (no -w0 support)
 > Files changed: 1
+
+> **Commit a8afb107** (2026-03-05 01:31) — wip: auto-save
+> Files changed: 2
