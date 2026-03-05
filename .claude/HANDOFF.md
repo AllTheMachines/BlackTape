@@ -1,59 +1,63 @@
 # Work Handoff - 2026-03-05
 
 ## Current Task
-Rabbit Hole UX improvements — fix all identified issues one by one
+Rabbit Hole UX polish — all planned improvements complete, session wrapping up
 
 ## Context
-The Rabbit Hole feature's core crash bug was fixed in a prior session. This session fixed 7 of the 12 identified improvements. All are atomic commits, all tests green.
+The Rabbit Hole feature's core crash bug was fixed in a prior session. Two sessions of polish are now complete — all 12 originally-planned improvements shipped, plus 3 additional ones added during this session.
 
 ## Progress
 
-### Completed (this session)
-- **Fix #1:** Play button — `links: []` was hardcoded; now fetches MusicBrainz URL rels in parallel with other queries, detects streaming platforms, deduplicates by platform
-- **Fix #2:** Tags sorted by vote count — `getArtistTagDistribution` called in loader, sorted `count DESC`, returned as `sortedTags`; card uses it in place of `artist.tags` CSV
-- **Fix #3:** Country + decade hint on similar artist chips — added `country` and `begin_year` to `getSimilarArtists` query; chip shows "US · 1990s" below name
-- **Fix #4:** Artist type + disbanded badge — `artist.type` and `artist.ended` shown as pill badges in card header
-- **Fix #5:** Wikipedia thumbnail — `getWikiThumbnail()` wired into card via `$effect`; 48px round avatar in header
-- **Fix #6:** Similarity score visualization — `sa.score` shown as "12% match" in chip hint; opacity 0.4–1.0 encodes score
-- **Fix #7:** Uniqueness score badge — `getArtistUniquenessScore` called in loader; inline badge (Very Niche/Niche/Eclectic/Mainstream) in header
+### Completed this session
+- **Fix #8:** "Explore →" vs "Continue →" button text based on similarity availability
+- **Fix #9:** Secondary tag label on tag-page artist chips
+- **Fix #10:** Wikipedia genre description on tag page header
+- **Fix #11 (partial):** Style Map + Crate Dig cross-links added then removed per Steve's request — just "See on map" remains
+- **Open artist page link:** Added "Open artist page →" link below artist name in card header
+- **AI companion in card:** `ArtistSummary` component wired into `RabbitHoleArtistCard` between tags and similar artists, keyed on `artist.mbid` for remount on navigation
 
-### Remaining (in priority order)
-8. **"Continue" fallback signal** — 98.6% of artists have no precomputed similarity and silently use random fallback; signal this to user with different button text ("Explore →" vs "Continue →") or subtle indicator
-9. **Tag page: show primary tag on artist chips** — `tags` already fetched for tag-page artists; show first tag as a small label on each chip
-10. **Tag page: genre description** — `genres` table has `wikipedia_title`; fetch a one-paragraph Wikipedia summary for the tag page header
-11. **Cross-links to other discovery tools** — From tag pages, add "See on Style Map", "Crate Dig this tag" links; routing already exists
-12. **Keyboard navigation** — Arrow keys in search dropdown, logical Tab order through artist card
+### All Rabbit Hole improvements (cumulative across sessions)
+1. Play button wired to MusicBrainz URL rels ✓
+2. Tags sorted by vote count ✓
+3. Country + decade hint on similar artist chips ✓
+4. Artist type + disbanded badge ✓
+5. Wikipedia artist thumbnail ✓
+6. Similarity score visualization ✓
+7. Uniqueness score badge ✓
+8. Explore vs Continue button signal ✓
+9. Secondary tag on tag-page chips ✓
+10. Wikipedia genre description on tag page ✓
+11. Cross-links (Style Map + Crate Dig removed — just world map kept) ✓
+12. Open artist page link in card ✓
+13. AI companion (ArtistSummary) in card ✓
+
+### Remaining
+- **#12 (original list):** Keyboard navigation — arrow keys in search dropdown, logical Tab order through artist card (not started, still deferred)
+- **GitHub #79:** Reload button for glitchy playback
+- **GitHub #69:** Improve UI boxes/tabs/containers (everything currently flat/uniform)
+- BUILD-LOG.md has minor uncommitted content (git hook appended commit lines) — safe to commit or leave
 
 ## Key Decisions
-- Fixes done one at a time, committed after each
-- `onMount` → `$effect` for artist-change reactivity (do NOT revert)
-- `UniquenessScore` component uses old CSS tokens — inlined the badge directly in the card with current tokens (`var(--acc)`, `var(--t-3)`, etc.)
-- Tag blocklist is in the pipeline script — do NOT add to front-end filter
+- AI companion stays in the card (not moved to sidebar) — Steve confirmed "the ai companion has a window. its perfect like it is"
+- Style Map + Crate Dig cross-links removed — Steve said "leave style map and crate dig out"
+- `{#key artist.mbid}` wraps `ArtistSummary` in the card so it remounts on artist navigation
+- `ArtistSummary` receives `releasesForSummary` derived from the existing `releases` state in the card
 
 ## Relevant Files
-- `src/lib/components/RabbitHoleArtistCard.svelte` — main card component (heavily modified this session)
-- `src/routes/rabbit-hole/artist/[slug]/+page.ts` — loader (now fetches links, tagDist, uniquenessScore, in parallel)
-- `src/routes/rabbit-hole/artist/[slug]/+page.svelte` — thin wrapper
-- `src/routes/rabbit-hole/tag/[slug]/+page.svelte` — tag page UI (remaining fixes #9, #10, #11)
-- `src/routes/rabbit-hole/tag/[slug]/+page.ts` — tag page loader
-- `src/lib/db/queries.ts` — `SimilarArtistResult` interface now includes `country` and `begin_year`
-- `BUILD-LOG.md` — updated with session entry
+- `src/lib/components/RabbitHoleArtistCard.svelte` — main card (AI summary, open artist link, Explore/Continue button)
+- `src/routes/rabbit-hole/tag/[slug]/+page.svelte` — tag page (secondary tag chip, Wikipedia summary, single map link)
+- `src/routes/rabbit-hole/+layout.svelte` — layout (unchanged this session)
+- `src/lib/components/ArtistSummary.svelte` — AI companion component (unchanged)
+- `BUILD-LOG.md` — minor uncommitted tail (git hook lines)
 
 ## Git Status
-- All changes committed, BUILD-LOG.md updated
-- 7 new commits this session on top of prior work
-
-## API / Data Notes
-- API at `http://46.225.239.209:3000` (Hetzner VPS, Postgres)
-- `getSimilarArtists` now returns `country` and `begin_year`
-- Tag page (`+page.ts`) already fetches `getArtistsByTagRandom(tag, 20)` — those artist results include `tags` field
-- `getGenreBySlug` in tag page loader can return `wikipedia_title` for fix #10
+- All feature changes committed and clean
+- Only `BUILD-LOG.md` has uncommitted changes (3 lines appended by git hook — safe to leave or commit)
 
 ## Next Steps
-1. Fix #8: "Continue" fallback signal — in `handleContinue()` in the card, check if `similarArtists.length === 0` and show "Explore →" button text instead of "Continue →"
-2. Fix #9: Tag page artist chips — read `tags` from each artist in the tag page chip list, show first tag
-3. Fix #10: Tag page description — if `genre?.wikipedia_title`, fetch Wikipedia summary and display
-4. Fix #11: Tag page cross-links to Style Map and Crate Dig
+1. No urgent next steps — Rabbit Hole feature is fully polished
+2. Options: keyboard navigation (#12), reload button (#79), UI containers (#69), or pivot to something new
+3. If continuing Rabbit Hole: keyboard nav is the last original item — arrow keys in search dropdown + Tab order in card
 
 ## Resume Command
 After running `/clear`, run `/resume` to continue.
