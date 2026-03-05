@@ -9,7 +9,7 @@
 	import { onMount } from 'svelte';
 	import shelfImg from '$lib/assets/library-shelf.png';
 	import { tasteProfile } from '$lib/taste/profile.svelte';
-	import { loadFavorites } from '$lib/taste/favorites';
+	import { loadFavorites, loadFavoriteReleases } from '$lib/taste/favorites';
 
 	let tauriMode = $state(false);
 	let showFolderManager = $state(false);
@@ -22,7 +22,10 @@
 		if (tauriMode && !libraryState.isLoaded) {
 			await loadLibrary();
 		}
-		if (tauriMode) await loadFavorites();
+		if (tauriMode) {
+			await loadFavorites();
+			await loadFavoriteReleases();
+		}
 	});
 
 	async function handleAddFolder() {
@@ -220,7 +223,7 @@
 			</div>
 		{:else if hasLibrary}
 			<div class="library-content">
-				<LibraryBrowser {albums} favorites={tasteProfile.favorites} />
+				<LibraryBrowser {albums} favorites={tasteProfile.favorites} favoriteReleases={tasteProfile.favoriteReleases} />
 			</div>
 		{/if}
 	</div>

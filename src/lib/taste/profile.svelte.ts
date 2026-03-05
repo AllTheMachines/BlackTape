@@ -25,6 +25,14 @@ export interface FavoriteArtist {
 	saved_at: number;
 }
 
+export interface FavoriteRelease {
+	release_mbid: string;
+	release_name: string;
+	artist_name: string;
+	artist_slug: string;
+	saved_at: number;
+}
+
 /**
  * Minimum number of favorite artists required before recommendations are enabled.
  * Alternative: 20+ library tracks also qualifies.
@@ -35,6 +43,7 @@ export const tasteProfile = $state({
 	tags: [] as TasteTag[],
 	anchors: [] as TasteAnchor[],
 	favorites: [] as FavoriteArtist[],
+	favoriteReleases: [] as FavoriteRelease[],
 	isLoaded: false,
 	hasEnoughData: false
 });
@@ -46,15 +55,17 @@ export async function loadTasteProfile(): Promise<void> {
 	try {
 		const { invoke } = await import('@tauri-apps/api/core');
 
-		const [tags, anchors, favorites] = await Promise.all([
+		const [tags, anchors, favorites, favoriteReleases] = await Promise.all([
 			invoke<TasteTag[]>('get_taste_tags'),
 			invoke<TasteAnchor[]>('get_taste_anchors'),
-			invoke<FavoriteArtist[]>('get_favorite_artists')
+			invoke<FavoriteArtist[]>('get_favorite_artists'),
+			invoke<FavoriteRelease[]>('get_favorite_releases')
 		]);
 
 		tasteProfile.tags = tags;
 		tasteProfile.anchors = anchors;
 		tasteProfile.favorites = favorites;
+		tasteProfile.favoriteReleases = favoriteReleases;
 		tasteProfile.isLoaded = true;
 		tasteProfile.hasEnoughData = await computeHasEnoughData();
 	} catch (e) {

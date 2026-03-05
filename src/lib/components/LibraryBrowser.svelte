@@ -9,7 +9,8 @@
 	import { isTauri } from '$lib/platform';
 
 	interface FavoriteArtist { artist_mbid: string; artist_name: string; artist_slug: string; saved_at: number; }
-	let { albums, favorites = [] }: { albums: LibraryAlbum[]; favorites?: FavoriteArtist[] } = $props();
+	interface FavoriteRelease { release_mbid: string; release_name: string; artist_name: string; artist_slug: string; saved_at: number; }
+	let { albums, favorites = [], favoriteReleases = [] }: { albums: LibraryAlbum[]; favorites?: FavoriteArtist[]; favoriteReleases?: FavoriteRelease[] } = $props();
 
 	let expandedAlbumKey = $state<string | null>(null);
 	let expandedArtistName = $state<string | null>(null);
@@ -236,6 +237,21 @@
 		songs: albums.reduce((n, a) => n + a.tracks.length, 0)
 	});
 
+	/** Favourite releases not present in the local library (for Albums tab header section) */
+	let unownedFavoriteReleases = $derived.by(() => {
+		const q = searchQuery.trim().toLowerCase();
+		return favoriteReleases.filter((fav) => {
+			const nameLower = fav.release_name.toLowerCase();
+			const artistLower = fav.artist_name.toLowerCase();
+			const owned = albums.some(
+				(a) => a.name.toLowerCase() === nameLower && a.artist.toLowerCase() === artistLower
+			);
+			if (owned) return false;
+			if (q) return nameLower.includes(q) || artistLower.includes(q);
+			return true;
+		});
+	});
+
 	let expandedAlbumPlayerTracks = $derived(expandedAlbum?.tracks.map(toPlayerTrack) ?? []);
 
 	function toPlayerTrack(t: LocalTrack): PlayerTrack {
@@ -450,9 +466,20 @@
 		{/if}
 	{:else}
 		<!-- All / Album / EP tabs: flat grid -->
-		{#if filteredAlbums.length === 0 && searchQuery.trim()}
+		{#if activeTab === 'album' && unownedFavoriteReleases.length > 0}
+			<div class="fav-releases-section">
+				{#each unownedFavoriteReleases as fav (fav.release_mbid)}
+					<a class="fav-release-row" href="/artist/{fav.artist_slug}">
+						<span class="fav-release-name">{fav.release_name}</span>
+						<span class="fav-release-artist">{fav.artist_name}</span>
+						<span class="fav-release-badge">♥ not in library</span>
+					</a>
+				{/each}
+			</div>
+		{/if}
+		{#if filteredAlbums.length === 0 && unownedFavoriteReleases.length === 0 && searchQuery.trim()}
 			<div class="library-no-results">No results for "{searchQuery.trim()}"</div>
-		{:else}
+		{:else if filteredAlbums.length > 0 || !searchQuery.trim()}
 			<div class="album-grid">
 				{#each pagedAlbums as album (albumKey(album))}
 					{@const key = albumKey(album)}
@@ -746,6 +773,45 @@
 	.artist-fav-link { text-decoration: none; }
 	.artist-fav-link:hover { color: var(--t-1); background: var(--bg-3); }
 	.artist-fav-badge { font-size: 0.7rem; color: var(--acc); }
+
+	.fav-releases-section {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		padding: 8px 0 4px;
+	}
+
+	.fav-release-row {
+		display: flex;
+		align-items: center;
+		gap: var(--space-sm);
+		padding: 8px var(--space-sm);
+		border-bottom: 1px solid var(--b-1);
+		text-decoration: none;
+		color: var(--t-1);
+		font-size: 0.875rem;
+		transition: background 0.15s;
+	}
+
+	.fav-release-row:hover { background: var(--bg-3); }
+
+	.fav-release-name {
+		font-weight: 600;
+		flex: 1;
+	}
+
+	.fav-release-artist {
+		font-size: 0.8rem;
+		color: var(--t-2);
+	}
+
+	.fav-release-badge {
+		font-size: 0.65rem;
+		color: var(--t-3);
+		border: 1px solid var(--b-1);
+		padding: 1px 5px;
+		white-space: nowrap;
+	}
 
 	.library-no-results {
 		padding: 48px 16px;

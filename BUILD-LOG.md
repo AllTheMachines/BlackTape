@@ -4,6 +4,22 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-03-05 — Album Favourites: Full Frontend Wiring
+
+Completed the album favourites feature end-to-end. The Rust backend (`favorite_releases` table + CRUD commands) was already in place from the previous session. This session wired up all the frontend pieces.
+
+**What was built:**
+
+- `FavoriteRelease` interface added to `tasteProfile` alongside `FavoriteArtist`. The state now has `favoriteReleases: FavoriteRelease[]` populated on app startup via `loadTasteProfile()` (added `get_favorite_releases` to the Promise.all).
+- `favorites.ts` extended with `addFavoriteRelease`, `removeFavoriteRelease`, `isFavoriteRelease`, `loadFavoriteReleases` — same pattern as the artist equivalents.
+- New `FavoriteReleaseButton.svelte` component — mirrors `FavoriteButton.svelte` but operates on `favoriteReleases` state and calls the release CRUD functions.
+- Release page (`/artist/[slug]/release/[mbid]`) now has a ♥ button next to the album title. Tauri-only, same as artist favorites.
+- Library Albums tab: favourite releases not in the local library appear at the top as link rows with a "♥ not in library" badge, linking to the artist page. Albums that ARE in the local library just appear normally in the grid below.
+
+**Data shape:** `{ release_mbid, release_name, artist_name, artist_slug, saved_at }` — no `release_slug` since artist_slug + mbid is enough to navigate.
+
+---
+
 ## Entry 2026-03-05 — Correction System: Bug Fix (Analyzing state)
 
 **Bug:** After clicking "Something seem off?", the panel appeared to do nothing — input stayed disabled, no feedback. Root cause: when `correctionMode=true`, `wikiLoading=false`, and `chatMessages=[]` (between Wikipedia completing and AI responding), the template had no matching branch and fell through to `{:else}`, showing the normal helper suggestions — hiding that the AI was working.
@@ -14930,3 +14946,6 @@ All 4 commits clean, all 196 tests passing. The Rabbit Hole feature is now fully
 
 > **Commit d9c06591** (2026-03-05 21:16) — auto-save: 5 files @ 21:16
 > Files changed: 5
+
+> **Commit e4991edf** (2026-03-05 21:32) — wip: auto-save
+> Files changed: 2

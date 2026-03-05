@@ -7,7 +7,7 @@
  */
 
 import { tasteProfile, refreshTasteStatus } from './profile.svelte';
-import type { FavoriteArtist } from './profile.svelte';
+import type { FavoriteArtist, FavoriteRelease } from './profile.svelte';
 
 /** Dynamically import Tauri invoke to avoid web build failures */
 async function getInvoke() {
@@ -91,4 +91,64 @@ export async function loadFavorites(): Promise<void> {
 	const invoke = await getInvoke();
 	const favorites = await invoke<FavoriteArtist[]>('get_favorite_artists');
 	tasteProfile.favorites = favorites;
+}
+
+/**
+ * Add a release to favorites. Persists to taste.db and updates reactive state.
+ */
+export async function addFavoriteRelease(
+	mbid: string,
+	releaseName: string,
+	artistName: string,
+	artistSlug: string
+): Promise<void> {
+	const invoke = await getInvoke();
+	await invoke('add_favorite_release', {
+		releaseMbid: mbid,
+		releaseName,
+		artistName,
+		artistSlug
+	});
+
+	const now = Math.floor(Date.now() / 1000);
+	const newFav: FavoriteRelease = {
+		release_mbid: mbid,
+		release_name: releaseName,
+		artist_name: artistName,
+		artist_slug: artistSlug,
+		saved_at: now
+	};
+
+	tasteProfile.favoriteReleases = [
+		newFav,
+		...tasteProfile.favoriteReleases.filter((r) => r.release_mbid !== mbid)
+	];
+}
+
+/**
+ * Remove a release from favorites. Persists to taste.db and updates reactive state.
+ */
+export async function removeFavoriteRelease(mbid: string): Promise<void> {
+	const invoke = await getInvoke();
+	await invoke('remove_favorite_release', { releaseMbid: mbid });
+
+	tasteProfile.favoriteReleases = tasteProfile.favoriteReleases.filter(
+		(r) => r.release_mbid !== mbid
+	);
+}
+
+/**
+ * Check if a release is a favorite (local check, no invoke needed after initial load).
+ */
+export function isFavoriteRelease(mbid: string): boolean {
+	return tasteProfile.favoriteReleases.some((r) => r.release_mbid === mbid);
+}
+
+/**
+ * Load all release favorites from taste.db into the tasteProfile state.
+ */
+export async function loadFavoriteReleases(): Promise<void> {
+	const invoke = await getInvoke();
+	const releases = await invoke<FavoriteRelease[]>('get_favorite_releases');
+	tasteProfile.favoriteReleases = releases;
 }

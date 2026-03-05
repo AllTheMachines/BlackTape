@@ -9,6 +9,7 @@
 	import EmbedPlayer from '$lib/components/EmbedPlayer.svelte';
 	import type { CreditEntry } from './+page';
 	import type { PlayerTrack } from '$lib/player/state.svelte';
+	import FavoriteReleaseButton from '$lib/components/FavoriteReleaseButton.svelte';
 
 	let { data } = $props();
 
@@ -183,7 +184,15 @@
 					{/if}
 				</div>
 
-				<h1 class="release-title">{release.title}</h1>
+				<div class="title-row">
+					<h1 class="release-title">{release.title}</h1>
+					<FavoriteReleaseButton
+						mbid={data.mbid}
+						releaseName={release.title}
+						artistName={release.artistName}
+						artistSlug={release.artistSlug}
+					/>
+				</div>
 
 				<a href="/artist/{release.artistSlug}" class="artist-link">
 					{release.artistName}
@@ -438,12 +447,20 @@
 		border: 1px solid var(--b-1);
 	}
 
+	.title-row {
+		display: flex;
+		align-items: flex-start;
+		gap: 8px;
+	}
+
 	.release-title {
 		font-size: 1.8rem;
 		font-weight: 700;
 		color: var(--t-1);
 		line-height: 1.2;
 		margin: 0;
+		flex: 1;
+		min-width: 0;
 	}
 
 	.artist-link {
