@@ -13871,3 +13871,9 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 
 > **Commit 0f6a8395** (2026-03-05 02:28) — wip: auto-save
 > Files changed: 1
+
+> **Commit 176ca65e** (2026-03-05 02:29) — wip: auto-save
+> Files changed: 1
+
+> **Commit 649ccbaa** (2026-03-05 02:30) — fix: wake display and launch app before VNC tunnel
+> Files changed: 1
