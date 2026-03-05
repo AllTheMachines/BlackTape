@@ -112,7 +112,8 @@ jobs:
           echo "Version: $VERSION"
 
           # Signature: base64-encode the entire .sig file (Tauri updater requirement)
-          SIG=$(base64 -w0 "$APP_SIG" 2>/dev/null || base64 "$APP_SIG")
+          # macOS BSD base64 uses -i for file input; GNU base64 uses positional arg + -w0
+          SIG=$(base64 -w0 "$APP_SIG" 2>/dev/null || base64 -i "$APP_SIG")
 
           # Asset URL — points to GitHub release (where we'll upload the tar.gz)
           REPO="${GITHUB_REPOSITORY}"
