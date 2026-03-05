@@ -122,22 +122,20 @@
 
 		{#if aiState.status === 'ready'}
 			<div class="rh-ai-panel">
-				<div class="rh-ai-header">AI Companion</div>
+				<h4 class="rh-ai-header">AI Companion</h4>
 
-				<div class="rh-chat-messages">
-					{#if chatMessages.length === 0}
-						<p class="rh-ai-hint">Ask me anything about the artist or music like it.</p>
-					{:else}
+				{#if chatMessages.length > 0}
+					<div class="rh-chat-messages">
 						{#each chatMessages as msg}
 							<div class="rh-chat-msg" class:user={msg.role === 'user'} class:assistant={msg.role === 'assistant'}>
 								{msg.text}
 							</div>
 						{/each}
-					{/if}
-					{#if chatLoading}
-						<div class="rh-chat-msg assistant rh-chat-loading">...</div>
-					{/if}
-				</div>
+						{#if chatLoading}
+							<div class="rh-chat-msg assistant rh-chat-loading">...</div>
+						{/if}
+					</div>
+				{/if}
 
 				<div class="rh-chat-input-row">
 					<input
@@ -274,16 +272,17 @@
 		overflow-x: hidden;
 	}
 
-	/* AI companion panel */
+	/* AI companion panel — matches RightSidebar structure */
 	.rh-ai-panel {
 		width: 220px;
 		flex-shrink: 0;
 		border-left: 1px solid var(--border-subtle);
 		background: var(--bg-surface);
+		overflow-y: auto;
+		padding: var(--space-sm);
 		display: flex;
 		flex-direction: column;
-		padding: var(--space-sm);
-		overflow: hidden;
+		gap: 0;
 	}
 
 	.rh-ai-header {
@@ -292,28 +291,23 @@
 		text-transform: uppercase;
 		letter-spacing: 0.08em;
 		color: var(--text-muted);
-		padding-bottom: var(--space-xs);
-		border-bottom: 1px solid var(--border-subtle);
-		flex-shrink: 0;
-		margin-bottom: var(--space-xs);
+		margin: 0 0 var(--space-xs) 0;
 	}
 
 	.rh-ai-hint {
-		font-size: 0.75rem;
+		font-size: 0.7rem;
 		color: var(--text-muted);
 		font-style: italic;
-		margin: 0;
-		line-height: 1.4;
+		margin: var(--space-xs) 0 0 0;
 	}
 
 	.rh-chat-messages {
-		flex: 1;
 		display: flex;
 		flex-direction: column;
 		gap: 4px;
+		max-height: 200px;
 		overflow-y: auto;
-		min-height: 0;
-		margin-bottom: var(--space-xs);
+		margin-top: var(--space-xs);
 	}
 
 	.rh-chat-msg {
@@ -328,14 +322,14 @@
 		color: var(--text-primary);
 		background: var(--bg-hover);
 		align-self: flex-end;
-		max-width: 95%;
+		max-width: 90%;
 	}
 
 	.rh-chat-msg.assistant {
 		color: var(--text-secondary);
 		background: var(--bg-elevated);
 		align-self: flex-start;
-		max-width: 100%;
+		max-width: 95%;
 	}
 
 	.rh-chat-loading {
@@ -346,7 +340,7 @@
 	.rh-chat-input-row {
 		display: flex;
 		gap: 4px;
-		flex-shrink: 0;
+		margin-top: var(--space-xs);
 	}
 
 	.rh-chat-input {
