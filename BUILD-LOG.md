@@ -14755,3 +14755,9 @@ All 4 commits clean, all 196 tests passing. The Rabbit Hole feature is now fully
 
 > **Commit 93f289e7** (2026-03-05 18:33) — feat(rabbit-hole): add open artist page link below artist name
 > Files changed: 1
+
+> **Commit f05a607a** (2026-03-05 18:33) — wip: auto-save
+> Files changed: 1
+
+> **Commit a727e9c4** (2026-03-05 18:39) — feat(rabbit-hole): show AI companion summary on artist card
+> Files changed: 1
