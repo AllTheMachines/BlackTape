@@ -17,18 +17,16 @@ const MODEL = 'gemini-3.1-flash-image-preview';
 const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 
 const PROMPT = [
-  'A dramatic wide landscape illustration of a humanoid figure with a vintage CRT television monitor as its head, centered in the composition.',
-  'The figure is symmetrically framed, slightly cropped at the waist.',
-  'From the top and sides of the CRT monitor, hundreds of organic cables and electrical wires erupt outward like wild tangled hair,',
-  'sweeping dramatically to both sides and filling the entire left and right portions of the image all the way to the edges.',
-  'The cables vary in thickness, some thick as rope, some thin as wire, all organic and curved — like roots, tentacles, or blown hair.',
-  'The monitor screen displays a classic TV test pattern: a large circle with crosshairs, a grid, and horizontal color bars at the bottom.',
-  'Below the monitor is a structured neck flowing into broad armored shoulders and a chest covered in etched circuit board traces — PCB lines and solder dots.',
-  'The figure wears a structured jacket with prominent lapels.',
-  'Art style: pure black background, white and light-grey ink line art — like a detailed engraving or woodcut print.',
-  'High contrast. No color. No gradients. No shading fills — only line work.',
-  'Aesthetic: cyberpunk gothic, analog horror, mechanical oracle.',
-  '16:9 aspect ratio, ultra-wide composition, dramatically cinematic.',
+  'A wide landscape illustration of a humanoid figure with a vintage CRT television monitor as its head, centered in the composition.',
+  'The figure is symmetrically framed, cropped at the waist.',
+  'From the top of the CRT monitor, a small number of long elegant cables drift outward — sparse and graceful, like a few loose wires floating in zero gravity.',
+  'Only 4 to 8 cables total, thin and delicate, curving gently to either side. Lots of empty white space around them.',
+  'The monitor screen displays a classic TV test pattern: a circle with crosshairs and horizontal bars.',
+  'The figure wears a structured jacket with circuit board traces etched on the chest.',
+  'Art style: pure white background, black ink line art — clean, minimal, like a technical illustration or editorial drawing.',
+  'High contrast. No color. No gradients. The figure is the only element — the rest is white space.',
+  'Aesthetic: minimal, precise, slightly surreal. Sparse and elegant, not chaotic.',
+  '16:9 aspect ratio, wide composition.',
   'No text, no watermarks, no borders.',
 ].join(' ');
 
