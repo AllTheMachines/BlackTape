@@ -1,64 +1,60 @@
 # Work Handoff - 2026-03-05
 
 ## Current Task
-Adding AI-generated page art to key pages using Gemini 3.1 Flash Image (Nano Banana 2).
+Discogs genre data import — improving Rabbit Hole / similar-artist coverage from 1.4% to higher
 
 ## Context
-We've been giving the app's discovery pages visual identities using AI-generated illustrations. The Oracle and Rabbit Hole pages are done and look great. The Library shelf strip was just completed. All three use the same generation pattern via tools/ scripts.
+The similar-artists feature only covers 38K of 2.8M artists (1.4%) because MusicBrainz community tagging is sparse. We imported genre/style tags from the Discogs masters dump (1.4M masters, 1.7M new artist-tag pairs) to improve coverage. The final rebuild step is running now on Hetzner.
 
 ## Progress
 
 ### Completed
-- **Oracle page** — full-width landscape banner (380px tall, 50% opacity). CRT monitor figure with organic cables as hair, B&W ink style. `src/lib/assets/oracle-banner.png`
-- **Rabbit Hole page** — circular spiral galaxy top-down illustration. User made a transparent version in Photoshop. `src/lib/assets/rabbit-hole-spira_transaprent.png` (note typo in filename — that's the actual filename). 260×260, centered above search.
-- **Library page** — 100px strip at top. Top-down view of record shelves, comic B&W style, some records sticking up. `src/lib/assets/library-shelf.png`
-- All generation scripts in `tools/`: `generate-oracle.mjs`, `generate-rabbit-hole.mjs`, `generate-library-shelf.mjs`
-- All committed
+- Created `pipeline/build-discogs-tags-pg.mjs` — stream-parses gzipped Discogs XML, matches artists by normalized name, inserts tags via `ON CONFLICT DO NOTHING`
+- Fixed two bugs: (1) wrong Discogs URL format — correct is `?download=data%2F2026%2F...` + `Mozilla/5.0` user-agent, (2) XML is one-line-per-master not multi-line — required regex not state-machine parser
+- Deployed to Hetzner, ran successfully: 1,398,021 masters processed, 1,787,113 pairs inserted
+- Created `pipeline/build-finalize-pg.mjs` — runs uniqueness_score + similar_artists rebuild
+- Fixed API security hole: `server/index.js` now uses read-only Postgres user (`blacktape_ro`) + SELECT-only guard on `/query` endpoint. Deployed via PM2.
+- Fixed `build-similar-artists-pg.mjs` Map overflow: switched `pairShared` from `new Map()` to `Object.create(null)` — V8 Maps have a hard 16.7M entry limit, plain objects don't. TAG_THRESHOLD back to 500.
+- GitHub issues cleaned up: closed #79, #85, #87, #35, #88, #84, #69, #77
 
 ### In Progress
-- Nothing actively in progress — Library shelf was just approved and committed
+- **`build-finalize.mjs` running on Hetzner right now** — computing pair shared tag counts (100% CPU, 1GB RAM, 290K artist-tag pairs, 143K qualifying artists). Should finish within minutes.
 
 ### Remaining
-- Possible: similar art for other pages (Discover, Time Machine, etc.) — not discussed yet
-- **Pipelines still running on Hetzner:**
-  - Geocoding: very slow (~0.3% done), 1.4M artists, Wikidata rate-limited
-  - Similar artists: should be done or near-done — check log
-- **Windows v0.3.2 build** — still pending
-- Oracle SVG file still exists (`oracle-figure.svg`) but is no longer used — could be cleaned up
+- Check final similar_artists count (should be higher than old 38,150)
+- Verify Rabbit Hole works better in the app
+- Commit all local changes to git
 
 ## Key Decisions
-- Using Gemini 3.1 Flash Image (`gemini-3.1-flash-image-preview`) — codename "Nano Banana 2"
-- API key from retromachinenews project: `AIzaSyAzenfN2o-f0qPuPKmFbPOUF8neIbTWAC4`
-- Oracle: landscape full-width banner with `object-fit: cover`, negative margins to bleed to edges
-- Rabbit Hole: radial mask replaced by transparent PNG the user made himself
-- Library: fixed-height strip with `min/max-height: 100px`, `flex-shrink: 0` to prevent expansion
+- Discogs XML: one master per line → regex extraction per line, not a state machine
+- `ON CONFLICT DO NOTHING` on artist_tags — MusicBrainz tags never overwritten
+- API: `blacktape_ro` Postgres user, password in PM2 env var only (not in repo)
+- Map overflow fix: `Object.create(null)` instead of `new Map()` — no hard entry limit
+- TAG_THRESHOLD stays at 500
 
 ## Relevant Files
-- `src/routes/explore/+page.svelte` — Oracle page, imports `oracle-banner.png`
-- `src/routes/rabbit-hole/+page.svelte` — Rabbit Hole page, imports `rabbit-hole-spira_transaprent.png`
-- `src/routes/library/+page.svelte` — Library page, imports `library-shelf.png`
-- `src/lib/assets/oracle-banner.png` — Oracle hero image
-- `src/lib/assets/rabbit-hole-spira_transaprent.png` — Rabbit Hole spiral (transparent, user-made)
-- `src/lib/assets/rabbit-hole-spiral.png` — Original non-transparent version (kept as backup)
-- `src/lib/assets/library-shelf.png` — Library shelf strip
-- `tools/generate-oracle.mjs` — Regenerate oracle banner
-- `tools/generate-rabbit-hole.mjs` — Regenerate rabbit hole spiral
-- `tools/generate-library-shelf.mjs` — Regenerate library shelf
+- `pipeline/build-discogs-tags-pg.mjs` — Discogs importer (new)
+- `pipeline/build-finalize-pg.mjs` — uniqueness_score + similar_artists rebuild (new)
+- `pipeline/build-similar-artists-pg.mjs` — modified: Map→Object, TAG_THRESHOLD=500
+- `server/index.js` — modified: blacktape_ro user, SELECT guard on /query
+- `BUILD-LOG.md` — modified: 3 new entries (uncommitted)
+
+## Server State (Hetzner 46.225.239.209)
+Check finalize progress:
+```bash
+ssh -i ~/.ssh/controlcenter_vps root@46.225.239.209 "cat /opt/mbdata/finalize.log | tr '\r' '\n' | tail -15"
+```
+Geocoding still running (PID 30137) — unrelated, ~8hr job, no action needed.
 
 ## Git Status
-Only BUILD-LOG.md has 3 uncommitted lines (auto-appended by hook). Everything else committed.
-
-## Hetzner Pipeline Check Commands
-```bash
-# Quick status
-ssh -i ~/.ssh/controlcenter_vps root@46.225.239.209 "tail -5 /var/log/similar-artists.log && PGPASSWORD=bt_local_dev_2026 psql -U blacktape -h localhost -d blacktape -c \"SELECT 'geocoded', COUNT(*) FROM artists WHERE city_precision IN ('city','region','country') UNION ALL SELECT 'similar_artists', COUNT(*) FROM similar_artists;\""
-```
+- `BUILD-LOG.md` modified, not staged
+- All pipeline/server file changes deployed to Hetzner but NOT yet committed
 
 ## Next Steps
-1. Check Hetzner pipeline status (similar artists may be done — test Rabbit Hole feature)
-2. Continue adding art to other pages if desired (Discover, Time Machine, Crate Dig?)
-3. Windows v0.3.2 build when ready
-4. Optional: clean up unused `oracle-figure.svg`
+1. Check finalize completed (command above)
+2. Commit: `git add pipeline/build-discogs-tags-pg.mjs pipeline/build-finalize-pg.mjs pipeline/build-similar-artists-pg.mjs server/index.js BUILD-LOG.md && git commit -m "feat: Discogs genre import + API security hardening"`
+3. Check new similar_artists count vs old 38,150
+4. Test Rabbit Hole in app with a previously-unmatched artist
 
 ## Resume Command
-After `/clear`, run `/resume` to continue.
+After running `/clear`, run `/resume` to continue.
