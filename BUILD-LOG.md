@@ -14264,3 +14264,6 @@ Once complete, the World Map will show real artist pins and the Rabbit Hole will
 
 > **Commit 8bd36eff** (2026-03-05 12:46) — auto-save: 2 files @ 12:46
 > Files changed: 2
+
+> **Commit 112d4095** (2026-03-05 12:47) — feat(pipeline): add build-genre-data-pg.mjs — imports genre data to Postgres
+> Files changed: 1
