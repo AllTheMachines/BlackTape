@@ -1,40 +1,28 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { isTauri } from '$lib/platform';
+	import { tasteProfile } from '$lib/taste/profile.svelte';
 
 	let { mbid, name, slug }: { mbid: string; name: string; slug: string } = $props();
 
-	let favorited = $state(false);
 	let tauriMode = $state(false);
 	let toggling = $state(false);
 
-	onMount(() => {
-		if (!isTauri()) return;
-		tauriMode = true;
+	// Reactive — always reflects actual tasteProfile state
+	let favorited = $derived(tasteProfile.favorites.some(f => f.artist_mbid === mbid));
 
-		// Check initial favorite status via dynamic import
-		(async () => {
-			try {
-				const { isFavorite } = await import('$lib/taste/favorites');
-				favorited = isFavorite(mbid);
-			} catch {
-				// Favorites not available
-			}
-		})();
+	$effect(() => {
+		tauriMode = isTauri();
 	});
 
 	async function toggle() {
 		if (toggling) return;
 		toggling = true;
-
 		try {
 			const { addFavorite, removeFavorite } = await import('$lib/taste/favorites');
 			if (favorited) {
 				await removeFavorite(mbid);
-				favorited = false;
 			} else {
 				await addFavorite(mbid, name, slug);
-				favorited = true;
 			}
 		} catch (err) {
 			console.error('Failed to toggle favorite:', err);

@@ -41,6 +41,14 @@ pub fn init_taste_db(app_data_dir: &Path) -> Result<Connection, String> {
             saved_at INTEGER NOT NULL
         );
 
+        CREATE TABLE IF NOT EXISTS favorite_releases (
+            release_mbid TEXT PRIMARY KEY,
+            release_name TEXT NOT NULL,
+            artist_name TEXT NOT NULL,
+            artist_slug TEXT NOT NULL,
+            saved_at INTEGER NOT NULL
+        );
+
         CREATE TABLE IF NOT EXISTS ai_settings (
             key TEXT PRIMARY KEY,
             value TEXT NOT NULL
@@ -328,6 +336,76 @@ pub fn is_favorite_artist(
         .map_err(|e| format!("Failed to check favorite: {}", e))?;
 
     Ok(exists)
+}
+
+// --- Favorite Releases CRUD ---
+
+#[derive(Debug, Serialize)]
+pub struct FavoriteRelease {
+    pub release_mbid: String,
+    pub release_name: String,
+    pub artist_name: String,
+    pub artist_slug: String,
+    pub saved_at: i64,
+}
+
+#[tauri::command]
+pub fn add_favorite_release(
+    release_mbid: String,
+    release_name: String,
+    artist_name: String,
+    artist_slug: String,
+    state: tauri::State<'_, TasteDbState>,
+) -> Result<(), String> {
+    let conn = state.0.lock().map_err(|e| format!("Lock error: {}", e))?;
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_secs() as i64;
+    conn.execute(
+        "INSERT OR REPLACE INTO favorite_releases (release_mbid, release_name, artist_name, artist_slug, saved_at) VALUES (?1, ?2, ?3, ?4, ?5)",
+        params![release_mbid, release_name, artist_name, artist_slug, now],
+    )
+    .map_err(|e| format!("Failed to add favorite release: {}", e))?;
+    Ok(())
+}
+
+#[tauri::command]
+pub fn remove_favorite_release(
+    release_mbid: String,
+    state: tauri::State<'_, TasteDbState>,
+) -> Result<(), String> {
+    let conn = state.0.lock().map_err(|e| format!("Lock error: {}", e))?;
+    conn.execute(
+        "DELETE FROM favorite_releases WHERE release_mbid = ?1",
+        params![release_mbid],
+    )
+    .map_err(|e| format!("Failed to remove favorite release: {}", e))?;
+    Ok(())
+}
+
+#[tauri::command]
+pub fn get_favorite_releases(
+    state: tauri::State<'_, TasteDbState>,
+) -> Result<Vec<FavoriteRelease>, String> {
+    let conn = state.0.lock().map_err(|e| format!("Lock error: {}", e))?;
+    let mut stmt = conn
+        .prepare("SELECT release_mbid, release_name, artist_name, artist_slug, saved_at FROM favorite_releases ORDER BY saved_at DESC")
+        .map_err(|e| format!("Failed to prepare statement: {}", e))?;
+    let releases = stmt
+        .query_map([], |row| {
+            Ok(FavoriteRelease {
+                release_mbid: row.get(0)?,
+                release_name: row.get(1)?,
+                artist_name: row.get(2)?,
+                artist_slug: row.get(3)?,
+                saved_at: row.get(4)?,
+            })
+        })
+        .map_err(|e| format!("Failed to query favorite releases: {}", e))?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|e| format!("Failed to collect favorite releases: {}", e))?;
+    Ok(releases)
 }
 
 // --- Taste Tags CRUD ---
