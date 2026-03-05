@@ -17,15 +17,16 @@ const MODEL = 'gemini-3.1-flash-image-preview';
 const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 
 const PROMPT = [
-  'A perfect top-down aerial view looking straight down into a spinning centrifuge or mechanical vortex.',
-  'Circular composition, perfectly centered, symmetrical radial design.',
-  'Concentric rings of mechanical detail — gears, grooves, bolts, tubes, chambers — arranged radially outward.',
-  'At the very center is a deep black void pulling inward like a drain or a rabbit hole.',
-  'Pure black background with white and light-grey ink line art — like a detailed engraving or woodcut print.',
-  'No color, no gradients, no shading fills — only crisp line work on absolute black.',
-  'The style exactly matches a dark ink illustration: high contrast, white strokes, intricate mechanical detail.',
-  'Aesthetic: cyberpunk gothic, industrial, analog horror — matching the style of a CRT monitor figure illustration.',
-  'The image is perfectly square.',
+  'A hypnotic psychedelic spiral vortex, top-down view, perfectly circular and centered.',
+  'An Archimedean spiral that winds tightly from the outer edge all the way into a black void at the center.',
+  'The spiral arms are made of intricate white line art — fine hatching, cross-hatching, and detail lines.',
+  'Multiple nested spiral arms rotating inward, creating a strong sense of depth and motion — like falling into infinity.',
+  'Trippy, dizzying, optical illusion quality. The spiral should feel like it is spinning.',
+  'Pure black background with crisp white and light-grey ink strokes only — engraving / woodcut print style.',
+  'No color, no gradients — only high-contrast black and white line art.',
+  'The center is a deep black hole, the outer edges fade into darkness.',
+  'Aesthetic: psychedelic meets gothic ink art. Dark, hypnotic, pulling inward.',
+  'Perfectly square image, the spiral fills the entire frame edge to edge.',
   'No text, no watermarks, no borders.',
 ].join(' ');
 
