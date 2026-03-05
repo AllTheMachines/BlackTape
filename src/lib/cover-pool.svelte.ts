@@ -15,3 +15,7 @@ export function registerCover(url: string | null | undefined) {
 	if (coverPool.urls.includes(url)) return;
 	coverPool.urls = [url, ...coverPool.urls].slice(0, 24);
 }
+
+export function clearCoverPool() {
+	coverPool.urls = [];
+}

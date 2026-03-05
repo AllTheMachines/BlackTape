@@ -14,6 +14,8 @@
 	import { restoreQueueFromStorage } from '$lib/player/queue.svelte';
 	import { loadLibrary } from '$lib/library/store.svelte';
 	import { onMount } from 'svelte';
+	import { afterNavigate } from '$app/navigation';
+	import { clearCoverPool } from '$lib/cover-pool.svelte';
 	import PanelLayout from '$lib/components/PanelLayout.svelte';
 	import LeftSidebar from '$lib/components/LeftSidebar.svelte';
 	import RightSidebar from '$lib/components/RightSidebar.svelte';
@@ -112,6 +114,10 @@
 				await checkForUpdate();
 			}, 3000);
 		}
+	});
+
+	afterNavigate(() => {
+		clearCoverPool();
 	});
 
 	$effect(() => {
