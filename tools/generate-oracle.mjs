@@ -17,16 +17,17 @@ const MODEL = 'gemini-3.1-flash-image-preview';
 const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 
 const PROMPT = [
-  'A wide landscape illustration of a humanoid figure with a vintage CRT television monitor as its head, centered in the composition.',
+  'A dramatic wide landscape illustration of a humanoid figure with a vintage CRT television monitor as its head, centered in the composition.',
   'The figure is symmetrically framed, cropped at the waist.',
-  'From the top of the CRT monitor, a small number of long elegant cables drift outward — sparse and graceful, like a few loose wires floating in zero gravity.',
-  'Only 4 to 8 cables total, thin and delicate, curving gently to either side. Lots of empty white space around them.',
+  'From the sides of the CRT monitor, a moderate number of organic cables and wires extend outward — maybe 10 to 15 cables, curving naturally like loose hair.',
+  'The cables spread to the sides but do NOT fill the entire image — there is dark negative space above and around them.',
   'The monitor screen displays a classic TV test pattern: a circle with crosshairs and horizontal bars.',
   'The figure wears a structured jacket with circuit board traces etched on the chest.',
-  'Art style: pure white background, black ink line art — clean, minimal, like a technical illustration or editorial drawing.',
-  'High contrast. No color. No gradients. The figure is the only element — the rest is white space.',
-  'Aesthetic: minimal, precise, slightly surreal. Sparse and elegant, not chaotic.',
-  '16:9 aspect ratio, wide composition.',
+  'Art style: pure black background, white and grey ink line art — bold outlines, strong contrast, deep shadows.',
+  'Comic book / graphic novel style. Exactly like a noir illustration — dark atmosphere, high contrast, dramatic lighting.',
+  'No color. No gradients. Black fills dominate, white lines define the figure.',
+  'Aesthetic: cyberpunk, analog horror, mechanical oracle. Dark and atmospheric.',
+  '16:9 aspect ratio, ultra-wide composition.',
   'No text, no watermarks, no borders.',
 ].join(' ');
 
