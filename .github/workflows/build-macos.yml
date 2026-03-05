@@ -67,59 +67,16 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        run: |
-          # Tauri CLI has a bug: it can't decrypt keys with empty passwords.
-          # Generate a throwaway keypair with a real password so Tauri's build step works.
-          # The .sig file will be replaced by rsign2 with the real key below.
-          THROW_PW="ci-throwaway-$(date +%s)"
-          ./node_modules/.bin/tauri signer generate --ci -p "$THROW_PW" -w /tmp/tauri_build.key
-          TAURI_SIGNING_PRIVATE_KEY=$(cat /tmp/tauri_build.key) \
-            TAURI_SIGNING_PRIVATE_KEY_PASSWORD="$THROW_PW" \
-            npm run tauri build
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: npm run tauri build
 
       - name: Build app (unsigned — no cert configured)
         if: ${{ env.APPLE_CERTIFICATE == '' }}
-        run: |
-          THROW_PW="ci-throwaway-$(date +%s)"
-          ./node_modules/.bin/tauri signer generate --ci -p "$THROW_PW" -w /tmp/tauri_build.key
-          TAURI_SIGNING_PRIVATE_KEY=$(cat /tmp/tauri_build.key) \
-            TAURI_SIGNING_PRIVATE_KEY_PASSWORD="$THROW_PW" \
-            npm run tauri build -- --config '{"bundle":{"macOS":{"signingIdentity":null}}}'
-
-      - name: Sign updater bundle with rsign2
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-        run: |
-          # Install rsign2 (same tool used for Windows signing)
-          cargo install rsign2 --locked
-
-          # Decode the private key — secret is base64-encoded minisign key (single line, no newlines)
-          # Use Python for cross-platform base64 decode (avoids BSD vs GNU base64 quirks)
-          echo "$TAURI_SIGNING_PRIVATE_KEY" | python3 -c "import sys, base64; sys.stdout.buffer.write(base64.b64decode(sys.stdin.read().strip()))" > /tmp/updater.key
-
-          # Debug: verify key file looks correct (first line only — safe to print)
-          echo "Key file size: $(wc -c < /tmp/updater.key) bytes"
-          echo "Key file line 1: $(head -1 /tmp/updater.key)"
-          echo "Key sig_alg+kdf_alg hex: $(xxd -l 6 /tmp/updater.key | awk '{print $2,$3,$4}')"
-
-          # Find the .app.tar.gz produced by the build
-          APP_TAR=$(find src-tauri/target/release/bundle/macos -name "*.app.tar.gz" | head -1)
-          if [ -z "$APP_TAR" ]; then
-            echo "ERROR: No .app.tar.gz found in bundle output"
-            exit 1
-          fi
-          echo "Signing: $APP_TAR"
-
-          # Sign with rsign2 -W (passwordless — key has empty password).
-          # This REPLACES the throwaway .sig from the build step with the real signature.
-          APP_SIG="${APP_TAR}.sig"
-          rsign sign -s /tmp/updater.key -W -x "$APP_SIG" "$APP_TAR"
-
-          echo "Real signature written: $APP_SIG"
-          ls -la "$APP_TAR" "$APP_SIG"
-
-          # Clean up key file
-          rm -f /tmp/updater.key
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: npm run tauri build -- --config '{"bundle":{"macOS":{"signingIdentity":null}}}'
 
       - name: Upload DMG artifact
         uses: actions/upload-artifact@v4
@@ -165,6 +122,7 @@ jobs:
           echo "Asset URL: $ASSET_URL"
 
           # Download current latest.json from release, patch it, re-upload
+          mkdir -p /tmp/updater
           gh release download "v${VERSION}" --pattern latest.json --dir /tmp/updater 2>/dev/null || true
 
           if [ -f /tmp/updater/latest.json ]; then
