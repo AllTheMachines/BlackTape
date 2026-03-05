@@ -5,7 +5,7 @@
 	import { PROMPTS, INJECTION_GUARD } from '$lib/ai/prompts';
 	import { tasteProfile } from '$lib/taste/profile.svelte';
 	import ExploreResult from '$lib/components/ExploreResult.svelte';
-	import oracleFigure from '$lib/assets/oracle-figure.svg';
+	import oracleFigure from '$lib/assets/oracle-banner.png';
 
 	let tauriMode = $state(false);
 	let aiReady = $state(false);
