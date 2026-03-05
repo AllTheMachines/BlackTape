@@ -1134,10 +1134,10 @@ The updater (`src-tauri/src/updater.rs`) exposes three commands:
 | Command | Description |
 |---------|-------------|
 | `check_for_update` | Polls the GitHub Releases `latest.json` endpoint |
-| `install_update` | Downloads and installs, then calls `app.restart()` |
+| `install_update` | Downloads and installs, then attempts relaunch via `open -n` (macOS) or `app.restart()` (Windows) |
 | `get_app_version` | Returns the current version string |
 
-The update endpoint is `https://github.com/AllTheMachines/Mercury/releases/latest/download/latest.json`. Releases must publish a `latest.json` manifest signed with the minisign private key.
+The update endpoint is `https://github.com/AllTheMachines/BlackTape/releases/latest/download/latest.json`. Releases must publish a `latest.json` manifest signed with the minisign private key.
 
 The frontend checks for updates 3 seconds after startup (non-blocking). If an update is available, one of two UI paths activates:
 
