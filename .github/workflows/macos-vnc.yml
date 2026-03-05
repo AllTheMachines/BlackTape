@@ -22,6 +22,9 @@ jobs:
           sudo pmset -a displaysleep 0 sleep 0 disksleep 0 hibernatemode 0
           caffeinate -d -t 21600 &
 
+          # Create vncuser with known password
+          sudo sysadminctl -addUser vncuser -fullName "VNC User" -password testpass123 -admin
+
           # Disable screensaver
           sudo -u runner defaults write com.apple.screensaver idleTime 0
           sudo -u runner defaults -currentHost write com.apple.screensaver idleTime 0
