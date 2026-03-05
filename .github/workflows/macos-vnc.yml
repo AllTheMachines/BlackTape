@@ -29,6 +29,9 @@ jobs:
           sudo -u runner defaults write com.apple.screensaver idleTime 0
           sudo -u runner defaults -currentHost write com.apple.screensaver idleTime 0
 
+          # Reset screen capture TCC permissions — CLI ARD setup corrupts these on modern macOS
+          sudo tccutil reset ScreenCapture
+
           # Enable VNC with legacy password auth (not user-account auth)
           # This mode captures the display framebuffer directly regardless of login state
           sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart \
