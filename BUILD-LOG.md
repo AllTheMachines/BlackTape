@@ -14159,3 +14159,9 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 
 > **Commit f56981fd** (2026-03-05 11:40) — docs: v0.3.1 session summary — updater fixes, icon fix, banner fix
 > Files changed: 1
+
+> **Commit c280143b** (2026-03-05 11:40) — wip: auto-save
+> Files changed: 2
+
+> **Commit 566cfcb9** (2026-03-05 11:42) — docs: fix stale Mercury URL + update install_update description in ARCHITECTURE.md
+> Files changed: 2
