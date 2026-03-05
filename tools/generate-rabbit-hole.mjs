@@ -17,15 +17,15 @@ const MODEL = 'gemini-3.1-flash-image-preview';
 const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 
 const PROMPT = [
-  'Top-down view of a spiral galaxy structure — not a real galaxy, but inspired by the shape.',
-  'Two or three distinct sweeping spiral arms curving outward from a bright dense core.',
-  'The arms are made of flowing white ink lines, loose and elegant — like brushstrokes curving through space.',
-  'Lots of negative black space between the arms. Airy, open, not dense.',
-  'The center is a tight bright nucleus fading outward. The arms thin and dissolve at the edges.',
-  'Pure black background. White and light-grey line art only — ink illustration, engraving style.',
-  'No color, no gradients. High contrast black and white.',
-  'Elegant, cosmic, slightly mysterious. The arms have motion and flow.',
-  'Aesthetic matches a detailed dark ink illustration — gothic, precise, beautiful.',
+  'Top-down view of a spiral galaxy shape — inspired by galaxy arm structure, not a real galaxy.',
+  'Two or three sweeping spiral arms curving outward from the center.',
+  'IMPORTANT: The very center must be a pure black void — an empty dark hole, like a drain or black hole. No bright core. The arms spiral AROUND the dark hole, not from a bright center.',
+  'The arms are made of flowing white ink lines, loose and elegant, like fine brushstrokes.',
+  'Lots of negative black space between the arms. Open, spacious, not dense.',
+  'The arms start near the dark center hole and sweep outward, thinning and dissolving into the black background at the edges.',
+  'Pure black background — the image naturally fades to black at the outer edges.',
+  'White and light-grey line art only — ink illustration, engraving style. No color, no gradients.',
+  'The overall feeling is of something pulling you downward into the center void.',
   'Perfectly square composition, centered.',
   'No text, no watermarks, no borders.',
 ].join(' ');

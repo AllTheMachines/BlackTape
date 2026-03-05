@@ -164,13 +164,14 @@
 	}
 
 	.rh-spiral {
-		width: 220px;
-		height: 220px;
+		width: 260px;
+		height: 260px;
 		object-fit: cover;
-		border-radius: 50%;
-		opacity: 0.7;
+		opacity: 0.85;
 		pointer-events: none;
 		display: block;
+		mask-image: radial-gradient(circle, black 40%, transparent 72%);
+		-webkit-mask-image: radial-gradient(circle, black 40%, transparent 72%);
 	}
 
 	.rh-tagline {
