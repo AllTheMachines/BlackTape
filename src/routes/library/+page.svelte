@@ -7,6 +7,7 @@
 	import FolderManager from '$lib/components/FolderManager.svelte';
 	import { isTauri } from '$lib/platform';
 	import { onMount } from 'svelte';
+	import shelfImg from '$lib/assets/library-shelf.png';
 
 	let tauriMode = $state(false);
 	let showFolderManager = $state(false);
@@ -99,6 +100,9 @@
 	</div>
 {:else}
 	<div class="library-page">
+		<div class="library-shelf-strip">
+			<img src={shelfImg} alt="" class="shelf-img" aria-hidden="true" />
+		</div>
 		<!-- Header -->
 		<div class="library-header">
 			<div class="header-left">
@@ -255,6 +259,23 @@
 		display: flex;
 		flex-direction: column;
 		height: 100%;
+	}
+
+	/* Shelf strip */
+	.library-shelf-strip {
+		width: 100%;
+		height: 120px;
+		overflow: hidden;
+		flex-shrink: 0;
+	}
+
+	.shelf-img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		object-position: center;
+		display: block;
+		opacity: 0.6;
 	}
 
 	/* Header */
