@@ -93,8 +93,8 @@ jobs:
           # Install rsign2 (same tool used for Windows signing)
           cargo install rsign2 --locked
 
-          # Write the raw minisign private key (secret is stored as raw text, not base64)
-          printf '%s\n' "$TAURI_SIGNING_PRIVATE_KEY" > /tmp/updater.key
+          # Decode the private key — secret is base64-encoded minisign key (single line, no newlines)
+          echo "$TAURI_SIGNING_PRIVATE_KEY" | base64 -d > /tmp/updater.key
 
           # Find the .app.tar.gz produced by the build
           APP_TAR=$(find src-tauri/target/release/bundle/macos -name "*.app.tar.gz" | head -1)
