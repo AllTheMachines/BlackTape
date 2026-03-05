@@ -18,15 +18,13 @@ jobs:
 
       - name: Enable Screen Sharing (VNC)
         run: |
+          # Set a known password for the runner user
+          sudo dscl . -passwd /Users/runner testpass123
+          # Enable Screen Sharing with all users allowed
           sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart \
             -activate -configure -access -on \
             -configure -allowAccessFor -allUsers \
             -configure -restart -agent -privs -all
-          sudo defaults write /Library/Preferences/com.apple.RemoteManagement ARD_AllLocalUsers -bool YES
-          # Set VNC password for the current runner user
-          sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart \
-            -configure -clientopts -setvnclegacy -vnclegacy yes \
-            -clientopts -setvncpw -vncpw testpass123
 
       - name: Install ngrok and open tunnel
         env:
