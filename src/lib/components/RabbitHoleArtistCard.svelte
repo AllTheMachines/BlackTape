@@ -3,6 +3,7 @@
 	import { streamingPref } from '$lib/theme/preferences.svelte';
 	import { getProvider } from '$lib/db/provider';
 	import { getRandomArtistByTag } from '$lib/db/queries';
+	import { getWikiThumbnail } from '$lib/wiki-thumbnail';
 
 	interface CachedTrack {
 		title: string;
@@ -54,6 +55,7 @@
 			: (artist?.tags ? artist.tags.split(',').map((t: string) => t.trim()).filter(Boolean) : [])
 	);
 	let hasLinks = $derived(links && links.length > 0);
+	let artistPhotoUrl = $state<string | null>(null);
 
 	$effect(() => {
 		const mbid = artist?.mbid;
@@ -69,6 +71,13 @@
 		}).finally(() => {
 			releasesLoading = false;
 		});
+	});
+
+	$effect(() => {
+		const name = artist?.name;
+		if (!name) { artistPhotoUrl = null; return; }
+		artistPhotoUrl = null;
+		getWikiThumbnail(name).then(url => { artistPhotoUrl = url; }).catch(() => {});
 	});
 
 	function handleTagClickInternal(tag: string) {
@@ -149,6 +158,9 @@
 
 		<!-- Header -->
 		<div class="rh-card-header">
+			{#if artistPhotoUrl}
+				<img src={artistPhotoUrl} alt={artist.name} class="rh-artist-photo" />
+			{/if}
 			<a href="/artist/{artist.slug}" class="rh-artist-name">{artist.name}</a>
 			{#if artist.country}
 				<span class="rh-country">{artist.country}</span>
@@ -279,9 +291,18 @@
 
 	.rh-card-header {
 		display: flex;
-		align-items: baseline;
+		align-items: center;
 		gap: var(--space-md);
 		flex-wrap: wrap;
+	}
+
+	.rh-artist-photo {
+		width: 48px;
+		height: 48px;
+		border-radius: 50%;
+		object-fit: cover;
+		flex-shrink: 0;
+		border: 1px solid var(--b-1);
 	}
 
 	.rh-artist-name {
