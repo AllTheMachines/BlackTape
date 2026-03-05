@@ -517,12 +517,17 @@
 		margin: -20px -20px 0;
 		pointer-events: none;
 		line-height: 0;
+		height: 180px;
+		overflow: hidden;
 	}
 
 	.oracle-figure {
 		width: 100%;
-		height: auto;
+		height: 100%;
 		display: block;
+		object-fit: cover;
+		object-position: top;
+		opacity: 0.45;
 	}
 
 	/* Explore page layout */
