@@ -30,6 +30,26 @@ const MIN_JACCARD  = 0.15;   // minimum Jaccard score
 const TOP_K        = 10;     // similar artists stored per artist
 const BATCH_SIZE   = 5000;   // insert batch size
 
+// Tags that pollute similarity — they describe metadata, geography, or release
+// format rather than musical style. Two artists sharing "music video" or
+// "british" tells you nothing about whether they sound alike.
+const BLOCKED_TAGS = new Set([
+  // MusicBrainz release types (applied to artists, not genres)
+  'music video', 'interview', 'promotional', 'non-music', 'spoken word',
+  'soundtrack', 'stage & screen', 'monolog', 'dialogue', 'live', 'demo',
+  'compilation', 'remix', 'dj-mix', 'bootleg', 'mixtape/street',
+  'audio drama', 'audiobook', 'spokenword',
+  // Geographic — nationality/country/city (WHERE, not WHAT)
+  'british', 'english', 'uk', 'american', 'us', 'usa', 'german', 'french',
+  'swedish', 'norwegian', 'icelandic', 'danish', 'dutch', 'irish', 'scottish',
+  'welsh', 'japanese', 'korean', 'australian', 'canadian', 'brazilian',
+  'italian', 'spanish', 'russian', 'latin', 'african', 'chinese',
+  'london', 'oxford', 'new york', 'los angeles', 'nashville', 'chicago',
+  'manchester', 'seattle', 'berlin', 'toronto', 'melbourne', 'sydney',
+  // Cultural era labels used as Britpop-style geographic identifiers
+  'britpop', 'britrock', 'post-britpop',
+]);
+
 const sql = postgres({
   host: process.env.PG_HOST || 'localhost',
   port: 5432,
@@ -71,6 +91,13 @@ const tagToArtists = new Map();   // tag -> int[]
 const artistTagCount = new Map(); // artist_id -> count of qualifying tags
 
 for (const { artist_id, tag } of rows) {
+  // Skip blocked tags and garbage (HTML entities, non-ASCII, looks like an ID)
+  if (BLOCKED_TAGS.has(tag)) continue;
+  if (tag.includes('&') || tag.includes(';')) continue; // HTML entity artifacts
+  if (/[^\x20-\x7E]/.test(tag)) continue; // non-ASCII characters
+  if (/^[bcdfghjklmnpqrstvwxyz]{5,}/i.test(tag)) continue; // consonant-run gibberish
+  if (tag.endsWith('-artiest')) continue; // Dutch Discogs artifact
+
   if (!tagToArtists.has(tag)) tagToArtists.set(tag, []);
   tagToArtists.get(tag).push(artist_id);
 
