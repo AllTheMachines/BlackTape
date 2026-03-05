@@ -250,7 +250,7 @@
 				body: JSON.stringify({
 					type: 'other',
 					title: `Artist correction: ${trigger.name}`,
-					body: `${feedbackText.trim()}\n\nArtist: ${trigger.name}\nSlug: ${trigger.slug}`,
+					body: `${feedbackText.trim()}\n\nArtist: ${trigger.name}\nSlug: ${trigger.slug}\nMBID: ${trigger.mbid}`,
 					replyTo: null,
 					context: { page: `/rabbit-hole/artist/${trigger.slug}` }
 				})
