@@ -517,7 +517,7 @@
 		margin: -20px -20px 0;
 		pointer-events: none;
 		line-height: 0;
-		height: 180px;
+		height: 220px;
 		overflow: hidden;
 	}
 
@@ -527,7 +527,7 @@
 		display: block;
 		object-fit: cover;
 		object-position: top;
-		opacity: 0.45;
+		opacity: 0.5;
 	}
 
 	/* Explore page layout */
