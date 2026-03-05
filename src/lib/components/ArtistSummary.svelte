@@ -30,18 +30,21 @@
 		artistMbid,
 		artistName,
 		artistTags,
-		releases
+		releases,
+		autoGenerate = false
 	}: {
 		artistMbid: string;
 		artistName: string;
 		artistTags: string;
 		releases: Array<{ title: string; year: number | null; type: string }>;
+		autoGenerate?: boolean; // force auto-generation regardless of global preference
 	} = $props();
 
 	// State machine variables
 	let summaryText = $state<string | null>(null);
 	let generatedAt = $state<number | null>(null);
 	let isGenerating = $state(false);
+	let aiAvailable = $state(false);
 
 	// 30-day TTL in seconds
 	const SUMMARY_TTL_SECONDS = 30 * 24 * 60 * 60;
@@ -97,6 +100,8 @@
 	onMount(() => {
 		(async () => {
 			try {
+				aiAvailable = getAiProvider() !== null;
+
 				const { invoke } = await import('@tauri-apps/api/core');
 				const cached = await invoke<{ summary: string; generated_at: number } | null>(
 					'get_artist_summary',
@@ -106,13 +111,13 @@
 				if (cached) {
 					summaryText = cached.summary;
 					generatedAt = cached.generated_at;
-					if (isSummaryStale(cached.generated_at) && aiState.autoGenerateOnVisit) {
+					if (isSummaryStale(cached.generated_at) && (autoGenerate || aiState.autoGenerateOnVisit)) {
 						generateSummary(); // intentionally not awaited — background refresh
 					}
-				} else if (aiState.autoGenerateOnVisit && getAiProvider()) {
+				} else if ((autoGenerate || aiState.autoGenerateOnVisit) && getAiProvider()) {
 					generateSummary(); // no cache, auto-generate if opted in
 				}
-				// else: no cache, auto-generate off — section stays hidden
+				// else: no cache, auto-generate off — show generate button if AI available
 			} catch {
 				// Silent
 			}
@@ -120,7 +125,7 @@
 	});
 </script>
 
-{#if summaryText || isGenerating}
+{#if summaryText || isGenerating || aiAvailable}
 	<section class="ai-summary" data-testid="ai-summary">
 		<span class="ai-badge">AI</span>
 
@@ -129,7 +134,7 @@
 				<span class="ai-spinner" aria-hidden="true">⟳</span>
 				Generating...
 			</p>
-		{:else}
+		{:else if summaryText}
 			<p class="ai-summary-text">{summaryText}</p>
 
 			<div class="ai-summary-footer">
@@ -144,6 +149,8 @@
 				>↺</button>
 				<span class="ai-attribution">AI summary based on MusicBrainz data</span>
 			</div>
+		{:else}
+			<button class="ai-generate-btn" onclick={generateSummary}>Generate summary</button>
 		{/if}
 	</section>
 {/if}
@@ -234,5 +241,21 @@
 	.ai-regenerate:disabled {
 		opacity: 0.2;
 		cursor: not-allowed;
+	}
+
+	.ai-generate-btn {
+		background: none;
+		border: 1px solid var(--b-2);
+		color: var(--t-3);
+		font-size: 0.8125rem;
+		padding: 4px 12px;
+		cursor: pointer;
+		border-radius: var(--radius-sm);
+		transition: border-color 0.15s, color 0.15s;
+	}
+
+	.ai-generate-btn:hover {
+		border-color: var(--acc);
+		color: var(--t-1);
 	}
 </style>

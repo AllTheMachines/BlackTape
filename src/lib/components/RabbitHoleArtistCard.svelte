@@ -203,6 +203,7 @@
 				artistName={artist.name}
 				artistTags={artist.tags ?? ''}
 				releases={releasesForSummary}
+				autoGenerate={true}
 			/>
 		{/key}
 
