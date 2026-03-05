@@ -14198,3 +14198,29 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 
 > **Commit cfe9cb04** (2026-03-05 12:16) — auto-save: 1 files @ 12:16
 > Files changed: 1
+
+> **Commit 67b1bc59** (2026-03-05 12:18) — wip: auto-save
+> Files changed: 1
+
+---
+
+## 2026-03-05 — Geocoding + Similar Artists Pipelines Running on Hetzner
+
+The World Map and Rabbit Hole features were built in Phase 35/36 but had empty data — the geocoding and similar-artists pipelines had never been run against the full 2.8M-artist Postgres database.
+
+**What was done:**
+
+Created `pipeline/build-geocoding-pg.mjs` — a Postgres port of `build-geocoding.mjs` (SQLite). Same Wikidata SPARQL logic, same three-tier precision hierarchy (city → region → country → none), same rate limiting (1100ms/batch). Runs on the Hetzner server connecting to localhost Postgres.
+
+Uploaded both scripts to the server (`/opt/mbdata/`) and launched both as nohup background processes:
+
+- **`build-similar-artists-pg.mjs`** — Jaccard similarity over shared tags. Pairs meeting jaccard >= 0.15 AND shared_tags >= 2. Populates the empty `similar_artists` table (was created but empty). Script already existed, just needed to be run. Expected runtime: 5-15 min.
+- **`build-geocoding-pg.mjs`** — Geocodes 1,394,241 artists (those with a country code) via Wikidata SPARQL. Expected runtime: ~8-9 hours. Idempotent + resumable.
+
+**Confirmed running:** `[geocoding] 1000/1394241 processed, 14 geocoded in last batch (382 total geocoded so far)` — data is flowing.
+
+Logs:
+- `/var/log/geocoding.log`
+- `/var/log/similar-artists.log`
+
+Once complete, the World Map will show real artist pins and the Rabbit Hole will show real similar-artist recommendations.
