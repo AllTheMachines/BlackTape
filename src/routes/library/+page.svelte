@@ -197,18 +197,6 @@
 			/>
 		{/if}
 
-		<!-- Favourite Artists -->
-		{#if tasteProfile.favorites.length > 0}
-			<div class="fav-section">
-				<h2 class="fav-heading">Favourite Artists</h2>
-				<div class="fav-list">
-					{#each tasteProfile.favorites as fav (fav.artist_mbid)}
-						<a class="fav-chip" href="/artist/{fav.artist_slug}">{fav.artist_name}</a>
-					{/each}
-				</div>
-			</div>
-		{/if}
-
 		<!-- Content -->
 		{#if !hasLibrary && !hasFolders && !libraryState.isScanning}
 			<div class="empty-state">
@@ -232,7 +220,7 @@
 			</div>
 		{:else if hasLibrary}
 			<div class="library-content">
-				<LibraryBrowser {albums} />
+				<LibraryBrowser {albums} favorites={tasteProfile.favorites} />
 			</div>
 		{/if}
 	</div>
@@ -433,35 +421,6 @@
 	.enrich-fill {
 		background: var(--acc, var(--progress-color));
 	}
-
-	/* Favourite Artists */
-	.fav-section {
-		padding: var(--space-md) 20px var(--space-sm);
-		border-bottom: 1px solid var(--b-1);
-		flex-shrink: 0;
-	}
-	.fav-heading {
-		font-size: 0.7rem;
-		font-weight: 600;
-		text-transform: uppercase;
-		letter-spacing: 0.07em;
-		color: var(--t-3);
-		margin: 0 0 var(--space-sm);
-	}
-	.fav-list {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 6px;
-	}
-	.fav-chip {
-		font-size: 0.8rem;
-		color: var(--t-2);
-		text-decoration: none;
-		padding: 3px 10px;
-		border: 1px solid var(--b-2);
-		transition: color 0.15s, border-color 0.15s;
-	}
-	.fav-chip:hover { color: var(--t-1); border-color: var(--acc); }
 
 	/* Library content fills remaining space */
 	.library-content {

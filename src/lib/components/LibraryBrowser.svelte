@@ -8,7 +8,8 @@
 	import { loadLibrary } from '$lib/library/store.svelte';
 	import { isTauri } from '$lib/platform';
 
-	let { albums }: { albums: LibraryAlbum[] } = $props();
+	interface FavoriteArtist { artist_mbid: string; artist_name: string; artist_slug: string; saved_at: number; }
+	let { albums, favorites = [] }: { albums: LibraryAlbum[]; favorites?: FavoriteArtist[] } = $props();
 
 	let expandedAlbumKey = $state<string | null>(null);
 	let expandedArtistName = $state<string | null>(null);
@@ -406,11 +407,20 @@
 			{/if}
 		{/if}
 	{:else if activeTab === 'artist'}
-		<!-- Artist tab: grouped by artist -->
-		{#if groupedArtists.length === 0 && searchQuery.trim()}
+		<!-- Artist tab: favourites + local artists grouped -->
+		{@const filteredFavs = favorites.filter(f =>
+			!searchQuery.trim() || f.artist_name.toLowerCase().includes(searchQuery.trim().toLowerCase())
+		)}
+		{#if groupedArtists.length === 0 && filteredFavs.length === 0 && searchQuery.trim()}
 			<div class="library-no-results">No results for "{searchQuery.trim()}"</div>
 		{:else}
 			<div class="artist-list">
+				{#each filteredFavs as fav (fav.artist_mbid)}
+					<a class="artist-group-header artist-fav-link" href="/artist/{fav.artist_slug}">
+						<span class="artist-group-name">{fav.artist_name}</span>
+						<span class="artist-fav-badge">♥</span>
+					</a>
+				{/each}
 				{#each groupedArtists as group (group.name)}
 					<div class="artist-group">
 						<button
@@ -733,6 +743,9 @@
 	.artist-group-count { font-size: 0.75rem; font-weight: 400; color: var(--t-3); }
 	.artist-group-chevron { font-size: 0.65rem; color: var(--t-3); }
 	.artist-albums { padding: var(--space-sm) 0; }
+	.artist-fav-link { text-decoration: none; }
+	.artist-fav-link:hover { color: var(--t-1); background: var(--bg-3); }
+	.artist-fav-badge { font-size: 0.7rem; color: var(--acc); }
 
 	.library-no-results {
 		padding: 48px 16px;
