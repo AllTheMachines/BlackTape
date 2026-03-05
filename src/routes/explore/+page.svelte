@@ -517,13 +517,13 @@
 		margin: -20px -20px 0;
 		pointer-events: none;
 		line-height: 0;
-		height: 270px;
+		height: 320px;
 		overflow: hidden;
 	}
 
 	.oracle-figure {
 		width: 100%;
-		height: 270px;
+		height: 320px;
 		display: block;
 		object-fit: cover;
 		object-position: center 20%;
