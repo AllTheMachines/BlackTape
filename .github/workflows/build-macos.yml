@@ -113,9 +113,9 @@ jobs:
           VERSION=$(grep '^version' src-tauri/Cargo.toml | head -1 | cut -d'"' -f2)
           echo "Version: $VERSION"
 
-          # Signature: base64-encode the entire .sig file (Tauri updater requirement)
-          # macOS BSD base64 uses -i for file input; GNU base64 uses positional arg + -w0
-          SIG=$(base64 -w0 "$APP_SIG" 2>/dev/null || base64 -i "$APP_SIG")
+          # Tauri's macOS build produces a .sig file that is ALREADY base64-encoded
+          # (ready for latest.json). Do NOT base64-encode it again — just read the content.
+          SIG=$(cat "$APP_SIG" | tr -d '\n')
 
           # Asset URL — points to GitHub release (where we'll upload the tar.gz)
           REPO="${GITHUB_REPOSITORY}"
