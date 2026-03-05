@@ -54,6 +54,7 @@
 	let correctionSaved = $state(false);
 	let wikiNotFound = $state(false);
 	let feedbackText = $state('');
+	let emailOpened = $state(false);
 
 	// Helper intro message — resets on each new page, no API call
 	let helperMessage = $state<string | null>(null);
@@ -169,6 +170,7 @@
 		correctionSaved = false;
 		pendingCorrection = null;
 		feedbackText = '';
+		emailOpened = false;
 
 		const wiki = await fetchWikipedia(trigger.name);
 		wikiLoading = false;
@@ -232,13 +234,20 @@
 		clearCorrectionTrigger();
 	}
 
-	function sendFeedbackEmail() {
+	async function sendFeedbackEmail() {
 		const trigger = correctionTriggerState.active;
 		if (!trigger) return;
 		const { name, slug } = trigger;
 		const body = encodeURIComponent(`${feedbackText}\n\nArtist: ${name}\nSlug: ${slug}`);
 		const subject = encodeURIComponent(`Artist correction: ${name}`);
-		window.open(`mailto:hello@blacktape.fm?subject=${subject}&body=${body}`, '_blank');
+		const mailto = `mailto:hello@blacktape.fm?subject=${subject}&body=${body}`;
+		try {
+			const { open } = await import('@tauri-apps/plugin-shell');
+			await open(mailto);
+		} catch {
+			window.open(mailto, '_blank');
+		}
+		emailOpened = true;
 	}
 
 	// Parse markdown links from AI response into segments
@@ -325,7 +334,11 @@
 							placeholder="What's wrong or missing?"
 							rows={4}
 						></textarea>
+						{#if emailOpened}
+						<p class="rh-correction-saved">✓ Email client opened. Thanks!</p>
+					{:else}
 						<button class="rh-suggestion" onclick={sendFeedbackEmail}>Send via email</button>
+					{/if}
 					{:else if correctionMode && chatLoading}
 						<p class="rh-helper-msg rh-wiki-loading">Analyzing with AI...</p>
 					{:else if chatMessages.length > 0}
