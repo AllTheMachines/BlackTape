@@ -16,22 +16,7 @@ jobs:
           cp -R "/Volumes/BlackTape/BlackTape.app" /Applications/
           hdiutil detach "/Volumes/BlackTape"
 
-      - name: Test 1 — Gatekeeper (real user experience, no quarantine bypass)
-        timeout-minutes: 2
-        run: |
-          # Add quarantine flag exactly as a browser download would
-          sudo xattr -w com.apple.quarantine "0083;00000000;Safari;" /Applications/BlackTape.app
-          echo "Quarantine flag set. Attempting to open..."
-          # Run open in background so it doesn't hang waiting for Gatekeeper
-          sudo -u runner open /Applications/BlackTape.app &
-          sleep 6
-          # Capture whatever Gatekeeper showed (dialog, nothing, etc.)
-          screencapture -x /tmp/gatekeeper-test.png
-          echo "Screenshot saved"
-          # Kill any hung open process
-          kill %1 2>/dev/null || true
-
-      - name: Strip quarantine for remaining tests
+      - name: System setup (prevent sleep, strip any quarantine)
         run: |
           sudo xattr -cr /Applications/BlackTape.app
           sudo pmset -a displaysleep 0 sleep 0 disksleep 0
@@ -39,10 +24,7 @@ jobs:
 
       - name: Launch BlackTape
         run: |
-          # Kill any zombie BlackTape left from the quarantine test
-          pkill -x BlackTape 2>/dev/null || true
-          sleep 2
-          sudo -u runner open /Applications/BlackTape.app
+          open /Applications/BlackTape.app
           sleep 8
 
           # Dismiss any permission dialogs (screen recording etc)
@@ -50,7 +32,6 @@ jobs:
             tell application "System Events"
               repeat 3 times
                 try
-                  set allWindows to every window of every process
                   repeat with proc in every process
                     try
                       set btns to every button of every window of proc whose name is "Allow" or name is "OK"
@@ -130,6 +111,25 @@ jobs:
           name: macos-test-screenshots
           path: /tmp/test-*.png
           retention-days: 7
+
+      - name: Test 1 — Gatekeeper (real user experience, no quarantine bypass)
+        timeout-minutes: 2
+        run: |
+          # Kill functional test session first
+          pkill -x BlackTape 2>/dev/null || true
+          sleep 2
+
+          # Add quarantine flag exactly as a browser download would
+          sudo xattr -w com.apple.quarantine "0083;00000000;Safari;" /Applications/BlackTape.app
+          echo "Quarantine flag set. Attempting to open..."
+          # Run open in background so it doesn't hang waiting for Gatekeeper
+          open /Applications/BlackTape.app &
+          sleep 6
+          # Capture whatever Gatekeeper showed (dialog, nothing, etc.)
+          screencapture -x /tmp/gatekeeper-test.png
+          echo "Screenshot saved"
+          # Kill any hung open process
+          kill %1 2>/dev/null || true
 
       - name: Upload Gatekeeper screenshot as artifact
         uses: actions/upload-artifact@v4
