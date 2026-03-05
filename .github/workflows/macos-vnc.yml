@@ -16,54 +16,67 @@ jobs:
           cp -R "/Volumes/BlackTape/BlackTape.app" /Applications/
           hdiutil detach "/Volumes/BlackTape"
 
-      - name: Enable Screen Sharing (VNC)
+      - name: Launch BlackTape
         run: |
-          # Prevent all sleep
-          sudo pmset -a displaysleep 0 sleep 0 disksleep 0 hibernatemode 0
+          # Prevent sleep
+          sudo pmset -a displaysleep 0 sleep 0 disksleep 0
           caffeinate -d -t 21600 &
 
-          # Create vncuser with known password
-          sudo sysadminctl -addUser vncuser -fullName "VNC User" -password testpass123 -admin
-
-          # Disable screensaver
-          sudo -u runner defaults write com.apple.screensaver idleTime 0
-          sudo -u runner defaults -currentHost write com.apple.screensaver idleTime 0
-
-          # Reset screen capture TCC permissions — CLI ARD setup corrupts these on modern macOS
-          sudo tccutil reset ScreenCapture
-
-          # Enable VNC with legacy password auth (not user-account auth)
-          # This mode captures the display framebuffer directly regardless of login state
-          sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart \
-            -activate -configure -access -on \
-            -configure -allowAccessFor -allUsers \
-            -configure -clientopts -setvnclegacy -vnclegacy yes \
-            -configure -clientopts -setvncpw -vncpw testpass123 \
-            -configure -restart -agent -privs -all
-          sleep 3
-
-          # Launch apps to populate the display
-          sudo -u runner open -a Finder
-          sleep 2
+          # Launch the app
           sudo -u runner open -a BlackTape
-          sleep 5
+          sleep 8
 
-          # Simulate keypress to ensure display is active
-          sudo -u runner osascript -e 'tell application "System Events" to keystroke ""'
-
-      - name: Install ngrok and open tunnel
+      - name: Start screenshot server and ngrok
         env:
           NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
         run: |
           brew install ngrok/ngrok/ngrok
           ngrok authtoken "$NGROK_AUTH_TOKEN"
-          ngrok tcp 5900 &
+
+          # Create screenshot directory with auto-refresh HTML viewer
+          mkdir -p /tmp/screen
+          cat > /tmp/screen/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>BlackTape macOS Screen</title>
+            <meta http-equiv="refresh" content="2">
+            <style>
+              body { margin: 0; background: #000; display: flex; justify-content: center; }
+              img { max-width: 100%; height: auto; }
+            </style>
+          </head>
+          <body>
+            <img src="screen.png?t=1" id="img">
+            <script>
+              // Reload just the image without full page refresh
+              setInterval(() => {
+                document.getElementById('img').src = 'screen.png?t=' + Date.now();
+              }, 2000);
+            </script>
+          </body>
+          </html>
+          EOF
+
+          # Screenshot loop in background
+          (while true; do
+            screencapture -x /tmp/screen/screen.png 2>/dev/null
+            sleep 2
+          done) &
+
+          # Serve screenshots via HTTP
+          cd /tmp/screen && python3 -m http.server 8080 &
+          sleep 2
+
+          # Open ngrok HTTP tunnel
+          ngrok http 8080 &
           sleep 8
-          # Print the public address
+
+          # Print the URL
           curl -s http://localhost:4040/api/tunnels | python3 -c \
-            "import sys,json; t=json.load(sys.stdin)['tunnels'][0]['public_url']; print(); print('=============================================='); print('VNC ADDRESS:', t.replace('tcp://','')); print('VNC PASSWORD: testpass123'); print('=============================================='); print()"
+            "import sys,json; t=json.load(sys.stdin)['tunnels'][0]['public_url']; print(); print('=============================================='); print('SCREEN URL:', t); print('Open in browser — refreshes every 2 seconds'); print('=============================================='); print()"
 
       - name: Keep session alive (up to 6 hours)
         run: |
-          echo "Session is live. Connect via VNC, then cancel this workflow run when done."
+          echo "Session is live. Open the URL in your browser to see the screen."
           sleep 21600
