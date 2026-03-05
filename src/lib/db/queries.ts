@@ -109,6 +109,8 @@ export interface SimilarArtistResult {
 	name: string;
 	slug: string;
 	score: number;
+	country: string | null;
+	begin_year: number | null;
 }
 
 /** Artist with geocoordinates for World Map rendering. */
@@ -1011,7 +1013,7 @@ export async function getSimilarArtists(
 ): Promise<SimilarArtistResult[]> {
 	try {
 		return await db.all<SimilarArtistResult>(
-			`SELECT a.id, a.mbid, a.name, a.slug, sa.score
+			`SELECT a.id, a.mbid, a.name, a.slug, sa.score, a.country, a.begin_year
 			 FROM similar_artists sa
 			 JOIN artists a ON a.id = sa.similar_id
 			 WHERE sa.artist_id = ?

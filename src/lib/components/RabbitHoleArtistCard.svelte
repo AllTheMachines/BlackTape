@@ -174,7 +174,10 @@
 				<div class="rh-similar-row">
 					{#each similarArtists as sa}
 						<button class="rh-similar-chip" onclick={() => handleSimilarArtistClickInternal(sa.slug, sa.name)}>
-							{sa.name}
+							<span class="rh-chip-name">{sa.name}</span>
+							{#if sa.country || sa.begin_year}
+								<span class="rh-chip-hint">{sa.country ?? ''}{sa.country && sa.begin_year ? ' · ' : ''}{sa.begin_year ? `${Math.floor(sa.begin_year / 10) * 10}s` : ''}</span>
+							{/if}
 						</button>
 					{/each}
 				</div>
@@ -355,6 +358,17 @@
 	.rh-similar-chip:hover {
 		border-color: var(--acc);
 		color: var(--t-1);
+	}
+
+	.rh-chip-name {
+		display: block;
+	}
+
+	.rh-chip-hint {
+		display: block;
+		font-size: 0.6875rem;
+		color: var(--t-4);
+		margin-top: 1px;
 	}
 
 	.rh-loading-hint {
