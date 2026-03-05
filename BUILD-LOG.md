@@ -21,10 +21,11 @@ Second session completing the Hetzner Postgres data pipeline work. All three dat
 - Log buffering in nohup mode hides progress — verified via DB row count instead
 - Estimated ~8 hours total runtime (1100ms sleep between Wikidata SPARQL batches, 1.4M artists)
 
-**Similar artists — running:**
-- `build-similar-artists-pg.mjs` is live, still computing Jaccard pairs SQL step
-- 0 rows in similar_artists yet — the initial SQL computation takes the most time
-- Once done, rows will populate rapidly
+**Similar artists — COMPLETE (after two crashes):**
+- SQL self-join approach filled entire 61GB disk with Postgres temp files. Even with `artist_count <= 2000` filter, 54 tags with 1001-2000 artists each generate ~1M pairs; Postgres sort/hash overhead multiplies this further.
+- Final fix: rewrote as pure Node.js in-memory computation. Load artist-tag pairs into Maps, generate pairs in JS, no Postgres temp tables. Ran in under 5 seconds.
+- Result: 276,108 similarity pairs, 38,150 artists with similarity data
+- Coverage: 38K of 2.8M artists (1.4%). Bottleneck is tag coverage — only 24% of MusicBrainz artists have tags (community tagging is sparse). Discogs import will expand this significantly: every Discogs release has genre/style fields, systematically assigned.
 
 **Decision:** Genre data is static (Wikidata/Wikipedia) — correct to do a one-time export+import rather than re-running the full `build-genre-data.mjs` scraper pipeline every time. The export approach is fast, idempotent, and produces the same result.
 
@@ -14324,3 +14325,6 @@ Once complete, the World Map will show real artist pins and the Rabbit Hole will
 
 > **Commit 1e8a21ae** (2026-03-05 13:38) — wip: auto-save
 > Files changed: 3
+
+> **Commit 98f5e145** (2026-03-05 13:39) — wip: auto-save
+> Files changed: 1
