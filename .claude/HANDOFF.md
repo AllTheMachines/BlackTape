@@ -1,95 +1,73 @@
 # Work Handoff - 2026-03-05
 
 ## Current Task
-macOS testing of v0.3.0 via GitHub Actions — automated UI tests + updater test.
+macOS updater end-to-end test via RentAMac + fix relaunch-after-update bug.
 
 ## Context
-v0.3.0 is released on GitHub with Windows + macOS (aarch64) artifacts. We're using GitHub Actions macOS runners + screencapture to test the app on macOS without a physical Mac. Gatekeeper was confirmed passing in a previous run.
+We're testing the macOS updater using a rented Mac Mini M4 (RentAMac, $15/day, DeskIn remote desktop). We created a temporary v0.3.1 release on GitHub to test that v0.3.0 detects and installs the update. Several bugs were found and fixed during the session.
 
 ## Progress
 ### Completed
-- v0.3.0 macOS DMG confirmed installable on GitHub Actions runner
-- **Gatekeeper test PASSED** (previous run): shows "Apple checked it for malicious software and none was detected" — best possible outcome for unsigned app
-- App launches and renders UI correctly (confirmed from earlier screenshots)
-- Live screencapture browser viewer working (ngrok HTTP + python HTTP server)
-- **-10673 fix LANDED**: moved Gatekeeper test to last in workflow — run #16 (22699098978) confirmed "Launch BlackTape" PASSED
-- One screenshot captured (test-01-setup-wizard.png, 91751 bytes) — uploaded as artifact
+- v0.3.1 version bump (tauri.conf.json + Cargo.toml)
+- GitHub release v0.3.1 created with correct `latest.json` and `BlackTape.app.tar.gz`
+- RentAMac machine connected (Mac Mini M4, macOS 26.3, DeskIn device ID 788165954)
+- v0.3.0 DMG installed on RentAMac (in ~/Applications/ — NOT /Applications/ due to read-only fs)
+- **Updater successfully detected v0.3.1 and installed it** ✅
+- Fixed double-encoding bug: Tauri macOS `.sig` file is already base64 — don't base64 it again
+- Fixed `contents:write` permission in build-macos.yml
+- Fixed app just silently closing after update — now uses `app.restart()` instead of `process::exit(0)`
+- Improved banner messages: "Downloading update..." / "Update installed — reopening..."
 
 ### In Progress
-- Run #16 (22699098978) — FAILED at "Test 2 — Setup wizard completes"
-- Error: `185:195: execution error: Can't get item 1 of {}. (-1728)`
-- This is an AppleScript error: the script does `item 1 of btn` inside `repeat with btn in allBtns`, but `allBtns` contains empty sub-lists (windows with no buttons), causing -1728 when accessing item 1 of an empty list
+- The relaunch fix (`app.restart()`) is committed and pushed but NOT yet built into a DMG
+- The v0.3.1 release on GitHub still has the old binary (without the relaunch fix)
 
 ### Remaining
-- Fix AppleScript error handling in Test 2 (wrap button access in try/end try)
-- Download and review test-01-setup-wizard.png artifact to see app state
-- Get search + navigation screenshots (Tests 3 & 4)
-- Decide on macOS updater test approach (RentAMac.io at $15/day was discussed as an option for interactive testing)
-- Send DMG to Will Dickson at NTS (will@ntslive.co.uk) — Gatekeeper result already confirms it's safe to send
-- Update BUILD-LOG.md with session summary
+1. Build new v0.3.1 macOS DMG with the relaunch fix (trigger build-macos.yml)
+2. Update `latest.json` on v0.3.1 release with new signature (workflow now handles this correctly)
+3. Test on RentAMac: install v0.3.0 → update → confirm app relaunches automatically
+4. Clean up after test:
+   - Delete v0.3.1 GitHub release
+   - Revert tauri.conf.json + Cargo.toml back to version 0.3.0
+   - Commit + push the revert
+5. Update BUILD-LOG.md with full session summary
 
 ## Key Decisions
-- **-10673 root cause confirmed**: Gatekeeper test poisoned Launch Services for subsequent open() calls. Fix = move Gatekeeper test to last step. WORKING.
-- **RentAMac.io** ($15/day, dedicated Mac Mini M4) discussed as alternative for interactive/updater testing — GitHub Actions is for automated regression, RentAMac for one-off interactive sessions
-- Updater test on macOS: best option is wait for v0.4.0 (v0.3.0 is only release with macOS artifacts) — or use RentAMac for manual test
-- DMG is safe to send to Will even without functional test completion — Gatekeeper already confirmed clean
+- **RentAMac over GitHub Actions** for interactive macOS testing ($15/day, Mac Mini M4)
+- **~/Applications/ not /Applications/** — system folder is read-only, updater can't replace app there
+- **Tauri macOS .sig files are already base64-encoded** — do NOT base64 them again. Use `cat file | tr -d '\n'` in the workflow. (Windows rsign2 .sig files contain raw minisign text and DO need base64 encoding — different behavior per platform)
+- **app.restart() not process::exit(0)** for macOS relaunch after update
 
 ## Relevant Files
-- `.github/workflows/macos-vnc.yml` — the macOS test workflow (restructured: functional tests first, Gatekeeper last)
-- `BUILD-LOG.md` — 3 lines of uncommitted auto-save changes
-
-## AppleScript Fix Needed
-Current broken code in Test 2:
-```applescript
-set allBtns to every button of every window
-repeat with btn in allBtns
-  if name of (item 1 of btn) is "Continue" then  -- FAILS if btn is empty list
-    click (item 1 of btn)
-  end if
-end repeat
-```
-
-Fix — wrap in try/end try:
-```applescript
-set allBtns to every button of every window
-repeat with btn in allBtns
-  try
-    if name of (item 1 of btn) is "Continue" then
-      click (item 1 of btn)
-    end if
-  end try
-end repeat
-```
-
-Or restructure to iterate buttons directly:
-```applescript
-repeat with w in every window
-  repeat with btn in every button of w
-    try
-      if name of btn is "Continue" then
-        click btn
-      end if
-    end try
-  end repeat
-end repeat
-```
+- `src-tauri/src/updater.rs` — relaunch fix: uses `app.restart()` + `Manager` import
+- `src/lib/components/UpdateBanner.svelte` — improved messages during update
+- `.github/workflows/build-macos.yml` — fixed: `contents:write` permission + `cat` instead of `base64`
+- `src-tauri/tauri.conf.json` — currently at version 0.3.1 (temporary)
+- `src-tauri/Cargo.toml` — currently at version 0.3.1 (temporary)
+- `BUILD-LOG.md` — 3 lines uncommitted auto-save, needs full session summary
 
 ## Git Status
-- `BUILD-LOG.md` modified (3 lines auto-save, not staged)
-- Branch is 2 commits ahead of origin (both pushed)
+- `BUILD-LOG.md` modified (auto-save, not staged)
+- Branch is 1 commit ahead of origin (already pushed — the relaunch fix commit)
 
-## Active GitHub Actions
-- Run 22699098978 — COMPLETED (failure at Test 2), took 40s total
-- Artifact uploaded: `macos-test-screenshots` (contains test-01-setup-wizard.png)
-- Download artifact to see app state: `gh run download 22699098978 -n macos-test-screenshots -D /tmp/mac-screenshots`
+## GitHub Release State
+- v0.3.1 release exists on GitHub (full release, not pre-release)
+- Assets: `BlackTape.app.tar.gz` (from build run 22711379396) + `latest.json` with correct single-encoded signature
+- WARNING: v0.3.1 is currently the "latest" release — the updater endpoint serves it to all macOS users
+- The `.app.tar.gz` on the release does NOT yet contain the relaunch fix (old build)
+
+## Errors Encountered (resolved)
+- `Invalid encoding in minisign data` — caused by double base64-encoding the .sig file. Fixed.
+- `HTTP 403` on gh release upload in workflow — fixed by adding `permissions: contents: write`
+- `Read-only file system (os error 30)` — app was in /Applications/. Fixed by using ~/Applications/
+- `The signature verification failed` — .app.tar.gz and .sig were from different builds. Fixed by replacing the asset.
 
 ## Next Steps
-1. Fix AppleScript in Test 2 (add try/end try around button access)
-2. Consider also making Test 2 non-failing (use `|| true` or set `continue-on-error: true`) since setup wizard may not always appear
-3. Trigger another run and download artifacts to verify screenshots look correct
-4. Decide: RentAMac for interactive updater test, or wait for v0.4.0?
-5. Send DMG to Will Dickson
-6. Write BUILD-LOG session summary
+1. Trigger `build-macos.yml` workflow: `gh workflow run build-macos.yml`
+2. The workflow will build with relaunch fix, upload new .app.tar.gz, and update latest.json automatically (permissions + encoding now both fixed)
+3. On RentAMac: trash the current BlackTape in ~/Applications/, reinstall v0.3.0 DMG, trigger update → should download, install, and relaunch automatically
+4. After successful test: `gh release delete v0.3.1 -y`, revert versions in tauri.conf.json + Cargo.toml to 0.3.0, commit + push
+5. Write BUILD-LOG.md session summary
 
 ## Resume Command
 After running `/clear`, run `/resume` to continue.
