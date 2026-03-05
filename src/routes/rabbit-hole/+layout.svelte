@@ -194,6 +194,7 @@
 		</div>
 
 		{#if aiState.status === 'ready'}
+			<div class="rh-ai-col">
 			<div class="rh-ai-panel">
 				<h4 class="rh-ai-header">AI Companion</h4>
 
@@ -247,6 +248,7 @@
 						aria-label="Send"
 					>&rarr;</button>
 				</div>
+			</div>
 			</div>
 		{/if}
 	</div>
@@ -366,13 +368,19 @@
 		overflow-x: hidden;
 	}
 
-	/* AI companion panel — fixed 50vh, anchored to bottom */
-	.rh-ai-panel {
+	/* Full-height right column — holds the panel at the bottom */
+	.rh-ai-col {
 		width: 220px;
-		height: 50vh;
-		align-self: flex-end;
 		flex-shrink: 0;
 		border-left: 1px solid var(--border-subtle);
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-end;
+	}
+
+	/* AI companion panel — fixed 50vh, anchored to bottom of column */
+	.rh-ai-panel {
+		height: 50vh;
 		border-top: 1px solid var(--border-subtle);
 		background: var(--bg-surface);
 		padding: var(--space-sm);
