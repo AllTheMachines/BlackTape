@@ -14794,3 +14794,6 @@ All 4 commits clean, all 196 tests passing. The Rabbit Hole feature is now fully
 
 > **Commit ac68995b** (2026-03-05 19:13) — feat(rabbit-hole): add AI companion panel with helper message, suggestions, and link rendering
 > Files changed: 2
+
+> **Commit 6bc3856a** (2026-03-05 19:13) — wip: auto-save
+> Files changed: 2

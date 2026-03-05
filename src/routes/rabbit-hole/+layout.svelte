@@ -97,8 +97,7 @@
 			const systemPrompt =
 				INJECTION_GUARD +
 				' You are a music companion helping someone explore music. Answer concisely.' +
-				' You may include markdown links: [text](url) for external URLs, or [text](/path) for in-app navigation.' +
-				' Internal paths: /search?q=GENRE&mode=tag for genre searches, /artist/SLUG for artist pages.' +
+				' You may include external links using markdown: [text](https://...).' +
 				contextSuffix;
 			const response = await provider.complete(msg, {
 				systemPrompt,
@@ -140,16 +139,12 @@
 		return segments;
 	}
 
-	async function handleLink(href: string, internal: boolean) {
-		if (internal) {
-			goto(href);
-		} else {
-			try {
-				const { open } = await import('@tauri-apps/plugin-shell');
-				await open(href);
-			} catch {
-				window.open(href, '_blank');
-			}
+	async function handleLink(href: string) {
+		try {
+			const { open } = await import('@tauri-apps/plugin-shell');
+			await open(href);
+		} catch {
+			window.open(href, '_blank');
 		}
 	}
 </script>
@@ -202,7 +197,7 @@
 								{#if msg.role === 'assistant'}
 									{#each parseMessage(msg.text) as seg}
 										{#if seg.type === 'link'}
-											<button class="rh-msg-link" onclick={() => handleLink(seg.href, seg.internal)}>{seg.content}</button>
+											<button class="rh-msg-link" onclick={() => handleLink(seg.href)}>{seg.content}</button>
 										{:else}
 											{seg.content}
 										{/if}
