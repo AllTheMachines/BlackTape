@@ -4,6 +4,29 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-03-05 — Discogs Genre Data Import
+
+Created `pipeline/build-discogs-tags-pg.mjs` — a stream-parser that ingests the Discogs masters dump (gzipped XML, ~574MB compressed) and adds genre/style tags to our `artist_tags` table.
+
+**Why:** Similar-artist coverage is 1.4% (38K of 2.8M artists). The bottleneck is sparse MusicBrainz community tagging — only 24% of artists have any tags. Discogs assigns genre/style to every release systematically, covering a much broader set of artists.
+
+**Approach:**
+- Stream-parse the gzipped masters XML using Node.js readline + zlib (no disk write, no SAX library)
+- Build normalized name → artist_id Map from all 2.8M Postgres artists at startup (~112MB RAM)
+- State machine extracts `<name>` from `<artists>` (not extraartists) and `<genre>`/`<style>` tags per master
+- Skip "Various Artists", "Unknown", etc.
+- Batch insert every 500K masters with `ON CONFLICT DO NOTHING` (MusicBrainz tags never overwritten)
+- After all inserts: TRUNCATE + rebuild `tag_stats`, recompute `uniqueness_score`, then re-run `build-similar-artists-pg.mjs`
+
+**To run on Hetzner:**
+```bash
+ssh -i ~/.ssh/controlcenter_vps root@46.225.239.209 "cd /opt/mbdata && curl -sL 'https://data.discogs.com/data/2026-03-01/discogs_20260301_masters.xml.gz' | node pipeline/build-discogs-tags-pg.mjs"
+```
+
+**Expected result:** 38K → 200K–500K artists with similarity data (Discogs covers ~15 genres, ~700+ styles, across ~7M masters).
+
+---
+
 ## Entry 2026-03-05 — Postgres Data Pipeline: Genre Data, Geocoding, Similar Artists
 
 Second session completing the Hetzner Postgres data pipeline work. All three datasets now either live or running.
@@ -14357,4 +14380,7 @@ Once complete, the World Map will show real artist pins and the Rabbit Hole will
 > Files changed: 2
 
 > **Commit cf4626b2** (2026-03-05 13:50) — wip: auto-save
+> Files changed: 4
+
+> **Commit 384d2f26** (2026-03-05 13:51) — wip: auto-save
 > Files changed: 4
