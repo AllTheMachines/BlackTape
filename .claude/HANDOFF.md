@@ -1,65 +1,79 @@
 # Work Handoff - 2026-03-05
 
 ## Current Task
-macOS updater v0.3.1→v0.3.2 confirmed working. GitHub issue #92 and release-process.md created. No active coding task.
+Running the full data pipeline on Hetzner Postgres — geocoding, similar artists, and genre data still needed.
 
 ## Context
-This session was focused on testing the macOS auto-updater end-to-end again. We created v0.3.2, built it via CI, manually assembled the release (CI silently skipped latest.json because the release didn't exist first), verified the live endpoint, and confirmed the update fired on the RentAMac machine. Then created a comprehensive GitHub issue and a maintained reference doc capturing everything learned about the updater pipeline.
+The app migrated from distributed SQLite (mercury.db) to a Hetzner Postgres backend. Phase 34-37 built Rabbit Hole, World Map, and Context Sidebar — all of which need precomputed data (geocoordinates, similar artists, genre graph) to be useful. The similar artists and geocoding pipelines are NOW RUNNING on the server. Genre data (KB graph) is not yet in Postgres at all.
 
 ## Progress
 ### Completed
-- Bumped version to 0.3.2 in `tauri.conf.json` and `Cargo.toml`
-- Triggered macOS CI build (`build-macos.yml`, run 22714375098) — succeeded in 3m4s
-- Created v0.3.2 GitHub release (started as prerelease)
-- Downloaded `.app.tar.gz` + `.sig` from CI artifacts
-- Built correct `latest.json` (version 0.3.2, darwin-aarch64, signature already base64 from CI)
-- Uploaded `.app.tar.gz` and `latest.json` to v0.3.2 release
-- Promoted v0.3.2 to "latest" non-prerelease
-- Verified live endpoint: `curl -sL https://github.com/AllTheMachines/BlackTape/releases/latest/download/latest.json` returns v0.3.2
-- macOS updater confirmed working by Steve on RentAMac (v0.3.1 → v0.3.2)
-- Created `docs/release-process.md` — comprehensive maintained reference for the full release pipeline
-- Created GitHub issue #92 — auto-updater reliability tracking issue with full bug history, research agenda, and priority work items
-- Committed and pushed all changes
+- Similar artists pipeline (`build-similar-artists-pg.mjs`) uploaded and launched on server — computing Jaccard pairs (5-15 min job), was still in progress at handoff
+- Geocoding pipeline (`build-geocoding-pg.mjs`) created and launched on server — 2000/1,394,241 processed at handoff, ~8-9 hours total, confirmed working
+- Both pipelines are nohup'd on Hetzner server (`/opt/mbdata/`) — survive SSH disconnect
+- Committed `pipeline/build-geocoding-pg.mjs` and BUILD-LOG entry
+- 8 commits ahead of origin/main (not yet pushed)
 
 ### In Progress
-- Nothing actively in progress
+- **Geocoding**: Running on server at `/opt/mbdata/build-geocoding-pg.mjs`, log at `/var/log/geocoding.log`
+  - Last known: 2000/1,394,241 processed, 788 artists geocoded
+- **Similar artists**: Running on server at `/opt/mbdata/build-similar-artists-pg.mjs`, log at `/var/log/similar-artists.log`
+  - Last known: Still in Jaccard pair computation step (long SQL query)
 
 ### Remaining
-- **Windows update for current users:** Windows users on v0.3.0 have received no update notification for v0.3.1 or v0.3.2 — latest.json only has darwin-aarch64. A Windows build of v0.3.2 + patched latest.json is needed to cover them. Tracked in issue #92.
-- **BUILD-LOG.md** has unstaged changes (auto-save hook added 3 lines). Should be committed.
-- **Unpushed commit:** `0688befc wip: auto-save` — one commit ahead of origin (BUILD-LOG auto-save).
+- **Wait for pipelines to finish** — check logs before proceeding
+- **Genre data missing from Postgres** — the `genres` and `genre_relationships` tables don't exist in Postgres at all. Local SQLite has them (built by `pipeline/build-genre-data.mjs`). The KB page will be broken without this.
+  - Need to: create `pipeline/build-genre-data-pg.mjs` OR import genre data from local SQLite to Postgres
+  - Check local genre table: `pipeline/data/mercury.db` has `genres` and `genre_relationships` tables
+- **Genre API endpoints** — after genre data is in Postgres, backend `index.js` may need genre-specific endpoints (currently it's a SQL pass-through + `/api/artists/:id`)
+- **Push commits** — 8 commits ahead of origin/main, need `git push origin main`
+- **Windows v0.3.2 build** — Windows users still on v0.3.0, no update available for them
+- **BUILD-LOG.md** has 3 lines of unstaged auto-save changes
 
 ## Key Decisions
-- v0.3.2 is the production release (not a test — it's now "latest" on GitHub)
-- Windows users will be addressed when we do a full Windows v0.3.2 build
-- `docs/release-process.md` is the canonical reference — always update it after a release cycle
-- Issue #92 is where research and work tracking for updater reliability lives
-- The CI silent-skip bug (latest.json not uploaded when release doesn't exist) is documented and tracked but not yet fixed in the workflow
+- Geocoding runs on Hetzner server (not locally) — connects to localhost Postgres, avoids internet round-trip overhead for DB writes
+- `build-geocoding-pg.mjs` uses `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` (Postgres syntax, idempotent)
+- `postgres` npm package is already installed at `/opt/mbdata/node_modules` — no install needed for future scripts
+- Genre data: local SQLite (`pipeline/data/mercury.db`) has 10K-artist sample with genres/genre_relationships. For Postgres we need the full genre dataset — `build-genre-data.mjs` builds it from Wikidata/Wikipedia. Likely needs a Postgres port too.
+- Similar artists script (`build-similar-artists-pg.mjs`) was already written and just needed to be run
 
 ## Relevant Files
-- `docs/release-process.md` — NEW: canonical release/updater reference doc
-- `src-tauri/tauri.conf.json` — version bumped to 0.3.2
-- `src-tauri/Cargo.toml` — version bumped to 0.3.2
-- `.github/workflows/build-macos.yml` — macOS CI pipeline (has the silent-skip bug on latest.json step)
-- `src-tauri/src/updater.rs` — macOS relaunch logic (`open -n` approach)
-- `src/lib/components/UpdateBanner.svelte` — banner text + sizing
+- `pipeline/build-geocoding-pg.mjs` — NEW: Postgres geocoding script (just created this session)
+- `pipeline/build-similar-artists-pg.mjs` — existing, now running on server
+- `pipeline/build-genre-data.mjs` — SQLite genre pipeline, needs porting to Postgres
+- `/opt/mbdata/` on Hetzner — where scripts run
+- `/var/log/geocoding.log` on Hetzner — geocoding progress
+- `/var/log/similar-artists.log` on Hetzner — similar artists progress
+- `/opt/blacktape-api/index.js` on Hetzner — backend API (Hono, SQL pass-through + `/api/artists/:id`)
+- `src/lib/db/queries.ts` — frontend query functions (getSimilarArtists, getGeocodedArtists — already written but data empty until pipelines finish)
+
+## Hetzner Server
+- IP: `46.225.239.209`
+- SSH: `ssh -i ~/.ssh/controlcenter_vps root@46.225.239.209`
+- Pipeline dir: `/opt/mbdata/` (has node_modules with `postgres` package)
+- API dir: `/opt/blacktape-api/`
+- Postgres DB: `blacktape` user, password `bt_local_dev_2026`, database `blacktape`
+
+## Postgres Tables (current state)
+```
+areas, artist_tags, artists (2.8M), similar_artists (running), tag_cooccurrence, tag_stats
++ city_lat/city_lng/city_precision columns on artists (being populated by geocoding)
+MISSING: genres, genre_relationships
+```
 
 ## Git Status
-- `BUILD-LOG.md` — modified, not staged (auto-save hook, 3 lines added)
-- One unpushed commit: `0688befc wip: auto-save`
-- All substantive work is committed and pushed
-
-## GitHub Release State
-- v0.3.2: latest release. Has `BlackTape.app.tar.gz` + `latest.json` (darwin-aarch64 only). No Windows entry.
-- v0.3.1: superseded. macOS only.
-- v0.3.0: has Windows installer. Windows users still on v0.3.0 (no newer Windows build).
-- Updater endpoint: `https://github.com/AllTheMachines/BlackTape/releases/latest/download/latest.json`
+- Branch: main, 8 commits ahead of origin/main (not pushed)
+- Unstaged: `BUILD-LOG.md` (3 lines auto-save)
+- All substantive work committed
 
 ## Next Steps
-1. Push the pending auto-save commit (`git push origin main`) or let it accumulate
-2. Do a Windows build of v0.3.2 to cover Windows users (see `docs/release-process.md` for the full workflow)
-3. After Windows build: patch `latest.json` with both `windows-x86_64` and `darwin-aarch64` entries and re-upload to v0.3.2 release
-4. Work on issue #92 items — priority 1 is fixing the CI silent-skip
+1. Check pipeline progress: `ssh -i ~/.ssh/controlcenter_vps root@46.225.239.209 "tail -5 /var/log/geocoding.log && tail -5 /var/log/similar-artists.log"`
+2. Push commits: `git push origin main`
+3. Check local SQLite genre tables to understand schema: `node -e "const db=require('better-sqlite3')('pipeline/data/mercury.db'); console.log(db.prepare('SELECT COUNT(*) as n FROM genres').get()); console.log(db.prepare('PRAGMA table_info(genres)').all().map(c=>c.name).join(', '));"`
+4. Decide on genre data approach: port `build-genre-data.mjs` to Postgres, OR export genre data from SQLite and import to Postgres
+5. Create and run genre pipeline on server
+6. Verify KB page works after genre data is in Postgres
+7. Build Windows v0.3.2 (see `docs/release-process.md`)
 
 ## Resume Command
 After running `/clear`, run `/resume` to continue.
