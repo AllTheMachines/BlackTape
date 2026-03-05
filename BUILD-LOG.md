@@ -14328,3 +14328,6 @@ Once complete, the World Map will show real artist pins and the Rabbit Hole will
 
 > **Commit 98f5e145** (2026-03-05 13:39) — wip: auto-save
 > Files changed: 1
+
+> **Commit 8c398a00** (2026-03-05 13:40) — fix(pipeline): rewrite similar-artists as Node.js in-memory computation
+> Files changed: 1
