@@ -17,18 +17,16 @@ const MODEL = 'gemini-3.1-flash-image-preview';
 const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 
 const PROMPT = [
-  'A perfect top-down aerial view looking straight down into a spinning centrifuge or industrial vortex machine.',
-  'Circular composition, perfectly centered, symmetrical.',
-  'The centrifuge has concentric rings of mechanical detail — metal plates, bolts, grooves, tubes, and chambers arranged radially.',
-  'At the very center is a deep dark void — an infinite black hole pulling inward.',
-  'The spinning motion is implied through radial blur and curved mechanical forms.',
-  'Like looking down the barrel of a machine, or into a whirlpool drain, or a spiral staircase from above.',
-  'Dark industrial aesthetic — aged steel, oxidized metal, dark oil, deep shadows.',
-  'Moody dark color palette: near-black background, dark greys, hints of rust and deep teal.',
-  'Highly detailed mechanical illustration style — technical drawing meets dark art.',
-  'The image is perfectly square, completely circular composition filling the frame.',
+  'A perfect top-down aerial view looking straight down into a spinning centrifuge or mechanical vortex.',
+  'Circular composition, perfectly centered, symmetrical radial design.',
+  'Concentric rings of mechanical detail — gears, grooves, bolts, tubes, chambers — arranged radially outward.',
+  'At the very center is a deep black void pulling inward like a drain or a rabbit hole.',
+  'Pure black background with white and light-grey ink line art — like a detailed engraving or woodcut print.',
+  'No color, no gradients, no shading fills — only crisp line work on absolute black.',
+  'The style exactly matches a dark ink illustration: high contrast, white strokes, intricate mechanical detail.',
+  'Aesthetic: cyberpunk gothic, industrial, analog horror — matching the style of a CRT monitor figure illustration.',
+  'The image is perfectly square.',
   'No text, no watermarks, no borders.',
-  'Cinematic, atmospheric, slightly ominous.',
 ].join(' ');
 
 async function generate() {
