@@ -14450,6 +14450,28 @@ Once complete, the World Map will show real artist pins and the Rabbit Hole will
 
 ---
 
+## Entry 2026-03-05 — Rabbit Hole UX: 6 Improvements in One Session
+
+Bug fixes and UX polish session on the Rabbit Hole feature. After the core crash bug (`rel.tracks?.length`) was fixed last session, the card was functional but data-poor. This session wired up all the unused data.
+
+**Fixes shipped (6 commits):**
+
+1. **Play button works** — `links: []` was hardcoded. Now fetches MusicBrainz URL rels in parallel with the other queries, detects streaming platforms (Bandcamp, Spotify, SoundCloud, YouTube), deduplicates by platform. Play button is now enabled for artists with streaming links.
+
+2. **Tags sorted by vote count** — `getArtistTagDistribution` returns `at.count` (how many MB users tagged this artist with that tag). Now sorted by `count DESC` so the most-defining tags appear first. Falls back to the `artist.tags` CSV string if the table is absent.
+
+3. **Country + decade hint on similar artist chips** — Added `country` and `begin_year` to the `getSimilarArtists` query. Each chip now shows "US · 1990s" below the name so you can decide whether to click "Seance" before navigating.
+
+4. **Artist type + disbanded badge** — `Artist.type` ("Group", "Orchestra", etc.) and `Artist.ended` (1/0) both existed in the DB but weren't displayed. Small pill badges in the card header. "Person" is skipped — it's the assumed default for solo artists.
+
+5. **Wikipedia artist thumbnail** — `getWikiThumbnail()` already worked on the full artist page. Wired it into `RabbitHoleArtistCard` as a `$effect` that reacts to artist navigation. Shows as a 48px round avatar in the card header. Loads lazily, resets to null when navigating to a new artist.
+
+6. **Similarity score displayed** — `SimilarArtistResult.score` (Jaccard 0–1) was fetched but hidden. Now shown as `"12% match"` in the chip hint and encoded as opacity (0.4–1.0 range). Most-similar artists pop visually; weaker matches recede.
+
+All 6 are atomic commits, all tests green.
+
+---
+
 ## Entry 2026-03-05 — AI-Generated Page Art (Oracle + Rabbit Hole)
 
 Replaced hand-crafted SVG artwork with AI-generated illustrations using Gemini 3.1 Flash Image (Nano Banana 2). Both pages now have distinctive visual identities that match the app's dark aesthetic.
@@ -14656,3 +14678,27 @@ Replaced hand-crafted SVG artwork with AI-generated illustrations using Gemini 3
 
 > **Commit 48acb333** (2026-03-05 17:46) — auto-save: 1 files @ 17:46
 > Files changed: 1
+
+> **Commit c55b87e6** (2026-03-05 18:04) — wip: auto-save
+> Files changed: 2
+
+> **Commit 37a06286** (2026-03-05 18:05) — fix(rabbit-hole): wire up streaming links for Play button
+> Files changed: 1
+
+> **Commit dfbab097** (2026-03-05 18:06) — fix(rabbit-hole): sort artist tags by vote count
+> Files changed: 3
+
+> **Commit f4bfe892** (2026-03-05 18:07) — fix(rabbit-hole): show country + decade hint on similar artist chips
+> Files changed: 2
+
+> **Commit b68d55a5** (2026-03-05 18:08) — fix(rabbit-hole): show artist type and disbanded badge on card header
+> Files changed: 1
+
+> **Commit 2f875a92** (2026-03-05 18:09) — fix(rabbit-hole): show Wikipedia artist thumbnail on card
+> Files changed: 1
+
+> **Commit 38715088** (2026-03-05 18:10) — fix(rabbit-hole): show similarity score visually on similar artist chips
+> Files changed: 1
+
+> **Commit e3ed4354** (2026-03-05 18:12) — fix(rabbit-hole): show uniqueness score badge on artist card
+> Files changed: 3
