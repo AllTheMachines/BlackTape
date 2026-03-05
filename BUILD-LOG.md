@@ -14090,3 +14090,9 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 
 > **Commit 77951fb1** (2026-03-05 10:47) — wip: auto-save
 > Files changed: 1
+
+> **Commit f54bbaef** (2026-03-05 10:50) — wip: auto-save
+> Files changed: 1
+
+> **Commit 0f075625** (2026-03-05 10:53) — fix: relaunch app after update instead of just exiting
+> Files changed: 2
