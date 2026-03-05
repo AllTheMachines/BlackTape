@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { PROJECT_NAME, PROJECT_TAGLINE } from '$lib/config';
 	import { page } from '$app/stores';
+	import aboutBanner from '$lib/assets/about-banner.png';
 
 	const WORKER_URL = 'https://blacktape-signups.theaterofdelays.workers.dev/feedback';
 
@@ -61,6 +62,9 @@
 </svelte:head>
 
 <div class="about-page">
+	<div class="about-banner-strip">
+		<img src={aboutBanner} alt="" class="about-banner-img" aria-hidden="true" />
+	</div>
 	<div class="about-header">
 		<h1>{PROJECT_NAME}</h1>
 		<p class="tagline">{PROJECT_TAGLINE}</p>
@@ -172,6 +176,26 @@
 	.about-page {
 		padding: 20px;
 		max-width: 720px;
+	}
+
+	.about-banner-strip {
+		width: calc(100% + 40px);
+		margin: -20px -20px 0 -20px;
+		height: 220px;
+		min-height: 220px;
+		max-height: 220px;
+		overflow: hidden;
+		flex-shrink: 0;
+	}
+
+	.about-banner-img {
+		width: 100%;
+		height: 220px;
+		object-fit: cover;
+		object-position: center top;
+		display: block;
+		transform: scale(1.05);
+		transform-origin: center top;
 	}
 
 	.about-header {
