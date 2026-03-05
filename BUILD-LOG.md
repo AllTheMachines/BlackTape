@@ -13964,3 +13964,9 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 
 > **Commit a9627b27** (2026-03-05 03:00) — test: automated macOS UI tests — setup wizard, search, nav, Gatekeeper
 > Files changed: 1
+
+> **Commit 19f36796** (2026-03-05 03:01) — wip: auto-save
+> Files changed: 1
+
+> **Commit 46604107** (2026-03-05 03:04) — fix: run open in background during Gatekeeper test to avoid hang
+> Files changed: 1
