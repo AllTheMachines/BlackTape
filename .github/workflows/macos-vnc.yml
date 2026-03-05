@@ -18,6 +18,9 @@ jobs:
 
       - name: Enable Screen Sharing (VNC)
         run: |
+          # Wake up the display and launch Finder to get an active desktop
+          sudo -u runner open -a Finder
+          sleep 3
           # Create a new user with a known password
           sudo sysadminctl -addUser vncuser -fullName "VNC User" -password testpass123 -admin
           # Enable Screen Sharing with all users allowed
@@ -25,6 +28,10 @@ jobs:
             -activate -configure -access -on \
             -configure -allowAccessFor -allUsers \
             -configure -restart -agent -privs -all
+          sleep 2
+          # Launch BlackTape so there's something on screen
+          sudo -u runner open -a BlackTape
+          sleep 5
 
       - name: Install ngrok and open tunnel
         env:
