@@ -375,13 +375,12 @@
 		border-left: 1px solid var(--border-subtle);
 		display: flex;
 		flex-direction: column;
-		justify-content: flex-end;
+		justify-content: flex-start;
 	}
 
 	/* AI companion panel — fixed 50vh, anchored to bottom of column */
 	.rh-ai-panel {
 		height: 50vh;
-		border-top: 1px solid var(--border-subtle);
 		background: var(--bg-surface);
 		padding: var(--space-sm);
 		display: flex;
