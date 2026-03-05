@@ -16,34 +16,136 @@ jobs:
           cp -R "/Volumes/BlackTape/BlackTape.app" /Applications/
           hdiutil detach "/Volumes/BlackTape"
 
-      - name: Launch BlackTape
+      - name: Test 1 — Gatekeeper (real user experience, no quarantine bypass)
         run: |
-          # Prevent sleep
+          # Add quarantine flag exactly as a browser download would
+          sudo xattr -w com.apple.quarantine "0083;00000000;Safari;" /Applications/BlackTape.app
+          echo "Quarantine flag set. Attempting to open..."
+          # Try to open — if Gatekeeper blocks it, open will fail with a non-zero exit
+          sudo -u runner open /Applications/BlackTape.app 2>&1 || true
+          sleep 5
+          # Capture what happened
+          screencapture -x /tmp/gatekeeper-test.png
+          echo "Screenshot saved: /tmp/gatekeeper-test.png"
+
+      - name: Strip quarantine for remaining tests
+        run: |
+          sudo xattr -cr /Applications/BlackTape.app
           sudo pmset -a displaysleep 0 sleep 0 disksleep 0
           caffeinate -d -t 21600 &
 
-          # Strip Gatekeeper quarantine so the app can open
-          sudo xattr -cr /Applications/BlackTape.app
-
-          # Launch using full path (avoids app name lookup issues)
+      - name: Launch BlackTape
+        run: |
           sudo -u runner open /Applications/BlackTape.app
-          sleep 8
+          sleep 6
 
-      - name: Start screenshot server and ngrok
+          # Dismiss any permission dialogs (screen recording etc)
+          osascript << 'EOF'
+            tell application "System Events"
+              repeat 3 times
+                try
+                  set allWindows to every window of every process
+                  repeat with proc in every process
+                    try
+                      set btns to every button of every window of proc whose name is "Allow" or name is "OK"
+                      repeat with btn in btns
+                        click item 1 of btn
+                      end repeat
+                    end try
+                  end repeat
+                end try
+                delay 1
+              end repeat
+            end tell
+          EOF
+          sleep 2
+
+      - name: Test 2 — Setup wizard completes
+        run: |
+          screencapture -x /tmp/test-01-setup-wizard.png
+          echo "Screenshot: setup wizard initial state"
+
+          # Click Continue button
+          osascript << 'EOF'
+            tell application "System Events"
+              tell process "BlackTape"
+                set allBtns to every button of every window
+                repeat with btn in allBtns
+                  if name of (item 1 of btn) is "Continue" then
+                    click (item 1 of btn)
+                  end if
+                end repeat
+              end tell
+            end tell
+          EOF
+          sleep 3
+          screencapture -x /tmp/test-02-after-continue.png
+          echo "Screenshot: after clicking Continue"
+
+      - name: Test 3 — Search
+        run: |
+          # Click search bar and type
+          osascript << 'EOF'
+            tell application "BlackTape" to activate
+            tell application "System Events"
+              tell process "BlackTape"
+                -- Try clicking search input by value/placeholder
+                keystroke "f" using {command down}
+                delay 0.5
+                keystroke "radiohead"
+              end tell
+            end tell
+          EOF
+          sleep 4
+          screencapture -x /tmp/test-03-search-results.png
+          echo "Screenshot: search results for radiohead"
+
+      - name: Test 4 — Navigation
+        run: |
+          # Navigate using keyboard shortcut or click sidebar items
+          osascript << 'EOF'
+            tell application "BlackTape" to activate
+            tell application "System Events"
+              tell process "BlackTape"
+                -- Press Escape to clear search, then click around
+                key code 53
+                delay 0.5
+              end tell
+            end tell
+          EOF
+          sleep 2
+          screencapture -x /tmp/test-04-main-ui.png
+          echo "Screenshot: main UI after search cleared"
+
+      - name: Upload test screenshots as artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: macos-test-screenshots
+          path: /tmp/test-*.png
+          retention-days: 7
+
+      - name: Upload Gatekeeper screenshot as artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gatekeeper-test
+          path: /tmp/gatekeeper-test.png
+          retention-days: 7
+
+      - name: Start live screenshot viewer
         env:
           NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
         run: |
           brew install ngrok/ngrok/ngrok
           ngrok authtoken "$NGROK_AUTH_TOKEN"
 
-          # Create screenshot directory with auto-refresh HTML viewer
           mkdir -p /tmp/screen
           cat > /tmp/screen/index.html << 'EOF'
           <!DOCTYPE html>
           <html>
           <head>
             <title>BlackTape macOS Screen</title>
-            <meta http-equiv="refresh" content="2">
             <style>
               body { margin: 0; background: #000; display: flex; justify-content: center; }
               img { max-width: 100%; height: auto; }
@@ -52,7 +154,6 @@ jobs:
           <body>
             <img src="screen.png?t=1" id="img">
             <script>
-              // Reload just the image without full page refresh
               setInterval(() => {
                 document.getElementById('img').src = 'screen.png?t=' + Date.now();
               }, 2000);
@@ -61,25 +162,21 @@ jobs:
           </html>
           EOF
 
-          # Screenshot loop in background
           (while true; do
             screencapture -x /tmp/screen/screen.png 2>/dev/null
             sleep 2
           done) &
 
-          # Serve screenshots via HTTP
           cd /tmp/screen && python3 -m http.server 8080 &
           sleep 2
 
-          # Open ngrok HTTP tunnel
           ngrok http 8080 &
           sleep 8
 
-          # Print the URL
           curl -s http://localhost:4040/api/tunnels | python3 -c \
-            "import sys,json; t=json.load(sys.stdin)['tunnels'][0]['public_url']; print(); print('=============================================='); print('SCREEN URL:', t); print('Open in browser — refreshes every 2 seconds'); print('=============================================='); print()"
+            "import sys,json; t=json.load(sys.stdin)['tunnels'][0]['public_url']; print(); print('=============================================='); print('SCREEN URL:', t); print('=============================================='); print()"
 
       - name: Keep session alive (up to 6 hours)
         run: |
-          echo "Session is live. Open the URL in your browser to see the screen."
+          echo "Session live. Check artifacts for test screenshots, or open the URL for live view."
           sleep 21600
