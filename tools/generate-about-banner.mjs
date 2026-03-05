@@ -18,13 +18,14 @@ const MODEL = 'gemini-3.1-flash-image-preview';
 const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 
 const PROMPT = [
-  'A wide horizontal illustration of a young man with very long hair and thick nerdy glasses sitting at a vintage CRT computer setup.',
+  'A wide horizontal illustration of a middle-aged hacker in his 40s with long greying hair and thick nerdy glasses sitting in a dark room at a vintage CRT computer setup.',
+  'He has visible wrinkles, a slightly weathered face, and the look of someone who has been doing this for decades.',
+  'The room is very dark — almost pitch black. The only light source is the eerie green-tinted glow of the CRT monitor illuminating his face from below.',
   'He is visibly freaking out — head thrown back, mouth open in an exaggerated scream of excitement or disbelief, hands raised or grabbing his hair.',
-  'The CRT monitor glows on his face. Old-school beige computer tower. Cluttered desk with papers, floppy disks, maybe an empty coffee cup.',
-  'The scene is lit from the monitor glow — dramatic chiaroscuro effect.',
-  'Pure black and white ink illustration — comic book / graphic novel style. Bold outlines, strong contrast, deep black shadows, no grey halftones.',
+  'Multiple CRT monitors, tangled cables everywhere, stacks of printed papers and manuals. Empty energy drink cans. Dark and chaotic hacker den atmosphere.',
+  'Pure black and white ink illustration — comic book / graphic novel style. Bold outlines, extreme contrast, vast black areas with only the face lit.',
   'Wide landscape composition, slightly cinematic framing. The figure is slightly off-center.',
-  'No readable text, no logos, no watermarks. The energy is chaotic and passionate.',
+  'No readable text, no logos, no watermarks. Noir hacker energy.',
 ].join(' ');
 
 async function generate() {

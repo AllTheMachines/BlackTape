@@ -181,16 +181,16 @@
 	.about-banner-strip {
 		width: calc(100% + 40px);
 		margin: -20px -20px 0 -20px;
-		height: 220px;
-		min-height: 220px;
-		max-height: 220px;
+		height: 130px;
+		min-height: 130px;
+		max-height: 130px;
 		overflow: hidden;
 		flex-shrink: 0;
 	}
 
 	.about-banner-img {
 		width: 100%;
-		height: 220px;
+		height: 130px;
 		object-fit: cover;
 		object-position: center top;
 		display: block;

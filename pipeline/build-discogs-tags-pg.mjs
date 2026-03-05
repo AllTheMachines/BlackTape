@@ -92,6 +92,9 @@ for (const { id, name } of artistRows) {
 console.log(`[discogs-tags]   ${nameMap.size.toLocaleString()} normalized names indexed (${artistRows.length.toLocaleString()} artists total)`);
 
 // ─── Step 2: Stream-parse gzipped XML ────────────────────────────────────────
+//
+// The Discogs masters XML has each <master>...</master> on a SINGLE line.
+// No state machine needed — just regex each master line.
 
 const fileArg = process.argv.indexOf('--file');
 const source   = fileArg !== -1
@@ -100,21 +103,10 @@ const source   = fileArg !== -1
 
 const rl = createInterface({ input: source.pipe(createGunzip()), crlfDelay: Infinity });
 
-// State machine
-let inMaster       = false;
-let inArtists      = false;
-let inExtraArtists = false;
-let inGenres       = false;
-let inStyles       = false;
-
-let currentArtistNames = []; // raw names from <artists> (not extraartists)
-let currentTags        = []; // genres + styles collected for this master
-
 // Accumulators
 const pendingPairs = new Set(); // "artist_id:tag" strings, deduped
 let mastersProcessed = 0;
 let mastersMatched   = 0;
-let totalPairsQueued = 0;
 let totalInserted    = 0;
 
 // ─── Batch insert helper ───────────────────────────────────────────────────────
@@ -131,7 +123,7 @@ async function flushBatch() {
   }
   pendingPairs.clear();
 
-  // Batch insert in chunks to avoid pg parameter limits (~65K)
+  // Batch insert in chunks to avoid pg parameter limits
   const CHUNK = 5000;
   for (let i = 0; i < rows.length; i += CHUNK) {
     const chunk = rows.slice(i, i + CHUNK);
@@ -149,86 +141,44 @@ async function flushBatch() {
   );
 }
 
-// ─── On </master> flush ────────────────────────────────────────────────────────
+// ─── Line-by-line parser ──────────────────────────────────────────────────────
+// Each master is one line: <master id="N">.....</master>
 
-async function onMasterEnd() {
+for await (const rawLine of rl) {
+  // Only process master lines
+  if (!rawLine.includes('<master ') && !rawLine.includes('<master>')) continue;
+  if (!rawLine.includes('</master>')) continue;
+
   mastersProcessed++;
 
-  if (currentArtistNames.length > 0 && currentTags.length > 0) {
-    for (const rawName of currentArtistNames) {
-      const key      = normalizeName(rawName);
-      if (shouldSkip(key)) continue;
-      const artistId = nameMap.get(key);
-      if (!artistId) continue;
+  // Extract <artists> section (not <extraartists>)
+  const artistsBlock = rawLine.match(/<artists>([\s\S]*?)<\/artists>/)?.[1] ?? '';
+  const artistNames  = [...artistsBlock.matchAll(/<name>([\s\S]*?)<\/name>/g)].map(m => m[1]);
 
-      mastersMatched++;
-      for (const tag of currentTags) {
-        pendingPairs.add(`${artistId}:${tag}`);
-      }
+  // Extract genres and styles
+  const genresBlock  = rawLine.match(/<genres>([\s\S]*?)<\/genres>/)?.[1] ?? '';
+  const genres       = [...genresBlock.matchAll(/<genre>([\s\S]*?)<\/genre>/g)].map(m => m[1].trim().toLowerCase());
+
+  const stylesBlock  = rawLine.match(/<styles>([\s\S]*?)<\/styles>/)?.[1] ?? '';
+  const styles       = [...stylesBlock.matchAll(/<style>([\s\S]*?)<\/style>/g)].map(m => m[1].trim().toLowerCase());
+
+  const tags = [...genres, ...styles];
+  if (artistNames.length === 0 || tags.length === 0) continue;
+
+  for (const rawName of artistNames) {
+    const key      = normalizeName(rawName);
+    if (shouldSkip(key)) continue;
+    const artistId = nameMap.get(key);
+    if (!artistId) continue;
+
+    mastersMatched++;
+    for (const tag of tags) {
+      pendingPairs.add(`${artistId}:${tag}`);
     }
   }
 
-  totalPairsQueued += pendingPairs.size;
-
   if (mastersProcessed % BATCH_MASTERS === 0) {
     await flushBatch();
-  }
-
-  // Reset per-master state
-  currentArtistNames = [];
-  currentTags        = [];
-}
-
-// ─── Line-by-line XML state machine ──────────────────────────────────────────
-
-for await (const rawLine of rl) {
-  const line = rawLine.trim();
-
-  if (line === '<master>' || line.startsWith('<master ')) {
-    inMaster       = true;
-    inArtists      = false;
-    inExtraArtists = false;
-    inGenres       = false;
-    inStyles       = false;
-    currentArtistNames = [];
-    currentTags        = [];
-    continue;
-  }
-
-  if (line === '</master>') {
-    await onMasterEnd();
-    inMaster = false;
-    continue;
-  }
-
-  if (!inMaster) continue;
-
-  // Section transitions
-  if      (line === '<artists>')        { inArtists      = true;  continue; }
-  else if (line === '</artists>')       { inArtists      = false; continue; }
-  else if (line === '<extraartists>')   { inExtraArtists = true;  continue; }
-  else if (line === '</extraartists>')  { inExtraArtists = false; continue; }
-  else if (line === '<genres>')         { inGenres       = true;  continue; }
-  else if (line === '</genres>')        { inGenres       = false; continue; }
-  else if (line === '<styles>')         { inStyles       = true;  continue; }
-  else if (line === '</styles>')        { inStyles       = false; continue; }
-
-  // Collect artist names from <artists> only (skip <extraartists>)
-  if (inArtists && !inExtraArtists) {
-    const m = line.match(/^<name>(.*)<\/name>$/);
-    if (m) { currentArtistNames.push(m[1]); continue; }
-  }
-
-  // Collect genre tags
-  if (inGenres) {
-    const m = line.match(/^<genre>(.*)<\/genre>$/);
-    if (m) { currentTags.push(m[1].trim().toLowerCase()); continue; }
-  }
-
-  // Collect style tags
-  if (inStyles) {
-    const m = line.match(/^<style>(.*)<\/style>$/);
-    if (m) { currentTags.push(m[1].trim().toLowerCase()); continue; }
   }
 }
 
