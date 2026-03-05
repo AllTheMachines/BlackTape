@@ -381,7 +381,7 @@
 	/* AI companion panel — fixed 50vh, anchored to bottom of column */
 	.rh-ai-panel {
 		height: 50vh;
-		background: var(--bg-surface);
+		background: var(--bg-1);
 		padding: var(--space-sm);
 		display: flex;
 		flex-direction: column;
