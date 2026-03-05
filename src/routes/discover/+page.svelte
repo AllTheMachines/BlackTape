@@ -117,6 +117,7 @@
 						bind:value={customTagInput}
 						disabled={data.tags.length >= MAX_TAGS}
 						data-testid="discover-tag-input"
+						onkeydown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addCustomTag(); } }}
 					/>
 					<button
 						type="submit"
