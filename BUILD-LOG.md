@@ -14740,3 +14740,9 @@ All 4 commits clean, all 196 tests passing. The Rabbit Hole feature is now fully
 
 > **Commit a7b80be7** (2026-03-05 18:27) — docs: log Rabbit Hole UX completion (fixes 8-11)
 > Files changed: 1
+
+> **Commit 0418fd25** (2026-03-05 18:27) — wip: auto-save
+> Files changed: 1
+
+> **Commit 90add870** (2026-03-05 18:30) — revert(rabbit-hole): remove Style Map and Crate Dig cross-links from tag page
+> Files changed: 1
