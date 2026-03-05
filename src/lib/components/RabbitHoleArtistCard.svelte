@@ -191,10 +191,10 @@
 				<div class="rh-section-label">Similar Artists</div>
 				<div class="rh-similar-row">
 					{#each similarArtists as sa}
-						<button class="rh-similar-chip" onclick={() => handleSimilarArtistClickInternal(sa.slug, sa.name)}>
+						<button class="rh-similar-chip" onclick={() => handleSimilarArtistClickInternal(sa.slug, sa.name)} style="opacity: {Math.min(1, 0.4 + (sa.score ?? 0) * 2)}">
 							<span class="rh-chip-name">{sa.name}</span>
 							{#if sa.country || sa.begin_year}
-								<span class="rh-chip-hint">{sa.country ?? ''}{sa.country && sa.begin_year ? ' · ' : ''}{sa.begin_year ? `${Math.floor(sa.begin_year / 10) * 10}s` : ''}</span>
+								<span class="rh-chip-hint">{sa.country ?? ''}{sa.country && sa.begin_year ? ' · ' : ''}{sa.begin_year ? `${Math.floor(sa.begin_year / 10) * 10}s` : ''}{(sa.country || sa.begin_year) && sa.score ? ' · ' : ''}{sa.score ? `${Math.round(sa.score * 100)}% match` : ''}</span>
 							{/if}
 						</button>
 					{/each}
