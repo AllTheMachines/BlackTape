@@ -1,56 +1,67 @@
 # Work Handoff - 2026-03-05
 
 ## Current Task
-AI-powered fact-check & correction system for Rabbit Hole artist pages — completed and working.
+Album favourites — frontend wiring (Task 3 of 3)
 
 ## Context
-Artist pages sometimes show wrong/sparse info (wrong country, founding year, missing bio). Built a full pipeline: user clicks "Something seem off?", AI fetches Wikipedia, compares vs current data, user saves correction locally and it posts to server. Corrections persist in localStorage and show with a ✓ Wikipedia badge.
+Adding favourite albums feature. Users can already favourite artists (now fixed to be reactive). The Rust backend for `favorite_releases` is built and deployed. Need to wire up the frontend: TS functions, FavoriteButton extension for releases, heart button on release/album pages, and show in Library.
 
 ## Progress
 
 ### Completed
-- `src/lib/corrections/store.ts` — localStorage CRUD + fire-and-forget server POST
-- `src/lib/corrections/wikipedia.ts` — Wikipedia REST API, tries `(band)` → `(musician)` → bare name, skips disambiguation
-- `src/lib/rabbit-hole/correction-trigger.svelte.ts` — shared $state trigger + correctionVersion counter for card re-reads
-- `ArtistSummary.svelte` — correctedBio prop: shows Wikipedia bio with green ✓ Wikipedia badge, skips AI generation
-- `RabbitHoleArtistCard.svelte` — reads localStorage (reactive to correctionVersion), shows corrected country/year with ✓, adds "Something seem off?" button (gated to aiState.status === 'ready')
-- `+layout.svelte` — full correction state machine with all UI states including bug fix: added {:else if correctionMode && chatLoading} showing "Analyzing with AI..." (was falling through to helper suggestions, looked broken)
-- `server/index.js` — POST /api/corrections (ndjson append) + GET /api/corrections (token-protected)
-- Deployed to Hetzner, CORRECTIONS_TOKEN set in PM2, verified end-to-end
-- All committed: 844b1fcd — 196/196 tests pass
+- **FavoriteButton reactivity fix** — changed `favorited` from `$state` + onMount read to `$derived(tasteProfile.favorites.some(...))`. Now always in sync.
+- **Rust backend** — added `favorite_releases` table to taste_db.rs, CRUD functions (`add_favorite_release`, `remove_favorite_release`, `get_favorite_releases`), registered in lib.rs. Binary rebuilt successfully.
+- **Library Artists tab** — favourite artists now appear as link rows (♥ badge, click → artist page). Local library artists keep their expander. Search filters both.
+- **Rabbit Hole** — JSON block stripped from AI correction response before display. Email feedback uses Cloudflare Worker (same as About page feedback). MBID included in email body.
+- **Discover page** — Enter key on custom tag input now works.
 
 ### In Progress
-Nothing — session complete.
+- **Task 3: Frontend album favorites wiring** — NOT started yet. Rust is ready, frontend pending.
 
 ### Remaining
-- No blockers. Future enhancements only:
-  - Clear a saved correction (no undo UI yet)
-  - Steve reviewing corrections via GET /api/corrections with token
-  - CORRECTIONS_TOKEN: bbb604bbb345381c4625f4f1d9de4d61 (PM2 only, not in repo)
+1. Add `favoriteReleases` array to `tasteProfile` state in `src/lib/taste/profile.svelte.ts`
+2. Add `loadFavoriteReleases`, `addFavoriteRelease`, `removeFavoriteRelease`, `isFavoriteRelease` to `src/lib/taste/favorites.ts`
+3. Call `loadFavoriteReleases` in `loadTasteProfile()` in `profile.svelte.ts`
+4. Extend `FavoriteButton.svelte` to accept `itemType: 'artist' | 'release'` prop (or create `FavoriteReleaseButton.svelte`)
+5. Add heart button on release/album pages (`src/routes/artist/[slug]/release/[mbid]/+page.svelte` — check if exists, or on `ReleaseCard.svelte`)
+6. In `LibraryBrowser.svelte` Albums tab — show favourite albums. If local files match (compare album name + artist name case-insensitive) → show normally. If not owned → show with "not in library" style.
+7. For non-owned favourite albums: if `spotifyState.connected` → open Spotify, else → link to `/artist/[artist_slug]` (albums tab)
 
 ## Key Decisions
-- Wikipedia extract (raw text) saved as corrected bio — NOT AI-paraphrased
-- AI extracts structured fields (foundingYear, country, genres) as JSON from Wikipedia text
-- correctionVersion counter in trigger module triggers card $effects to re-read localStorage
-- "Something seem off?" button only shows when aiState.status === 'ready'
-- CORRECTIONS_TOKEN set via pm2 set — not committed anywhere
+- `spotifyState.connected` (from `src/lib/spotify/state.svelte.ts`) is the check for Spotify availability
+- FavoriteRelease data shape: `{ release_mbid, release_name, artist_name, artist_slug, saved_at }`
+- No `release_slug` stored (not needed — artist_slug + mbid is enough for navigation)
+- Library Artists tab now shows favourited artists at top as `<a href="/artist/{slug}">` rows — no expander. Local artists below with expander.
+- The Rust binary was stuck because llama-server.exe was still running as a child process. Had to kill PIDs 36668 and 18328 to free DLL locks before `cargo build` could succeed.
 
 ## Relevant Files
-- `src/lib/corrections/store.ts`
-- `src/lib/corrections/wikipedia.ts`
-- `src/lib/rabbit-hole/correction-trigger.svelte.ts`
-- `src/lib/components/RabbitHoleArtistCard.svelte`
-- `src/lib/components/ArtistSummary.svelte`
-- `src/routes/rabbit-hole/+layout.svelte`
-- `server/index.js` (deployed to 46.225.239.209:3000)
+- `src/lib/taste/profile.svelte.ts` — add `favoriteReleases` to state + load in `loadTasteProfile`
+- `src/lib/taste/favorites.ts` — add release favorite functions
+- `src/lib/components/FavoriteButton.svelte` — extend for releases (or create separate component)
+- `src/routes/artist/[slug]/release/[mbid]/+page.svelte` — add heart button here
+- `src/lib/components/LibraryBrowser.svelte` — show favourite albums in Albums tab
+- `src/lib/spotify/state.svelte.ts` — `spotifyState.connected` for Spotify check
+- `src-tauri/src/ai/taste_db.rs` — Rust CRUD already done
+- `src-tauri/src/lib.rs` — Rust commands already registered
 
 ## Git Status
-Clean. Everything committed as 844b1fcd.
+Clean — all changes auto-saved. Last commit: `d9c06591` (auto-save: 5 files @ 21:16).
+Modified files captured: FavoriteButton.svelte, taste_db.rs, lib.rs, LibraryBrowser.svelte, library/+page.svelte.
+Earlier auto-saves captured: rabbit-hole/+layout.svelte, discover/+page.svelte, profile/+page.svelte.
+
+## Active Tasks
+- #1 [completed] Fix FavoriteButton reactivity
+- #2 [completed] Add favorite_releases Rust backend
+- #3 [in_progress] Frontend: album favorites wiring — NEXT TASK
 
 ## Next Steps
-1. Test with a real incorrect artist (obscure band with wrong country in DB)
-2. Test the Wikipedia-not-found email fallback
-3. Steve can review corrections: curl -H "Authorization: Bearer bbb604bbb345381c4625f4f1d9de4d61" http://46.225.239.209:3000/api/corrections
+1. Read `src/lib/taste/profile.svelte.ts` to understand tasteProfile shape
+2. Read `src/lib/taste/favorites.ts` to understand existing pattern
+3. Add `favoriteReleases` to profile state + load function
+4. Add release favorite functions to favorites.ts
+5. Check if `src/routes/artist/[slug]/release/[mbid]/+page.svelte` exists — that's where the heart button goes
+6. Wire up LibraryBrowser Albums tab to show favourites
+7. Reload app: `node tools/reload.mjs`
 
 ## Resume Command
 After running `/clear`, run `/resume` to continue.
