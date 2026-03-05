@@ -18,20 +18,24 @@ jobs:
 
       - name: Enable Screen Sharing (VNC)
         run: |
-          # Wake up the display and launch Finder to get an active desktop
-          sudo -u runner open -a Finder
-          sleep 3
-          # Create a new user with a known password
-          sudo sysadminctl -addUser vncuser -fullName "VNC User" -password testpass123 -admin
+          # Prevent display sleep and keep machine awake for the full session
+          sudo pmset -a displaysleep 0 sleep 0 disksleep 0
+          sudo caffeinate -d -t 21600 &
+          # Set runner user password so we can VNC in as them (they have the active GUI session)
+          sudo sysadminctl -resetPasswordFor runner -newPassword testpass123
           # Enable Screen Sharing with all users allowed
           sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart \
             -activate -configure -access -on \
             -configure -allowAccessFor -allUsers \
             -configure -restart -agent -privs -all
           sleep 2
-          # Launch BlackTape so there's something on screen
+          # Wake display and launch apps on the runner's active session
+          sudo -u runner open -a Finder
+          sleep 2
           sudo -u runner open -a BlackTape
           sleep 5
+          # Simulate mouse move to wake display
+          sudo -u runner osascript -e 'tell application "System Events" to set frontmost of process "BlackTape" to true' 2>/dev/null || true
 
       - name: Install ngrok and open tunnel
         env:
