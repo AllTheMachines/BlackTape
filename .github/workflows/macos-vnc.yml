@@ -18,24 +18,32 @@ jobs:
 
       - name: Enable Screen Sharing (VNC)
         run: |
-          # Prevent display sleep and keep machine awake for the full session
-          sudo pmset -a displaysleep 0 sleep 0 disksleep 0
-          sudo caffeinate -d -t 21600 &
-          # Set runner user password so we can VNC in as them (they have the active GUI session)
-          sudo sysadminctl -resetPasswordFor runner -newPassword testpass123
-          # Enable Screen Sharing with all users allowed
+          # Prevent all sleep
+          sudo pmset -a displaysleep 0 sleep 0 disksleep 0 hibernatemode 0
+          caffeinate -d -t 21600 &
+
+          # Disable screensaver
+          sudo -u runner defaults write com.apple.screensaver idleTime 0
+          sudo -u runner defaults -currentHost write com.apple.screensaver idleTime 0
+
+          # Enable VNC with legacy password auth (not user-account auth)
+          # This mode captures the display framebuffer directly regardless of login state
           sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart \
             -activate -configure -access -on \
             -configure -allowAccessFor -allUsers \
+            -configure -clientopts -setvnclegacy -vnclegacy yes \
+            -configure -clientopts -setvncpw -vncpw testpass123 \
             -configure -restart -agent -privs -all
-          sleep 2
-          # Wake display and launch apps on the runner's active session
+          sleep 3
+
+          # Launch apps to populate the display
           sudo -u runner open -a Finder
           sleep 2
           sudo -u runner open -a BlackTape
           sleep 5
-          # Simulate mouse move to wake display
-          sudo -u runner osascript -e 'tell application "System Events" to set frontmost of process "BlackTape" to true' 2>/dev/null || true
+
+          # Simulate keypress to ensure display is active
+          sudo -u runner osascript -e 'tell application "System Events" to keystroke ""'
 
       - name: Install ngrok and open tunnel
         env:
