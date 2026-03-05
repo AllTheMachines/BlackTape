@@ -514,7 +514,7 @@
 
 	/* Oracle figure hero — full-width landscape banner */
 	.oracle-hero {
-		margin: -20px -20px 0;
+		margin: -20px -20px 2rem;
 		pointer-events: none;
 		line-height: 0;
 		height: 340px;
