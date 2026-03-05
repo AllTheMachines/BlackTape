@@ -517,7 +517,7 @@
 		margin: -20px -20px 0;
 		pointer-events: none;
 		line-height: 0;
-		height: 220px;
+		height: 300px;
 		overflow: hidden;
 	}
 
