@@ -14885,3 +14885,6 @@ All 4 commits clean, all 196 tests passing. The Rabbit Hole feature is now fully
 
 > **Commit 176d16a9** (2026-03-05 20:25) — wip: auto-save
 > Files changed: 2
+
+> **Commit 844b1fcd** (2026-03-05 20:26) — feat: AI fact-check & correction system for Rabbit Hole artist pages
+> Files changed: 1

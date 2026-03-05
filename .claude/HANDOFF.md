@@ -1,48 +1,56 @@
 # Work Handoff - 2026-03-05
 
 ## Current Task
-Rabbit Hole AI companion panel — complete and committed.
+AI-powered fact-check & correction system for Rabbit Hole artist pages — completed and working.
 
-## What Was Built This Session
+## Context
+Artist pages sometimes show wrong/sparse info (wrong country, founding year, missing bio). Built a full pipeline: user clicks "Something seem off?", AI fetches Wikipedia, compares vs current data, user saves correction locally and it posts to server. Corrections persist in localStorage and show with a ✓ Wikipedia badge.
 
-### AI Companion in Rabbit Hole (`src/routes/rabbit-hole/+layout.svelte`)
-A right-column panel (220px) added to the Rabbit Hole layout containing:
+## Progress
 
-1. **"AI Companion" header** — matches RightSidebar style
-2. **Instant helper message** — appears immediately on each new page, no API call:
-   - Artist: "You're exploring [Name]. Click tags to dive into related genres, or hit Continue → to keep going. Ask me anything about them."
-   - Tag: "You're browsing [tag] music. Click an artist chip to explore them, or tap a tag to go deeper."
-3. **3 contextual suggestion chips** — clickable, send directly to AI:
-   - Artist: "What does X sound like?", "What's their most essential album?", "Who should I explore next?"
-   - Tag: "What defines X music?", "Key artists in X?", "What era did this emerge from?"
-4. **Chat clears and resets** on every trail navigation (new artist/tag)
-5. **Link rendering** — AI responses with `[text](url)` render as clickable buttons:
-   - Internal `/path` links → `goto(href)`
-   - External links → Tauri shell `open()`
-6. **System prompt** tells the AI it can include links, gives it internal route patterns
-7. **Context-aware** — AI knows current artist/tag and full exploration trail
+### Completed
+- `src/lib/corrections/store.ts` — localStorage CRUD + fire-and-forget server POST
+- `src/lib/corrections/wikipedia.ts` — Wikipedia REST API, tries `(band)` → `(musician)` → bare name, skips disambiguation
+- `src/lib/rabbit-hole/correction-trigger.svelte.ts` — shared $state trigger + correctionVersion counter for card re-reads
+- `ArtistSummary.svelte` — correctedBio prop: shows Wikipedia bio with green ✓ Wikipedia badge, skips AI generation
+- `RabbitHoleArtistCard.svelte` — reads localStorage (reactive to correctionVersion), shows corrected country/year with ✓, adds "Something seem off?" button (gated to aiState.status === 'ready')
+- `+layout.svelte` — full correction state machine with all UI states including bug fix: added {:else if correctionMode && chatLoading} showing "Analyzing with AI..." (was falling through to helper suggestions, looked broken)
+- `server/index.js` — POST /api/corrections (ndjson append) + GET /api/corrections (token-protected)
+- Deployed to Hetzner, CORRECTIONS_TOKEN set in PM2, verified end-to-end
+- All committed: 844b1fcd — 196/196 tests pass
 
-### Layout fix
-- Panel uses `overflow-y: auto` (not `flex: 1` on messages) — input always visible
-- Root cause of previous invisible input: `height: 100vh` on shell + `flex: 1` on messages pushed input below visible viewport
+### In Progress
+Nothing — session complete.
 
-### ArtistSummary changes (`src/lib/components/ArtistSummary.svelte`)
-- `autoGenerate` prop added — Rabbit Hole passes `true` to always auto-generate
-- `aiAvailable` state — shows "Generate summary" button when AI configured but no cache
-- Both changes are backward compatible
+### Remaining
+- No blockers. Future enhancements only:
+  - Clear a saved correction (no undo UI yet)
+  - Steve reviewing corrections via GET /api/corrections with token
+  - CORRECTIONS_TOKEN: bbb604bbb345381c4625f4f1d9de4d61 (PM2 only, not in repo)
 
-## Remaining / Next Steps
-- Test the AI companion panel visually — does it look right now?
-- The `--t-4` variable is used in trail separators (original code) but not defined in theme — has always been this way, not a regression
-- If user wants further polish: keyboard nav (#12), reload button (#79), UI containers (#69)
+## Key Decisions
+- Wikipedia extract (raw text) saved as corrected bio — NOT AI-paraphrased
+- AI extracts structured fields (foundingYear, country, genres) as JSON from Wikipedia text
+- correctionVersion counter in trigger module triggers card $effects to re-read localStorage
+- "Something seem off?" button only shows when aiState.status === 'ready'
+- CORRECTIONS_TOKEN set via pm2 set — not committed anywhere
 
-## Key Files
-- `src/routes/rabbit-hole/+layout.svelte` — main file with AI panel
-- `src/lib/components/ArtistSummary.svelte` — autoGenerate prop + generate button
-- `src/lib/components/RabbitHoleArtistCard.svelte` — passes autoGenerate={true}
+## Relevant Files
+- `src/lib/corrections/store.ts`
+- `src/lib/corrections/wikipedia.ts`
+- `src/lib/rabbit-hole/correction-trigger.svelte.ts`
+- `src/lib/components/RabbitHoleArtistCard.svelte`
+- `src/lib/components/ArtistSummary.svelte`
+- `src/routes/rabbit-hole/+layout.svelte`
+- `server/index.js` (deployed to 46.225.239.209:3000)
 
-## Git
-- Committed: `ac68995b` — all 196 tests passing
+## Git Status
+Clean. Everything committed as 844b1fcd.
+
+## Next Steps
+1. Test with a real incorrect artist (obscure band with wrong country in DB)
+2. Test the Wikipedia-not-found email fallback
+3. Steve can review corrections: curl -H "Authorization: Bearer bbb604bbb345381c4625f4f1d9de4d61" http://46.225.239.209:3000/api/corrections
 
 ## Resume Command
 After running `/clear`, run `/resume` to continue.
