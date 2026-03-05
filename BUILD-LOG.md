@@ -14018,3 +14018,6 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 
 > **Commit a969328e** (2026-03-05 09:17) — chore: bump version to 0.3.1 (temporary — macOS updater test)
 > Files changed: 2
+
+> **Commit 0ceaa1b1** (2026-03-05 09:22) — wip: auto-save
+> Files changed: 1
