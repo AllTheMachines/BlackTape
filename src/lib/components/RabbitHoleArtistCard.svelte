@@ -156,6 +156,12 @@
 			{#if artist.begin_year}
 				<span class="rh-year">est. {artist.begin_year}</span>
 			{/if}
+			{#if artist.type && artist.type !== 'Person'}
+				<span class="rh-type-badge">{artist.type}</span>
+			{/if}
+			{#if artist.ended}
+				<span class="rh-disbanded-badge">Disbanded</span>
+			{/if}
 		</div>
 
 		<!-- Tags -->
@@ -300,6 +306,25 @@
 	.rh-year {
 		font-size: 0.8125rem;
 		color: var(--t-4);
+	}
+
+	.rh-type-badge {
+		font-size: 0.6875rem;
+		color: var(--t-3);
+		background: var(--bg-3);
+		padding: 2px 7px;
+		border-radius: 999px;
+		border: 1px solid var(--b-1);
+	}
+
+	.rh-disbanded-badge {
+		font-size: 0.6875rem;
+		color: var(--t-4);
+		background: var(--bg-3);
+		padding: 2px 7px;
+		border-radius: 999px;
+		border: 1px solid var(--b-1);
+		opacity: 0.7;
 	}
 
 	.rh-tags {
