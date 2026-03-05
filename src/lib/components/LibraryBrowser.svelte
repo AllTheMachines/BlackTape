@@ -11,6 +11,7 @@
 	let { albums }: { albums: LibraryAlbum[] } = $props();
 
 	let expandedAlbumKey = $state<string | null>(null);
+	let expandedArtistName = $state<string | null>(null);
 	let lightboxSrc = $state<string | null>(null);
 	let coverFileInput = $state<HTMLInputElement | null>(null);
 	let coverPickerAlbum = $state<LibraryAlbum | null>(null);
@@ -151,6 +152,19 @@
 			);
 		}
 		return result;
+	});
+
+	/** Artists grouped — for "Artists" tab */
+	let groupedArtists = $derived.by(() => {
+		const map = new Map<string, LibraryAlbum[]>();
+		for (const album of filteredAlbums) {
+			const name = album.artist || 'Unknown Artist';
+			if (!map.has(name)) map.set(name, []);
+			map.get(name)!.push(album);
+		}
+		return [...map.entries()]
+			.map(([name, artistAlbums]) => ({ name, albums: artistAlbums }))
+			.sort((a, b) => a.name.localeCompare(b.name));
 	});
 
 	/** All tracks flat — for "Songs" tab */
@@ -392,23 +406,37 @@
 			{/if}
 		{/if}
 	{:else if activeTab === 'artist'}
-		<!-- Artist tab: flat album grid sorted by artist, no grouping headers -->
-		{#if filteredAlbums.length === 0 && searchQuery.trim()}
+		<!-- Artist tab: grouped by artist -->
+		{#if groupedArtists.length === 0 && searchQuery.trim()}
 			<div class="library-no-results">No results for "{searchQuery.trim()}"</div>
 		{:else}
-			<div class="album-grid">
-				{#each pagedAlbums as album (albumKey(album))}
-					{@const key = albumKey(album)}
-					{@const isExpanded = expandedAlbumKey === key}
-					{#if !expandedAlbumKey || isExpanded}
-						{@const cover = getLoadedCover(album)}
-						{@render albumCard(album, key, isExpanded, cover)}
-					{/if}
+			<div class="artist-list">
+				{#each groupedArtists as group (group.name)}
+					<div class="artist-group">
+						<button
+							class="artist-group-header"
+							class:open={expandedArtistName === group.name}
+							onclick={() => { expandedArtistName = expandedArtistName === group.name ? null : group.name; expandedAlbumKey = null; }}
+						>
+							<span class="artist-group-name">{group.name}</span>
+							<span class="artist-group-count">{group.albums.length} {group.albums.length === 1 ? 'release' : 'releases'}</span>
+							<span class="artist-group-chevron">{expandedArtistName === group.name ? '▲' : '▼'}</span>
+						</button>
+						{#if expandedArtistName === group.name}
+							<div class="album-grid artist-albums">
+								{#each group.albums as album (albumKey(album))}
+									{@const key = albumKey(album)}
+									{@const isExpanded = expandedAlbumKey === key}
+									{#if !expandedAlbumKey || isExpanded}
+										{@const cover = getLoadedCover(album)}
+										{@render albumCard(album, key, isExpanded, cover)}
+									{/if}
+								{/each}
+							</div>
+						{/if}
+					</div>
 				{/each}
 			</div>
-			{#if totalPages > 1}
-				{@render paginationControls()}
-			{/if}
 		{/if}
 	{:else}
 		<!-- All / Album / EP tabs: flat grid -->
@@ -676,6 +704,35 @@
 	.songs-list {
 		padding: 4px 0;
 	}
+
+	.artist-list {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+	}
+	.artist-group-header {
+		display: flex;
+		align-items: center;
+		gap: var(--space-sm);
+		width: 100%;
+		background: none;
+		border: none;
+		border-bottom: 1px solid var(--b-1);
+		color: var(--t-1);
+		font-family: inherit;
+		font-size: 0.875rem;
+		font-weight: 600;
+		padding: 10px var(--space-sm);
+		cursor: pointer;
+		text-align: left;
+		transition: background 0.15s;
+	}
+	.artist-group-header:hover,
+	.artist-group-header.open { background: var(--bg-3); }
+	.artist-group-name { flex: 1; }
+	.artist-group-count { font-size: 0.75rem; font-weight: 400; color: var(--t-3); }
+	.artist-group-chevron { font-size: 0.65rem; color: var(--t-3); }
+	.artist-albums { padding: var(--space-sm) 0; }
 
 	.library-no-results {
 		padding: 48px 16px;
