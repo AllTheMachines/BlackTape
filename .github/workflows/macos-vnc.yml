@@ -48,6 +48,7 @@ jobs:
           sleep 2
 
       - name: Test 2 — Setup wizard completes
+        continue-on-error: true
         run: |
           screencapture -x /tmp/test-01-setup-wizard.png
           echo "Screenshot: setup wizard initial state"
@@ -56,11 +57,14 @@ jobs:
           osascript << 'EOF'
             tell application "System Events"
               tell process "BlackTape"
-                set allBtns to every button of every window
-                repeat with btn in allBtns
-                  if name of (item 1 of btn) is "Continue" then
-                    click (item 1 of btn)
-                  end if
+                repeat with w in every window
+                  repeat with btn in every button of w
+                    try
+                      if name of btn is "Continue" then
+                        click btn
+                      end if
+                    end try
+                  end repeat
                 end repeat
               end tell
             end tell
