@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import { loadTrail, trailState, jumpToTrailIndex } from '$lib/rabbit-hole/trail.svelte';
 	import { aiState } from '$lib/ai/state.svelte';
 	import { getAiProvider } from '$lib/ai/engine';
@@ -29,6 +29,13 @@
 	// --- AI companion ---
 	interface ChatMessage { role: 'user' | 'assistant'; text: string; }
 	let chatMessages = $state<ChatMessage[]>([]);
+	let chatBodyEl = $state<HTMLDivElement | null>(null);
+
+	$effect(() => {
+		const _ = chatMessages.length;
+		const __ = chatLoading;
+		tick().then(() => { if (chatBodyEl) chatBodyEl.scrollTop = chatBodyEl.scrollHeight; });
+	});
 	let chatInput = $state('');
 	let chatLoading = $state(false);
 	const MAX_CHAT_MESSAGES = 6;
@@ -190,8 +197,8 @@
 			<div class="rh-ai-panel">
 				<h4 class="rh-ai-header">AI Companion</h4>
 
-				{#if chatMessages.length > 0}
-					<div class="rh-chat-messages">
+				<div class="rh-chat-body" bind:this={chatBodyEl}>
+					{#if chatMessages.length > 0}
 						{#each chatMessages as msg}
 							<div class="rh-chat-msg" class:user={msg.role === 'user'} class:assistant={msg.role === 'assistant'}>
 								{#if msg.role === 'assistant'}
@@ -210,19 +217,19 @@
 						{#if chatLoading}
 							<div class="rh-chat-msg assistant rh-chat-loading">...</div>
 						{/if}
-					</div>
-				{:else}
-					{#if helperMessage}
-						<p class="rh-helper-msg">{helperMessage}</p>
+					{:else}
+						{#if helperMessage}
+							<p class="rh-helper-msg">{helperMessage}</p>
+						{/if}
+						{#if suggestions.length > 0}
+							<div class="rh-suggestions">
+								{#each suggestions as s}
+									<button class="rh-suggestion" onclick={() => sendChatMessage(s)}>{s}</button>
+								{/each}
+							</div>
+						{/if}
 					{/if}
-					{#if suggestions.length > 0}
-						<div class="rh-suggestions">
-							{#each suggestions as s}
-								<button class="rh-suggestion" onclick={() => sendChatMessage(s)}>{s}</button>
-							{/each}
-						</div>
-					{/if}
-				{/if}
+				</div>
 
 				<div class="rh-chat-input-row">
 					<input
@@ -359,13 +366,15 @@
 		overflow-x: hidden;
 	}
 
-	/* AI companion panel — matches RightSidebar structure */
+	/* AI companion panel — fixed 50vh, anchored to bottom */
 	.rh-ai-panel {
 		width: 220px;
+		height: 50vh;
+		align-self: flex-end;
 		flex-shrink: 0;
 		border-left: 1px solid var(--border-subtle);
+		border-top: 1px solid var(--border-subtle);
 		background: var(--bg-surface);
-		overflow-y: auto;
 		padding: var(--space-sm);
 		display: flex;
 		flex-direction: column;
@@ -388,12 +397,13 @@
 		margin: var(--space-xs) 0 0 0;
 	}
 
-	.rh-chat-messages {
+	.rh-chat-body {
+		flex: 1;
+		min-height: 0;
+		overflow-y: auto;
 		display: flex;
 		flex-direction: column;
 		gap: 4px;
-		max-height: 200px;
-		overflow-y: auto;
 		margin-top: var(--space-xs);
 	}
 
