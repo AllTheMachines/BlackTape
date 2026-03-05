@@ -14224,3 +14224,6 @@ Logs:
 - `/var/log/similar-artists.log`
 
 Once complete, the World Map will show real artist pins and the Rabbit Hole will show real similar-artist recommendations.
+
+> **Commit 72d8d27c** (2026-03-05 12:33) — feat(pipeline): add build-geocoding-pg.mjs — Postgres geocoding pipeline
+> Files changed: 2
