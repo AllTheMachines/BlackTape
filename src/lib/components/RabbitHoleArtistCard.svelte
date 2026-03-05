@@ -267,7 +267,7 @@
 				onclick={handleContinue}
 				disabled={continueLoading}
 			>
-				{continueLoading ? 'Finding...' : 'Continue \u2192'}
+				{continueLoading ? 'Finding...' : similarArtists.length > 0 ? 'Continue \u2192' : 'Explore \u2192'}
 			</button>
 			{#if showOpenInRabbitHole && onOpenInRabbitHole}
 				<button class="rh-open-rh-btn" onclick={() => onOpenInRabbitHole!(artist.slug)}>
