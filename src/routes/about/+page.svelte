@@ -180,7 +180,7 @@
 
 	.about-banner-strip {
 		width: calc(100% + 40px);
-		margin: -20px -20px 0 -20px;
+		margin: -20px -20px 2rem -20px;
 		height: 200px;
 		min-height: 200px;
 		max-height: 200px;
