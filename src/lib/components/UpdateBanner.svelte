@@ -11,7 +11,7 @@
 {:else if updateState.available && !updateState.critical && !updateState.dismissed}
 	<div class="update-banner" class:restarting={updateState.restarting || updateState.installing} role="status">
 		{#if updateState.restarting}
-			<span class="update-text">Update installed — reopening...</span>
+			<span class="update-text">Update installed — open the app again to use the new version</span>
 		{:else if updateState.installing}
 			<span class="update-text">Downloading update...</span>
 		{:else if updateState.error}
@@ -38,10 +38,10 @@
 		align-items: center;
 		justify-content: space-between;
 		gap: var(--space-md);
-		padding: 6px var(--space-lg);
+		padding: 10px var(--space-lg);
 		background: #1a1a2e;
 		color: #e0e0e0;
-		font-size: 0.78rem;
+		font-size: 0.88rem;
 		z-index: 90;
 	}
 
@@ -57,8 +57,8 @@
 	}
 
 	.install-btn {
-		padding: 3px 10px;
-		font-size: 0.75rem;
+		padding: 4px 12px;
+		font-size: 0.84rem;
 		font-family: var(--font-sans);
 		background: var(--acc);
 		border: 1px solid var(--acc);
@@ -78,8 +78,8 @@
 	}
 
 	.dismiss-btn {
-		padding: 3px 8px;
-		font-size: 0.75rem;
+		padding: 4px 8px;
+		font-size: 0.84rem;
 		font-family: var(--font-sans);
 		background: none;
 		border: none;
