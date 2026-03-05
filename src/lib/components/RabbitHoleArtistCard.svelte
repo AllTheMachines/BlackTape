@@ -180,6 +180,7 @@
 				<span class="rh-uniqueness-badge {uniquenessScore >= 100 ? 'very-niche' : uniquenessScore >= 8 ? 'niche' : uniquenessScore >= 0.36 ? 'eclectic' : 'mainstream'}">{uniquenessScore >= 100 ? 'Very Niche' : uniquenessScore >= 8 ? 'Niche' : uniquenessScore >= 0.36 ? 'Eclectic' : 'Mainstream'}</span>
 			{/if}
 		</div>
+		<a href="/artist/{artist.slug}" class="rh-open-artist">Open artist page &rarr;</a>
 
 		<!-- Tags -->
 		{#if tagList.length > 0}
@@ -332,6 +333,17 @@
 	.rh-year {
 		font-size: 0.8125rem;
 		color: var(--t-4);
+	}
+
+	.rh-open-artist {
+		font-size: 0.8125rem;
+		color: var(--t-3);
+		text-decoration: none;
+		transition: color 0.15s;
+	}
+
+	.rh-open-artist:hover {
+		color: var(--acc);
 	}
 
 	.rh-type-badge {
