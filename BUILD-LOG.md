@@ -4,6 +4,14 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-03-05 — Correction System: Bug Fix (Analyzing state)
+
+**Bug:** After clicking "Something seem off?", the panel appeared to do nothing — input stayed disabled, no feedback. Root cause: when `correctionMode=true`, `wikiLoading=false`, and `chatMessages=[]` (between Wikipedia completing and AI responding), the template had no matching branch and fell through to `{:else}`, showing the normal helper suggestions — hiding that the AI was working.
+
+**Fix:** Added `{:else if correctionMode && chatLoading}` showing "Analyzing with AI..." so users see feedback during the AI call (can take 10+ seconds).
+
+---
+
 ## Entry 2026-03-05 — AI Fact-Check & Correction System
 
 Artist pages in Rabbit Hole sometimes have wrong or sparse info — wrong founding year, wrong country, outdated bio. Built a complete correction pipeline so users can flag and fix it.
@@ -14870,4 +14878,7 @@ All 4 commits clean, all 196 tests passing. The Rabbit Hole feature is now fully
 > Files changed: 8
 
 > **Commit fb473f17** (2026-03-05 20:16) — wip: auto-save
+> Files changed: 1
+
+> **Commit 6436222c** (2026-03-05 20:16) — auto-save: 1 files @ 20:16
 > Files changed: 1

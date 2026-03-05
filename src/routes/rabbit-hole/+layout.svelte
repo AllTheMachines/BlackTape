@@ -320,11 +320,13 @@
 						<p class="rh-wiki-miss-sub">You can still tell us directly:</p>
 						<textarea
 							class="rh-feedback-textarea"
-						bind:value={feedbackText}
+							bind:value={feedbackText}
 							placeholder="What's wrong or missing?"
 							rows={4}
 						></textarea>
 						<button class="rh-suggestion" onclick={sendFeedbackEmail}>Send via email</button>
+					{:else if correctionMode && chatLoading}
+						<p class="rh-helper-msg rh-wiki-loading">Analyzing with AI...</p>
 					{:else if chatMessages.length > 0}
 						{#each chatMessages as msg}
 							<div class="rh-chat-msg" class:user={msg.role === 'user'} class:assistant={msg.role === 'assistant'}>
