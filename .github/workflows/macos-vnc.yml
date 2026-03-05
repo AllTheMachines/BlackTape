@@ -17,16 +17,19 @@ jobs:
           hdiutil detach "/Volumes/BlackTape"
 
       - name: Test 1 — Gatekeeper (real user experience, no quarantine bypass)
+        timeout-minutes: 2
         run: |
           # Add quarantine flag exactly as a browser download would
           sudo xattr -w com.apple.quarantine "0083;00000000;Safari;" /Applications/BlackTape.app
           echo "Quarantine flag set. Attempting to open..."
-          # Try to open — if Gatekeeper blocks it, open will fail with a non-zero exit
-          sudo -u runner open /Applications/BlackTape.app 2>&1 || true
-          sleep 5
-          # Capture what happened
+          # Run open in background so it doesn't hang waiting for Gatekeeper
+          sudo -u runner open /Applications/BlackTape.app &
+          sleep 6
+          # Capture whatever Gatekeeper showed (dialog, nothing, etc.)
           screencapture -x /tmp/gatekeeper-test.png
-          echo "Screenshot saved: /tmp/gatekeeper-test.png"
+          echo "Screenshot saved"
+          # Kill any hung open process
+          kill %1 2>/dev/null || true
 
       - name: Strip quarantine for remaining tests
         run: |
