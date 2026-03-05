@@ -17,16 +17,16 @@ const MODEL = 'gemini-3.1-flash-image-preview';
 const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 
 const PROMPT = [
-  'A hypnotic psychedelic spiral vortex, top-down view, perfectly circular and centered.',
-  'An Archimedean spiral that winds tightly from the outer edge all the way into a black void at the center.',
-  'The spiral arms are made of intricate white line art — fine hatching, cross-hatching, and detail lines.',
-  'Multiple nested spiral arms rotating inward, creating a strong sense of depth and motion — like falling into infinity.',
-  'Trippy, dizzying, optical illusion quality. The spiral should feel like it is spinning.',
-  'Pure black background with crisp white and light-grey ink strokes only — engraving / woodcut print style.',
-  'No color, no gradients — only high-contrast black and white line art.',
-  'The center is a deep black hole, the outer edges fade into darkness.',
-  'Aesthetic: psychedelic meets gothic ink art. Dark, hypnotic, pulling inward.',
-  'Perfectly square image, the spiral fills the entire frame edge to edge.',
+  'Top-down view of a spiral galaxy structure — not a real galaxy, but inspired by the shape.',
+  'Two or three distinct sweeping spiral arms curving outward from a bright dense core.',
+  'The arms are made of flowing white ink lines, loose and elegant — like brushstrokes curving through space.',
+  'Lots of negative black space between the arms. Airy, open, not dense.',
+  'The center is a tight bright nucleus fading outward. The arms thin and dissolve at the edges.',
+  'Pure black background. White and light-grey line art only — ink illustration, engraving style.',
+  'No color, no gradients. High contrast black and white.',
+  'Elegant, cosmic, slightly mysterious. The arms have motion and flow.',
+  'Aesthetic matches a detailed dark ink illustration — gothic, precise, beautiful.',
+  'Perfectly square composition, centered.',
   'No text, no watermarks, no borders.',
 ].join(' ');
 
