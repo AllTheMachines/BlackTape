@@ -14114,3 +14114,12 @@ The graceful degradation pattern (try/catch → return `[]`) is the key design c
 
 > **Commit d5e7c734** (2026-03-05 11:17) — fix: use open -n on macos to relaunch after update (app.restart() unreliable post-bundle-replace)
 > Files changed: 1
+
+> **Commit 197ddcff** (2026-03-05 11:18) — wip: auto-save
+> Files changed: 1
+
+> **Commit 77814b6e** (2026-03-05 11:19) — fix: regenerate all icons from icon.png (icns and pngs were old design)
+> Files changed: 50
+
+> **Commit ab2a7793** (2026-03-05 11:19) — fix: update banner text + size (bigger padding/font, clearer post-install message)
+> Files changed: 1
