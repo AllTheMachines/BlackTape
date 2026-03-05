@@ -14434,3 +14434,6 @@ Replaced hand-crafted SVG artwork with AI-generated illustrations using Gemini 3
 **Generation scripts (reusable):**
 - `tools/generate-oracle.mjs` — regenerate oracle banner
 - `tools/generate-rabbit-hole.mjs` — regenerate rabbit hole spiral
+
+> **Commit fd37d6dd** (2026-03-05 14:13) — feat(ui): AI-generated art for Oracle and Rabbit Hole pages
+> Files changed: 1
