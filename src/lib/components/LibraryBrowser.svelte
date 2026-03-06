@@ -32,13 +32,9 @@
 			const provider = await getProvider();
 			const results = await searchArtistsAutocomplete(provider, name, 5);
 			const exact = results.find(r => r.name.toLowerCase() === name.toLowerCase());
-			const updated = new Map(artistSlugs);
-			updated.set(name, exact?.slug ?? null);
-			artistSlugs = updated;
+			artistSlugs.set(name, exact?.slug ?? null);
 		} catch {
-			const updated = new Map(artistSlugs);
-			updated.set(name, null);
-			artistSlugs = updated;
+			artistSlugs.set(name, null);
 		}
 	}
 
