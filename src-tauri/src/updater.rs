@@ -64,6 +64,13 @@ pub async fn install_update(app: AppHandle) -> Result<(), String> {
         .map_err(|e| format!("Update check failed: {}", e))?
         .ok_or_else(|| "No update available".to_string())?;
 
+    // Kill bundled llama-server before the NSIS installer runs — otherwise it holds
+    // the DLL files open and the installer fails with "Error opening file for writing".
+    #[cfg(target_os = "windows")]
+    let _ = std::process::Command::new("taskkill")
+        .args(["/IM", "llama-server.exe", "/F"])
+        .output();
+
     let handle = app.clone();
     update
         .download_and_install(
