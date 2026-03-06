@@ -23,6 +23,10 @@ A documentary record of building this project from idea to reality.
 
 **GitHub release:** https://github.com/AllTheMachines/BlackTape/releases/tag/v0.4.0
 
+**Updater test (v0.3.0 → v0.4.0):** Passed end-to-end after a signing fix. v0.3.0 was built with the OLD `blacktape.key` pubkey embedded. The v0.4.0 installer was initially signed with the new prod key — key ID mismatch, updater refused. Fixed by re-signing with the old key using rsign2. Updated `latest.json` and `.sig` on the GitHub release. Updater then worked: v0.3.0 detected v0.4.0, downloaded, NSIS ran silently, app restarted at 0.4.0.
+
+**Key lineage going forward:** v0.4.0+ binaries have the prod key embedded — future releases can use the prod key via Tauri CLI. Old key only needed if old pre-v0.4.0 binaries need to verify something.
+
 ---
 
 ## Entry 2026-03-06 — Bug Fixes + Library Artist Page Link
@@ -15204,4 +15208,7 @@ All 4 commits clean, all 196 tests passing. The Rabbit Hole feature is now fully
 > Files changed: 1
 
 > **Commit db0ce125** (2026-03-06 12:29) — wip: auto-save
+> Files changed: 1
+
+> **Commit d76452d9** (2026-03-06 12:47) — auto-save: 1 files @ 12:47
 > Files changed: 1
