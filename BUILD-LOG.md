@@ -4,6 +4,27 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-03-06 — v0.4.0 Released
+
+**v0.4.0 is live on GitHub.** This is the Rabbit Hole release — the biggest feature drop since the project started.
+
+**What shipped:**
+- **Rabbit Hole discovery mode** — fully working with AI companion, continue button (similar artists → tag fallback → random), null-artist dead-end escape buttons
+- **AI fact-check & correction system** — users can flag wrong bio/country/year, AI compares against Wikipedia, corrections saved locally and to the server
+- **Live Postgres backend** — MusicBrainz on Hetzner, similar artists engine (286K pairs across 39K artists), Discogs tags
+- **Library artist links** — `↗` always visible in Artists tab (search fallback), fixed race condition in `autocompleteArtists` lookup, fixed Svelte `$effect` reactivity loop with `untrack()`
+- **Album favourites** — full frontend wiring, library tab with "♥ not in library" badge
+
+**Build process:**
+- Windows: `npm run tauri build` locally (exit code 1 from signing env var check, but NSIS installer builds fine — expected)
+- macOS: GitHub Actions CI triggered manually (workflow only fires on tags or manual dispatch — doesn't run on plain `main` pushes)
+- Signing: **Tauri signer CLI now works on Windows** with env vars (`TAURI_SIGNING_PRIVATE_KEY` + `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`). Previous session marked it as "broken" — that was with the old passwordless key. The prod key with password works fine via `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`. **rsign2 is no longer needed for Windows signing.**
+- The `.sig` file produced by Tauri signer is already base64-encoded (same as macOS CI) — use `cat .sig | tr -d '\n'` directly for `latest.json`, do NOT `base64 -w0` again.
+
+**GitHub release:** https://github.com/AllTheMachines/BlackTape/releases/tag/v0.4.0
+
+---
+
 ## Entry 2026-03-06 — Bug Fixes + Library Artist Page Link
 
 **About tab freeze (critical bug fix)**
@@ -15175,3 +15196,6 @@ All 4 commits clean, all 196 tests passing. The Rabbit Hole feature is now fully
 
 > **Commit 8b6039a6** (2026-03-06 12:04) — wip: auto-save
 > Files changed: 2
+
+> **Commit a1833695** (2026-03-06 12:17) — auto-save: 1 files @ 12:17
+> Files changed: 1
