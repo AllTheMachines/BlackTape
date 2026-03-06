@@ -190,6 +190,15 @@
 			.sort((a, b) => a.name.localeCompare(b.name));
 	});
 
+	/** Eagerly load slugs for all visible artists when the Artists tab is active */
+	$effect(() => {
+		if (activeTab === 'artist') {
+			for (const group of groupedArtists) {
+				lookupArtistSlug(group.name);
+			}
+		}
+	});
+
 	/** All tracks flat — for "Songs" tab */
 	let allFilteredTracks = $derived.by(() => {
 		const q = searchQuery.trim().toLowerCase();
