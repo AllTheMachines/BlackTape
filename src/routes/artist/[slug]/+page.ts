@@ -188,6 +188,19 @@ export const load: PageLoad = async ({ params, fetch }) => {
 						relationships.labels.push(rel.label.name);
 					}
 				}
+
+				// MusicBrainz can return the same artist multiple times (e.g. overlapping membership
+				// periods). Deduplicate by MBID to prevent Svelte's keyed {#each} from throwing
+				// each_key_duplicate, which crashes the reactivity system and freezes the UI.
+				const dedupByMbid = (arr: Array<{ name: string; mbid: string }>) => {
+					const seen = new Map<string, { name: string; mbid: string }>();
+					for (const item of arr) if (!seen.has(item.mbid)) seen.set(item.mbid, item);
+					return [...seen.values()];
+				};
+				relationships.members = dedupByMbid(relationships.members);
+				relationships.influencedBy = dedupByMbid(relationships.influencedBy);
+				relationships.influenced = dedupByMbid(relationships.influenced);
+				relationships.labels = [...new Set(relationships.labels)];
 			}
 		}
 
