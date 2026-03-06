@@ -682,17 +682,6 @@
 
 		{/if}
 
-		{#if effectiveBio}
-			<div class="bio">
-				<p>{effectiveDisplayBio}</p>
-				{#if effectiveBioNeedsCollapse}
-					<button class="bio-toggle" onclick={() => bioExpanded = !bioExpanded}>
-						{bioExpanded ? 'Show less' : 'Read more'}
-					</button>
-				{/if}
-			</div>
-		{/if}
-
 		{#if data.curators && data.curators.length > 0}
 			<div class="discovered-by">
 				<span class="discovered-label">Discovered by</span>
