@@ -15166,3 +15166,9 @@ All 4 commits clean, all 196 tests passing. The Rabbit Hole feature is now fully
 
 > **Commit e6c09788** (2026-03-06 11:59) — wip: auto-save
 > Files changed: 1
+
+> **Commit 5020a481** (2026-03-06 12:02) — wip: auto-save
+> Files changed: 1
+
+> **Commit 183f73a3** (2026-03-06 12:03) — chore: bump version to v0.4.0
+> Files changed: 3
