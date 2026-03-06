@@ -4,6 +4,34 @@ A documentary record of building this project from idea to reality.
 
 ---
 
+## Entry 2026-03-06 — Bug Fixes + Library Artist Page Link
+
+**About tab freeze (critical bug fix)**
+
+Clicking the About tab on any artist page caused a complete UI freeze. CDP debugging revealed `each_key_duplicate` — Svelte 5 throws an unrecoverable error when a keyed `{#each}` block gets duplicate keys, corrupting the reactivity system so nothing responds.
+
+Root cause: MusicBrainz returns the same artist multiple times in relations when a band member has overlapping membership periods (e.g. Thom Yorke in Radiohead across different date ranges). This produced duplicate MBIDs in the `members`/`influencedBy`/`influenced` arrays passed to `ArtistRelationships.svelte`.
+
+Fix: deduplicate by MBID (first-occurrence wins) in `+page.ts` after building the relationship arrays, before data reaches the component. Also deduplicate labels by value.
+
+**Bio showing twice**
+
+After the About tab fix, the Wikipedia bio appeared both above the tabs (in the header, a leftover from before tabs were added) and again inside the About tab. Removed it from the header — the About tab is the canonical home for biographical info.
+
+**About tab content alignment**
+
+Bio text, Members, and Labels were flush to the left edge while the header content (artist name, platforms, tags) had 20px padding. Added `padding: 16px 20px` via `.tab-body` class on the About tab content div.
+
+**Library → Artist page link**
+
+In the Library Artists view, clicking an artist row expanded their releases but offered no way to navigate to the artist's discovery page. Added:
+- On expand: async DB lookup (`autocompleteArtists` with exact name match) to resolve the artist slug
+- A `↗` link appears in the artist group header once the slug is found
+- In the expanded album hero, artist name now links to `/artist/[slug]` instead of `/search?q=...` when slug is available
+- Same lookup triggered when any album is expanded in All/Album/EP tabs
+
+---
+
 ## Entry 2026-03-05 — DB Pipeline State Assessment & Similar-Artists Re-Run
 
 Session picked up mid-pipeline. Mapped the current state of all Hetzner DB jobs:
@@ -15099,3 +15127,6 @@ All 4 commits clean, all 196 tests passing. The Rabbit Hole feature is now fully
 
 > **Commit 5ed84b84** (2026-03-06 10:47) — auto-save: 1 files @ 10:47
 > Files changed: 1
+
+> **Commit 3482b948** (2026-03-06 10:50) — wip: auto-save
+> Files changed: 2

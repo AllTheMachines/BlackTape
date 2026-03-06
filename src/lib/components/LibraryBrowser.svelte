@@ -21,6 +21,27 @@
 	/** Lazily fetched covers: "artist|||album" → base64 data URL */
 	let lazyCovers = $state<Record<string, string>>({});
 
+	/** Cached artist slugs: name → slug (null = not in DB) */
+	let artistSlugs = $state(new Map<string, string | null>());
+
+	async function lookupArtistSlug(name: string): Promise<void> {
+		if (artistSlugs.has(name)) return;
+		try {
+			const { getProvider } = await import('$lib/db/provider');
+			const { autocompleteArtists } = await import('$lib/db/queries');
+			const provider = await getProvider();
+			const results = await autocompleteArtists(provider, name, 5);
+			const exact = results.find(r => r.name.toLowerCase() === name.toLowerCase());
+			const updated = new Map(artistSlugs);
+			updated.set(name, exact?.slug ?? null);
+			artistSlugs = updated;
+		} catch {
+			const updated = new Map(artistSlugs);
+			updated.set(name, null);
+			artistSlugs = updated;
+		}
+	}
+
 	function albumKey(album: LibraryAlbum): string {
 		return `${album.artist}|||${album.name}`;
 	}
@@ -273,6 +294,7 @@
 		const key = albumKey(album);
 		expandedAlbumKey = expandedAlbumKey === key ? null : key;
 		if (expandedAlbumKey) {
+			lookupArtistSlug(album.artist);
 			// Scroll to top when expanding so the detail view is fully visible
 			setTimeout(() => scrollContainer?.scrollTo({ top: 0, behavior: 'smooth' }), 50);
 		}
@@ -439,15 +461,23 @@
 				{/each}
 				{#each groupedArtists as group (group.name)}
 					<div class="artist-group">
-						<button
-							class="artist-group-header"
-							class:open={expandedArtistName === group.name}
-							onclick={() => { expandedArtistName = expandedArtistName === group.name ? null : group.name; expandedAlbumKey = null; }}
-						>
-							<span class="artist-group-name">{group.name}</span>
-							<span class="artist-group-count">{group.albums.length} {group.albums.length === 1 ? 'release' : 'releases'}</span>
-							<span class="artist-group-chevron">{expandedArtistName === group.name ? '▲' : '▼'}</span>
-						</button>
+						<div class="artist-group-header" class:open={expandedArtistName === group.name}>
+							<button
+								class="artist-group-toggle"
+								onclick={() => {
+									expandedArtistName = expandedArtistName === group.name ? null : group.name;
+									expandedAlbumKey = null;
+									if (expandedArtistName === group.name) lookupArtistSlug(group.name);
+								}}
+							>
+								<span class="artist-group-name">{group.name}</span>
+								<span class="artist-group-count">{group.albums.length} {group.albums.length === 1 ? 'release' : 'releases'}</span>
+								<span class="artist-group-chevron">{expandedArtistName === group.name ? '▲' : '▼'}</span>
+							</button>
+							{#if artistSlugs.get(group.name)}
+								<a href="/artist/{artistSlugs.get(group.name)}" class="artist-page-link" title="Go to artist page">↗</a>
+							{/if}
+						</div>
 						{#if expandedArtistName === group.name}
 							<div class="album-grid artist-albums">
 								{#each group.albums as album (albumKey(album))}
@@ -565,7 +595,11 @@
 						{/if}
 
 						<h2 class="release-title">{exp.name}</h2>
+						{#if artistSlugs.get(exp.artist)}
+						<a href="/artist/{artistSlugs.get(exp.artist)}" class="artist-link">{exp.artist}</a>
+					{:else}
 						<a href="/search?q={encodeURIComponent(exp.artist)}" class="artist-link">{exp.artist}</a>
+					{/if}
 
 						<div class="release-stats">
 							<span>{exp.tracks.length} track{exp.tracks.length !== 1 ? 's' : ''}</span>
@@ -750,11 +784,20 @@
 	.artist-group-header {
 		display: flex;
 		align-items: center;
-		gap: var(--space-sm);
 		width: 100%;
+		border-bottom: 1px solid var(--b-1);
+		background: none;
+		transition: background 0.15s;
+	}
+	.artist-group-header:hover,
+	.artist-group-header.open { background: var(--bg-3); }
+	.artist-group-toggle {
+		flex: 1;
+		display: flex;
+		align-items: center;
+		gap: var(--space-sm);
 		background: none;
 		border: none;
-		border-bottom: 1px solid var(--b-1);
 		color: var(--t-1);
 		font-family: inherit;
 		font-size: 0.875rem;
@@ -762,10 +805,17 @@
 		padding: 10px var(--space-sm);
 		cursor: pointer;
 		text-align: left;
-		transition: background 0.15s;
+		min-width: 0;
 	}
-	.artist-group-header:hover,
-	.artist-group-header.open { background: var(--bg-3); }
+	.artist-page-link {
+		padding: 10px 12px;
+		color: var(--t-3);
+		text-decoration: none;
+		font-size: 0.85rem;
+		flex-shrink: 0;
+		transition: color 0.15s;
+	}
+	.artist-page-link:hover { color: var(--acc); }
 	.artist-group-name { flex: 1; }
 	.artist-group-count { font-size: 0.75rem; font-weight: 400; color: var(--t-3); }
 	.artist-group-chevron { font-size: 0.65rem; color: var(--t-3); }
