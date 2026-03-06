@@ -15212,3 +15212,6 @@ All 4 commits clean, all 196 tests passing. The Rabbit Hole feature is now fully
 
 > **Commit d76452d9** (2026-03-06 12:47) — auto-save: 1 files @ 12:47
 > Files changed: 1
+
+> **Commit 98319ef4** (2026-03-06 12:54) — docs: v0.4.0 updater test results + signing fix
+> Files changed: 1
