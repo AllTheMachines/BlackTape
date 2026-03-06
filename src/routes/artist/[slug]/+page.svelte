@@ -906,7 +906,7 @@
 			</section>
 		</div>
 	{:else if activeTab === 'about'}
-		<div data-testid="tab-content-about">
+		<div data-testid="tab-content-about" class="tab-body">
 			{#if effectiveBio}
 				<div class="bio">
 					<p>{effectiveDisplayBio}</p>
@@ -1360,6 +1360,10 @@
 
 	.artist-tab:hover:not(.active) {
 		color: var(--t-2);
+	}
+
+	.tab-body {
+		padding: 16px 20px;
 	}
 
 	/* ── Section titles ────────────────────────────────── */
