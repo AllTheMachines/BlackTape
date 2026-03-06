@@ -187,17 +187,6 @@
 			.sort((a, b) => a.name.localeCompare(b.name));
 	});
 
-	/** Eagerly load slugs for all visible artists when the Artists tab is active */
-	$effect(() => {
-		if (activeTab === 'artist') {
-			const names = groupedArtists.map(g => g.name);
-			untrack(() => {
-				for (const name of names) {
-					lookupArtistSlug(name);
-				}
-			});
-		}
-	});
 
 	/** All tracks flat — for "Songs" tab */
 	let allFilteredTracks = $derived.by(() => {
@@ -483,9 +472,11 @@
 								<span class="artist-group-count">{group.albums.length} {group.albums.length === 1 ? 'release' : 'releases'}</span>
 								<span class="artist-group-chevron">{expandedArtistName === group.name ? '▲' : '▼'}</span>
 							</button>
-							{#if artistSlugs.get(group.name)}
-								<a href="/artist/{artistSlugs.get(group.name)}" class="artist-page-link" title="Go to artist page">↗</a>
-							{/if}
+							<a
+								href={artistSlugs.get(group.name) ? `/artist/${artistSlugs.get(group.name)}` : `/search?q=${encodeURIComponent(group.name)}`}
+								class="artist-page-link"
+								title="Go to artist page"
+							>↗</a>
 						</div>
 						{#if expandedArtistName === group.name}
 							<div class="album-grid artist-albums">
