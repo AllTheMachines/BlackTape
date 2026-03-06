@@ -6,6 +6,7 @@
 	import { setQueue, addToQueue } from '$lib/player/queue.svelte';
 	import { setAlbumCover, getCoverForAlbum } from '$lib/library/scanner';
 	import { loadLibrary } from '$lib/library/store.svelte';
+	import { untrack } from 'svelte';
 	import { isTauri } from '$lib/platform';
 
 	interface FavoriteArtist { artist_mbid: string; artist_name: string; artist_slug: string; saved_at: number; }
@@ -189,9 +190,12 @@
 	/** Eagerly load slugs for all visible artists when the Artists tab is active */
 	$effect(() => {
 		if (activeTab === 'artist') {
-			for (const group of groupedArtists) {
-				lookupArtistSlug(group.name);
-			}
+			const names = groupedArtists.map(g => g.name);
+			untrack(() => {
+				for (const name of names) {
+					lookupArtistSlug(name);
+				}
+			});
 		}
 	});
 
