@@ -2,7 +2,7 @@
 	import { isTauri } from '$lib/platform';
 	import { streamingPref } from '$lib/theme/preferences.svelte';
 	import { getProvider } from '$lib/db/provider';
-	import { getRandomArtistByTag } from '$lib/db/queries';
+	import { getRandomArtistByTag, getRandomArtist } from '$lib/db/queries';
 	import { getWikiThumbnail } from '$lib/wiki-thumbnail';
 	import ArtistSummary from '$lib/components/ArtistSummary.svelte';
 	import { aiState } from '$lib/ai/state.svelte';
@@ -145,15 +145,25 @@
 			if (similarArtists.length > 0) {
 				const pick = similarArtists[Math.floor(Math.random() * similarArtists.length)];
 				handleSimilarArtistClickInternal(pick.slug, pick.name);
-			} else {
-				// Fallback: random artist sharing primary tag
-				const primaryTag = (artist.tags ?? '').split(',')[0]?.trim();
-				if (!primaryTag) return;
-				const db = await getProvider();
+				return;
+			}
+
+			const db = await getProvider();
+
+			// Try primary tag first
+			const primaryTag = (artist.tags ?? '').split(',')[0]?.trim();
+			if (primaryTag) {
 				const fallback = await getRandomArtistByTag(db, primaryTag, artist.id);
 				if (fallback) {
 					handleSimilarArtistClickInternal(fallback.slug, fallback.name);
+					return;
 				}
+			}
+
+			// Last resort: any random artist
+			const random = await getRandomArtist(db);
+			if (random) {
+				handleSimilarArtistClickInternal(random.slug, random.name);
 			}
 		} catch {
 			/* ignore */

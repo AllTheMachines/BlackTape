@@ -39,13 +39,34 @@
 	{/if}
 {:else}
 	<div class="rh-card-wrap">
-		<div class="rh-not-found">Artist not found.</div>
+		<div class="rh-dead-end">
+			<div class="rh-not-found">Artist not found.</div>
+			<p class="rh-dead-end-hint">This artist isn't in the database yet.</p>
+			<div class="rh-dead-end-actions">
+				<button class="rh-dead-end-btn" onclick={() => history.back()}>← Go back</button>
+				<a href="/discover" class="rh-dead-end-btn">Exit to Discover</a>
+			</div>
+		</div>
 	</div>
 {/if}
 
 <style>
 	.rh-card-wrap { padding: var(--space-xl); display: flex; justify-content: center; }
 	.rh-not-found { color: var(--t-3); font-size: 0.875rem; }
+	.rh-dead-end { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+	.rh-dead-end-hint { font-size: 0.8rem; color: var(--t-4); margin: 0; }
+	.rh-dead-end-actions { display: flex; gap: 8px; }
+	.rh-dead-end-btn {
+		padding: 6px 14px;
+		font-size: 0.8rem;
+		background: none;
+		border: 1px solid var(--b-2);
+		color: var(--t-2);
+		cursor: pointer;
+		text-decoration: none;
+		transition: border-color 0.15s, color 0.15s;
+	}
+	.rh-dead-end-btn:hover { border-color: var(--b-3); color: var(--t-1); }
 
 	.rh-map-link-wrap {
 		padding: 0 var(--space-xl) var(--space-xl);
